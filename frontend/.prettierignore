@@ -1,5 +1,6 @@
 dist
 package-lock.json
+*.md
 # Generated or CLI-managed
 src/lib/api/schema.d.ts
 src/components/ui

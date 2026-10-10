@@ -1,0 +1,16 @@
+name: Chore
+description: Work that changes no behaviour (tooling, dependencies, refactoring, docs)
+labels: [chore]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: What and why
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      placeholder: |
+        - [ ] ...

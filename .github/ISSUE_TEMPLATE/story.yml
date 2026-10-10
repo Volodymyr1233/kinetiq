@@ -1,0 +1,33 @@
+name: Story
+description: Something a trainer or client can do when this is finished
+labels: [story]
+body:
+  - type: textarea
+    id: story
+    attributes:
+      label: Story
+      description: Use the words from CONTEXT.md.
+      placeholder: As a client, I want to log a set, so that my trainer sees what I did.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Observable outcomes. One per line.
+      placeholder: |
+        - [ ] Tapping the check on an untouched set logs it with the target values
+        - [ ] A set cannot be logged with 0 reps
+    validations:
+      required: true
+  - type: input
+    id: screens
+    attributes:
+      label: Screens
+      description: Names of the mockup screens this covers, if any.
+      placeholder: Session · logging sets
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes
+      description: Out of scope, open questions, dependencies on other issues.

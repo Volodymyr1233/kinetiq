@@ -1,5 +1,10 @@
 {
-  "enabledMcpjsonServers": [
-    "context7"
-  ]
+  "enabledMcpjsonServers": ["context7"],
+  "permissions": {
+    "allow": [
+      "mcp__context7__resolve-library-id",
+      "mcp__context7__query-docs"
+    ],
+    "deny": ["Read(./.env)", "Read(./.env.local)"]
+  }
 }
