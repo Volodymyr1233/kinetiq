@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: kinetiq-backend
+  threads:
+    virtual:
+      enabled: true
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  mvc:
+    problemdetails:
+      enabled: true
+  docker:
+    compose:
+      lifecycle-management: start_only
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
