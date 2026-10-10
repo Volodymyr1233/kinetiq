@@ -1,0 +1,5 @@
+dist
+package-lock.json
+# Generated or CLI-managed
+src/lib/api/schema.d.ts
+src/components/ui

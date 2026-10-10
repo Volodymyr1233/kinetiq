@@ -1,0 +1,19 @@
+{
+  "placeholder": {
+    "metricLabel": "Readiness",
+    "title": "Project is set up",
+    "body": "Screens arrive feature by feature.",
+    "action": "Start session"
+  },
+  "theme": {
+    "label": "Appearance",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System"
+  },
+  "language": {
+    "label": "Language",
+    "en": "English",
+    "pl": "Polski"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "placeholder": {
+    "metricLabel": "Gotowość",
+    "title": "Projekt jest gotowy",
+    "body": "Ekrany pojawią się wraz z kolejnymi funkcjami.",
+    "action": "Zacznij trening"
+  },
+  "theme": {
+    "label": "Wygląd",
+    "light": "Jasny",
+    "dark": "Ciemny",
+    "system": "Systemowy"
+  },
+  "language": {
+    "label": "Język",
+    "en": "English",
+    "pl": "Polski"
+  }
+}
