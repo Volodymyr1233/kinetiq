@@ -5,10 +5,9 @@
 @import '@fontsource-variable/geist-mono';
 
 /*
- * Kinetiq theme. Source of truth for every design token.
- * shadcn slots keep their stock names; Kinetiq adds brand, status, readiness, rpe.
- * Components use semantic utilities only (bg-primary, text-muted-foreground, bg-brand).
- * Never hardcode palette classes such as bg-lime-300.
+ * Kinetiq theme: source of truth for every design token
+ * shadcn slots keep stock names; Kinetiq adds brand, status, readiness, rpe, plan-change
+ * components use semantic utilities only (bg-primary, bg-brand), never palette classes like bg-lime-300
  */
 
 @custom-variant dark (&:is(.dark *));
@@ -16,7 +15,7 @@
 :root {
   --radius: 0.625rem;
 
-  /* Surfaces */
+  /* surfaces */
   --background: oklch(0.985 0.002 265);
   --foreground: oklch(0.19 0.012 265);
   --card: oklch(1 0 0);
@@ -24,12 +23,12 @@
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.19 0.012 265);
 
-  /* Actions. Primary is ink, not a hue. */
+  /* actions: primary is ink, not a hue */
   --primary: oklch(0.21 0.014 265);
   --primary-foreground: oklch(0.985 0.002 265);
   --secondary: oklch(0.955 0.004 265);
   --secondary-foreground: oklch(0.21 0.014 265);
-  /* shadcn --accent = neutral hover/highlight surface. NOT the brand colour. */
+  /* shadcn --accent is the neutral hover surface, not the brand colour */
   --accent: oklch(0.955 0.004 265);
   --accent-foreground: oklch(0.21 0.014 265);
   --muted: oklch(0.955 0.004 265);
@@ -37,18 +36,18 @@
   --destructive: oklch(0.577 0.215 27);
   --destructive-foreground: oklch(0.985 0 0);
 
-  /* Lines */
+  /* lines */
   --border: oklch(0.915 0.005 265);
   --input: oklch(0.88 0.006 265);
   --ring: oklch(0.21 0.014 265);
 
-  /* Kinetiq brand: lime. Fill only on light surfaces; always ink text on it. */
+  /* brand lime: fill only on light surfaces, always ink text on it */
   --brand: oklch(0.88 0.19 128);
   --brand-foreground: oklch(0.21 0.014 265);
   --brand-muted: oklch(0.96 0.06 128);
   --brand-strong: oklch(0.5 0.13 132); /* lime as text/icon on light: 5.7:1 */
 
-  /* Status. -strong = text/icon (≥4.5:1 on card), -muted = tinted surface. */
+  /* status: -strong is text/icon (≥4.5:1 on card), -muted is a tinted surface */
   --success: oklch(0.52 0.13 152);
   --success-foreground: oklch(0.985 0 0);
   --success-muted: oklch(0.965 0.03 152);
@@ -60,7 +59,7 @@
   --info-muted: oklch(0.965 0.022 255);
   --destructive-muted: oklch(0.965 0.022 25);
 
-  /* Readiness bands. Low readiness is not an error: no red. */
+  /* readiness bands: low readiness is not an error, so no red */
   --ready-high: oklch(0.7 0.17 135);
   --ready-mid: oklch(0.76 0.14 75);
   --ready-low: oklch(0.62 0.13 290);
@@ -68,26 +67,26 @@
   --ready-mid-muted: oklch(0.97 0.05 85);
   --ready-low-muted: oklch(0.96 0.03 290);
 
-  /* RPE bands: 1–6 easy, 7–8 target, 9–10 hard. Hard is a caution, not an error. */
+  /* RPE bands 1–6 easy, 7–8 target, 9–10 hard: hard is a caution, not an error */
   --rpe-easy: oklch(0.6 0.11 230);
   --rpe-target: oklch(0.58 0.15 140);
   --rpe-hard: oklch(0.6 0.17 45);
 
-  /* "Adjusted for today" (readiness scale-down). Alias of warning, own name for intent. */
+  /* adjusted for today (recovery day): alias of warning, own name for intent */
   --adjusted: var(--warning);
   --adjusted-muted: var(--warning-muted);
-  /* Plan-change proposal (needs approval). Alias of info. */
-  --proposal: var(--info);
-  --proposal-muted: var(--info-muted);
+  /* plan change waiting for acceptance: alias of info */
+  --plan-change: var(--info);
+  --plan-change-muted: var(--info-muted);
 
-  /* Charts. Fixed meanings, see Data viz rules. Light values ≥3:1 on card. */
+  /* charts: fixed meanings (see data viz rules), light values ≥3:1 on card */
   --chart-1: oklch(0.6 0.17 135); /* completion, primary series */
   --chart-2: oklch(0.58 0.19 35); /* RPE, always */
   --chart-3: oklch(0.5 0.15 255); /* load / volume */
   --chart-4: oklch(0.55 0.2 305); /* wearables: heart rate, kcal */
   --chart-5: oklch(0.66 0.01 265); /* previous period / baseline, dashed */
 
-  /* Sidebar (trainer desktop) */
+  /* sidebar (trainer desktop) */
   --sidebar: oklch(0.975 0.003 265);
   --sidebar-foreground: oklch(0.19 0.012 265);
   --sidebar-primary: oklch(0.21 0.014 265);
@@ -97,13 +96,13 @@
   --sidebar-border: oklch(0.915 0.005 265);
   --sidebar-ring: oklch(0.21 0.014 265);
 
-  /* Density. Default = comfortable (client). Trainer tables set data-density="compact". */
+  /* density: comfortable by default (client), trainer tables set data-density="compact" */
   --control-h: 2.5rem; /* 40px inputs/buttons */
   --control-h-touch: 3rem; /* 48px set logger, check-in chips, quiz options */
   --row-h: 3rem;
   --card-pad: 1.5rem;
 
-  /* Motion */
+  /* motion */
   --ease-out: cubic-bezier(0.2, 0, 0, 1);
   --ease-in: cubic-bezier(0.4, 0, 1, 1);
   --dur-fast: 120ms; /* hover, press */
@@ -183,7 +182,7 @@
   --sidebar-ring: oklch(0.88 0.19 128);
 }
 
-/* Tailwind v4 mappings. Ignored by browsers, read by Tailwind. */
+/* Tailwind v4 mappings, read by Tailwind, ignored by browsers */
 @theme inline {
   --font-sans: 'Geist Variable', ui-sans-serif, system-ui, sans-serif;
   --font-mono: 'Geist Mono Variable', ui-monospace, monospace;
@@ -242,8 +241,8 @@
   --color-rpe-hard: var(--rpe-hard);
   --color-adjusted: var(--adjusted);
   --color-adjusted-muted: var(--adjusted-muted);
-  --color-proposal: var(--proposal);
-  --color-proposal-muted: var(--proposal-muted);
+  --color-plan-change: var(--plan-change);
+  --color-plan-change-muted: var(--plan-change-muted);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -260,7 +259,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
-  /* Type scale additions (Tailwind defaults cover xs…4xl) */
+  /* type scale additions (Tailwind defaults cover xs…4xl) */
   --text-metric-sm: 1.5rem;
   --text-metric-sm--line-height: 1.75rem;
   --text-metric: 2.25rem;

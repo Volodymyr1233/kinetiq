@@ -5,19 +5,20 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
 
-    // Only reachable in development: springdoc is a developmentOnly dependency.
+    // only reachable in development: springdoc is a developmentOnly dependency
     private static final String[] API_DOCS = {"/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html"};
 
     @Bean
-    SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    SecurityFilterChain securityFilterChain(HttpSecurity http) {
         return http.authorizeHttpRequests(requests -> requests
-                        // Without this, the container's error dispatch is rejected and every error turns into 401.
+                        // without this the container's error dispatch is rejected and every error becomes 401
                         .dispatcherTypeMatchers(DispatcherType.ERROR)
                         .permitAll()
                         .requestMatchers("/actuator/health")
@@ -26,7 +27,7 @@ public class SecurityConfig {
                         .permitAll()
                         .anyRequest()
                         .authenticated())
-                .csrf(csrf -> csrf.spa())
+                .csrf(CsrfConfigurer::spa)
                 .exceptionHandling(
                         errors -> errors.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
                 .build();

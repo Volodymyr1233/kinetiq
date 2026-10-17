@@ -13,10 +13,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 
-/**
- * Enforces the package rules described in backend/CLAUDE.md.
- * Layout: com.kinetiq.&lt;feature&gt;.{domain,infrastructure}, with "common" as the shared kernel.
- */
+/** package rules from backend/CLAUDE.md: com.kinetiq.&lt;feature&gt;.{domain,infrastructure}, "common" is the shared kernel */
 @AnalyzeClasses(packages = "com.kinetiq", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTest {
 

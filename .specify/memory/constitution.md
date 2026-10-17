@@ -64,9 +64,8 @@ Rationale: training load affects injury risk; a number a person trains with has 
 
 ## Development Workflow
 
-- Work starts from a GitHub issue. One issue, one branch, one pull request, one squash commit.
-- Substantial features use the full Spec Kit flow; small features a shorter one; chores and bug fixes none. See `CLAUDE.md`.
-- Spec, plan, tasks and code are reviewed together in the same pull request.
+- Work starts from a GitHub issue: a task of a story, a chore or a bug. One issue, one branch, one pull request, one squash commit.
+- Spec Kit is recommended for stories with domain logic. A spec, when written, is reviewed in the pull request of the story's first task. See `CLAUDE.md`.
 - Before a pull request is opened, `./gradlew check` (backend) and `npm run check` (frontend) MUST pass locally for the parts touched.
 - Commits and pull request titles follow Conventional Commits.
 
@@ -76,4 +75,4 @@ Rationale: training load affects injury risk; a number a person trains with has 
 - Amendments are made by pull request that changes this file and bumps the version: MAJOR for removing or redefining a principle, MINOR for adding one, PATCH for clarifications.
 - Plans MUST include a constitution check; reviewers verify it.
 
-**Version**: 1.0.0 | **Ratified**: 2026-10-11 | **Last Amended**: 2026-10-11
+**Version**: 1.0.1 | **Ratified**: 2026-10-11 | **Last Amended**: 2026-10-17

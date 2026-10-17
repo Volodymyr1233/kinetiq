@@ -1,0 +1,28 @@
+name: Task
+description: One piece of a story, done in one pull request
+labels: [task]
+body:
+  - type: input
+    id: story
+    attributes:
+      label: Story
+      description: The parent story. Also add this issue as its sub-issue.
+      placeholder: '#12'
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What
+      description: Use the words from CONTEXT.md.
+    validations:
+      required: true
+  - type: textarea
+    id: done
+    attributes:
+      label: Done when
+      description: Observable outcomes. The Definition of Done in CLAUDE.md applies as well.
+      placeholder: |
+        - [ ] ...
+    validations:
+      required: true

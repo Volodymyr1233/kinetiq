@@ -11,8 +11,8 @@ Training system for two roles. Trainers design plans, approve changes and watch 
 ```
 backend/     Spring Boot REST API (standalone Gradle project)
 frontend/    React SPA (standalone npm project)
-specs/       Spec Kit feature folders: specs/<issue>-<slug>/
-docs/adr/    Architecture decision records (created when the first one is needed)
+specs/       Optional Spec Kit folders per story: specs/<story>-<slug>/
+docs/adr/    Architecture decision records
 compose.yaml Local PostgreSQL, started automatically by the backend
 ```
 
@@ -20,7 +20,7 @@ The repository root has no build. Run backend commands in `backend/`, frontend c
 
 ## Architecture
 
-- The SPA calls the backend only through `/api/v1`, on the same origin: Vite proxies `/api` in development, a reverse proxy does it in production. There is no CORS configuration.
+- The SPA calls the backend only through `/api/v1`, on the same origin: Vite proxies `/api` in development; in production the backend serves the built SPA from the same image (`docs/adr/0001`). There is no CORS configuration.
 - Authentication is a server session cookie with CSRF protection. No tokens in browser storage.
 - The backend is hexagonal and organised by feature. The frontend is organised by the same features.
 - The API contract is the backend's generated OpenAPI document. Frontend types are generated from it (`npm run gen:api`) and committed. An API change and the regenerated types go in the same pull request.
@@ -39,16 +39,26 @@ There is no CI. Run the quality gate of every side you touched before committing
 
 ## Workflow
 
-1. Work starts from a GitHub issue. Read it with `gh issue view <n>`.
-2. Branch from the default branch: `<type>/<issue>-<slug>`, e.g. `feat/42-set-logging`.
-3. Pick the Spec Kit path by size:
-   - Substantial feature: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-checklist` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement` → `/speckit-converge`
-   - Small feature: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` → `/speckit-converge`
-   - Chore or bug fix: no Spec Kit.
-4. Name the spec folder after the issue: `specs/<issue>-<slug>`. Spec Kit does not create branches here.
-5. One pull request per issue, containing spec, plan, tasks and code. Squash merge. The pull request closes the issue (`Closes #<n>`).
+1. Work starts from a GitHub issue. A story (label `story`) is split into task sub-issues (label `task`); chores and bugs stand alone. Read it with `gh issue view <n>`, including its parent story and its "blocked by" links. Do not start a task whose blockers are still open.
+2. Branch from `master`: `<type>/<issue>-<slug>`, where the issue is the task, chore or bug, e.g. `feat/42-set-logging`.
+3. One pull request per task, chore or bug. It closes that issue (`Closes #<n>`). Squash merge. A story closes when its last task does.
+4. Spec Kit is recommended for stories with domain logic, not required. Whoever starts such a story may write its spec in the first task's pull request, in `specs/<story>-<slug>`; later tasks of the story build on it.
+   - Substantial story: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-checklist` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement` → `/speckit-converge`
+   - Small story: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` → `/speckit-converge`
+   - Spec Kit does not create branches here, and `/speckit-taskstoissues` is not used: issues are written by people.
+5. Work found during a task that is out of its scope becomes a new task under the same story (`task` issue form), not a bigger pull request.
 
-`/speckit-taskstoissues` is not used: tasks stay as checkboxes in `tasks.md`.
+## Definition of Done
+
+Every task, chore and bug fix, in addition to its own acceptance criteria:
+
+- The quality gate of every side touched passes (`./gradlew check`, `npm run check`).
+- Behaviour is covered by tests as described in `backend/CLAUDE.md` and `frontend/CLAUDE.md`.
+- Another person's resource answers `404`, and a test proves it.
+- Every new user-facing string exists in English and Polish.
+- UI changes were checked in the browser, light and dark, at 375px (client) or 1280px (trainer), including keyboard focus and labels (WCAG 2.2 AA).
+- An API change comes with the regenerated `schema.d.ts`.
+- New entities get demo data in the local-only Flyway location.
 
 ## Commits and pull requests
 
@@ -81,7 +91,7 @@ There is no CI. Run the quality gate of every side you touched before committing
 
 - Code, comments, commits, specs and docs are in English. The UI ships in English and Polish.
 - Build the smallest thing that satisfies the issue. No abstractions, options or dependencies for later.
-- Comments explain why, not what. No commented-out code.
+- Comments explain why, not what: never state the obvious or repeat the code. Keep them short, preferably one line, starting with a lower-case letter (unless it begins with a proper noun or technical name) and without a closing full stop. No commented-out code.
 - Do not edit generated or tool-managed files by hand: `frontend/src/lib/api/schema.d.ts`, `.specify/scripts/*`, `.specify/templates/*`.
 
 ## Decisions

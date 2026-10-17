@@ -9,7 +9,7 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 public class TestcontainersConfiguration {
 
-    // Keep in sync with compose.yaml.
+    // keep in sync with compose.yaml
     @Bean
     @ServiceConnection
     PostgreSQLContainer postgresContainer() {

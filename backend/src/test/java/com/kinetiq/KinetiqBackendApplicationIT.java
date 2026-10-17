@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
-/** Starts the whole application against a real database and checks the security defaults. */
+/** whole application against a real database, checking the security defaults */
 @Import(TestcontainersConfiguration.class)
 @SpringBootTest
 @AutoConfigureMockMvc

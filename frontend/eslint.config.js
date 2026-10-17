@@ -20,7 +20,7 @@ export default defineConfig([
     },
   },
   {
-    // shadcn components export variants next to components; the files are CLI-managed.
+    // shadcn files export variants next to components and are CLI-managed
     files: ['src/components/ui/**'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },

@@ -1,4 +1,4 @@
-# Local development only. The backend starts this automatically on bootRun.
+# local development only, started automatically by bootRun
 services:
   postgres:
     image: postgres:18.6
