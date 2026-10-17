@@ -14,11 +14,24 @@ _Avoid_: Coach, instructor
 A person who trains under one trainer's plan.
 _Avoid_: Athlete, user, trainee
 
+**Invite**:
+A single-use link with which a trainer lets a person join as their client.
+_Avoid_: Invitation code, referral
+
+**Client status**:
+The trainer's at-a-glance verdict on a client: On track, Watch, At risk, Plan to review or No plan.
+
 ### Planning
 
 **Plan**:
-The training a trainer has prescribed for one client: a set of sessions repeated week by week.
+The training a trainer has prescribed for one client: a set of sessions repeated week by week for a fixed number of weeks.
 _Avoid_: Program, routine
+
+**Draft**:
+A plan the client cannot see yet; the first one is built automatically from the quiz.
+
+**Week**:
+Monday to Sunday in the client's time zone. Plan weeks are numbered from the week the plan was published.
 
 **Session**:
 One named training occasion within a plan, such as "Lower body A".
@@ -28,14 +41,18 @@ _Avoid_: Workout, training
 A movement that can be prescribed, such as a back squat.
 
 **Exercise library**:
-The catalogue of exercises a trainer picks from when building a plan.
+The catalogue of exercises a trainer picks from when building a plan: the starter exercises plus the trainer's own.
+
+**Starter exercise**:
+An exercise every trainer sees and nobody can edit.
+_Avoid_: Default exercise, system exercise
 
 **Set**:
 One continuous run of repetitions of an exercise.
 _Avoid_: Series
 
 **Target**:
-What the plan asks for in a set: weight, repetitions and RPE.
+What the plan asks for in a set: load, repetitions or seconds, RPE and rest.
 _Avoid_: Prescription, goal
 
 **Publish**:
@@ -48,8 +65,12 @@ _Avoid_: Survey, questionnaire, onboarding form
 ### Training
 
 **Log**:
-What a client actually did in a set: weight, repetitions and RPE.
+What a client actually did in a set: load, repetitions or seconds, and RPE.
 _Avoid_: Track, record, entry
+
+**Missed session**:
+A session whose day has passed without the client finishing it.
+_Avoid_: Skipped session
 
 **RPE**:
 Rate of perceived exertion: how hard a set felt on a 1–10 scale. 1–6 is easy, 7–8 is the usual target, 9–10 is hard.
@@ -82,6 +103,12 @@ A condition over a client's logs that, when met, calls for a plan change.
 **Plan change**:
 A suggested lasting modification to a plan, with the rule that caused it. It takes effect only when both trainer and client accept it.
 _Avoid_: Proposal, suggestion
+
+**Effective week**:
+The week from which an accepted plan change applies: the one after the plan change was created.
+
+**Expired**:
+The end of a plan change that trainer and client did not both accept before its effective week began.
 
 **Approval**:
 A decision waiting for the trainer: a plan change to accept or decline, or a drafted plan to publish.

@@ -12,7 +12,7 @@ export default defineConfig({
     },
   },
   server: {
-    // Same origin as the API in development, so no CORS and cookies just work.
+    // same origin as the API in development: no CORS, cookies just work
     proxy: {
       '/api': 'http://localhost:8080',
     },

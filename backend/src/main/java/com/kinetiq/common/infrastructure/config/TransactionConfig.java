@@ -14,22 +14,18 @@ import org.springframework.transaction.interceptor.MatchAlwaysTransactionAttribu
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.ClassUtils;
 
-/**
- * Runs every use case in a transaction, so domain services stay free of Spring annotations.
- * A use case is any bean implementing a {@code *UseCase} interface from a {@code domain.input} package.
- */
+/** runs every bean implementing a {@code domain.input.*UseCase} interface in a transaction, keeping Spring out of the domain */
 @Configuration(proxyBeanMethods = false)
 @EnableTransactionManagement
 public class TransactionConfig {
 
-    // ponytail: every use case method gets a read-write transaction; add a read-only split if queries need it
+    // every use case method gets a read-write transaction; add a read-only split if queries need it
     @Bean
     @Role(BeanDefinition.ROLE_INFRASTRUCTURE) // required: the transaction auto-proxy only applies infrastructure advisors
     static Advisor useCaseTransactionAdvisor(BeanFactory beanFactory) {
         ClassFilter implementsUseCase = type -> ClassUtils.getAllInterfacesForClassAsSet(type).stream()
                 .anyMatch(TransactionConfig::isUseCase);
-        // No transaction manager passed in: the interceptor looks it up on first call,
-        // so this early-created advisor does not drag the persistence stack into startup order.
+        // transaction manager is looked up on first call, so this early advisor does not pull persistence into startup
         TransactionInterceptor interceptor = new TransactionInterceptor();
         interceptor.setTransactionAttributeSource(new MatchAlwaysTransactionAttributeSource());
         interceptor.setBeanFactory(beanFactory);

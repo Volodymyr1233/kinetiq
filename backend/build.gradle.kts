@@ -33,7 +33,7 @@ dependencies {
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")
-    // OpenAPI is a development tool here: it never ships in the production jar.
+    // OpenAPI is a development tool here: it never ships in the production jar
     developmentOnly("org.springdoc:springdoc-openapi-starter-webmvc-ui:$springdocVersion")
     runtimeOnly("org.postgresql:postgresql")
     annotationProcessor("org.projectlombok:lombok") // must stay before mapstruct-processor
@@ -57,7 +57,7 @@ tasks.withType<Test> {
     useJUnitPlatform()
 }
 
-// Run from the repository root, like the IDE does, so compose.yaml is found there.
+// run from the repository root, like the IDE does, so compose.yaml is found there
 tasks.bootRun {
     workingDir = rootDir.parentFile
 }

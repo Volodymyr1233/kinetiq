@@ -49,4 +49,5 @@ Open the repository root, not `backend/`. Then open `backend/build.gradle.kts` a
 | [`backend/CLAUDE.md`](backend/CLAUDE.md) | Backend architecture and conventions |
 | [`frontend/CLAUDE.md`](frontend/CLAUDE.md) | Frontend structure and conventions |
 | [`CONTEXT.md`](CONTEXT.md) | Domain vocabulary |
+| [`docs/adr/`](docs/adr) | Architecture decision records |
 | [`.specify/memory/constitution.md`](.specify/memory/constitution.md) | Project principles |

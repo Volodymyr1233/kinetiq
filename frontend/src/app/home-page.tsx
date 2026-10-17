@@ -2,7 +2,7 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { THEMES, useTheme } from '@/lib/theme'
 
-// Placeholder until the first feature lands. Exercises tokens, fonts, theme and i18n.
+// placeholder until the first feature lands; exercises tokens, fonts, theme and i18n
 export function HomePage() {
   const { t, i18n } = useTranslation()
   const { theme, setTheme } = useTheme()
