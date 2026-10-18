@@ -1,11 +1,14 @@
 package com.kinetiq.account.domain.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.ConfirmationToken;
+import com.kinetiq.account.domain.model.EmailConfirmation;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.account.domain.output.AccountRepository;
@@ -140,6 +143,101 @@ class SignUpServiceTest {
         }
     }
 
+    @Nested
+    class ConfirmEmail {
+
+        private String signUpAndGetToken() {
+            service.signUpTrainer(signUp("marek@example.com", "Kinetiq-2026"));
+            return tokenOf(mails.sent.getLast());
+        }
+
+        @Test
+        void shouldConfirm_whenLinkIsValid() {
+            String token = signUpAndGetToken();
+
+            service.confirmEmail(token);
+
+            assertThat(accounts.byEmail.get(EMAIL).isEmailConfirmed()).isTrue();
+        }
+
+        @Test
+        void shouldRefuse_whenLinkWasUsed() {
+            String token = signUpAndGetToken();
+            service.confirmEmail(token);
+
+            assertThatThrownBy(() -> service.confirmEmail(token)).isInstanceOf(ConfirmationLinkInvalidException.class);
+        }
+
+        @Test
+        void shouldRefuse_whenLinkExpired() {
+            String token = signUpAndGetToken();
+            clock.advance(Duration.ofHours(24));
+
+            assertThatThrownBy(() -> service.confirmEmail(token)).isInstanceOf(ConfirmationLinkInvalidException.class);
+            assertThat(accounts.byEmail.get(EMAIL).isEmailConfirmed()).isFalse();
+        }
+
+        @Test
+        void shouldRefuse_whenLinkWasReplaced() {
+            String first = signUpAndGetToken();
+            clock.advance(Duration.ofMinutes(1));
+            service.sendConfirmationLink(EMAIL, POLISH);
+
+            assertThatThrownBy(() -> service.confirmEmail(first)).isInstanceOf(ConfirmationLinkInvalidException.class);
+            service.confirmEmail(tokenOf(mails.sent.getLast()));
+            assertThat(accounts.byEmail.get(EMAIL).isEmailConfirmed()).isTrue();
+        }
+
+        @Test
+        void shouldRefuse_whenLinkIsUnknown() {
+            assertThatThrownBy(() -> service.confirmEmail(ConfirmationToken.generate().value()))
+                    .isInstanceOf(ConfirmationLinkInvalidException.class);
+        }
+    }
+
+    @Nested
+    class SendConfirmationLink {
+
+        @Test
+        void shouldSendNewLink_whenAccountIsUnconfirmed() {
+            service.signUpTrainer(signUp("marek@example.com", "Kinetiq-2026"));
+            clock.advance(Duration.ofSeconds(60));
+
+            service.sendConfirmationLink(EMAIL, Locale.ENGLISH);
+
+            assertThat(mails.sent).hasSize(2);
+            assertThat(mails.sent.getLast().locale()).isEqualTo(Locale.ENGLISH);
+            assertThat(accounts.byEmail.get(EMAIL).getConfirmation().orElseThrow().tokenHash())
+                    .isEqualTo(new ConfirmationToken(tokenOf(mails.sent.getLast())).hash());
+        }
+
+        @Test
+        void shouldSendNothing_whenAccountIsConfirmed() {
+            accounts.add(confirmedAccount());
+
+            service.sendConfirmationLink(EMAIL, POLISH);
+
+            assertThat(mails.sent).isEmpty();
+        }
+
+        @Test
+        void shouldSendNothing_whenEmailHasNoAccount() {
+            service.sendConfirmationLink(EMAIL, POLISH);
+
+            assertThat(mails.sent).isEmpty();
+        }
+
+        @Test
+        void shouldSendNothing_whenPreviousMailWasLessThan60SecondsAgo() {
+            service.signUpTrainer(signUp("marek@example.com", "Kinetiq-2026"));
+            clock.advance(Duration.ofSeconds(59));
+
+            service.sendConfirmationLink(EMAIL, POLISH);
+
+            assertThat(mails.sent).hasSize(1);
+        }
+    }
+
     static Account confirmedAccount() {
         return confirmedAccount("marek@example.com");
     }
@@ -166,6 +264,16 @@ class SignUpServiceTest {
         @Override
         public Optional<Account> findByEmail(Email email) {
             return Optional.ofNullable(byEmail.get(email));
+        }
+
+        @Override
+        public Optional<Account> findByConfirmationTokenHash(String tokenHash) {
+            return byEmail.values().stream()
+                    .filter(account -> account.getConfirmation()
+                            .map(EmailConfirmation::tokenHash)
+                            .filter(tokenHash::equals)
+                            .isPresent())
+                    .findFirst();
         }
     }
 

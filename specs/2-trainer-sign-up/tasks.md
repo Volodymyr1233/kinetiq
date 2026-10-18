@@ -98,12 +98,12 @@ description: "Tasks for story #2, Trainer signs up"
 
 **Independent test**: quickstart scenarios 4–6 and 8 against the API alone.
 
-- [ ] T037 [US2] Add `Account.confirmEmail(now)` (valid only while `now` is before `expiresAt`; sets `emailConfirmed`, removes the confirmation) and `ConfirmationLinkInvalidException` (code `account.confirmation-link-invalid`) in `B/account/domain/exception/`; extend `AccountTest` (confirm once, exactly 24 h is expired, confirmed has no confirmation)
-- [ ] T038 [US2] Add `Optional<Account> findByConfirmationTokenHash(String)` to `AccountRepository`, `JpaAccountRepository` and `AccountRepositoryImpl`; extend `AccountRepositoryImplIT`
-- [ ] T039 [US2] [US3] Add `void confirmEmail(String token)` and `void sendConfirmationLink(Email email, Locale locale)` to `SignUpUseCase` and `SignUpService`: unknown hash → `ConfirmationLinkInvalidException`; new link only for an unconfirmed account that `canReceiveMail`, otherwise nothing
-- [ ] T040 [US2] [US3] Extend `SignUpServiceTest`: confirm valid / used / expired / replaced / unknown; new link for unconfirmed, confirmed, unknown, within 60 s
-- [ ] T041 [US2] [US3] Add `POST /api/v1/email-confirmations` (`ConfirmEmailRequest`, `@NotBlank token`, → 204) and `POST /api/v1/confirmation-links` (`ConfirmationLinkRequest`, email rules as in T033, → 202) to `AccountController`; permit both in `SecurityConfig`; extend `AccountControllerTest` (statuses, invalid link code, blank token, malformed email, email with surrounding spaces accepted); add `errors.account.confirmation-link-invalid` to `F/locales/en.json` and `F/locales/pl.json`
-- [ ] T042 [US2] Regenerate `F/lib/api/schema.d.ts`; run `./gradlew check` and `npm run check`; commit `feat(backend): add email confirmation and new-link api (#7)`
+- [X] T037 [US2] Add `Account.confirmEmail(now)` (valid only while `now` is before `expiresAt`; sets `emailConfirmed`, removes the confirmation) and `ConfirmationLinkInvalidException` (code `account.confirmation-link-invalid`) in `B/account/domain/exception/`; extend `AccountTest` (confirm once, exactly 24 h is expired, confirmed has no confirmation)
+- [X] T038 [US2] Add `Optional<Account> findByConfirmationTokenHash(String)` to `AccountRepository`, `JpaAccountRepository` and `AccountRepositoryImpl`; extend `AccountRepositoryImplIT`
+- [X] T039 [US2] [US3] Add `void confirmEmail(String token)` and `void sendConfirmationLink(Email email, Locale locale)` to `SignUpUseCase` and `SignUpService`: unknown hash → `ConfirmationLinkInvalidException`; new link only for an unconfirmed account that `canReceiveMail`, otherwise nothing
+- [X] T040 [US2] [US3] Extend `SignUpServiceTest`: confirm valid / used / expired / replaced / unknown; new link for unconfirmed, confirmed, unknown, within 60 s
+- [X] T041 [US2] [US3] Add `POST /api/v1/email-confirmations` (`ConfirmEmailRequest`, `@NotBlank token`, → 204) and `POST /api/v1/confirmation-links` (`ConfirmationLinkRequest`, email rules as in T033, → 202) to `AccountController`; permit both in `SecurityConfig`; extend `AccountControllerTest` (statuses, invalid link code, blank token, malformed email, email with surrounding spaces accepted); add `errors.account.confirmation-link-invalid` to `F/locales/en.json` and `F/locales/pl.json`
+- [X] T042 [US2] Regenerate `F/lib/api/schema.d.ts`; run `./gradlew check` and `npm run check`; commit `feat(backend): add email confirmation and new-link api (#7)`
 
 ---
 

@@ -43,6 +43,9 @@
     },
     "internal": {
       "error": "Something went wrong on our side. Try again in a moment."
+    },
+    "account": {
+      "confirmation-link-invalid": "This link no longer works. Request a new one."
     }
   }
 }

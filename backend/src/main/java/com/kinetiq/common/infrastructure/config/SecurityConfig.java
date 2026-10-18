@@ -31,7 +31,11 @@ public class SecurityConfig {
                         // sign-up: the person has no account yet (spec "Public endpoints")
                         .requestMatchers(HttpMethod.GET, "/api/v1/csrf")
                         .permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/accounts")
+                        .requestMatchers(
+                                HttpMethod.POST,
+                                "/api/v1/accounts",
+                                "/api/v1/email-confirmations",
+                                "/api/v1/confirmation-links")
                         .permitAll()
                         .anyRequest()
                         .authenticated())

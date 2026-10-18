@@ -35,6 +35,19 @@ class AccountController {
                 locale));
     }
 
+    @PostMapping("/email-confirmations")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void confirmEmail(@Valid @RequestBody ConfirmEmailRequest request) {
+        signUp.confirmEmail(request.token());
+    }
+
+    /** Answers {@code 202} whatever the email. */
+    @PostMapping("/confirmation-links")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    void sendConfirmationLink(@Valid @RequestBody ConfirmationLinkRequest request, Locale locale) {
+        signUp.sendConfirmationLink(new Email(request.email()), locale);
+    }
+
     // region ids only: offsets such as +02:00 would not follow daylight saving time
     private static ZoneId timeZone(String id) {
         if (!ZoneId.getAvailableZoneIds().contains(id)) {

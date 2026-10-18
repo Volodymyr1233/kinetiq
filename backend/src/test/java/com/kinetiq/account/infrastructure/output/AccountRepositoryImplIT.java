@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.Account;
+import com.kinetiq.account.domain.model.ConfirmationToken;
 import com.kinetiq.common.domain.model.Email;
+import java.time.Instant;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -45,6 +47,38 @@ class AccountRepositoryImplIT {
         repository.save(trainer("marek@example.com"));
 
         assertThatThrownBy(jpa::flush).isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void shouldFindAccountWithItsLink_whenTokenHashMatches() {
+        Account account = trainer("marek@example.com");
+        ConfirmationToken token = ConfirmationToken.generate();
+        account.issueConfirmation(token, Instant.parse("2026-10-19T10:00:00Z"));
+        repository.save(account);
+
+        assertThat(repository.findByConfirmationTokenHash(token.hash()))
+                .get()
+                .usingRecursiveComparison()
+                .isEqualTo(account);
+        assertThat(repository.findByConfirmationTokenHash(ConfirmationToken.generate().hash()))
+                .isEmpty();
+    }
+
+    @Test
+    void shouldClearStoredLink_whenEmailIsConfirmed() {
+        Account account = trainer("marek@example.com");
+        ConfirmationToken token = ConfirmationToken.generate();
+        account.issueConfirmation(token, Instant.parse("2026-10-19T10:00:00Z"));
+        repository.save(account);
+        jpa.flush();
+
+        account.confirmEmail(Instant.parse("2026-10-19T11:00:00Z"));
+        repository.save(account);
+        jpa.flush();
+
+        assertThat(repository.findByConfirmationTokenHash(token.hash())).isEmpty();
+        assertThat(repository.findByEmail(account.getEmail()).orElseThrow().isEmailConfirmed())
+                .isTrue();
     }
 
     @Test

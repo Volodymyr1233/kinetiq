@@ -2,10 +2,12 @@ package com.kinetiq.account.infrastructure.input;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
+import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.common.domain.model.Email;
@@ -147,6 +149,64 @@ class AccountControllerTest {
             assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
             assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.forbidden");
             verify(signUp, never()).signUpTrainer(any());
+        }
+    }
+
+    @Nested
+    class ConfirmEmail {
+
+        @Test
+        void shouldAnswerNoContent_whenLinkIsValid() {
+            assertThat(post("/api/v1/email-confirmations", Map.of("token", "abc"))).hasStatus(HttpStatus.NO_CONTENT);
+            verify(signUp).confirmEmail("abc");
+        }
+
+        @Test
+        void shouldAnswerLinkInvalidCode_whenLinkNoLongerWorks() {
+            doThrow(new ConfirmationLinkInvalidException()).when(signUp).confirmEmail("abc");
+
+            var result = post("/api/v1/email-confirmations", Map.of("token", "abc"));
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("account.confirmation-link-invalid");
+        }
+
+        @Test
+        void shouldReportNotBlank_whenTokenIsBlank() {
+            var result = post("/api/v1/email-confirmations", Map.of("token", " "));
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result)
+                    .bodyJson()
+                    .extractingPath("$.errors")
+                    .asArray()
+                    .contains(Map.of("field", "token", "code", "not-blank"));
+            verify(signUp, never()).confirmEmail(any());
+        }
+    }
+
+    @Nested
+    class SendConfirmationLink {
+
+        @Test
+        void shouldAcceptAndPassNormalisedEmail_whenEmailHasSurroundingSpaces() {
+            var result = post("/api/v1/confirmation-links", Map.of("email", " Marek@Example.com "));
+
+            assertThat(result).hasStatus(HttpStatus.ACCEPTED);
+            verify(signUp).sendConfirmationLink(new Email("marek@example.com"), Locale.forLanguageTag("pl"));
+        }
+
+        @Test
+        void shouldReportPattern_whenEmailIsMalformed() {
+            var result = post("/api/v1/confirmation-links", Map.of("email", "marek@example"));
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result)
+                    .bodyJson()
+                    .extractingPath("$.errors")
+                    .asArray()
+                    .contains(Map.of("field", "email", "code", "pattern"));
+            verify(signUp, never()).sendConfirmationLink(any(), any());
         }
     }
 

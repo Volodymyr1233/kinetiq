@@ -1,5 +1,6 @@
 package com.kinetiq.account.domain.model;
 
+import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Duration;
@@ -87,6 +88,15 @@ public class Account {
 
     public void recordMailSent(Instant now) {
         mailSentAt = now;
+    }
+
+    /** Confirms the email and removes the link, so it confirms at most once. */
+    public void confirmEmail(Instant now) {
+        if (confirmation == null || !now.isBefore(confirmation.expiresAt())) {
+            throw new ConfirmationLinkInvalidException();
+        }
+        emailConfirmed = true;
+        confirmation = null;
     }
 
     private static String validName(String name) {
