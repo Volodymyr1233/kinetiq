@@ -15,5 +15,17 @@
     "label": "Język",
     "en": "English",
     "pl": "Polski"
+  },
+  "areas": {
+    "trainer": "Panel trenera",
+    "client": "Panel klienta"
+  },
+  "placeholderPage": {
+    "body": "Ten ekran pojawi się razem ze swoją funkcją."
+  },
+  "notFound": {
+    "title": "Nie znaleziono strony",
+    "body": "Sprawdź adres albo wróć na stronę główną.",
+    "action": "Przejdź na stronę główną"
   }
 }
