@@ -60,4 +60,5 @@ tasks.withType<Test> {
 // run from the repository root, like the IDE does, so compose.yaml is found there
 tasks.bootRun {
     workingDir = rootDir.parentFile
+    args("--spring.profiles.active=local")
 }
