@@ -14,7 +14,7 @@ import org.springframework.transaction.interceptor.MatchAlwaysTransactionAttribu
 import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.ClassUtils;
 
-/** runs every bean implementing a {@code domain.input.*UseCase} interface in a transaction, keeping Spring out of the domain */
+/** Runs every bean implementing a {@code domain.input.*UseCase} interface in a transaction, keeping Spring out of the domain. */
 @Configuration(proxyBeanMethods = false)
 @EnableTransactionManagement
 public class TransactionConfig {

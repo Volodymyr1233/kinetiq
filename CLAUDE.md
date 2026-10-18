@@ -40,9 +40,11 @@ There is no CI. Run the quality gate of every side you touched before committing
 ## Workflow
 
 1. Work starts from a GitHub issue. A story (label `story`) is split into task sub-issues (label `task`); chores and bugs stand alone. Read it with `gh issue view <n>`, including its parent story and its "blocked by" links. Do not start a task whose blockers are still open.
-2. Branch from `master`: `<type>/<issue>-<slug>`, where the issue is the task, chore or bug, e.g. `feat/42-set-logging`.
-3. One pull request per task, chore or bug. It closes that issue (`Closes #<n>`). Squash merge. A story closes when its last task does.
-4. Spec Kit is recommended for stories with domain logic, not required. Whoever starts such a story may write its spec in the first task's pull request, in `specs/<story>-<slug>`; later tasks of the story build on it.
+2. Branch from `master`: `<type>/<issue>-<slug>`, where the issue is the task, chore or bug, e.g. `feat/42-set-logging`, or the story when it is built in one pull request.
+3. Pull requests come in one of two shapes. It closes every issue it completes (`Closes #<n>` for each), and a story closes when its last task does.
+   - One pull request per task, chore or bug, squash merged.
+   - One pull request per story when the whole story is built at once: one commit per task, merged with rebase or a merge commit so each task keeps its commit on `master`.
+4. Spec Kit is recommended for stories with domain logic, not required. Whoever starts such a story may write its spec in the first pull request of the story, in `specs/<story>-<slug>`; later tasks of the story build on it.
    - Substantial story: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-checklist` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement` → `/speckit-converge`
    - Small story: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` → `/speckit-converge`
    - Spec Kit does not create branches here, and `/speckit-taskstoissues` is not used: issues are written by people.
@@ -69,7 +71,8 @@ Every task, chore and bug fix, in addition to its own acceptance criteria:
 - Subject: imperative, lower case, no full stop, at most 72 characters.
 - Body: only when the subject does not say enough, and then a few short bullet points.
 - No `Co-Authored-By` or other attribution footers.
-- The pull request title follows the same format; it becomes the squash commit.
+- The pull request title follows the same format; with a squash merge it becomes the commit.
+- In a story pull request, each task's commit follows the same format and ends with `(#<task>)`.
 
 ## Tools
 
@@ -91,7 +94,8 @@ Every task, chore and bug fix, in addition to its own acceptance criteria:
 
 - Code, comments, commits, specs and docs are in English. The UI ships in English and Polish.
 - Build the smallest thing that satisfies the issue. No abstractions, options or dependencies for later.
-- Comments explain why, not what: never state the obvious or repeat the code. Keep them short, preferably one line, starting with a lower-case letter (unless it begins with a proper noun or technical name) and without a closing full stop. No commented-out code.
+- Line and block comments (`//`, `/* */`) explain why, not what: never state the obvious or repeat the code. Keep them short, preferably one line, starting with a lower-case letter (unless it begins with a proper noun or technical name) and without a closing full stop. No commented-out code.
+- Doc comments (Javadoc, JSDoc) follow their own conventions instead: full sentences, the first one a summary, code in `{@code}` or backticks.
 - Do not edit generated or tool-managed files by hand: `frontend/src/lib/api/schema.d.ts`, `.specify/scripts/*`, `.specify/templates/*`.
 
 ## Decisions
