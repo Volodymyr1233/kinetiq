@@ -1,13 +1,15 @@
 package com.kinetiq.common.infrastructure.config;
 
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
@@ -28,8 +30,21 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .csrf(CsrfConfigurer::spa)
-                .exceptionHandling(
-                        errors -> errors.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)))
+                // the CSRF filter uses this access-denied handler too, so a missing token also gets a code
+                .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) ->
+                                writeProblem(response, HttpStatus.UNAUTHORIZED, "request.unauthenticated"))
+                        .accessDeniedHandler((request, response, exception) ->
+                                writeProblem(response, HttpStatus.FORBIDDEN, "request.forbidden")))
                 .build();
+    }
+
+    // these refusals happen before Spring MVC, so GlobalExceptionHandler never sees them
+    private static void writeProblem(HttpServletResponse response, HttpStatus status, String code)
+            throws IOException {
+        response.setStatus(status.value());
+        response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
+        response.getWriter()
+                .write("{\"type\":\"about:blank\",\"title\":\"%s\",\"status\":%d,\"code\":\"%s\"}"
+                        .formatted(status.getReasonPhrase(), status.value(), code));
     }
 }

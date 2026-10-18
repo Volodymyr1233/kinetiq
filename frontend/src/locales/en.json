@@ -27,5 +27,22 @@
     "title": "Page not found",
     "body": "Check the address, or go back to the start page.",
     "action": "Go to the start page"
+  },
+  "errors": {
+    "generic": "Something went wrong. Try again.",
+    "validation": {
+      "failed": "Some details are not valid. Check them and try again."
+    },
+    "request": {
+      "invalid": "The request could not be read. Reload the page and try again.",
+      "not-found": "This page does not exist. Check the address.",
+      "method-not-allowed": "This action is not available. Reload the page and try again.",
+      "unsupported-media-type": "The request could not be read. Reload the page and try again.",
+      "unauthenticated": "Sign in to continue.",
+      "forbidden": "Your session has expired. Reload the page and try again."
+    },
+    "internal": {
+      "error": "Something went wrong on our side. Try again in a moment."
+    }
   }
 }

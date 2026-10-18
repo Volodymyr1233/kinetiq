@@ -27,5 +27,22 @@
     "title": "Nie znaleziono strony",
     "body": "Sprawdź adres albo wróć na stronę główną.",
     "action": "Przejdź na stronę główną"
+  },
+  "errors": {
+    "generic": "Coś poszło nie tak. Spróbuj ponownie.",
+    "validation": {
+      "failed": "Niektóre dane są nieprawidłowe. Sprawdź je i spróbuj ponownie."
+    },
+    "request": {
+      "invalid": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
+      "not-found": "Ta strona nie istnieje. Sprawdź adres.",
+      "method-not-allowed": "Ta czynność jest niedostępna. Odśwież stronę i spróbuj ponownie.",
+      "unsupported-media-type": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
+      "unauthenticated": "Zaloguj się, aby kontynuować.",
+      "forbidden": "Sesja wygasła. Odśwież stronę i spróbuj ponownie."
+    },
+    "internal": {
+      "error": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę."
+    }
   }
 }
