@@ -43,6 +43,9 @@
     },
     "internal": {
       "error": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę."
+    },
+    "account": {
+      "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy."
     }
   }
 }

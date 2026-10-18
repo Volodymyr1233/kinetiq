@@ -9,4 +9,6 @@ public interface AccountRepository {
     void save(Account account);
 
     Optional<Account> findByEmail(Email email);
+
+    Optional<Account> findByConfirmationTokenHash(String tokenHash);
 }

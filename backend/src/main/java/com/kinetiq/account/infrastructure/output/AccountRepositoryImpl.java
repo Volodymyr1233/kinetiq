@@ -26,4 +26,9 @@ class AccountRepositoryImpl implements AccountRepository {
     public Optional<Account> findByEmail(Email email) {
         return jpa.findByEmail(email.value()).map(mapper::toDomain);
     }
+
+    @Override
+    public Optional<Account> findByConfirmationTokenHash(String tokenHash) {
+        return jpa.findByConfirmationTokenHash(tokenHash).map(mapper::toDomain);
+    }
 }

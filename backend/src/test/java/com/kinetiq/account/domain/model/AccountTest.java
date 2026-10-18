@@ -3,6 +3,7 @@ package com.kinetiq.account.domain.model;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Duration;
@@ -125,6 +126,40 @@ class AccountTest {
             account.recordMailSent(NOW);
 
             assertThat(account.canReceiveMail(NOW.plusSeconds(60))).isTrue();
+        }
+    }
+
+    @Nested
+    class ConfirmEmail {
+
+        @Test
+        void shouldConfirmAndRemoveLink_whenLinkIsValid() {
+            Account account = trainer();
+            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+
+            account.confirmEmail(NOW.plus(DAY).minusSeconds(1));
+
+            assertThat(account.isEmailConfirmed()).isTrue();
+            assertThat(account.getConfirmation()).isEmpty();
+        }
+
+        @Test
+        void shouldRefuse_whenConfirmedTwice() {
+            Account account = trainer();
+            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.confirmEmail(NOW);
+
+            assertThatThrownBy(() -> account.confirmEmail(NOW)).isInstanceOf(ConfirmationLinkInvalidException.class);
+        }
+
+        @Test
+        void shouldRefuseAndStayUnconfirmed_whenExactly24HoursPassed() {
+            Account account = trainer();
+            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+
+            assertThatThrownBy(() -> account.confirmEmail(NOW.plus(DAY)))
+                    .isInstanceOf(ConfirmationLinkInvalidException.class);
+            assertThat(account.isEmailConfirmed()).isFalse();
         }
     }
 

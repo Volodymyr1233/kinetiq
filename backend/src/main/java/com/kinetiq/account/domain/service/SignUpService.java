@@ -1,11 +1,13 @@
 package com.kinetiq.account.domain.service;
 
+import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.ConfirmationToken;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
+import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.domain.output.Mail;
 import com.kinetiq.common.domain.output.MailSender;
 import java.net.URI;
@@ -42,6 +44,22 @@ public class SignUpService implements SignUpUseCase {
                                         command.name(), command.email(), passwordHash, command.timeZone()),
                                 command.locale(),
                                 now));
+    }
+
+    @Override
+    public void confirmEmail(String token) {
+        Account account = accounts.findByConfirmationTokenHash(new ConfirmationToken(token).hash())
+                .orElseThrow(ConfirmationLinkInvalidException::new);
+        account.confirmEmail(clock.instant());
+        accounts.save(account);
+    }
+
+    @Override
+    public void sendConfirmationLink(Email email, Locale locale) {
+        Instant now = clock.instant();
+        accounts.findByEmail(email)
+                .filter(account -> !account.isEmailConfirmed() && account.canReceiveMail(now))
+                .ifPresent(account -> sendConfirmation(account, locale, now));
     }
 
     // the account itself never changes here; only when it last got an email
