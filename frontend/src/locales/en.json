@@ -15,5 +15,17 @@
     "label": "Language",
     "en": "English",
     "pl": "Polski"
+  },
+  "areas": {
+    "trainer": "Trainer area",
+    "client": "Client area"
+  },
+  "placeholderPage": {
+    "body": "This screen arrives with its feature."
+  },
+  "notFound": {
+    "title": "Page not found",
+    "body": "Check the address, or go back to the start page.",
+    "action": "Go to the start page"
   }
 }
