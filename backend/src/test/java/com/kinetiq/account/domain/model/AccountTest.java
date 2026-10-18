@@ -5,6 +5,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
+import java.time.Duration;
+import java.time.Instant;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -16,6 +18,8 @@ class AccountTest {
 
     private static final Email EMAIL = new Email("marek@example.com");
     private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
+    private static final Instant NOW = Instant.parse("2026-10-19T10:00:00Z");
+    private static final Duration DAY = Duration.ofHours(24);
 
     static Account trainer() {
         return Account.signUpTrainer("Marek Nowak", EMAIL, "hash", WARSAW);
@@ -63,5 +67,69 @@ class AccountTest {
             assertThatThrownBy(() -> Account.signUpTrainer("a".repeat(101), EMAIL, "hash", WARSAW))
                     .isInstanceOf(InvalidValueException.class);
         }
+    }
+
+    @Nested
+    class IssueConfirmation {
+
+        @Test
+        void shouldExpireIn24Hours_whenIssued() {
+            Account account = trainer();
+            ConfirmationToken token = ConfirmationToken.generate();
+
+            account.issueConfirmation(token, NOW);
+
+            assertThat(account.getConfirmation()).contains(new EmailConfirmation(token.hash(), NOW.plus(DAY)));
+            assertThat(account.getMailSentAt()).contains(NOW);
+        }
+
+        @Test
+        void shouldReplaceEarlierLink_whenIssuedAgain() {
+            Account account = trainer();
+            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            ConfirmationToken newer = ConfirmationToken.generate();
+
+            account.issueConfirmation(newer, NOW.plusSeconds(60));
+
+            assertThat(account.getConfirmation().orElseThrow().tokenHash()).isEqualTo(newer.hash());
+        }
+
+        @Test
+        void shouldRefuse_whenEmailIsConfirmed() {
+            Account account = confirmed();
+
+            assertThatThrownBy(() -> account.issueConfirmation(ConfirmationToken.generate(), NOW))
+                    .isInstanceOf(IllegalStateException.class);
+        }
+    }
+
+    @Nested
+    class CanReceiveMail {
+
+        @Test
+        void shouldAllow_whenNoMailWasSent() {
+            assertThat(trainer().canReceiveMail(NOW)).isTrue();
+        }
+
+        @Test
+        void shouldRefuse_when59SecondsPassed() {
+            Account account = trainer();
+            account.recordMailSent(NOW);
+
+            assertThat(account.canReceiveMail(NOW.plusSeconds(59))).isFalse();
+        }
+
+        @Test
+        void shouldAllow_when60SecondsPassed() {
+            Account account = trainer();
+            account.recordMailSent(NOW);
+
+            assertThat(account.canReceiveMail(NOW.plusSeconds(60))).isTrue();
+        }
+    }
+
+    static Account confirmed() {
+        return Account.restore(
+                AccountId.random(), "Marek Nowak", EMAIL, "hash", Role.TRAINER, WARSAW, true, null, null);
     }
 }

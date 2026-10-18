@@ -7,9 +7,12 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.Instant;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Setter
@@ -29,4 +32,10 @@ class AccountEntity extends BaseEntity {
 
     private String timeZone;
     private boolean emailConfirmed;
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private String confirmationTokenHash;
+
+    private Instant confirmationExpiresAt;
+    private Instant mailSentAt;
 }
