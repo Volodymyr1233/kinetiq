@@ -53,6 +53,17 @@ When a new structural rule is agreed, add it to that test.
 
 Names come from `CONTEXT.md` at the repository root.
 
+## Java
+
+Use the current language and its idioms.
+
+- Records for ids, value objects, commands, requests, responses and other data carriers.
+- Immutable by default: `final` fields, unmodifiable collections (`List.of`, `Map.copyOf`, `Stream.toList()`), defensive copies in record constructors. Only aggregates change state, through their methods.
+- `Optional` for a result that may be absent, never `null`. Not for fields or parameters.
+- Streams for transforming collections; a loop when it reads better.
+- Pattern matching for `instanceof` and `switch`, switch expressions, text blocks, `var` when the type is plain from the right-hand side.
+- Virtual threads are on (`spring.threads.virtual.enabled`): write plain blocking code. No reactive types, and no sized pools for blocking work: use `Executors.newVirtualThreadPerTaskExecutor()`.
+
 ## Domain
 
 - Use cases take typed ids and command records and return domain objects. Never pass request DTOs or JPA entities into the domain.
