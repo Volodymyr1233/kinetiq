@@ -5,6 +5,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -26,6 +27,11 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health")
                         .permitAll()
                         .requestMatchers(API_DOCS)
+                        .permitAll()
+                        // sign-up: the person has no account yet (spec "Public endpoints")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/csrf")
+                        .permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/v1/accounts")
                         .permitAll()
                         .anyRequest()
                         .authenticated())
