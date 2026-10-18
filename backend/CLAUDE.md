@@ -85,7 +85,7 @@ Use the current language and its idioms.
 - Entities extend a shared base with `createdAt`, `updatedAt` and `@Version` once the first entity needs it.
 - Enums are stored as strings. Associations are lazy; fetch what a use case needs with an entity graph or a query.
 - Schema changes are Flyway migrations in `src/main/resources/db/migration`, `V<n>__snake_case.sql`, written by hand with named constraints. Never edit a migration that has been merged. Hibernate only validates (`ddl-auto: validate`).
-- Development seed data goes in a separate Flyway location used only locally. Never put credentials or real personal data in SQL.
+- Demo data goes in `src/main/resources/db/dev-data` as repeatable migrations (`R__*.sql`, idempotent inserts). Only the `local` profile adds that location, so tests and production never run it. Never put real credentials or real personal data in SQL.
 
 ## Web
 
@@ -130,8 +130,8 @@ Fakes for output ports live in test sources next to the tests that use them; mov
 
 Run in `backend/`. Docker must be running for both.
 
-- `./gradlew bootRun`: starts the API on `:8080` and PostgreSQL from the root `compose.yaml` (port `15432`, database, user and password `kinetiq`).
+- `./gradlew bootRun`: starts the API on `:8080` with the `local` profile, and PostgreSQL from the root `compose.yaml` (port `15432`, database, user and password `kinetiq`).
 - `./gradlew check`: compiles and runs every test, including the architecture rules. Must pass before a commit.
 - `./gradlew test --tests '<pattern>'`: a subset.
 
-When running from the IDE, keep the working directory at the repository root so `compose.yaml` is found.
+When running from the IDE, keep the working directory at the repository root so `compose.yaml` is found, and set the active profile to `local`.

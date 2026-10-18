@@ -14,6 +14,14 @@ _Avoid_: Coach, instructor
 A person who trains under one trainer's plan.
 _Avoid_: Athlete, user, trainee
 
+**Account**:
+What a trainer or client signs in with: name, email, password and role. A trainer creates one by signing up; a client gets one through an invite.
+_Avoid_: User, profile, login
+
+**Confirmation link**:
+A single-use link sent to an account's email that proves the person controls that address.
+_Avoid_: Verification code, activation link
+
 **Invite**:
 A single-use link with which a trainer lets a person join as their client.
 _Avoid_: Invitation code, referral
