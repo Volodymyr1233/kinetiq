@@ -113,28 +113,28 @@ description: "Tasks for story #2, Trainer signs up"
 
 **Independent test**: quickstart scenarios 1–11 in the built-in browser.
 
-- [ ] T043 Install `react-hook-form@^7.90`, `zod@^4.6`, `@hookform/resolvers@^5.9` in `frontend/`
-- [ ] T044 Add shadcn components with the CLI after reading `npx shadcn@latest docs` for each: `card`, `field`, `input`, `input-group`, `checkbox`, `label`, `spinner`, `alert`; read the added files in `F/components/ui/` and compare with the design system (`kq.css` `.auth`, `.auth-card`, `.icon-chip`, `.brandmark`, touch inputs)
-- [ ] T045 [US4] Update `F/lib/api/client.ts`: late-bound `fetch` (R12); middleware sets `Accept-Language` to `i18n.language` and, for POST/PUT/PATCH/DELETE, `X-XSRF-TOKEN` from the `XSRF-TOKEN` cookie, calling `GET /api/v1/csrf` first when it is missing (R2); `F/lib/api/client.test.ts`
-- [ ] T046 [P] [US4] Update `F/lib/i18n.ts`: start language `pl` when `navigator.language` starts with `pl`, else `en`; keep `document.documentElement.lang` in sync on `languageChanged`
-- [ ] T047 [P] [US1] Create `F/features/account/sign-up-schema.ts` (zod; password rule as an exported function matching FR-002; name trimmed, 1–100, no `/\p{Cc}/u`; email trimmed then the R8 pattern; `adult` true) and `F/features/account/sign-up-schema.test.ts`
-- [ ] T048 [P] [US1] Create `F/features/account/api/account.ts`: `useSignUp`, `useConfirmEmail`, `useRequestConfirmationLink` mutations over `api`
-- [ ] T049 [P] [US1] Create `F/features/account/components/auth-layout.tsx` (brandmark, centred card column, footer slot) and `check-email-card.tsx` (heading focused on mount, the address, Resend with busy state and a 60-second lock plus one polite live note, "Change it" callback)
-- [ ] T050 [US1] Create `F/features/account/pages/sign-up-page.tsx`: react-hook-form (`onSubmit` mode, `onChange` revalidation, `shouldFocusError`); fields per FR-025 copy; password show/hide with `aria-label`; rules text as description that becomes the error; time zone from `Intl` with `UTC` fallback; busy submit (FR-026); server `errors` → `setError`; other failures → alert with `errorMessageKey`; success → `CheckEmailCard`; "Change it" restores values without the password
-- [ ] T051 [US2] [US3] Create `F/features/account/pages/confirm-email-page.tsx`: read `#token`, clear it with `history.replaceState`, confirm once (ref guard, R5); states "Confirming your email" (busy), "Email confirmed" (Sign in → `/sign-in`), "This link no longer works" (email field + "Send new link" → `CheckEmailCard`, footer "Already confirmed? Sign in"); focus to each new heading (FR-027)
-- [ ] T052 [US1] Add `/sign-up` and `/confirm-email` to `F/app/router.ts`
-- [ ] T053 [P] [US4] Add all copy for the five states to `F/locales/en.json` and `F/locales/pl.json` (board copy, FR-025 messages, Resend note, confirming state), with no hard-coded strings left
-- [ ] T054 [US1] Write `F/features/account/pages/sign-up-page.test.tsx` with stubbed `fetch`: messages per field; server field errors; focus on first error; busy button blocks a second submit; network failure keeps values; success focuses the check heading; "Change it" drops only the password; resend lock and note
-- [ ] T055 [US2] [US3] Write `F/features/account/pages/confirm-email-page.test.tsx` with stubbed `fetch`: confirming state; one request despite StrictMode; success; invalid → expired → new link → check state
-- [ ] T056 Run `npm run check`; verify in the built-in browser per quickstart (light and dark, 375 and 1280 px, 200% zoom, EN and PL, keyboard only, console clean), screenshots of each state; review with the ui-ux-pro-max skill for WCAG 2.2 AA and UX issues without restyling the design system; fix findings; commit `feat(frontend): add sign-up and email confirmation screens (#8)`
+- [X] T043 Install `react-hook-form@^7.90`, `zod@^4.6`, `@hookform/resolvers@^5.9` in `frontend/`
+- [X] T044 Add shadcn components with the CLI after reading `npx shadcn@latest docs` for each: `card`, `field`, `input`, `input-group`, `checkbox`, `label`, `spinner`, `alert`; read the added files in `F/components/ui/` and compare with the design system (`kq.css` `.auth`, `.auth-card`, `.icon-chip`, `.brandmark`, touch inputs)
+- [X] T045 [US4] Update `F/lib/api/client.ts`: late-bound `fetch` (R12); middleware sets `Accept-Language` to `i18n.language` and, for POST/PUT/PATCH/DELETE, `X-XSRF-TOKEN` from the `XSRF-TOKEN` cookie, calling `GET /api/v1/csrf` first when it is missing (R2); `F/lib/api/client.test.ts`
+- [X] T046 [P] [US4] Update `F/lib/i18n.ts`: start language `pl` when `navigator.language` starts with `pl`, else `en`; keep `document.documentElement.lang` in sync on `languageChanged`
+- [X] T047 [P] [US1] Create `F/features/account/sign-up-schema.ts` (zod; password rule as an exported function matching FR-002; name trimmed, 1–100, no `/\p{Cc}/u`; email trimmed then the R8 pattern; `adult` true) and `F/features/account/sign-up-schema.test.ts`
+- [X] T048 [P] [US1] Create `F/features/account/api/account.ts`: `useSignUp`, `useConfirmEmail`, `useRequestConfirmationLink` mutations over `api`
+- [X] T049 [P] [US1] Create `F/features/account/components/auth-layout.tsx` (brandmark, centred card column, footer slot) and `check-email-card.tsx` (heading focused on mount, the address, Resend with busy state and a 60-second lock plus one polite live note, "Change it" callback)
+- [X] T050 [US1] Create `F/features/account/pages/sign-up-page.tsx`: react-hook-form (`onSubmit` mode, `onChange` revalidation, `shouldFocusError`); fields per FR-025 copy; password show/hide with `aria-label`; rules text as description that becomes the error; time zone from `Intl` with `UTC` fallback; busy submit (FR-026); server `errors` → `setError`; other failures → alert with `errorMessageKey`; success → `CheckEmailCard`; "Change it" restores values without the password
+- [X] T051 [US2] [US3] Create `F/features/account/pages/confirm-email-page.tsx`: read `#token`, clear it with `history.replaceState`, confirm once (ref guard, R5); states "Confirming your email" (busy), "Email confirmed" (Sign in → `/sign-in`), "This link no longer works" (email field + "Send new link" → `CheckEmailCard`, footer "Already confirmed? Sign in"); focus to each new heading (FR-027)
+- [X] T052 [US1] Add `/sign-up` and `/confirm-email` to `F/app/router.ts`
+- [X] T053 [P] [US4] Add all copy for the five states to `F/locales/en.json` and `F/locales/pl.json` (board copy, FR-025 messages, Resend note, confirming state), with no hard-coded strings left
+- [X] T054 [US1] Write `F/features/account/pages/sign-up-page.test.tsx` with stubbed `fetch`: messages per field; server field errors; focus on first error; busy button blocks a second submit; network failure keeps values; success focuses the check heading; "Change it" drops only the password; resend lock and note
+- [X] T055 [US2] [US3] Write `F/features/account/pages/confirm-email-page.test.tsx` with stubbed `fetch`: confirming state; one request despite StrictMode; success; invalid → expired → new link → check state
+- [X] T056 Run `npm run check`; verify in the built-in browser per quickstart (light and dark, 375 and 1280 px, 200% zoom, EN and PL, keyboard only, console clean), screenshots of each state; review with the ui-ux-pro-max skill for WCAG 2.2 AA and UX issues without restyling the design system; fix findings; commit `feat(frontend): add sign-up and email confirmation screens (#8)`
 
 ---
 
 ## Phase 8: Polish
 
-- [ ] T057 Run quickstart end to end with backend and frontend; measure SC-002 (20 sign-ups each for an existing and a new email, compare medians) and record the result in the pull request
-- [ ] T058 Run a security review of the branch diff (enumeration, token handling, CSRF, logs, error bodies) and fix findings in the commit of the task they belong to
-- [ ] T059 Ask before pushing; then push `feat/2-trainer-sign-up` and open one pull request closing #2–#8, to be merged with rebase or a merge commit
+- [X] T057 Run quickstart end to end with backend and frontend; measure SC-002 (20 sign-ups each for an existing and a new email, compare medians) and record the result in the pull request
+- [X] T058 Run a security review of the branch diff (enumeration, token handling, CSRF, logs, error bodies) and fix findings in the commit of the task they belong to
+- [X] T059 Ask before pushing; then push `feat/2-trainer-sign-up` and open one pull request closing #2–#8, to be merged with rebase or a merge commit
 
 ---
 
