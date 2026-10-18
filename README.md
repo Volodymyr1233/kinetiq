@@ -17,7 +17,14 @@ cd backend
 ./gradlew bootRun
 ```
 
-Starts the API on http://localhost:8080 and PostgreSQL 18 from `compose.yaml` on port 15432 (database, user and password: `kinetiq`). API documentation: http://localhost:8080/swagger-ui.html.
+Starts the API on http://localhost:8080 with the `local` profile, and PostgreSQL 18 from `compose.yaml` on port 15432 (database, user and password: `kinetiq`). API documentation: http://localhost:8080/swagger-ui.html.
+
+The `local` profile adds demo data. Both accounts use the password `Kinetiq-demo-1`:
+
+| Email | State |
+|---|---|
+| `demo.trainer@example.com` | Trainer, email confirmed |
+| `demo.unconfirmed@example.com` | Trainer, email not confirmed |
 
 ```bash
 cd frontend
@@ -39,7 +46,7 @@ cd frontend && npm run check
 
 ## IntelliJ IDEA
 
-Open the repository root, not `backend/`. Then open `backend/build.gradle.kts` and choose **Load Gradle Project**. Set the project SDK and the Gradle JVM to JDK 25.
+Open the repository root, not `backend/`. Then open `backend/build.gradle.kts` and choose **Load Gradle Project**. Set the project SDK and the Gradle JVM to JDK 25. In the run configuration of `KinetiqBackendApplication`, set **Active profiles** to `local` and the working directory to the repository root.
 
 ## Where things are written down
 

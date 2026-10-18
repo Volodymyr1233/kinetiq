@@ -21,7 +21,7 @@ description: "Tasks for story #2, Trainer signs up"
 
 ## Phase 1: Setup — spec commit
 
-- [ ] T001 Commit `specs/2-trainer-sign-up/` and the `Account` and `Confirmation link` terms in `CONTEXT.md` as `docs: add spec for trainer sign-up`
+- [X] T001 Commit `specs/2-trainer-sign-up/` and the `Account` and `Confirmation link` terms in `CONTEXT.md` as `docs: add spec for trainer sign-up`
 
 ---
 
@@ -29,17 +29,17 @@ description: "Tasks for story #2, Trainer signs up"
 
 **Goal**: The `accounts` table exists, Hibernate validates it on start, and an account can be saved and found by email in any letter case.
 
-- [ ] T002 [P] Create `DomainException` (abstract, unchecked, `String code()`, message for logs only) and `InvalidValueException` (code `validation.failed`) in `B/common/domain/exception/`
-- [ ] T003 [P] Create `Email` record in `B/common/domain/model/Email.java`: compact constructor trims, lower-cases with `Locale.ROOT`, requires `^[^\s@]+@[^\s@]+\.[^\s@]+$` and "at most 254 characters", else throws `InvalidValueException`
-- [ ] T004 [P] Write `BT/common/domain/model/EmailTest.java`: normalisation (`" Marek@Example.com "` → `marek@example.com`), malformed values, 254 accepted / 255 rejected
-- [ ] T005 Create `AccountId` (record wrapping `UUID`, `random()`), `Role` (`TRAINER`, `CLIENT`) and `Account` aggregate in `B/account/domain/model/`: `@Getter`, no setters; `static Account signUpTrainer(String name, Email email, String passwordHash, ZoneId timeZone)` enforcing name "Trimmed, 1–100 characters, no control characters (Unicode category `Cc`)" via `\p{Cc}`, role `TRAINER`, `emailConfirmed` false; a `restore(...)` factory for persistence
-- [ ] T006 [P] Write `BT/account/domain/model/AccountTest.java` (`@Nested` per method): name trimmed, blank / 101 characters / line break rejected, new trainer is unconfirmed
-- [ ] T007 [P] Create `BaseEntity` (`@MappedSuperclass`, `Instant createdAt` and `updatedAt` set by Hibernate, `@Version Long version`) in `B/common/infrastructure/output/BaseEntity.java`
-- [ ] T008 [P] Write `R/db/migration/V1__create_accounts.sql` exactly as data-model.md "Table `accounts`": `pk_accounts`, `uq_accounts_email`, `ck_accounts_email_lower_case` (`email = lower(email)`), `ck_accounts_role` (`TRAINER`, `CLIENT`), `name varchar(100)`, `email varchar(254)`, `password_hash varchar(255)`, `role varchar(16)`, `time_zone varchar(64)`, `email_confirmed boolean`, `created_at`/`updated_at timestamptz`, `version bigint`, all not null
-- [ ] T009 Create `AccountRepository` port (`save`, `Optional<Account> findByEmail(Email)`) in `B/account/domain/output/`, and `AccountEntity` (table `accounts`, `@Id UUID`, role as string), `JpaAccountRepository`, `AccountMapper` (MapStruct, typed ids and `ZoneId` ↔ string) and `AccountRepositoryImpl` (`@Repository`) in `B/account/infrastructure/output/`
-- [ ] T010 Write `BT/account/infrastructure/output/AccountRepositoryImplIT.java` (`@DataJpaTest`, `TestcontainersConfiguration`): saves and finds by email given in another case; second account with the same email fails; `createdAt`, `updatedAt`, `version` set
-- [ ] T011 Add the `local` profile: `R/application-local.yaml` with `spring.flyway.locations: classpath:db/migration,classpath:db/dev-data`; `backend/build.gradle.kts` `bootRun` passes `--spring.profiles.active=local`; `R/db/dev-data/R__demo_accounts.sql` inserts `demo.trainer@example.com` (confirmed) and `demo.unconfirmed@example.com` (unconfirmed) with a PBKDF2 hash of `Kinetiq-demo-1` (R1 parameters), `on conflict do nothing`; README: IntelliJ "Active profiles: local" and the demo accounts
-- [ ] T012 Run `./gradlew check` and `./gradlew bootRun` (V1 and demo data applied, Hibernate validates); commit `feat(backend): add account model and first migration (#3)`
+- [X] T002 [P] Create `DomainException` (abstract, unchecked, `String code()`, message for logs only) and `InvalidValueException` (code `validation.failed`) in `B/common/domain/exception/`
+- [X] T003 [P] Create `Email` record in `B/common/domain/model/Email.java`: compact constructor trims, lower-cases with `Locale.ROOT`, requires `^[^\s@]+@[^\s@]+\.[^\s@]+$` and "at most 254 characters", else throws `InvalidValueException`
+- [X] T004 [P] Write `BT/common/domain/model/EmailTest.java`: normalisation (`" Marek@Example.com "` → `marek@example.com`), malformed values, 254 accepted / 255 rejected
+- [X] T005 Create `AccountId` (record wrapping `UUID`, `random()`), `Role` (`TRAINER`, `CLIENT`) and `Account` aggregate in `B/account/domain/model/`: `@Getter`, no setters; `static Account signUpTrainer(String name, Email email, String passwordHash, ZoneId timeZone)` enforcing name "Trimmed, 1–100 characters, no control characters (Unicode category `Cc`)" via `\p{Cc}`, role `TRAINER`, `emailConfirmed` false; a `restore(...)` factory for persistence
+- [X] T006 [P] Write `BT/account/domain/model/AccountTest.java` (`@Nested` per method): name trimmed, blank / 101 characters / line break rejected, new trainer is unconfirmed
+- [X] T007 [P] Create `BaseEntity` (`@MappedSuperclass`, `Instant createdAt` and `updatedAt` set by Hibernate, `@Version Long version`) in `B/common/infrastructure/output/BaseEntity.java`
+- [X] T008 [P] Write `R/db/migration/V1__create_accounts.sql` exactly as data-model.md "Table `accounts`": `pk_accounts`, `uq_accounts_email`, `ck_accounts_email_lower_case` (`email = lower(email)`), `ck_accounts_role` (`TRAINER`, `CLIENT`), `name varchar(100)`, `email varchar(254)`, `password_hash varchar(255)`, `role varchar(16)`, `time_zone varchar(64)`, `email_confirmed boolean`, `created_at`/`updated_at timestamptz`, `version bigint`, all not null
+- [X] T009 Create `AccountRepository` port (`save`, `Optional<Account> findByEmail(Email)`) in `B/account/domain/output/`, and `AccountEntity` (table `accounts`, `@Id UUID`, role as string), `JpaAccountRepository`, `AccountMapper` (MapStruct, typed ids and `ZoneId` ↔ string) and `AccountRepositoryImpl` (`@Repository`) in `B/account/infrastructure/output/`
+- [X] T010 Write `BT/account/infrastructure/output/AccountRepositoryImplIT.java` (`@DataJpaTest`, `TestcontainersConfiguration`): saves and finds by email given in another case; second account with the same email fails; `createdAt`, `updatedAt`, `version` set
+- [X] T011 Add the `local` profile: `R/application-local.yaml` with `spring.flyway.locations: classpath:db/migration,classpath:db/dev-data`; `backend/build.gradle.kts` `bootRun` passes `--spring.profiles.active=local`; `R/db/dev-data/R__demo_accounts.sql` inserts `demo.trainer@example.com` (confirmed) and `demo.unconfirmed@example.com` (unconfirmed) with a PBKDF2 hash of `Kinetiq-demo-1` (R1 parameters), `on conflict do nothing`; README: IntelliJ "Active profiles: local" and the demo accounts
+- [X] T012 Run `./gradlew check` and `./gradlew bootRun` (V1 and demo data applied, Hibernate validates); commit `feat(backend): add account model and first migration (#3)`
 
 ---
 
