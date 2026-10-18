@@ -60,11 +60,11 @@ description: "Tasks for story #2, Trainer signs up"
 
 **Goal**: Domain code sends mail only through a port; locally the link can be copied from the log.
 
-- [ ] T019 [P] Create `Mail` record (`Email to`, `String template`, `Locale locale`, `Map<String, String> values`) and `MailSender` port (`void send(Mail mail)`) in `B/common/domain/output/`
-- [ ] T020 Create `LoggingMailSender` (`@Component`) in `B/common/infrastructure/output/`: subject from `MessageSource` key `mail.<template>.subject`; with `kinetiq.mail.log-content=true` logs recipient, subject and `values.link` at INFO, otherwise logs only the template name (research R10a)
-- [ ] T021 [P] Add `R/messages.properties` and `R/messages_pl.properties` with `mail.confirm-email.subject` (`Confirm your Kinetiq account` / `Potwierdź konto w Kinetiq`) and `mail.account-exists.subject` (`You already have a Kinetiq account` / `Masz już konto w Kinetiq`); in `R/application.yaml` add `spring.messages.fallback-to-system-locale: false` and `kinetiq.app-url: ${KINETIQ_APP_URL:http://localhost:5173}`; in `R/application-local.yaml` add `kinetiq.mail.log-content: true`
-- [ ] T022 Write `BT/common/infrastructure/output/LoggingMailSenderTest.java` (`OutputCaptureExtension`): recipient and link logged only when `log-content` is on; Polish subject for `pl`
-- [ ] T023 Run `./gradlew check`; commit `feat(backend): add outgoing-mail port with logging adapter (#5)`
+- [X] T019 [P] Create `Mail` record (`Email to`, `String template`, `Locale locale`, `Map<String, String> values`) and `MailSender` port (`void send(Mail mail)`) in `B/common/domain/output/`
+- [X] T020 Create `LoggingMailSender` (`@Component`) in `B/common/infrastructure/output/`: subject from `MessageSource` key `mail.<template>.subject`; with `kinetiq.mail.log-content=true` logs recipient, subject and `values.link` at INFO, otherwise logs only the template name (research R10a)
+- [X] T021 [P] Add `R/messages.properties` and `R/messages_pl.properties` with `mail.confirm-email.subject` (`Confirm your Kinetiq account` / `Potwierdź konto w Kinetiq`) and `mail.account-exists.subject` (`You already have a Kinetiq account` / `Masz już konto w Kinetiq`); in `R/application.yaml` add `spring.messages.fallback-to-system-locale: false` and `kinetiq.app-url: ${KINETIQ_APP_URL:http://localhost:5173}`; in `R/application-local.yaml` add `kinetiq.mail.log-content: true`
+- [X] T022 Write `BT/common/infrastructure/output/LoggingMailSenderTest.java` (`OutputCaptureExtension`): recipient and link logged only when `log-content` is on; Polish subject for `pl`
+- [X] T023 Run `./gradlew check`; commit `feat(backend): add outgoing-mail port with logging adapter (#5)`
 
 **Checkpoint**: foundation ready; stories can start.
 

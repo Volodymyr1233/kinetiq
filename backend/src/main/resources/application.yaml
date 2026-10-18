@@ -11,9 +11,16 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+  messages:
+    # an unsupported language falls back to messages.properties (English), not to the server's locale
+    fallback-to-system-locale: false
   docker:
     compose:
       lifecycle-management: start_only
+
+kinetiq:
+  # where links in emails point to
+  app-url: ${KINETIQ_APP_URL:http://localhost:5173}
 
 management:
   endpoints:
