@@ -5,9 +5,26 @@ import { NotFoundPage } from '@/app/not-found-page'
 // area chunks are tiny, so a blank frame while one loads beats a flashing spinner
 const BlankWhileLoading = () => null
 
-// each area is its own chunk, downloaded on the first visit
+// each area and the account pages are their own chunks, downloaded on the first visit
 export const routes: RouteObject[] = [
   { path: '/', Component: HomePage },
+  {
+    path: '/sign-up',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/sign-up-page')).SignUpPage,
+    },
+  },
+  {
+    path: '/confirm-email',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/confirm-email-page'))
+          .ConfirmEmailPage,
+    },
+  },
   {
     path: '/trainer',
     HydrateFallback: BlankWhileLoading,

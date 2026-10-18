@@ -47,5 +47,52 @@
     "account": {
       "confirmation-link-invalid": "This link no longer works. Request a new one."
     }
+  },
+  "account": {
+    "passwordRules": "8–128 characters with at least one lower-case letter, one upper-case letter, one digit and one special character.",
+    "errors": {
+      "name": "Enter your name.",
+      "nameLength": "Use 100 characters or fewer.",
+      "email": "Enter an email like name@example.com.",
+      "adult": "Confirm that you are 18 or older."
+    },
+    "signIn": "Sign in",
+    "signUp": {
+      "title": "Create your trainer account",
+      "description": "Your clients join later, from your invite.",
+      "name": "Name",
+      "namePlaceholder": "e.g. Marek Nowak",
+      "email": "Email",
+      "emailPlaceholder": "e.g. marek@example.com",
+      "password": "Password",
+      "showPassword": "Show password",
+      "hidePassword": "Hide password",
+      "adult": "I am 18 or older",
+      "submit": "Create account",
+      "haveAccount": "Have an account?"
+    },
+    "checkEmail": {
+      "title": "Check your email",
+      "description": "We sent a link to <strong>{{email}}</strong>. Open it to confirm your account.",
+      "resend": "Resend link",
+      "hint": "No email? Check your spam folder first.",
+      "resent": "Sent again. You can send another link in a minute.",
+      "wrongEmail": "Wrong email?",
+      "changeIt": "Change it"
+    },
+    "confirming": {
+      "title": "Confirming your email"
+    },
+    "confirmed": {
+      "title": "Email confirmed",
+      "description": "Your trainer account is ready. Sign in to start."
+    },
+    "expired": {
+      "title": "This link no longer works",
+      "description": "Confirmation links work once and expire after 24 hours. Enter your email to get a new one.",
+      "email": "Email",
+      "submit": "Send new link",
+      "alreadyConfirmed": "Already confirmed?"
+    }
   }
 }
