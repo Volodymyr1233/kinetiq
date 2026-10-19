@@ -16,6 +16,13 @@
     "en": "English",
     "pl": "Polski"
   },
+  "nav": {
+    "clients": "Clients",
+    "approvals": "Approvals",
+    "messages": "Messages",
+    "exercises": "Exercise library",
+    "settings": "Settings"
+  },
   "areas": {
     "trainer": "Trainer area",
     "client": "Client area"

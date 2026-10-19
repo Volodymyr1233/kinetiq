@@ -4,5 +4,9 @@ import { PlaceholderPage } from '@/app/placeholder-page'
 export function ClientArea() {
   const { t } = useTranslation()
 
-  return <PlaceholderPage title={t('areas.client')} />
+  return (
+    <main>
+      <PlaceholderPage title={t('areas.client')} />
+    </main>
+  )
 }
