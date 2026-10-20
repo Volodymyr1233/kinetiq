@@ -29,7 +29,7 @@ export function problem(status: number, body: object) {
 
 export function renderPage(page: ReactNode) {
   const client = new QueryClient({
-    defaultOptions: { mutations: { retry: false } },
+    defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })
   return render(
     <StrictMode>

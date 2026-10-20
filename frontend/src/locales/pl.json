@@ -104,5 +104,65 @@
       "submit": "Wyślij nowy link",
       "alreadyConfirmed": "Konto już potwierdzone?"
     }
+  },
+  "exercises": {
+    "title": "Biblioteka ćwiczeń",
+    "count_one": "{{shown, number}} z {{count, number}} ćwiczenia",
+    "count_few": "{{shown, number}} z {{count, number}} ćwiczeń",
+    "count_many": "{{shown, number}} z {{count, number}} ćwiczeń",
+    "count_other": "{{shown, number}} z {{count, number}} ćwiczenia",
+    "loading": "Wczytywanie ćwiczeń",
+    "categoryFilter": "Kategoria",
+    "categories": {
+      "ALL": "Wszystkie",
+      "CHEST": "Klatka piersiowa",
+      "BACK": "Plecy",
+      "LEGS": "Nogi",
+      "SHOULDERS": "Barki",
+      "ARMS": "Ramiona",
+      "CORE": "Core",
+      "FULL_BODY": "Całe ciało",
+      "CARDIO": "Cardio",
+      "MOBILITY": "Mobilność"
+    },
+    "search": {
+      "label": "Szukaj ćwiczeń",
+      "placeholder": "Szukaj ćwiczeń"
+    },
+    "columns": {
+      "exercise": "Ćwiczenie",
+      "category": "Kategoria",
+      "equipment": "Sprzęt",
+      "default": "Domyślnie",
+      "plans": "W planach"
+    },
+    "default": {
+      "reps": "{{sets, number}} × {{amount, number}}",
+      "seconds": "{{sets, number}} × {{amount, number}} s"
+    },
+    "plans": {
+      "count_one": "{{count, number}} plan",
+      "count_few": "{{count, number}} plany",
+      "count_many": "{{count, number}} planów",
+      "count_other": "{{count, number}} planu",
+      "notUsed": "Nieużywane"
+    },
+    "detail": {
+      "equipment": "Sprzęt",
+      "default": "Domyślnie",
+      "rest": "Przerwa",
+      "restSeconds": "{{seconds, number}} s",
+      "plansUsing": "W planach",
+      "notUsedYet": "Jeszcze nieużywane",
+      "cues": "Wskazówki"
+    },
+    "empty": {
+      "title": "Brak pasujących ćwiczeń",
+      "body": "Spróbuj innej nazwy lub kategorii.",
+      "clear": "Wyczyść filtry"
+    },
+    "error": {
+      "retry": "Spróbuj ponownie"
+    }
   }
 }
