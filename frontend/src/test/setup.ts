@@ -12,6 +12,13 @@ window.matchMedia ??= (query) =>
     removeEventListener: () => {},
   }) as unknown as MediaQueryList
 
+// jsdom has no ResizeObserver; Radix measures some controls with it
+globalThis.ResizeObserver ??= class {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()

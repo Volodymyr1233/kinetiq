@@ -31,6 +31,8 @@ const buttonVariants = cva(
         "icon-sm":
           "size-8 rounded-[min(var(--radius-md),10px)] in-data-[slot=button-group]:rounded-md",
         "icon-lg": "size-10",
+        // Kinetiq: 48px for account pages and client logging
+        touch: "h-(--control-h-touch) gap-2 px-6 text-base",
       },
     },
     defaultVariants: {

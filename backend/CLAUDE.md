@@ -53,6 +53,17 @@ When a new structural rule is agreed, add it to that test.
 
 Names come from `CONTEXT.md` at the repository root.
 
+## Java
+
+Use the current language and its idioms.
+
+- Records for ids, value objects, commands, requests, responses and other data carriers.
+- Immutable by default: `final` fields, unmodifiable collections (`List.of`, `Map.copyOf`, `Stream.toList()`), defensive copies in record constructors. Only aggregates change state, through their methods.
+- `Optional` for a result that may be absent, never `null`. Not for fields or parameters.
+- Streams for transforming collections; a loop when it reads better.
+- Pattern matching for `instanceof` and `switch`, switch expressions, text blocks, `var` when the type is plain from the right-hand side.
+- Virtual threads are on (`spring.threads.virtual.enabled`): write plain blocking code. No reactive types, and no sized pools for blocking work: use `Executors.newVirtualThreadPerTaskExecutor()`.
+
 ## Domain
 
 - Use cases take typed ids and command records and return domain objects. Never pass request DTOs or JPA entities into the domain.
@@ -74,7 +85,7 @@ Names come from `CONTEXT.md` at the repository root.
 - Entities extend a shared base with `createdAt`, `updatedAt` and `@Version` once the first entity needs it.
 - Enums are stored as strings. Associations are lazy; fetch what a use case needs with an entity graph or a query.
 - Schema changes are Flyway migrations in `src/main/resources/db/migration`, `V<n>__snake_case.sql`, written by hand with named constraints. Never edit a migration that has been merged. Hibernate only validates (`ddl-auto: validate`).
-- Development seed data goes in a separate Flyway location used only locally. Never put credentials or real personal data in SQL.
+- Demo data goes in `src/main/resources/db/dev-data` as repeatable migrations (`R__*.sql`, idempotent inserts). Only the `local` profile adds that location, so tests and production never run it. Never put real credentials or real personal data in SQL.
 
 ## Web
 
@@ -119,8 +130,8 @@ Fakes for output ports live in test sources next to the tests that use them; mov
 
 Run in `backend/`. Docker must be running for both.
 
-- `./gradlew bootRun`: starts the API on `:8080` and PostgreSQL from the root `compose.yaml` (port `15432`, database, user and password `kinetiq`).
+- `./gradlew bootRun`: starts the API on `:8080` with the `local` profile, and PostgreSQL from the root `compose.yaml` (port `15432`, database, user and password `kinetiq`).
 - `./gradlew check`: compiles and runs every test, including the architecture rules. Must pass before a commit.
 - `./gradlew test --tests '<pattern>'`: a subset.
 
-When running from the IDE, keep the working directory at the repository root so `compose.yaml` is found.
+When running from the IDE, keep the working directory at the repository root so `compose.yaml` is found, set the active profile to `local`, and turn off launch optimization, as `bootRun` does: its C1-only JIT makes password hashing several times slower.

@@ -13,10 +13,27 @@ const trainerPlaceholder = (path: string): RouteObject => ({
   },
 })
 
-// each area is its own chunk, downloaded on the first visit; a router consumes
-// the lazy objects it loads, so every router needs fresh routes
+// each area and the account pages are their own chunks, downloaded on the first
+// visit; a router consumes the lazy objects it loads, so every router needs fresh routes
 export const createRoutes = (): RouteObject[] => [
   { path: '/', Component: HomePage },
+  {
+    path: '/sign-up',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/sign-up-page')).SignUpPage,
+    },
+  },
+  {
+    path: '/confirm-email',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/confirm-email-page'))
+          .ConfirmEmailPage,
+    },
+  },
   {
     path: '/trainer',
     HydrateFallback: BlankWhileLoading,

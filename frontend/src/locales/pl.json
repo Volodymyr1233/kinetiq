@@ -34,5 +34,72 @@
     "title": "Nie znaleziono strony",
     "body": "Sprawdź adres albo wróć na stronę główną.",
     "action": "Przejdź na stronę główną"
+  },
+  "errors": {
+    "generic": "Coś poszło nie tak. Spróbuj ponownie.",
+    "validation": {
+      "failed": "Niektóre dane są nieprawidłowe. Sprawdź je i spróbuj ponownie."
+    },
+    "request": {
+      "invalid": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
+      "not-found": "Ta strona nie istnieje. Sprawdź adres.",
+      "method-not-allowed": "Ta czynność jest niedostępna. Odśwież stronę i spróbuj ponownie.",
+      "unsupported-media-type": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
+      "unauthenticated": "Zaloguj się, aby kontynuować.",
+      "forbidden": "Sesja wygasła. Odśwież stronę i spróbuj ponownie."
+    },
+    "internal": {
+      "error": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę."
+    },
+    "account": {
+      "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy."
+    }
+  },
+  "account": {
+    "passwordRules": "Od 8 do 128 znaków, w tym co najmniej jedna mała litera, jedna wielka litera, jedna cyfra i jeden znak specjalny.",
+    "errors": {
+      "name": "Podaj imię i nazwisko.",
+      "nameLength": "Użyj najwyżej 100 znaków.",
+      "email": "Podaj e-mail w formacie nazwa@example.com.",
+      "adult": "Potwierdź, że masz co najmniej 18 lat."
+    },
+    "signIn": "Zaloguj się",
+    "signUp": {
+      "title": "Załóż konto trenera",
+      "description": "Twoi klienci dołączą później, z Twojego zaproszenia.",
+      "name": "Imię i nazwisko",
+      "namePlaceholder": "np. Marek Nowak",
+      "email": "E-mail",
+      "emailPlaceholder": "np. marek@example.com",
+      "password": "Hasło",
+      "showPassword": "Pokaż hasło",
+      "hidePassword": "Ukryj hasło",
+      "adult": "Mam co najmniej 18 lat",
+      "submit": "Załóż konto",
+      "haveAccount": "Masz już konto?"
+    },
+    "checkEmail": {
+      "title": "Sprawdź skrzynkę e-mail",
+      "description": "Wysłaliśmy link na adres <strong>{{email}}</strong>. Otwórz go, aby potwierdzić konto.",
+      "resend": "Wyślij link ponownie",
+      "hint": "Nie widzisz wiadomości? Najpierw sprawdź folder spam.",
+      "resent": "Wysłano ponownie. Kolejny link możesz wysłać za minutę.",
+      "wrongEmail": "Zły adres?",
+      "changeIt": "Zmień go"
+    },
+    "confirming": {
+      "title": "Potwierdzamy Twój e-mail"
+    },
+    "confirmed": {
+      "title": "E-mail potwierdzony",
+      "description": "Twoje konto trenera jest gotowe. Zaloguj się, aby zacząć."
+    },
+    "expired": {
+      "title": "Ten link już nie działa",
+      "description": "Link potwierdzający działa raz i wygasa po 24 godzinach. Podaj e-mail, aby dostać nowy.",
+      "email": "E-mail",
+      "submit": "Wyślij nowy link",
+      "alreadyConfirmed": "Konto już potwierdzone?"
+    }
   }
 }

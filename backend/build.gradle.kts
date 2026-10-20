@@ -60,4 +60,7 @@ tasks.withType<Test> {
 // run from the repository root, like the IDE does, so compose.yaml is found there
 tasks.bootRun {
     workingDir = rootDir.parentFile
+    args("--spring.profiles.active=local")
+    // the default C1-only JIT runs the 600,000-iteration password hash several times slower
+    optimizedLaunch = false
 }

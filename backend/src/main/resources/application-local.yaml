@@ -1,0 +1,9 @@
+# set by bootRun and the IDE run configuration; tests and production run without it
+spring:
+  flyway:
+    locations: classpath:db/migration,classpath:db/dev-data
+
+kinetiq:
+  mail:
+    # lets a developer copy the confirmation link from the log
+    log-content: true

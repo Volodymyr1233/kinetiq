@@ -13,7 +13,7 @@ import com.tngtech.archunit.lang.ArchRule;
 import com.tngtech.archunit.lang.ConditionEvents;
 import com.tngtech.archunit.lang.SimpleConditionEvent;
 
-/** package rules from backend/CLAUDE.md: com.kinetiq.&lt;feature&gt;.{domain,infrastructure}, "common" is the shared kernel */
+/** Package rules from {@code backend/CLAUDE.md}: {@code com.kinetiq.<feature>.{domain,infrastructure}}, with {@code common} as the shared kernel. */
 @AnalyzeClasses(packages = "com.kinetiq", importOptions = ImportOption.DoNotIncludeTests.class)
 class HexagonalArchitectureTest {
 
@@ -84,7 +84,7 @@ class HexagonalArchitectureTest {
         };
     }
 
-    /** com.kinetiq.plan.domain.model -> "plan" */
+    /** Returns the feature a class belongs to, e.g. {@code plan} for {@code com.kinetiq.plan.domain.model}. */
     private static String featureOf(JavaClass javaClass) {
         String[] segments = javaClass.getPackageName().split("\\.");
         return segments.length > 2 ? segments[2] : "";
