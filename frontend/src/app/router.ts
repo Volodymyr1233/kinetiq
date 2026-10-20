@@ -53,7 +53,15 @@ export const createRoutes = (): RouteObject[] => [
       trainerPlaceholder('clients'),
       trainerPlaceholder('approvals'),
       trainerPlaceholder('messages'),
-      trainerPlaceholder('exercises'),
+      {
+        path: 'exercises',
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/exercise/pages/exercise-library-page'))
+              .ExerciseLibraryPage,
+        },
+      },
       trainerPlaceholder('settings'),
     ],
   },

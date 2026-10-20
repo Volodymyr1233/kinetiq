@@ -104,5 +104,61 @@
       "submit": "Send new link",
       "alreadyConfirmed": "Already confirmed?"
     }
+  },
+  "exercises": {
+    "title": "Exercise library",
+    "count_one": "{{shown, number}} of {{count, number}} exercise",
+    "count_other": "{{shown, number}} of {{count, number}} exercises",
+    "loading": "Loading exercises",
+    "categoryFilter": "Category",
+    "categories": {
+      "ALL": "All",
+      "CHEST": "Chest",
+      "BACK": "Back",
+      "LEGS": "Legs",
+      "SHOULDERS": "Shoulders",
+      "ARMS": "Arms",
+      "CORE": "Core",
+      "FULL_BODY": "Full body",
+      "CARDIO": "Cardio",
+      "MOBILITY": "Mobility"
+    },
+    "search": {
+      "label": "Search exercises",
+      "placeholder": "Search exercises"
+    },
+    "columns": {
+      "exercise": "Exercise",
+      "category": "Category",
+      "equipment": "Equipment",
+      "default": "Default",
+      "plans": "In plans"
+    },
+    "default": {
+      "reps": "{{sets, number}} × {{amount, number}}",
+      "seconds": "{{sets, number}} × {{amount, number}} s"
+    },
+    "plans": {
+      "count_one": "{{count, number}} plan",
+      "count_other": "{{count, number}} plans",
+      "notUsed": "Not used"
+    },
+    "detail": {
+      "equipment": "Equipment",
+      "default": "Default",
+      "rest": "Rest",
+      "restSeconds": "{{seconds, number}} s",
+      "plansUsing": "In plans",
+      "notUsedYet": "Not used yet",
+      "cues": "Cues"
+    },
+    "empty": {
+      "title": "No exercises match",
+      "body": "Try another name or category.",
+      "clear": "Clear filters"
+    },
+    "error": {
+      "retry": "Try again"
+    }
   }
 }
