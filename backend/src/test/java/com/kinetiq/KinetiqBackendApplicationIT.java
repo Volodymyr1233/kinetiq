@@ -10,6 +10,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 /** Whole application against a real database, checking the security defaults. */
@@ -33,6 +34,25 @@ class KinetiqBackendApplicationIT {
     @Test
     void shouldRejectRequest_whenCallerIsAnonymous() {
         assertThat(mvc.get().uri("/api/v1/anything")).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void shouldHideExerciseLibrary_whenCallerIsAnonymous() {
+        var result = mvc.get().uri("/api/v1/exercises").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.unauthenticated");
+        assertThat(result).bodyJson().doesNotHavePath("$.exercises");
+    }
+
+    @Test
+    @WithMockUser
+    void shouldListStarterExercises_whenCallerIsSignedIn() {
+        assertThat(mvc.get().uri("/api/v1/exercises"))
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.total")
+                .isEqualTo(40);
     }
 
     @Test
