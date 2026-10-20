@@ -46,7 +46,7 @@ cd frontend && npm run check
 
 ## IntelliJ IDEA
 
-Open the repository root, not `backend/`. Then open `backend/build.gradle.kts` and choose **Load Gradle Project**. Set the project SDK and the Gradle JVM to JDK 25. In the run configuration of `KinetiqBackendApplication`, set **Active profiles** to `local` and the working directory to the repository root.
+Open the repository root, not `backend/`. Then open `backend/build.gradle.kts` and choose **Load Gradle Project**. Set the project SDK and the Gradle JVM to JDK 25. In the run configuration of `KinetiqBackendApplication`, set **Active profiles** to `local`, the working directory to the repository root, and clear **Enable launch optimization** (its C1-only JIT makes sign-up take several seconds).
 
 ## Where things are written down
 

@@ -61,4 +61,6 @@ tasks.withType<Test> {
 tasks.bootRun {
     workingDir = rootDir.parentFile
     args("--spring.profiles.active=local")
+    // the default C1-only JIT runs the 600,000-iteration password hash several times slower
+    optimizedLaunch = false
 }
