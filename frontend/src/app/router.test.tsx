@@ -1,19 +1,19 @@
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { routes } from '@/app/router'
+import { createRoutes } from '@/app/router'
 
 function renderAt(path: string) {
   render(
     <RouterProvider
-      router={createMemoryRouter(routes, { initialEntries: [path] })}
+      router={createMemoryRouter(createRoutes(), { initialEntries: [path] })}
     />,
   )
 }
 
 describe('routes', () => {
   it.each([
-    ['/trainer', 'Trainer area'],
+    ['/trainer', 'Clients'],
     ['/app', 'Client area'],
   ])('loads the area at %s', async (path, heading) => {
     renderAt(path)

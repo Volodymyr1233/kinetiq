@@ -16,6 +16,13 @@
     "en": "English",
     "pl": "Polski"
   },
+  "nav": {
+    "clients": "Klienci",
+    "approvals": "Akceptacje",
+    "messages": "Wiadomości",
+    "exercises": "Biblioteka ćwiczeń",
+    "settings": "Ustawienia"
+  },
   "areas": {
     "trainer": "Panel trenera",
     "client": "Panel klienta"

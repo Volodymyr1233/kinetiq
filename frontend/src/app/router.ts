@@ -1,12 +1,21 @@
-import { createBrowserRouter, type RouteObject } from 'react-router'
+import { createBrowserRouter, redirect, type RouteObject } from 'react-router'
 import { HomePage } from '@/app/home-page'
 import { NotFoundPage } from '@/app/not-found-page'
 
 // area chunks are tiny, so a blank frame while one loads beats a flashing spinner
 const BlankWhileLoading = () => null
 
-// each area and the account pages are their own chunks, downloaded on the first visit
-export const routes: RouteObject[] = [
+const trainerPlaceholder = (path: string): RouteObject => ({
+  path,
+  lazy: {
+    Component: async () =>
+      (await import('@/app/trainer-area')).TrainerPlaceholder,
+  },
+})
+
+// each area and the account pages are their own chunks, downloaded on the first
+// visit; a router consumes the lazy objects it loads, so every router needs fresh routes
+export const createRoutes = (): RouteObject[] => [
   { path: '/', Component: HomePage },
   {
     path: '/sign-up',
@@ -31,6 +40,14 @@ export const routes: RouteObject[] = [
     lazy: {
       Component: async () => (await import('@/app/trainer-area')).TrainerArea,
     },
+    children: [
+      { index: true, loader: () => redirect('/trainer/clients') },
+      trainerPlaceholder('clients'),
+      trainerPlaceholder('approvals'),
+      trainerPlaceholder('messages'),
+      trainerPlaceholder('exercises'),
+      trainerPlaceholder('settings'),
+    ],
   },
   {
     path: '/app',
@@ -42,4 +59,4 @@ export const routes: RouteObject[] = [
   { path: '*', Component: NotFoundPage },
 ]
 
-export const router = createBrowserRouter(routes)
+export const router = createBrowserRouter(createRoutes())

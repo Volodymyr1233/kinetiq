@@ -24,4 +24,9 @@ export default defineConfig([
     files: ['src/components/ui/**'],
     rules: { 'react-refresh/only-export-components': 'off' },
   },
+  {
+    // CLI-managed shadcn hook, kept as upstream ships it
+    files: ['src/hooks/use-mobile.ts'],
+    rules: { 'react-hooks/set-state-in-effect': 'off' },
+  },
 ])
