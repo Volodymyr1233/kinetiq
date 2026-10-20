@@ -21,7 +21,10 @@
     "approvals": "Akceptacje",
     "messages": "Wiadomości",
     "exercises": "Biblioteka ćwiczeń",
-    "settings": "Ustawienia"
+    "settings": "Ustawienia",
+    "today": "Dzisiaj",
+    "plan": "Plan",
+    "progress": "Postępy"
   },
   "areas": {
     "trainer": "Panel trenera",

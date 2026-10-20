@@ -21,7 +21,10 @@
     "approvals": "Approvals",
     "messages": "Messages",
     "exercises": "Exercise library",
-    "settings": "Settings"
+    "settings": "Settings",
+    "today": "Today",
+    "plan": "Plan",
+    "progress": "Progress"
   },
   "areas": {
     "trainer": "Trainer area",

@@ -13,6 +13,14 @@ const trainerPlaceholder = (path: string): RouteObject => ({
   },
 })
 
+const clientPlaceholder = (path: string): RouteObject => ({
+  path,
+  lazy: {
+    Component: async () =>
+      (await import('@/app/client-area')).ClientPlaceholder,
+  },
+})
+
 // each area and the account pages are their own chunks, downloaded on the first
 // visit; a router consumes the lazy objects it loads, so every router needs fresh routes
 export const createRoutes = (): RouteObject[] => [
@@ -55,6 +63,13 @@ export const createRoutes = (): RouteObject[] => [
     lazy: {
       Component: async () => (await import('@/app/client-area')).ClientArea,
     },
+    children: [
+      { index: true, loader: () => redirect('/app/today') },
+      clientPlaceholder('today'),
+      clientPlaceholder('plan'),
+      clientPlaceholder('progress'),
+      clientPlaceholder('messages'),
+    ],
   },
   { path: '*', Component: NotFoundPage },
 ]
