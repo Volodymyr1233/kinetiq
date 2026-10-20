@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/exercises": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listExercises"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/csrf": {
         parameters: {
             query?: never;
@@ -84,6 +100,30 @@ export interface components {
             password: string;
             adult?: boolean;
             timeZone: string;
+        };
+        ExerciseListResponse: {
+            /** Format: int32 */
+            total: number;
+            exercises: components["schemas"]["ExerciseResponse"][];
+        };
+        ExerciseResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            category: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
+            equipment: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            /** Format: int32 */
+            sets: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            restSeconds: number;
+            cues: string;
+            /** Format: int32 */
+            plansUsing: number;
         };
     };
     responses: never;
@@ -157,6 +197,29 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    listExercises: {
+        parameters: {
+            query?: {
+                category?: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
+                name?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExerciseListResponse"];
+                };
             };
         };
     };
