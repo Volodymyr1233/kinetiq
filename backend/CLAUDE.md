@@ -134,4 +134,4 @@ Run in `backend/`. Docker must be running for both.
 - `./gradlew check`: compiles and runs every test, including the architecture rules. Must pass before a commit.
 - `./gradlew test --tests '<pattern>'`: a subset.
 
-When running from the IDE, keep the working directory at the repository root so `compose.yaml` is found, and set the active profile to `local`.
+When running from the IDE, keep the working directory at the repository root so `compose.yaml` is found, set the active profile to `local`, and turn off launch optimization, as `bootRun` does: its C1-only JIT makes password hashing several times slower.
