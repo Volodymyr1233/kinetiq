@@ -55,6 +55,17 @@ The catalogue of exercises a trainer picks from when building a plan: the starte
 An exercise every trainer sees and nobody can edit.
 _Avoid_: Default exercise, system exercise
 
+**Category**:
+The group an exercise belongs to: Chest, Back, Legs, Shoulders, Arms, Core, Full body, Cardio or Mobility.
+_Avoid_: Muscle group
+
+**Measure**:
+What an exercise counts: repetitions or seconds.
+
+**Cues**:
+Short coaching instructions for doing an exercise well.
+_Avoid_: Description, notes
+
 **Set**:
 One continuous run of repetitions of an exercise.
 _Avoid_: Series
