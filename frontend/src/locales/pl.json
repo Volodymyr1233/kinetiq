@@ -164,5 +164,8 @@
     "error": {
       "retry": "Spróbuj ponownie"
     }
+  },
+  "quiz": {
+    "characterCount": "{{count}} z {{max}} znaków"
   }
 }
