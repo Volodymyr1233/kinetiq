@@ -160,5 +160,8 @@
     "error": {
       "retry": "Try again"
     }
+  },
+  "quiz": {
+    "characterCount": "{{count}} of {{max}} characters"
   }
 }
