@@ -26,6 +26,14 @@ const clientPlaceholder = (path: string): RouteObject => ({
 export const createRoutes = (): RouteObject[] => [
   { path: '/', Component: HomePage },
   {
+    path: '/sign-in',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/sign-in-page')).SignInPage,
+    },
+  },
+  {
     path: '/sign-up',
     HydrateFallback: BlankWhileLoading,
     lazy: {

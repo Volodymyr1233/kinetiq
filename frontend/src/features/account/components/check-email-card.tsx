@@ -1,15 +1,11 @@
 import { MailIcon } from 'lucide-react'
-import { useEffect, useState } from 'react'
 import { Trans, useTranslation } from 'react-i18next'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
-import { useRequestConfirmationLink } from '../api/account'
+import { useResendLink } from '../use-resend-link'
 import { AuthCard, AuthFooter } from './auth-layout'
-
-// matches the backend's one email per account per minute
-const RESEND_LOCK_MS = 60_000
 
 type CheckEmailCardProps = {
   email: string
@@ -18,14 +14,7 @@ type CheckEmailCardProps = {
 
 export function CheckEmailCard({ email, onChangeEmail }: CheckEmailCardProps) {
   const { t } = useTranslation()
-  const resend = useRequestConfirmationLink()
-  const [locked, setLocked] = useState(false)
-
-  useEffect(() => {
-    if (!locked) return
-    const timer = setTimeout(() => setLocked(false), RESEND_LOCK_MS)
-    return () => clearTimeout(timer)
-  }, [locked])
+  const { request: resend, locked, send } = useResendLink()
 
   return (
     <>
@@ -59,9 +48,7 @@ export function CheckEmailCard({ email, onChangeEmail }: CheckEmailCardProps) {
             className="w-full"
             disabled={resend.isPending || locked}
             aria-busy={resend.isPending}
-            onClick={() =>
-              resend.mutate(email, { onSuccess: () => setLocked(true) })
-            }
+            onClick={() => send(email)}
           >
             {resend.isPending && (
               <Spinner data-icon="inline-start" aria-hidden="true" />

@@ -65,12 +65,38 @@
   "account": {
     "passwordRules": "8–128 characters with at least one lower-case letter, one upper-case letter, one digit and one special character.",
     "errors": {
+      "signInEmail": "Enter your email.",
+      "signInPassword": "Enter your password.",
       "name": "Enter your name.",
       "nameLength": "Use 100 characters or fewer.",
       "email": "Enter an email like name@example.com.",
       "adult": "Confirm that you are 18 or older."
     },
     "signIn": "Sign in",
+    "signOut": "Sign out",
+    "roles": {
+      "TRAINER": "Trainer",
+      "CLIENT": "Client"
+    },
+    "signInPage": {
+      "title": "Sign in",
+      "description": "Trainers and clients sign in here.",
+      "email": "Email",
+      "emailPlaceholder": "e.g. anna@example.com",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "wrongTitle": "Email or password is wrong.",
+      "wrongBody": "Check both and try again.",
+      "lockedTitle": "Too many attempts.",
+      "lockedBody_one": "Try again in {{count}} minute.",
+      "lockedBody_other": "Try again in {{count}} minutes.",
+      "unconfirmedTitle": "Confirm your email",
+      "unconfirmedBody": "We sent a link to <strong>{{email}}</strong>. Open it, then sign in.",
+      "resend": "Resend link",
+      "resent": "Link sent again.",
+      "newTrainer": "New trainer? <signUp>Create an account</signUp>. Clients join from their trainer's invite."
+    },
     "signUp": {
       "title": "Create your trainer account",
       "description": "Your clients join later, from your invite.",

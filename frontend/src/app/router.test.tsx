@@ -1,33 +1,28 @@
-import { render, screen } from '@testing-library/react'
-import { createMemoryRouter, RouterProvider } from 'react-router'
+import { screen } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
-import { createRoutes } from '@/app/router'
-
-function renderAt(path: string) {
-  render(
-    <RouterProvider
-      router={createMemoryRouter(createRoutes(), { initialEntries: [path] })}
-    />,
-  )
-}
+import { renderAppAt, SIGNED_IN } from '@/test/page'
 
 describe('routes', () => {
   it.each([
-    ['/trainer', 'Clients'],
-    ['/app', 'Today'],
-    ['/app/quiz', 'What do you train for?'],
-  ])('loads the area at %s', async (path, heading) => {
-    renderAt(path)
+    ['/trainer', SIGNED_IN.TRAINER, 'Clients'],
+    ['/app', SIGNED_IN.CLIENT, 'Today'],
+    ['/app/quiz', SIGNED_IN.CLIENT, 'What do you train for?'],
+  ])('loads the area at %s', async (path, account, heading) => {
+    renderAppAt(path, account)
 
     expect(
       await screen.findByRole('heading', { name: heading }),
     ).toBeInTheDocument()
   })
 
-  it.each(['/nowhere', '/trainer/nowhere', '/app/nowhere'])(
+  it.each([
+    ['/nowhere', null],
+    ['/trainer/nowhere', SIGNED_IN.TRAINER],
+    ['/app/nowhere', SIGNED_IN.CLIENT],
+  ])(
     'shows the not-found page with a way back at %s',
-    async (path) => {
-      renderAt(path)
+    async (path, account) => {
+      renderAppAt(path, account)
 
       expect(
         await screen.findByRole('heading', { name: 'Page not found' }),
