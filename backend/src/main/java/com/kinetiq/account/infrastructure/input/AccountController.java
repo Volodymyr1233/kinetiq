@@ -5,6 +5,7 @@ import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.time.ZoneId;
 import java.util.Locale;
@@ -22,11 +23,18 @@ import org.springframework.web.bind.annotation.RestController;
 class AccountController {
 
     private final SignUpUseCase signUp;
+    private final SourceAddressLimiter limiter;
 
-    /** Answers {@code 202} whether or not the email already had an account. */
+    /**
+     * Answers {@code 202} whether or not the email already had an account, and also when the address made too many
+     * sign-ups, which then creates nothing.
+     */
     @PostMapping("/accounts")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    void signUp(@Valid @RequestBody SignUpRequest request, Locale locale) {
+    void signUp(@Valid @RequestBody SignUpRequest request, Locale locale, HttpServletRequest http) {
+        if (!limiter.tryAcquire(SourceAddressLimiter.Kind.SIGN_UP, http.getRemoteAddr())) {
+            return;
+        }
         signUp.signUpTrainer(new SignUpTrainerCommand(
                 request.name(),
                 new Email(request.email()),
@@ -41,10 +49,14 @@ class AccountController {
         signUp.confirmEmail(request.token());
     }
 
-    /** Answers {@code 202} whatever the email. */
+    /** Answers {@code 202} whatever the email, and also when the address asked too often, which then sends nothing. */
     @PostMapping("/confirmation-links")
     @ResponseStatus(HttpStatus.ACCEPTED)
-    void sendConfirmationLink(@Valid @RequestBody ConfirmationLinkRequest request, Locale locale) {
+    void sendConfirmationLink(
+            @Valid @RequestBody ConfirmationLinkRequest request, Locale locale, HttpServletRequest http) {
+        if (!limiter.tryAcquire(SourceAddressLimiter.Kind.CONFIRMATION_LINK, http.getRemoteAddr())) {
+            return;
+        }
         signUp.sendConfirmationLink(new Email(request.email()), locale);
     }
 

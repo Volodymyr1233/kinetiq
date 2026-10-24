@@ -10,6 +10,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 import com.kinetiq.account.domain.exception.CredentialsInvalidException;
 import com.kinetiq.account.domain.exception.EmailNotConfirmedException;
+import com.kinetiq.account.domain.exception.SignInLockedException;
 import com.kinetiq.account.domain.input.SignInCommand;
 import com.kinetiq.account.domain.input.SignInUseCase;
 import com.kinetiq.account.domain.model.Account;
@@ -18,6 +19,7 @@ import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.infrastructure.config.SecurityConfig;
 import com.kinetiq.common.infrastructure.config.WebConfig;
+import java.time.Duration;
 import java.time.ZoneId;
 import java.util.Map;
 import java.util.UUID;
@@ -136,6 +138,17 @@ class SignInControllerTest {
 
             assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
             assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("account.email-not-confirmed");
+        }
+
+        @Test
+        void shouldAnswerTooManyRequestsWithTimeLeft_whenEmailIsLocked() {
+            when(signIn.signIn(any())).thenThrow(new SignInLockedException(Duration.ofSeconds(839, 1)));
+
+            var result = signIn(Map.of("email", "marek@example.com", "password", "Kinetiq-2026"));
+
+            assertThat(result).hasStatus(HttpStatus.TOO_MANY_REQUESTS);
+            assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("account.sign-in-locked");
+            assertThat(result).bodyJson().extractingPath("$.retryAfterSeconds").isEqualTo(840);
         }
 
         @Test
