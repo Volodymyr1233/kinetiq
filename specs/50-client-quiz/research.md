@@ -4,7 +4,7 @@ Each entry: decision, reason, alternatives.
 
 ## R1 — Frontend only, feature `quiz`
 
-**Decision**: Tasks #52 and #51 touch only `frontend/`, in a new feature folder `features/quiz/`. The backend feature of task #55 will use the same name. Task #53 reads the quiz status from the API of task #55 and adds no endpoint of its own.
+**Decision**: Tasks #52 and #51 touch only `frontend/`, in a new feature folder `features/quiz/`. The backend feature of task #55 will use the same name. Task #53 reads the quiz status from the API of story #54 and adds no endpoint of its own.
 
 **Why**: The spec keeps answers in the browser until story #54 submits them. The folder name follows `CONTEXT.md`'s term "Quiz".
 

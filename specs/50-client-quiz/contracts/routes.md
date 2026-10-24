@@ -20,6 +20,6 @@ The story adds no API endpoint. What other tasks rely on is listed here: the qui
 - Shape and rules: data-model.md, "Quiz draft".
 - Only the quiz feature reads or writes it. Task #57 removes it after a successful submit.
 
-## Needed from task #55 for task #53
+## Needed from story #54 for task #53
 
-Task #53 needs one authenticated read that tells, for the signed-in client, whether the quiz was submitted and whether a plan is published. Until plans exist, "published" is always false. The exact endpoint and fields are defined in the spec of story #54 and come into `schema.d.ts` with task #55.
+Task #53 needs one authenticated read that tells, for the signed-in client, whether the quiz was submitted and whether a plan is published. Until plans exist, "published" is always false. The exact endpoint and fields, and whether task #55 or #57 builds it, are defined in the spec of story #54; the types come into `schema.d.ts` with that task.

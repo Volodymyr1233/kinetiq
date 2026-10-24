@@ -5,7 +5,7 @@ How to see the feature working and prove it. The rules themselves are in spec.md
 ## Prerequisites
 
 - Node 24 and the frontend's dependencies (`npm install` in `frontend/`).
-- No backend for tasks #52 and #51: the quiz needs no data. Task #53 needs the backend with tasks #25 and #55 merged.
+- No backend for tasks #52 and #51: the quiz needs no data. Task #53 needs the backend with task #25 and the quiz status read of story #54 merged.
 
 ## Automated checks
 

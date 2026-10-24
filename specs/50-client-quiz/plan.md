@@ -83,7 +83,7 @@ frontend/src/
 └── locales/en.json, pl.json                       quiz.* (#52 for the character count, #51 for the steps)
 ```
 
-Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` around the client routes. Its exact files depend on tasks #25 and #55 and are planned when they are merged.
+Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` around the client routes. Its exact files depend on task #25 and the quiz status read of story #54, and are planned when they are merged.
 
 **Structure Decision**: One feature, `quiz`, as `CONTEXT.md` names it. The question patterns are used only by the quiz, so they stay in the feature, not in `components/`.
 
@@ -95,27 +95,27 @@ Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` a
 | #51 | `feat(frontend): add quiz step flow` | `quiz-schema.ts` with tests, `quiz-draft.ts`, `quiz-page.tsx` with tests, the route, every step's strings in EN and PL, browser check per quickstart.md |
 | #53 | `feat(frontend): send clients to the quiz until submitted` | Status hook, entry check with loading and error states, tests per case of US3; account tie-in and sign-out removal of the draft (Open items) |
 
-Task order of the assignment: #52, #51, then #56 (story #54), and #53 once #25 and #55 are merged.
+Task order of the assignment: #52, #51, then #56 (story #54), and #53 once #25, #57, #22, #24 and the quiz status read of story #54 are merged.
 
 ## Tests
 
 | Test | Covers |
 |---|---|
-| `quiz-schema.test.ts` | Age and height bounds 16/99 and 120/230 inclusive, decimals refused; weight 30–250 with one decimal, comma or dot, two decimals refused; spaces trimmed; likes need one and refuse duplicates and unknown codes; days 2–6; notes trimmed, 500 units allowed, 501 refused; loading keeps valid fields and drops each invalid one; broken JSON gives the empty draft; which step may open |
+| `quiz-schema.test.ts` | Age and height bounds 16/99 and 120/230 inclusive, decimals refused; weight 30–250 with one decimal, comma or dot, two decimals refused; spaces trimmed; likes need one and refuse duplicates and unknown codes; days 2–6; notes trimmed, 500 units allowed, 501 refused; loading keeps valid fields and drops each invalid one; which step may open |
 | `single-choice.test.tsx` | Radio group named by the heading; choosing marks one and clears the other; nothing chosen at first; descriptions shown (arrow keys are Radix's behaviour, checked in the browser) |
 | `multiple-choice.test.tsx` | Checkbox group named by the heading; options toggle independently |
 | `number-field.test.tsx` | Label and unit announced; a given message is shown, linked by `aria-describedby` with `aria-invalid`; the note shows when there is no message; leaving the field reports it (`onBlur`) |
 | `stepper.test.tsx` | − and + change by one; marked disabled at both bounds and no change past them, focus kept; new value announced; accessible names |
 | `notes-field.test.tsx` | Counter follows the text; typing stops at the limit; pasting longer text keeps the first 500 |
-| `quiz-page.test.tsx` | Step 1 with no Back and Continue disabled; Continue enabled only when valid; a number field's message appears after leaving it, disappears once valid and is still there after going back and returning; answers kept through Continue, Back and remount (reload); addresses beyond the furthest step or past an invalid step go back to the allowed step; step 6 cannot be skipped by address; focus on the new heading; step 7 button text; stored invalid answer dropped; Polish strings and number example |
+| `quiz-page.test.tsx` | Step 1 with no Back and Continue disabled; Continue enabled only when valid; a number field's message appears after leaving it, disappears once valid and is still there after going back and returning; answers kept through Continue, Back and remount (reload); addresses beyond the furthest step or past an invalid step go back to the allowed step; step 6 cannot be skipped by address; focus on the new heading; step 7 button text; stored invalid answer dropped; broken stored data gives a fresh start; Polish strings and number example |
 
 ## Open items for later tasks
 
 | Item | Task | Weight | Path |
 |---|---|---|---|
-| Tie the draft to the signed-in account (FR-020) | #53 | Low | Uses the current-account API of task #22 |
+| Tie the draft to the signed-in account (FR-020) | #53 | Low | Uses the current-account API of task #22, passed in by `app/` or shared through `lib/`, never imported from `features/account` |
 | Remove the draft on sign-out (FR-019) | #53 | High: touches the sign-out action of Yan's task #24 | Ask Yan when #53 starts |
-| Endpoint and fields of the quiz status | #55 | Low | Defined in the spec of story #54 |
+| Endpoint and fields of the quiz status, and whether #55 or #57 builds it | Story #54 | Low | Defined in the spec of story #54 |
 
 ## Complexity Tracking
 
