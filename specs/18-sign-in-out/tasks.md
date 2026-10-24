@@ -99,12 +99,12 @@ description: "Tasks for story #18, Trainer and client sign in and out"
 
 **Independent test**: `client.test.ts`.
 
-- [ ] T034 [P] [US4] Create `F/lib/query-client.ts` exporting the app's `QueryClient` (the retry rule now in `F/app/app.tsx`) and use it in `app.tsx`
-- [ ] T035 [P] [US4] Create `F/lib/api/sign-in-redirect.ts` with `redirectToSignIn()`: when `location.pathname` starts with `/trainer` or `/app`, `window.location.assign('/sign-in?next=' + encodeURIComponent(pathname + search))`
-- [ ] T036 [US4] In `F/lib/api/client.ts` add `onResponse`: status 401 → `redirectToSignIn()`, except for `POST /api/v1/sign-ins` and `GET /api/v1/accounts/me` (their callers handle 401, R13)
-- [ ] T037 [US4] Extend `F/lib/api/client.test.ts` (`vi.mock` the redirect module): 401 calls it; 401 from sign-in or `/accounts/me` does not; a POST after the `XSRF-TOKEN` cookie was cleared fetches `/api/v1/csrf` first and passes the new token
-- [ ] T038 [P] [US2] Add to `F/locales/en.json` and `F/locales/pl.json`: `errors.request.forbidden` reworded without "session" ("This page was open too long. Reload it and try again." / Polish equivalent), `errors.request.not-allowed`, `errors.account.credentials-invalid`, `errors.account.email-not-confirmed`, `errors.account.sign-in-locked` (fallback text without a number)
-- [ ] T039 Run `npm run check`; commit `feat(frontend): send to sign-in on 401 (#23)`
+- [X] T034 [P] [US4] Create `F/lib/query-client.ts` exporting the app's `QueryClient` (the retry rule now in `F/app/app.tsx`) and use it in `app.tsx`
+- [X] T035 [P] [US4] Create `F/lib/api/sign-in-redirect.ts` with `redirectToSignIn()`: when `location.pathname` starts with `/trainer` or `/app`, `window.location.assign('/sign-in?next=' + encodeURIComponent(pathname + search))`
+- [X] T036 [US4] In `F/lib/api/client.ts` add `onResponse`: status 401 → `redirectToSignIn()`, except for `POST /api/v1/sign-ins` and `GET /api/v1/accounts/me` (their callers handle 401, R13)
+- [X] T037 [US4] Extend `F/lib/api/client.test.ts` (`vi.mock` the redirect module): 401 calls it; 401 from sign-in or `/accounts/me` does not; a POST after the `XSRF-TOKEN` cookie was cleared fetches `/api/v1/csrf` first and passes the new token
+- [X] T038 [P] [US2] Add to `F/locales/en.json` and `F/locales/pl.json`: `errors.request.forbidden` reworded without "session" ("This page was open too long. Reload it and try again." / Polish equivalent), `errors.request.not-allowed`, `errors.account.credentials-invalid`, `errors.account.email-not-confirmed`, `errors.account.sign-in-locked` (fallback text without a number)
+- [X] T039 Run `npm run check`; commit `feat(frontend): send to sign-in on 401 (#23)`
 
 ---
 
