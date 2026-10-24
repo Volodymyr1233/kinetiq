@@ -3,6 +3,7 @@ package com.kinetiq.account.infrastructure.config;
 import com.kinetiq.account.domain.input.SignInUseCase;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.output.AccountRepository;
+import com.kinetiq.account.domain.output.FailedSignInsRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.account.domain.service.SignInService;
 import com.kinetiq.account.domain.service.SignUpService;
@@ -26,7 +27,8 @@ class AccountConfig {
     }
 
     @Bean
-    SignInUseCase signInUseCase(AccountRepository accounts, PasswordHasher hasher) {
-        return new SignInService(accounts, hasher);
+    SignInUseCase signInUseCase(
+            AccountRepository accounts, PasswordHasher hasher, FailedSignInsRepository failedSignIns) {
+        return new SignInService(accounts, hasher, failedSignIns, Clock.systemUTC());
     }
 }
