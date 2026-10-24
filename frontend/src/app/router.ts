@@ -65,6 +65,15 @@ export const createRoutes = (): RouteObject[] => [
       trainerPlaceholder('settings'),
     ],
   },
+  // the quiz has its own address per step and no tab bar, so it sits beside the client area
+  {
+    path: '/app/quiz/:step?',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/quiz/pages/quiz-page')).QuizPage,
+    },
+  },
   {
     path: '/app',
     HydrateFallback: BlankWhileLoading,

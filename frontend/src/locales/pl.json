@@ -166,6 +166,134 @@
     }
   },
   "quiz": {
-    "characterCount": "{{count}} z {{max}} znaków"
+    "characterCount": "{{count}} z {{max}} znaków",
+    "stepOf": "Krok {{step}} z {{total}}",
+    "back": "Wstecz",
+    "continue": "Dalej",
+    "skipAndContinue": "Pomiń i przejdź dalej",
+    "answersStay": "Twoje odpowiedzi zostaną, jeśli wrócisz.",
+    "goal": {
+      "title": "Jaki masz cel treningowy?",
+      "hint": "Wybierz jeden. Trener może go później zmienić.",
+      "options": {
+        "BUILD_MUSCLE": {
+          "title": "Budowa mięśni",
+          "description": "Większa objętość, 8–12 powtórzeń"
+        },
+        "GET_STRONGER": {
+          "title": "Więcej siły",
+          "description": "Większe ciężary, mniej powtórzeń"
+        },
+        "LOSE_FAT": {
+          "title": "Redukcja tłuszczu",
+          "description": "Siła i kondycja"
+        },
+        "MOVE_BETTER": {
+          "title": "Lepsza sprawność ruchowa",
+          "description": "Zakres ruchu i kontrola"
+        },
+        "GENERAL_FITNESS": {
+          "title": "Ogólna forma",
+          "description": "Wszystkiego po trochu"
+        }
+      }
+    },
+    "experience": {
+      "title": "Jak długo trenujesz regularnie?",
+      "hint": "Licz okres treningów co najmniej dwa razy w tygodniu.",
+      "options": {
+        "LESS_THAN_3_MONTHS": { "title": "Mniej niż 3 miesiące" },
+        "MONTHS_3_TO_6": { "title": "3–6 miesięcy" },
+        "MONTHS_6_TO_12": { "title": "6–12 miesięcy" },
+        "YEARS_1_TO_2": { "title": "1–2 lata" },
+        "YEARS_2_TO_5": { "title": "2–5 lat" },
+        "YEARS_5_PLUS": { "title": "Ponad 5 lat" }
+      }
+    },
+    "level": {
+      "title": "Co najlepiej Cię opisuje?",
+      "hint": "Na tej podstawie trener dobierze Twoje pierwsze ciężary.",
+      "options": {
+        "BEGINNER": {
+          "title": "Poziom podstawowy",
+          "description": "Dopiero zaczynasz trening według planu"
+        },
+        "INTERMEDIATE": {
+          "title": "Poziom średni",
+          "description": "Swobodnie wykonujesz podstawowe ćwiczenia siłowe"
+        },
+        "ADVANCED": {
+          "title": "Poziom zaawansowany",
+          "description": "Trenujesz regularnie od ponad 2 lat"
+        },
+        "ATHLETE": {
+          "title": "Poziom sportowy",
+          "description": "Startujesz w zawodach albo trenujesz jak zawodnik"
+        }
+      }
+    },
+    "about": {
+      "title": "O Tobie",
+      "hint": "Na tej podstawie trener dobierze ciężary na start.",
+      "age": {
+        "label": "Wiek",
+        "unit": "lat",
+        "placeholder": "np. 29",
+        "error": "Podaj wiek od 16 do 99 lat."
+      },
+      "height": {
+        "label": "Wzrost",
+        "unit": "cm",
+        "placeholder": "np. 168",
+        "error": "Podaj wzrost od 120 do 230 cm."
+      },
+      "weight": {
+        "label": "Masa ciała",
+        "unit": "kg",
+        "placeholder": "np. 62,5",
+        "error": "Podaj masę ciała od 30 do 250 kg.",
+        "note": "Na funty przełączysz się później w ustawieniach."
+      }
+    },
+    "likes": {
+      "title": "Co lubisz trenować?",
+      "hint": "Zaznacz wszystko, co pasuje.",
+      "options": {
+        "WEIGHTS": {
+          "title": "Ciężary",
+          "description": "Sztangi, hantle, maszyny"
+        },
+        "CARDIO": {
+          "title": "Cardio",
+          "description": "Bieganie, rower, wioślarz"
+        },
+        "HIIT": {
+          "title": "HIIT i obwody",
+          "description": "Krótkie, intensywne interwały"
+        },
+        "YOGA_PILATES": {
+          "title": "Joga i pilates",
+          "description": "Mobilność i kontrola"
+        },
+        "BODYWEIGHT": {
+          "title": "Trening z masą ciała",
+          "description": "Bez sprzętu"
+        }
+      }
+    },
+    "days": {
+      "title": "Ile dni w tygodniu możesz trenować?",
+      "hint": "Licz tylko dni, które naprawdę dasz radę utrzymać.",
+      "unit": "dni w tygodniu",
+      "range": "Co najmniej 2, najwyżej 6.",
+      "fewer": "Mniej dni",
+      "more": "Więcej dni"
+    },
+    "notes": {
+      "title": "Czy trener powinien o czymś wiedzieć?",
+      "hint": "Kontuzje, ograniczenia, sprzęt, którego nie masz. Opcjonalnie.",
+      "label": "Notatki dla trenera",
+      "placeholder": "np. Lewe kolano sztywnieje przy głębokich przysiadach"
+    }
   }
 }
