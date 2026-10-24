@@ -1,4 +1,6 @@
 import { createBrowserRouter, redirect, type RouteObject } from 'react-router'
+import { AreaErrorPage } from '@/app/area-error-page'
+import { redirectIfSignedIn, requireRole } from '@/app/guards'
 import { HomePage } from '@/app/home-page'
 import { NotFoundPage } from '@/app/not-found-page'
 
@@ -27,6 +29,7 @@ export const createRoutes = (): RouteObject[] => [
   { path: '/', Component: HomePage },
   {
     path: '/sign-in',
+    loader: redirectIfSignedIn,
     HydrateFallback: BlankWhileLoading,
     lazy: {
       Component: async () =>
@@ -52,6 +55,8 @@ export const createRoutes = (): RouteObject[] => [
   },
   {
     path: '/trainer',
+    loader: requireRole('TRAINER'),
+    ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
       Component: async () => (await import('@/app/trainer-area')).TrainerArea,
@@ -76,6 +81,8 @@ export const createRoutes = (): RouteObject[] => [
   // the quiz has its own address per step and no tab bar, so it sits beside the client area
   {
     path: '/app/quiz/:step?',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
       Component: async () =>
@@ -84,6 +91,8 @@ export const createRoutes = (): RouteObject[] => [
   },
   {
     path: '/app',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
       Component: async () => (await import('@/app/client-area')).ClientArea,

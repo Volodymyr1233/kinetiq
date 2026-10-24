@@ -30,6 +30,9 @@
     "trainer": "Panel trenera",
     "client": "Panel klienta"
   },
+  "areaError": {
+    "retry": "Spróbuj ponownie"
+  },
   "placeholderPage": {
     "body": "Ten ekran pojawi się razem ze swoją funkcją."
   },

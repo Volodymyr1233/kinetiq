@@ -70,7 +70,7 @@ export function json(body: object, status = 200) {
 
 /**
  * Renders the whole app at a path with the app's own query client, as the guards use it. The current account is
- * the given one, or nobody when `null`; every other request goes to `reply`.
+ * the given one, or nobody when `null`, until a sign-in or sign-out through `reply` changes it.
  */
 export function renderAppAt(
   path: string,
@@ -78,13 +78,22 @@ export function renderAppAt(
   reply: Reply = () => new Response(null, { status: 204 }),
 ) {
   queryClient.clear()
-  const requests = stubApi((request) => {
-    if (new URL(request.url).pathname === '/api/v1/accounts/me') {
-      return account
-        ? json(account)
+  let current = account
+  const requests = stubApi(async (request) => {
+    const call = `${request.method} ${new URL(request.url).pathname}`
+    if (call === 'GET /api/v1/accounts/me') {
+      return current
+        ? json(current)
         : json({ status: 401, code: 'request.unauthenticated' }, 401)
     }
-    return reply(request)
+    const response = await reply(request)
+    // the server ends or starts the sign-in, so later checks answer accordingly
+    if (call === 'DELETE /api/v1/sign-ins/current' && response.ok)
+      current = null
+    if (call === 'POST /api/v1/sign-ins' && response.ok) {
+      current = await response.clone().json()
+    }
+    return response
   })
   const router = createMemoryRouter(createRoutes(), { initialEntries: [path] })
   render(

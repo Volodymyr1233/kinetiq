@@ -3,7 +3,7 @@ import { CircleAlertIcon, LockIcon, MailIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
 import type { z } from 'zod'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -16,9 +16,10 @@ import {
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
-import { useSignIn, type CurrentAccount } from '../api/account'
+import { useSignIn } from '../api/account'
 import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
 import { PasswordInput } from '../components/password-input'
+import { landingFor, safeNext } from '../landing'
 import { signInSchema, type SignInValues } from '../sign-in-schema'
 import { useResendLink } from '../use-resend-link'
 
@@ -74,13 +75,10 @@ function noticeFor(error: unknown, email: string): Notice {
   }
 }
 
-function landingFor(account: CurrentAccount) {
-  return account.role === 'TRAINER' ? '/trainer' : '/app'
-}
-
 export function SignInPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
   const signIn = useSignIn()
   const [notice, setNotice] = useState<Notice>()
   const form = useForm<SignInValues, unknown, z.output<typeof signInSchema>>({
@@ -97,7 +95,12 @@ export function SignInPage() {
     if (busy) return
     setNotice(undefined)
     signIn.mutate(values, {
-      onSuccess: (account) => void navigate(landingFor(account)),
+      onSuccess: (account) =>
+        void navigate(
+          safeNext(searchParams.get('next'), account.role) ??
+            landingFor(account.role),
+          { replace: true },
+        ),
       onError: (error) => {
         const fields = serverFieldErrors(error)
         if (fields.length > 0) {

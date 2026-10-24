@@ -30,6 +30,9 @@
     "trainer": "Trainer area",
     "client": "Client area"
   },
+  "areaError": {
+    "retry": "Try again"
+  },
   "placeholderPage": {
     "body": "This screen arrives with its feature."
   },
