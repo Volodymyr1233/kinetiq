@@ -22,6 +22,7 @@ import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
 import { CheckEmailCard } from '../components/check-email-card'
 import { PasswordInput } from '../components/password-input'
 import { signUpSchema, type SignUpValues } from '../sign-up-schema'
+import { browserTimeZone } from '../time-zone'
 
 type FieldName = FieldPath<SignUpValues>
 
@@ -48,12 +49,6 @@ function serverFieldErrors(error: unknown) {
   )
 }
 
-// some browsers report no zone or Etc/Unknown; the trainer can change it in settings later
-function browserTimeZone() {
-  const zone = Intl.DateTimeFormat().resolvedOptions().timeZone
-  return !zone || zone === 'Etc/Unknown' ? 'UTC' : zone
-}
-
 const touchInput = 'h-(--control-h-touch) text-base md:text-base'
 
 export function SignUpPage() {
@@ -75,7 +70,8 @@ export function SignUpPage() {
     if (busy) return
     setFailure(undefined)
     signUp.mutate(
-      { ...values, timeZone: browserTimeZone() },
+      // the zone is refreshed from the browser at each sign-in, so UTC only lasts until then
+      { ...values, timeZone: browserTimeZone() ?? 'UTC' },
       {
         onSuccess: () => {
           // the password never stays in the form once the person leaves it

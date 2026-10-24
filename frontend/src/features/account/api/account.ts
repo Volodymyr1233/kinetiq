@@ -6,6 +6,8 @@ import {
 import { useNavigate } from 'react-router'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
+import { queryClient } from '@/lib/query-client'
+import { browserTimeZone } from '../time-zone'
 
 type Schemas = components['schemas']
 export type CurrentAccount = Schemas['CurrentAccountResponse']
@@ -22,7 +24,7 @@ async function receive<D, E>(call: Promise<{ data?: D; error?: E }>) {
   return data as D
 }
 
-function statusOf(error: unknown) {
+export function statusOf(error: unknown) {
   return typeof error === 'object' && error !== null && 'status' in error
     ? error.status
     : undefined
@@ -40,7 +42,24 @@ export function clearTabStorage() {
 export const currentAccountQuery = queryOptions({
   queryKey: ['current-account'],
   queryFn: () => receive(api.GET('/api/v1/accounts/me')),
+  // the guards wait on it, so a failure shows "Try again" at once instead of after several retries
+  retry: false,
 })
+
+/** Stores the browser's zone when it differs, so weeks follow the person; a failure changes nothing they see. */
+export async function refreshTimeZone(account: CurrentAccount) {
+  const timeZone = browserTimeZone()
+  if (!timeZone || timeZone === account.timeZone) return
+  const { error } = await api.PUT('/api/v1/accounts/me/time-zone', {
+    body: { timeZone },
+  })
+  if (error === undefined) {
+    queryClient.setQueryData(currentAccountQuery.queryKey, {
+      ...account,
+      timeZone,
+    })
+  }
+}
 
 export function useSignUp() {
   return useMutation({
