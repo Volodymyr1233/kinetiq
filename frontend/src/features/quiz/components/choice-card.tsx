@@ -28,8 +28,7 @@ export function ChoiceCard({
   return (
     <FieldLabel
       htmlFor={htmlFor}
-      // the chosen card gets a full-strength border on top of the radio or check mark
-      className="bg-card has-data-checked:border-primary has-data-checked:ring-primary dark:has-data-checked:border-primary has-data-checked:ring-1"
+      className="bg-card has-data-checked:border-primary has-data-checked:ring-primary has-data-checked:ring-1"
     >
       <Field
         orientation="horizontal"
