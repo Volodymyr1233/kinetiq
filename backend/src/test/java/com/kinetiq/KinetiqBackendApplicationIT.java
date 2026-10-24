@@ -10,7 +10,9 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 
 /** Whole application against a real database, checking the security defaults. */
@@ -21,6 +23,16 @@ class KinetiqBackendApplicationIT {
 
     @Autowired
     private MockMvcTester mvc;
+
+    @Autowired
+    private JdbcClient jdbc;
+
+    @Autowired
+    private JdbcIndexedSessionRepository sessions;
+
+    private long storedSignIns() {
+        return jdbc.sql("select count(*) from spring_session").query(Long.class).single();
+    }
 
     @Test
     void shouldReportHealthUp_whenCallerIsAnonymous() {
@@ -34,6 +46,26 @@ class KinetiqBackendApplicationIT {
     @Test
     void shouldRejectRequest_whenCallerIsAnonymous() {
         assertThat(mvc.get().uri("/api/v1/anything")).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void shouldStoreSessionInDatabase_whenSessionIsSaved() {
+        long before = storedSignIns();
+
+        sessions.save(sessions.createSession());
+
+        assertThat(storedSignIns()).isEqualTo(before + 1);
+    }
+
+    @Test
+    void shouldStoreNoSession_whenAnonymousCallerIsRefused() {
+        long before = storedSignIns();
+
+        var result = mvc.get().uri("/api/v1/anything").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(result.getResponse().getCookie("SESSION")).isNull();
+        assertThat(storedSignIns()).isEqualTo(before);
     }
 
     @Test

@@ -3,6 +3,13 @@ spring:
   flyway:
     locations: classpath:db/migration,classpath:db/dev-data
 
+server:
+  servlet:
+    session:
+      cookie:
+        # the Vite proxy serves plain http
+        secure: false
+
 kinetiq:
   mail:
     # lets a developer copy the confirmation link from the log
