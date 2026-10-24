@@ -84,12 +84,12 @@ description: "Tasks for story #18, Trainer and client sign in and out"
 
 **Independent test**: `GET /api/v1/accounts/me` signed in and anonymous; `PUT /api/v1/accounts/me/time-zone` with a real and an unknown zone.
 
-- [ ] T028 [P] [US3] Make `timeZone` in `B/account/domain/model/Account.java` non-final with `changeTimeZone(ZoneId)` (`requireNonNull`); extend `AccountTest`
-- [ ] T029 [P] [US3] Add `Optional<Account> findById(AccountId)` to `AccountRepository` and `AccountRepositoryImpl`; extend `BT/account/infrastructure/output/AccountRepositoryImplIT.java`
-- [ ] T030 [US3] Create `CurrentAccountUseCase` (`Account find(AccountId)`, `void changeTimeZone(AccountId, ZoneId)`) in `B/account/domain/input/` and `CurrentAccountService` in `B/account/domain/service/`: missing account → `AccountNotFoundException`; save only when the zone differs; register in `AccountConfig`; write `BT/account/domain/service/CurrentAccountServiceTest.java` (found, missing, same zone not saved, new zone saved)
-- [ ] T031 [US3] Move the region-zone check out of `AccountController` into a package-private `TimeZones.parse(String)` in `B/account/infrastructure/input/` ("region ids only", unknown → `InvalidValueException`), used by both controllers
-- [ ] T032 [US3] [US4] Create `TimeZoneRequest(@NotBlank String timeZone)` and `CurrentAccountController` in `B/account/infrastructure/input/`: `GET /api/v1/accounts/me` → `CurrentAccountResponse` for `new AccountId(UUID.fromString(authentication.getName()))`; `PUT /api/v1/accounts/me/time-zone` → 204; write `BT/account/infrastructure/input/CurrentAccountControllerTest.java`: anonymous 401 `request.unauthenticated` on both; signed-in body; 204 with the zone passed; unknown zone 400 `validation.failed`; missing account → 401 `request.unauthenticated`
-- [ ] T033 Regenerate `F/lib/api/schema.d.ts`; run `./gradlew check` and `npm run check`; commit `feat(backend): add current-account api (#22)`
+- [X] T028 [P] [US3] Make `timeZone` in `B/account/domain/model/Account.java` non-final with `changeTimeZone(ZoneId)` (`requireNonNull`); extend `AccountTest`
+- [X] T029 [P] [US3] Add `Optional<Account> findById(AccountId)` to `AccountRepository` and `AccountRepositoryImpl`; extend `BT/account/infrastructure/output/AccountRepositoryImplIT.java`
+- [X] T030 [US3] Create `CurrentAccountUseCase` (`Account find(AccountId)`, `void changeTimeZone(AccountId, ZoneId)`) in `B/account/domain/input/` and `CurrentAccountService` in `B/account/domain/service/`: missing account → `AccountNotFoundException`; save only when the zone differs; register in `AccountConfig`; write `BT/account/domain/service/CurrentAccountServiceTest.java` (found, missing, same zone not saved, new zone saved)
+- [X] T031 [US3] Move the region-zone check out of `AccountController` into a package-private `TimeZones.parse(String)` in `B/account/infrastructure/input/` ("region ids only", unknown → `InvalidValueException`), used by both controllers
+- [X] T032 [US3] [US4] Create `TimeZoneRequest(@NotBlank String timeZone)` and `CurrentAccountController` in `B/account/infrastructure/input/`: `GET /api/v1/accounts/me` → `CurrentAccountResponse` for `new AccountId(UUID.fromString(authentication.getName()))`; `PUT /api/v1/accounts/me/time-zone` → 204; write `BT/account/infrastructure/input/CurrentAccountControllerTest.java`: anonymous 401 `request.unauthenticated` on both; signed-in body; 204 with the zone passed; unknown zone 400 `validation.failed`; missing account → 401 `request.unauthenticated`
+- [X] T033 Regenerate `F/lib/api/schema.d.ts`; run `./gradlew check` and `npm run check`; commit `feat(backend): add current-account api (#22)`
 
 ---
 

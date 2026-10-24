@@ -3,11 +3,9 @@ package com.kinetiq.account.infrastructure.input;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.model.RawPassword;
-import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
-import java.time.ZoneId;
 import java.util.Locale;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -39,7 +37,7 @@ class AccountController {
                 request.name(),
                 new Email(request.email()),
                 new RawPassword(request.password()),
-                timeZone(request.timeZone()),
+                TimeZones.parse(request.timeZone()),
                 locale));
     }
 
@@ -58,13 +56,5 @@ class AccountController {
             return;
         }
         signUp.sendConfirmationLink(new Email(request.email()), locale);
-    }
-
-    // region ids only: offsets such as +02:00 would not follow daylight saving time
-    private static ZoneId timeZone(String id) {
-        if (!ZoneId.getAvailableZoneIds().contains(id)) {
-            throw new InvalidValueException("unknown time zone");
-        }
-        return ZoneId.of(id);
     }
 }

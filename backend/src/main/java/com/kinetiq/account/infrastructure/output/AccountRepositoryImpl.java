@@ -1,6 +1,7 @@
 package com.kinetiq.account.infrastructure.output;
 
 import com.kinetiq.account.domain.model.Account;
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
 import java.util.Optional;
@@ -20,6 +21,11 @@ class AccountRepositoryImpl implements AccountRepository {
         AccountEntity entity = jpa.findById(account.getId().value()).orElseGet(AccountEntity::new);
         mapper.update(account, entity);
         jpa.save(entity);
+    }
+
+    @Override
+    public Optional<Account> findById(AccountId id) {
+        return jpa.findById(id.value()).map(mapper::toDomain);
     }
 
     @Override

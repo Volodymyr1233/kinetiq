@@ -28,7 +28,7 @@ public class Account {
     private final Email email;
     private final String passwordHash;
     private final Role role;
-    private final ZoneId timeZone;
+    private ZoneId timeZone;
     private boolean emailConfirmed;
 
     @Getter(AccessLevel.NONE)
@@ -84,6 +84,11 @@ public class Account {
         }
         confirmation = new EmailConfirmation(token.hash(), now.plus(CONFIRMATION_VALIDITY));
         mailSentAt = now;
+    }
+
+    /** Follows the browser, so weeks and days stay right after the person moves or travels. */
+    public void changeTimeZone(ZoneId zone) {
+        timeZone = Objects.requireNonNull(zone);
     }
 
     public void recordMailSent(Instant now) {
