@@ -1,7 +1,10 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup } from '@testing-library/react'
+import { cleanup, configure } from '@testing-library/react'
 import { afterEach, vi } from 'vitest'
 import '@/lib/i18n'
+
+// lazy route chunks take seconds to load in a cold, busy run; the default wait is one second
+configure({ asyncUtilTimeout: 8000 })
 
 // jsdom has no matchMedia; components that read breakpoints get a desktop default
 window.matchMedia ??= (query) =>

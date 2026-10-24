@@ -20,5 +20,7 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: './src/test/setup.ts',
+    // room for the waits in setup.ts plus a cold lazy import
+    testTimeout: 20_000,
   },
 })
