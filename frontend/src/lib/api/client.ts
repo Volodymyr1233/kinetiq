@@ -1,9 +1,12 @@
 import createClient from 'openapi-fetch'
+import { redirectToSignIn } from '@/lib/api/sign-in-redirect'
 import i18n from '@/lib/i18n'
 import type { paths } from './schema'
 
 const STATE_CHANGING = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 const CSRF_COOKIE = 'XSRF-TOKEN='
+// their callers handle a 401 themselves: a wrong password, and the guards finding nobody signed in
+const OWN_401 = ['POST /api/v1/sign-ins', 'GET /api/v1/accounts/me']
 
 // Typed against the backend's OpenAPI document. Regenerate schema.d.ts with `npm run gen:api`.
 export const api = createClient<paths>({
@@ -30,5 +33,9 @@ api.use({
       if (token) request.headers.set('X-XSRF-TOKEN', decodeURIComponent(token))
     }
     return request
+  },
+  onResponse({ request, response }) {
+    const call = `${request.method} ${new URL(request.url).pathname}`
+    if (response.status === 401 && !OWN_401.includes(call)) redirectToSignIn()
   },
 })

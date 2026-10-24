@@ -49,13 +49,17 @@
       "method-not-allowed": "This action is not available. Reload the page and try again.",
       "unsupported-media-type": "The request could not be read. Reload the page and try again.",
       "unauthenticated": "Sign in to continue.",
-      "forbidden": "Your session has expired. Reload the page and try again."
+      "forbidden": "This page was open too long. Reload it and try again.",
+      "not-allowed": "This is not available for your account."
     },
     "internal": {
       "error": "Something went wrong on our side. Try again in a moment."
     },
     "account": {
-      "confirmation-link-invalid": "This link no longer works. Request a new one."
+      "confirmation-link-invalid": "This link no longer works. Request a new one.",
+      "credentials-invalid": "Email or password is wrong. Check both and try again.",
+      "email-not-confirmed": "Confirm your email first, then sign in.",
+      "sign-in-locked": "Too many attempts. Try again later."
     }
   },
   "account": {

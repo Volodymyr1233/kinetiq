@@ -1,6 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import i18n from '@/lib/i18n'
 import { api } from './client'
+import { redirectToSignIn } from './sign-in-redirect'
+
+vi.mock('./sign-in-redirect', () => ({ redirectToSignIn: vi.fn() }))
 
 function clearCsrfCookie() {
   document.cookie = 'XSRF-TOKEN=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
@@ -26,6 +29,7 @@ describe('api', () => {
   })
 
   afterEach(async () => {
+    vi.mocked(redirectToSignIn).mockClear()
     clearCsrfCookie()
     await i18n.changeLanguage('en')
   })
@@ -60,5 +64,44 @@ describe('api', () => {
 
     expect(requests[0].headers.get('Accept-Language')).toBe('pl')
     expect(requests[0].headers.has('X-XSRF-TOKEN')).toBe(false)
+  })
+
+  describe('when the backend answers 401', () => {
+    beforeEach(() => {
+      vi.stubGlobal(
+        'fetch',
+        vi.fn(async () => new Response(null, { status: 401 })),
+      )
+    })
+
+    it('sends the person to sign in', async () => {
+      await api.GET('/api/v1/exercises')
+
+      expect(redirectToSignIn).toHaveBeenCalledOnce()
+    })
+
+    it('leaves a wrong password and the guard check to their callers', async () => {
+      document.cookie = 'XSRF-TOKEN=token-2'
+
+      await api.POST('/api/v1/sign-ins', {
+        body: { email: 'marek@example.com', password: 'Kinetiq-2027' },
+      })
+      await api.GET('/api/v1/accounts/me')
+
+      expect(redirectToSignIn).not.toHaveBeenCalled()
+    })
+  })
+
+  it('fetches a new CSRF token after sign-in cleared the old one', async () => {
+    document.cookie = 'XSRF-TOKEN=token-before'
+    clearCsrfCookie()
+
+    await api.DELETE('/api/v1/sign-ins/current')
+
+    expect(requests.map((request) => new URL(request.url).pathname)).toEqual([
+      '/api/v1/csrf',
+      '/api/v1/sign-ins/current',
+    ])
+    expect(requests[1].headers.get('X-XSRF-TOKEN')).toBe('token-1')
   })
 })

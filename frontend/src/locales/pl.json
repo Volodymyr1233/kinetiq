@@ -49,13 +49,17 @@
       "method-not-allowed": "Ta czynność jest niedostępna. Odśwież stronę i spróbuj ponownie.",
       "unsupported-media-type": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
       "unauthenticated": "Zaloguj się, aby kontynuować.",
-      "forbidden": "Sesja wygasła. Odśwież stronę i spróbuj ponownie."
+      "forbidden": "Ta strona była otwarta zbyt długo. Odśwież ją i spróbuj ponownie.",
+      "not-allowed": "Ta funkcja nie jest dostępna dla Twojego konta."
     },
     "internal": {
       "error": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę."
     },
     "account": {
-      "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy."
+      "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy.",
+      "credentials-invalid": "E-mail lub hasło są nieprawidłowe. Sprawdź oba i spróbuj ponownie.",
+      "email-not-confirmed": "Najpierw potwierdź e-mail, a potem się zaloguj.",
+      "sign-in-locked": "Zbyt wiele prób. Spróbuj ponownie później."
     }
   },
   "account": {
