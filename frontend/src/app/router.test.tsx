@@ -15,6 +15,7 @@ describe('routes', () => {
   it.each([
     ['/trainer', 'Clients'],
     ['/app', 'Today'],
+    ['/app/quiz', 'What do you train for?'],
   ])('loads the area at %s', async (path, heading) => {
     renderAt(path)
 

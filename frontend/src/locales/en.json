@@ -162,6 +162,134 @@
     }
   },
   "quiz": {
-    "characterCount": "{{count}} of {{max}} characters"
+    "characterCount": "{{count}} of {{max}} characters",
+    "stepOf": "Step {{step}} of {{total}}",
+    "back": "Back",
+    "continue": "Continue",
+    "skipAndContinue": "Skip and continue",
+    "answersStay": "Your answers stay if you go back.",
+    "goal": {
+      "title": "What do you train for?",
+      "hint": "Pick one. Your trainer can change it later.",
+      "options": {
+        "BUILD_MUSCLE": {
+          "title": "Build muscle",
+          "description": "More volume, 8–12 reps"
+        },
+        "GET_STRONGER": {
+          "title": "Get stronger",
+          "description": "Heavier weights, fewer reps"
+        },
+        "LOSE_FAT": {
+          "title": "Lose fat",
+          "description": "Strength plus conditioning"
+        },
+        "MOVE_BETTER": {
+          "title": "Move better",
+          "description": "Range of motion and control"
+        },
+        "GENERAL_FITNESS": {
+          "title": "General fitness",
+          "description": "A bit of everything"
+        }
+      }
+    },
+    "experience": {
+      "title": "How long have you trained regularly?",
+      "hint": "Count the time you trained at least twice a week.",
+      "options": {
+        "LESS_THAN_3_MONTHS": { "title": "Less than 3 months" },
+        "MONTHS_3_TO_6": { "title": "3–6 months" },
+        "MONTHS_6_TO_12": { "title": "6–12 months" },
+        "YEARS_1_TO_2": { "title": "1–2 years" },
+        "YEARS_2_TO_5": { "title": "2–5 years" },
+        "YEARS_5_PLUS": { "title": "5+ years" }
+      }
+    },
+    "level": {
+      "title": "Which fits you best?",
+      "hint": "Your trainer uses this to set your first weights.",
+      "options": {
+        "BEGINNER": {
+          "title": "Beginner",
+          "description": "New to structured training"
+        },
+        "INTERMEDIATE": {
+          "title": "Intermediate",
+          "description": "Comfortable with the basic lifts"
+        },
+        "ADVANCED": {
+          "title": "Advanced",
+          "description": "Consistent training for 2+ years"
+        },
+        "ATHLETE": {
+          "title": "Athlete",
+          "description": "You compete or train like it"
+        }
+      }
+    },
+    "about": {
+      "title": "About you",
+      "hint": "Your trainer uses these to set starting weights.",
+      "age": {
+        "label": "Age",
+        "unit": "years",
+        "placeholder": "e.g. 29",
+        "error": "Enter an age between 16 and 99."
+      },
+      "height": {
+        "label": "Height",
+        "unit": "cm",
+        "placeholder": "e.g. 168",
+        "error": "Enter a height between 120 and 230 cm."
+      },
+      "weight": {
+        "label": "Body weight",
+        "unit": "kg",
+        "placeholder": "e.g. 62.5",
+        "error": "Enter a weight between 30 and 250 kg.",
+        "note": "Switch to lb later in settings."
+      }
+    },
+    "likes": {
+      "title": "What do you like to train?",
+      "hint": "Pick all that fit.",
+      "options": {
+        "WEIGHTS": {
+          "title": "Weights",
+          "description": "Barbells, dumbbells, machines"
+        },
+        "CARDIO": {
+          "title": "Cardio",
+          "description": "Running, cycling, rowing"
+        },
+        "HIIT": {
+          "title": "HIIT and circuits",
+          "description": "Short, hard intervals"
+        },
+        "YOGA_PILATES": {
+          "title": "Yoga and Pilates",
+          "description": "Mobility and control"
+        },
+        "BODYWEIGHT": {
+          "title": "Bodyweight",
+          "description": "No equipment needed"
+        }
+      }
+    },
+    "days": {
+      "title": "How many days a week can you train?",
+      "hint": "Count the days you can really keep.",
+      "unit": "days a week",
+      "range": "At least 2, at most 6.",
+      "fewer": "Fewer days",
+      "more": "More days"
+    },
+    "notes": {
+      "title": "Anything your trainer should know?",
+      "hint": "Injuries, limits, equipment you don't have. Optional.",
+      "label": "Notes for your trainer",
+      "placeholder": "e.g. Left knee gets stiff on deep squats"
+    }
   }
 }
