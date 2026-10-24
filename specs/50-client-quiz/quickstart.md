@@ -19,7 +19,7 @@ ESLint, Prettier, all tests (the quiz tests listed in plan.md among them), type 
 
 ## Browser check (task #51; task #52 uses a throwaway local page, research R11)
 
-Start the `frontend` configuration of `.claude/launch.json` and open `http://localhost:5173/app/quiz` at 375 px.
+Start the frontend (`npm run dev` in `frontend/`) and open `http://localhost:5173/app/quiz` at 375 px.
 
 1. Step 1 shows "Step 1 of 7", five options, no Back and a disabled Continue. Choose one; Continue is enabled.
 2. Go through steps 2–3. On step 4 type age 12, leave the field: "Enter an age between 16 and 99." appears. Type 29: it disappears. Enter height 168 and weight 62,5.
@@ -29,5 +29,5 @@ Start the `frontend` configuration of `.claude/launch.json` and open `http://loc
 6. Press the browser's back twice: step 5 with its answers. Reload: still step 5, answers kept.
 7. Open `/app/quiz/7` by address after reaching only step 5: step 5 is shown.
 8. Keyboard only: Tab reaches every option, field and button with a visible focus ring; arrow keys move within the radio group; Space toggles a checkbox. After Continue, focus is on the new heading.
-9. Switch to Polish: every text changes, answers stay, the weight example reads "np. 62,5".
+9. Set the browser's language to Polish and reload (the app follows the browser's language): every text changes, answers stay, the weight example reads "np. 62,5".
 10. Repeat 1–5 in dark mode. The console shows no errors.

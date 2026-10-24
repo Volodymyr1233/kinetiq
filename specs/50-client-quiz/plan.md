@@ -95,7 +95,7 @@ Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` a
 | #51 | `feat(frontend): add quiz step flow` | `quiz-schema.ts` with tests, `quiz-draft.ts`, `quiz-page.tsx` with tests, the route, every step's strings in EN and PL, browser check per quickstart.md |
 | #53 | `feat(frontend): send clients to the quiz until submitted` | Status hook, entry check with loading and error states, tests per case of US3; account tie-in and sign-out removal of the draft (Open items) |
 
-Task order: #52, #51, then #56 (story #54), and #53 once #25, #57, #22, #24 and the quiz status read of story #54 are merged.
+Task order: #52, #51, then #53 once #25, #57, #22, #24 and the quiz status read of story #54 are merged.
 
 ## Tests
 
@@ -114,7 +114,7 @@ Task order: #52, #51, then #56 (story #54), and #53 once #25, #57, #22, #24 and 
 | Item | Task | How it is settled |
 |---|---|---|
 | Tie the draft to the signed-in account (FR-020) | #53 | Uses the current-account API of task #22, passed in by `app/` or shared through `lib/`, never imported from `features/account` |
-| Remove the draft on sign-out (FR-019) | #53 | Needs a change in the sign-out action of task #24, agreed with that task's owner when #53 starts |
+| Remove the draft on sign-out (FR-019) | #53 | Needs a change in the sign-out action of task #24, to be agreed with that task's owner before task #24 is built |
 | Endpoint and fields of the quiz status, and whether #55 or #57 builds it | Story #54 | Defined in the spec of story #54 |
 
 ## Complexity Tracking

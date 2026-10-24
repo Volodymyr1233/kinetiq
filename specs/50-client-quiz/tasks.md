@@ -21,7 +21,7 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ## Phase 1: Setup
 
-- [X] T001 Keep `specs/50-client-quiz/` (spec, checklist, plan, research, data model, contract, quickstart, tasks) on the branch of task #52, so it lands in that pull request. `CONTEXT.md` needs no new term: "Quiz" is already defined
+- [X] T001 Commit `specs/50-client-quiz/` (spec, checklist, plan, research, data model, contract, quickstart, tasks) with the code of task #52, so the spec is reviewed in that pull request. `CONTEXT.md` needs no new term: "Quiz" is already defined
 
 ---
 
@@ -64,31 +64,30 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ## Phase 4: task #53, client entry routing (US3)
 
-**Blocked by**: task #25 (route guards), the quiz status read of story #54 (task #55 or #57, settled in that story's spec), task #57 (the waiting state it sends clients to), task #22 (current account, for T028) and task #24 (sign-out, for T025 and T028). Only #25 is linked as a blocker on GitHub; the others are recorded here. Re-read them when merged and refine T025–T030 to their actual code before starting.
+**Blocked by**: task #25 (route guards), the quiz status read of story #54 (task #55 or #57, settled in that story's spec), task #57 (the waiting state it sends clients to), task #22 (current account, for T027), task #24 (sign-out, for T027) and the agreed way to remove the draft on sign-out (plan, "Open items"). Only #25 is linked as a blocker on GitHub; the others are recorded here. Re-read them when merged and refine T025–T029 to their actual code before starting.
 
 **Goal**: A signed-in client without a submitted quiz gets the quiz from every client page; a client who submitted gets the waiting state; a client with a published plan gets the app; loading and failure as spec FR-026.
 
-- [ ] T025 [US3] Agree with the owner of task #24 how the quiz draft is removed on sign-out: a line in the sign-out action of task #24 (for example clearing `sessionStorage`) or another way (plan, "Open items")
-- [ ] T026 [P] [US3] Create `Q/api/quiz.ts` with a `useQuizStatus()` query over the status read of story #54 (`api.GET` typed by `F/lib/api/schema.d.ts`), throwing the problem detail on error as `F/features/exercise/api/exercises.ts` does
-- [ ] T027 [US3] Add the entry check in `F/app/` around the client routes and the quiz route, on top of the guards of task #25: while the status is pending, a neutral loading state and nothing else; on failure, `t(errorMessageKey(error))` from `F/lib/api/problem.ts` and a "Try again" button that refetches; not submitted → `/app/quiz`; submitted without a published plan → the waiting state of task #57; published plan → the requested client page, and the quiz sends them into the app
-- [ ] T028 [US3] Tie the draft to the signed-in account (spec FR-020) with the current-account API of task #22: store the account id with the draft and treat a draft of another account as empty; remove the draft on sign-out as agreed in T025. The quiz gets the account id from `F/app/` (the entry check of T027 knows the signed-in client) or from shared code in `F/lib/`, never by importing `features/account` (`frontend/CLAUDE.md`: a feature does not import from another feature)
-- [ ] T029 [US3] Write tests for each case of US3 (scenarios 1–4) and for FR-020: not submitted, submitted without a plan, published plan, pending, failure with an unknown and a known code, "Try again", a draft of another account not shown
-- [ ] T030 Run `npm run check` (and `./gradlew check` if the backend was touched); verify in the browser at 375 px, light and dark; open the pull request for #53 after the user agrees (title `feat(frontend): send clients to the quiz until submitted`, `Closes #53` and `Closes #50` as the story's last task)
+- [ ] T025 [P] [US3] Create `Q/api/quiz.ts` with a `useQuizStatus()` query over the status read of story #54 (`api.GET` typed by `F/lib/api/schema.d.ts`), throwing the problem detail on error as `F/features/exercise/api/exercises.ts` does
+- [ ] T026 [US3] Add the entry check in `F/app/` around the client routes and the quiz route, on top of the guards of task #25: while the status is pending, a neutral loading state and nothing else; on failure, `t(errorMessageKey(error))` from `F/lib/api/problem.ts` and a "Try again" button that refetches; not submitted → `/app/quiz`; submitted without a published plan → the waiting state of task #57; published plan → the requested client page, and the quiz sends them into the app
+- [ ] T027 [US3] Tie the draft to the signed-in account (spec FR-020) with the current-account API of task #22: store the account id with the draft and treat a draft of another account as empty; remove the draft on sign-out in the way settled in plan, "Open items". The quiz gets the account id from `F/app/` (the entry check of T026 knows the signed-in client) or from shared code in `F/lib/`, never by importing `features/account` (`frontend/CLAUDE.md`: a feature does not import from another feature)
+- [ ] T028 [US3] Write tests for each case of US3 (scenarios 1–4) and for FR-020: not submitted, submitted without a plan, published plan, pending, failure with an unknown and a known code, "Try again", a draft of another account not shown
+- [ ] T029 Run `npm run check` (and `./gradlew check` if the backend was touched); verify in the browser at 375 px, light and dark; open the pull request for #53 after the user agrees (title `feat(frontend): send clients to the quiz until submitted`, `Closes #53` and `Closes #50` as the story's last task)
 
 ---
 
 ## Phase 5: Convergence
 
-- [ ] T031 Run `/speckit-converge` on the branch of task #53, the story's last task, and walk through `quickstart.md` once more
+- [ ] T030 Run `/speckit-converge` on the branch of task #53, the story's last task, and walk through `quickstart.md` once more
 
 ---
 
 ## Dependencies
 
-- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #53 (T025–T030), which also waits for tasks #25, #57, #22 and #24 and the quiz status read of story #54. T031 last.
+- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #53 (T025–T029), which also waits for tasks #25, #57, #22 and #24, the quiz status read of story #54 and the agreed way to remove the draft on sign-out. T030 last.
 - Inside #52: T002 before T004; T003–T013 are independent of each other except that each test follows its component; T014 needs T002–T013.
 - Inside #51: T016–T019 are independent; T017 follows T016; T020 needs T016, T018 and T019 and the components of #52; T021 needs T020; T022 needs T020 and T021; T023 needs everything before it.
-- Inside #53: T025 first; T027 needs T026; T029 needs T027 and T028.
+- Inside #53: T026 needs T025; T028 needs T026 and T027.
 
 ## Parallel examples
 
