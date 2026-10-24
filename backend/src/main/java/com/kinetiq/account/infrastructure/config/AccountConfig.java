@@ -1,10 +1,12 @@
 package com.kinetiq.account.infrastructure.config;
 
+import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.input.SignInUseCase;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.FailedSignInsRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
+import com.kinetiq.account.domain.service.CurrentAccountService;
 import com.kinetiq.account.domain.service.SignInService;
 import com.kinetiq.account.domain.service.SignUpService;
 import com.kinetiq.common.domain.output.MailSender;
@@ -24,6 +26,11 @@ class AccountConfig {
             MailSender mailSender,
             @Value("${kinetiq.app-url}") URI appUrl) {
         return new SignUpService(accounts, hasher, mailSender, Clock.systemUTC(), appUrl);
+    }
+
+    @Bean
+    CurrentAccountUseCase currentAccountUseCase(AccountRepository accounts) {
+        return new CurrentAccountService(accounts);
     }
 
     @Bean

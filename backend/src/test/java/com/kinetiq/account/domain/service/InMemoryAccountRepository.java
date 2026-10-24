@@ -1,6 +1,7 @@
 package com.kinetiq.account.domain.service;
 
 import com.kinetiq.account.domain.model.Account;
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.EmailConfirmation;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
@@ -11,6 +12,7 @@ import java.util.Optional;
 class InMemoryAccountRepository implements AccountRepository {
 
     final Map<Email, Account> byEmail = new HashMap<>();
+    int saves;
 
     Account add(Account account) {
         byEmail.put(account.getEmail(), account);
@@ -19,7 +21,15 @@ class InMemoryAccountRepository implements AccountRepository {
 
     @Override
     public void save(Account account) {
+        saves++;
         add(account);
+    }
+
+    @Override
+    public Optional<Account> findById(AccountId id) {
+        return byEmail.values().stream()
+                .filter(account -> account.getId().equals(id))
+                .findFirst();
     }
 
     @Override

@@ -11,6 +11,7 @@ import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
 import jakarta.servlet.http.Cookie;
 import java.time.ZoneId;
+import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -22,6 +23,7 @@ import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
+import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
 /** Whole application against a real database, checking the security defaults. */
 @Import(TestcontainersConfiguration.class)
@@ -153,6 +155,10 @@ class KinetiqBackendApplicationIT {
                         .single())
                 .isOne();
         assertThat(mvc.get().uri("/api/v1/exercises").cookie(session)).hasStatusOk();
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(session))
+                .bodyJson()
+                .extractingPath("$.id")
+                .isEqualTo(id.value().toString());
 
         Cookie newToken = csrfToken(session);
         var signedOut = mvc.delete()
@@ -162,7 +168,50 @@ class KinetiqBackendApplicationIT {
                 .exchange();
 
         assertThat(signedOut).hasStatus(HttpStatus.NO_CONTENT);
-        assertThat(mvc.get().uri("/api/v1/exercises").cookie(session)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(session)).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
+    void shouldReplaceEarlierSignIn_whenSomeoneSignsInOverIt() {
+        saveAccount("it.first@example.com", Role.TRAINER);
+        AccountId client = saveAccount("it.second@example.com", Role.CLIENT);
+        Cookie trainer = signIn("it.first@example.com").getResponse().getCookie("SESSION");
+
+        Cookie session = signIn("it.second@example.com", trainer).getResponse().getCookie("SESSION");
+
+        assertThat(session.getValue()).isNotEqualTo(trainer.getValue());
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(trainer)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(session))
+                .bodyJson()
+                .extractingPath("$.id")
+                .isEqualTo(client.value().toString());
+        assertThat(mvc.get().uri("/api/v1/exercises").cookie(session)).hasStatus(HttpStatus.FORBIDDEN);
+    }
+
+    private AccountId saveAccount(String email, Role role) {
+        AccountId id = AccountId.random();
+        accounts.save(Account.restore(
+                id,
+                "Integration Account",
+                new Email(email),
+                hasher.hash(new RawPassword("Kinetiq-2026")),
+                role,
+                ZoneId.of("Europe/Warsaw"),
+                true,
+                null,
+                null));
+        return id;
+    }
+
+    private MvcTestResult signIn(String email, Cookie... cookies) {
+        Cookie token = csrfToken(cookies);
+        return mvc.post()
+                .uri("/api/v1/sign-ins")
+                .cookie(Stream.concat(Stream.of(cookies), Stream.of(token)).toArray(Cookie[]::new))
+                .header("X-XSRF-TOKEN", token.getValue())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"%s\",\"password\":\"Kinetiq-2026\"}".formatted(email))
+                .exchange();
     }
 
     @Test
