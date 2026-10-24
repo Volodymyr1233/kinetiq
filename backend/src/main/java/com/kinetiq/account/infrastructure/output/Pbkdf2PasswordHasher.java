@@ -24,4 +24,9 @@ class Pbkdf2PasswordHasher implements PasswordHasher {
     public String hash(RawPassword password) {
         return encoder.encode(password.value());
     }
+
+    @Override
+    public boolean matches(String raw, String hash) {
+        return encoder.matches(raw, hash);
+    }
 }

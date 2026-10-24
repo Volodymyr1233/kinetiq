@@ -2,7 +2,15 @@ package com.kinetiq;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.kinetiq.account.domain.model.Account;
+import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.RawPassword;
+import com.kinetiq.account.domain.model.Role;
+import com.kinetiq.account.domain.output.AccountRepository;
+import com.kinetiq.account.domain.output.PasswordHasher;
+import com.kinetiq.common.domain.model.Email;
 import jakarta.servlet.http.Cookie;
+import java.time.ZoneId;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -29,6 +37,20 @@ class KinetiqBackendApplicationIT {
 
     @Autowired
     private JdbcIndexedSessionRepository sessions;
+
+    @Autowired
+    private AccountRepository accounts;
+
+    @Autowired
+    private PasswordHasher hasher;
+
+    private Cookie csrfToken(Cookie... cookies) {
+        var request = mvc.get().uri("/api/v1/csrf");
+        if (cookies.length > 0) {
+            request.cookie(cookies);
+        }
+        return request.exchange().getResponse().getCookie("XSRF-TOKEN");
+    }
 
     private long storedSignIns() {
         return jdbc.sql("select count(*) from spring_session").query(Long.class).single();
@@ -78,7 +100,7 @@ class KinetiqBackendApplicationIT {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldListStarterExercises_whenCallerIsSignedIn() {
         assertThat(mvc.get().uri("/api/v1/exercises"))
                 .hasStatusOk()
@@ -88,13 +110,69 @@ class KinetiqBackendApplicationIT {
     }
 
     @Test
+    @WithMockUser(roles = "CLIENT")
+    void shouldRefuseExerciseLibrary_whenCallerIsClient() {
+        var result = mvc.get().uri("/api/v1/exercises").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.not-allowed");
+        assertThat(result).bodyJson().doesNotHavePath("$.exercises");
+    }
+
+    @Test
+    void shouldStoreSignInUntilSignOut_whenTrainerSignsIn() {
+        AccountId id = AccountId.random();
+        accounts.save(Account.restore(
+                id,
+                "Integration Trainer",
+                new Email("it.trainer@example.com"),
+                hasher.hash(new RawPassword("Kinetiq-2026")),
+                Role.TRAINER,
+                ZoneId.of("Europe/Warsaw"),
+                true,
+                null,
+                null));
+        Cookie token = csrfToken();
+
+        var signedIn = mvc.post()
+                .uri("/api/v1/sign-ins")
+                .cookie(token)
+                .header("X-XSRF-TOKEN", token.getValue())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"email\":\"IT.Trainer@example.com\",\"password\":\"Kinetiq-2026\"}")
+                .exchange();
+
+        assertThat(signedIn).hasStatusOk();
+        Cookie session = signedIn.getResponse().getCookie("SESSION");
+        assertThat(session).isNotNull();
+        // the token known before sign-in is cleared, so the next state-changing request needs a new one
+        assertThat(signedIn.getResponse().getCookie("XSRF-TOKEN").getMaxAge()).isZero();
+        assertThat(jdbc.sql("select count(*) from spring_session where principal_name = ?")
+                        .param(id.value().toString())
+                        .query(Long.class)
+                        .single())
+                .isOne();
+        assertThat(mvc.get().uri("/api/v1/exercises").cookie(session)).hasStatusOk();
+
+        Cookie newToken = csrfToken(session);
+        var signedOut = mvc.delete()
+                .uri("/api/v1/sign-ins/current")
+                .cookie(session, newToken)
+                .header("X-XSRF-TOKEN", newToken.getValue())
+                .exchange();
+
+        assertThat(signedOut).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.get().uri("/api/v1/exercises").cookie(session)).hasStatus(HttpStatus.UNAUTHORIZED);
+    }
+
+    @Test
     void shouldRejectStateChangingRequest_whenCsrfTokenIsMissing() {
         assertThat(mvc.post().uri("/api/v1/anything")).hasStatus(HttpStatus.FORBIDDEN);
     }
 
     @Test
     void shouldAcceptSignUp_whenAnonymousCallerSendsCsrfTokenFromCookie() {
-        Cookie token = mvc.get().uri("/api/v1/csrf").exchange().getResponse().getCookie("XSRF-TOKEN");
+        Cookie token = csrfToken();
         assertThat(token).isNotNull();
 
         var result = mvc.post()

@@ -10,6 +10,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -19,6 +21,7 @@ import org.springframework.security.test.context.support.WithAnonymousUser;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -48,6 +51,22 @@ class GlobalExceptionHandlerTest {
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyText().doesNotContain("secret");
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("test.broken");
+    }
+
+    @ParameterizedTest
+    @CsvSource({"UNAUTHENTICATED, 401", "NOT_ALLOWED, 403", "TOO_MANY_ATTEMPTS, 429"})
+    void shouldAnswerStatusOfItsKind_whenDomainRuleRefuses(DomainException.Kind kind, int status) {
+        var result = mvc.get().uri("/test/kind/{kind}", kind).exchange();
+
+        assertThat(result).hasStatus(status);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("test.refused");
+    }
+
+    @Test
+    void shouldCopyItsProperties_whenDomainRuleHasThem() {
+        var result = mvc.get().uri("/test/kind/{kind}", "TOO_MANY_ATTEMPTS").exchange();
+
+        assertThat(result).bodyJson().extractingPath("$.waitSeconds").isEqualTo(90);
     }
 
     @Test
@@ -147,6 +166,26 @@ class GlobalExceptionHandlerTest {
                 @Override
                 public String code() {
                     return "test.broken";
+                }
+            };
+        }
+
+        @GetMapping("/test/kind/{kind}")
+        void kind(@PathVariable DomainException.Kind kind) {
+            throw new DomainException("secret rule") {
+                @Override
+                public String code() {
+                    return "test.refused";
+                }
+
+                @Override
+                public Kind kind() {
+                    return kind;
+                }
+
+                @Override
+                public Map<String, Object> properties() {
+                    return Map.of("waitSeconds", 90);
                 }
             };
         }

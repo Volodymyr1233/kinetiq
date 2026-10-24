@@ -27,7 +27,15 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(DomainException.class)
     ResponseEntity<ProblemDetail> handleDomain(DomainException exception) {
-        return ResponseEntity.badRequest().body(problem(HttpStatus.BAD_REQUEST, exception.code()));
+        HttpStatus status = switch (exception.kind()) {
+            case INVALID -> HttpStatus.BAD_REQUEST;
+            case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
+            case NOT_ALLOWED -> HttpStatus.FORBIDDEN;
+            case TOO_MANY_ATTEMPTS -> HttpStatus.TOO_MANY_REQUESTS;
+        };
+        ProblemDetail problem = problem(status, exception.code());
+        exception.properties().forEach(problem::setProperty);
+        return ResponseEntity.status(status).body(problem);
     }
 
     @ExceptionHandler(Exception.class)

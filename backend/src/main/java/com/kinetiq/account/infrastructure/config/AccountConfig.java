@@ -1,8 +1,10 @@
 package com.kinetiq.account.infrastructure.config;
 
+import com.kinetiq.account.domain.input.SignInUseCase;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
+import com.kinetiq.account.domain.service.SignInService;
 import com.kinetiq.account.domain.service.SignUpService;
 import com.kinetiq.common.domain.output.MailSender;
 import java.net.URI;
@@ -21,5 +23,10 @@ class AccountConfig {
             MailSender mailSender,
             @Value("${kinetiq.app-url}") URI appUrl) {
         return new SignUpService(accounts, hasher, mailSender, Clock.systemUTC(), appUrl);
+    }
+
+    @Bean
+    SignInUseCase signInUseCase(AccountRepository accounts, PasswordHasher hasher) {
+        return new SignInService(accounts, hasher);
     }
 }
