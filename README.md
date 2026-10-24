@@ -19,12 +19,13 @@ cd backend
 
 Starts the API on http://localhost:8080 with the `local` profile, and PostgreSQL 18 from `compose.yaml` on port 15432 (database, user and password: `kinetiq`). API documentation: http://localhost:8080/swagger-ui.html.
 
-The `local` profile adds demo data. Both accounts use the password `Kinetiq-demo-1`:
+The `local` profile adds demo data. Every account uses the password `Kinetiq-demo-1`:
 
 | Email | State |
 |---|---|
 | `demo.trainer@example.com` | Trainer, email confirmed |
 | `demo.unconfirmed@example.com` | Trainer, email not confirmed |
+| `demo.client@example.com` | Client, email confirmed |
 
 ```bash
 cd frontend

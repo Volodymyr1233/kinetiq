@@ -8,26 +8,15 @@ import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.ConfirmationToken;
-import com.kinetiq.account.domain.model.EmailConfirmation;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
-import com.kinetiq.account.domain.output.AccountRepository;
-import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.domain.output.Mail;
-import com.kinetiq.common.domain.output.MailSender;
 import java.net.URI;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Locale;
-import java.util.Map;
-import java.util.Optional;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -245,84 +234,5 @@ class SignUpServiceTest {
     static Account confirmedAccount(String email) {
         return Account.restore(
                 AccountId.random(), "Marek Nowak", new Email(email), "hash", Role.TRAINER, WARSAW, true, null, null);
-    }
-
-    static class InMemoryAccountRepository implements AccountRepository {
-
-        final Map<Email, Account> byEmail = new HashMap<>();
-
-        Account add(Account account) {
-            byEmail.put(account.getEmail(), account);
-            return account;
-        }
-
-        @Override
-        public void save(Account account) {
-            add(account);
-        }
-
-        @Override
-        public Optional<Account> findByEmail(Email email) {
-            return Optional.ofNullable(byEmail.get(email));
-        }
-
-        @Override
-        public Optional<Account> findByConfirmationTokenHash(String tokenHash) {
-            return byEmail.values().stream()
-                    .filter(account -> account.getConfirmation()
-                            .map(EmailConfirmation::tokenHash)
-                            .filter(tokenHash::equals)
-                            .isPresent())
-                    .findFirst();
-        }
-    }
-
-    static class RecordingPasswordHasher implements PasswordHasher {
-
-        int calls;
-
-        @Override
-        public String hash(RawPassword password) {
-            calls++;
-            return "hashed:" + password.value();
-        }
-    }
-
-    static class RecordingMailSender implements MailSender {
-
-        final List<Mail> sent = new ArrayList<>();
-
-        @Override
-        public void send(Mail mail) {
-            sent.add(mail);
-        }
-    }
-
-    static class MutableClock extends Clock {
-
-        private Instant now;
-
-        MutableClock(Instant now) {
-            this.now = now;
-        }
-
-        void advance(Duration duration) {
-            now = now.plus(duration);
-        }
-
-        @Override
-        public Instant instant() {
-            return now;
-        }
-
-        @Override
-        public ZoneId getZone() {
-            return ZoneOffset.UTC;
-        }
-
-        @Override
-        public Clock withZone(ZoneId zone) {
-            return this;
-        }
     }
 }
