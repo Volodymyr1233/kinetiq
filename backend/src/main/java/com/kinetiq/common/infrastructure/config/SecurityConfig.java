@@ -11,6 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.savedrequest.NullRequestCache;
 
 @Configuration(proxyBeanMethods = false)
 public class SecurityConfig {
@@ -40,6 +41,8 @@ public class SecurityConfig {
                         .anyRequest()
                         .authenticated())
                 .csrf(CsrfConfigurer::spa)
+                // a saved request would store a session row for every anonymous call; the SPA keeps its own return path
+                .requestCache(cache -> cache.requestCache(new NullRequestCache()))
                 // the CSRF filter uses this access-denied handler too, so a missing token also gets a code
                 .exceptionHandling(errors -> errors.authenticationEntryPoint((request, response, exception) ->
                                 writeProblem(response, HttpStatus.UNAUTHORIZED, "request.unauthenticated"))

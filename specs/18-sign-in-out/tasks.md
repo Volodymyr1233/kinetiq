@@ -21,7 +21,7 @@ description: "Tasks for story #18, Trainer and client sign in and out"
 
 ## Phase 1: Setup — spec commit
 
-- [ ] T001 Commit `specs/18-sign-in-out/` and the `Sign-in` term in `CONTEXT.md` as `docs: add spec for sign in and out`
+- [X] T001 Commit `specs/18-sign-in-out/` and the `Sign-in` term in `CONTEXT.md` as `docs: add spec for sign in and out`
 
 ---
 
@@ -31,12 +31,12 @@ description: "Tasks for story #18, Trainer and client sign in and out"
 
 **Independent test**: a saved sign-in is a row in `spring_session`; an anonymous `401` adds none.
 
-- [ ] T002 [US3] Add `implementation("org.springframework.boot:spring-boot-starter-session-jdbc")` to `backend/build.gradle.kts` (confirm the artifact name for Boot 4.1 through context7 first)
-- [ ] T003 [P] [US3] Write `R/db/migration/V5__create_spring_session.sql` from Spring Session's `schema-postgresql.sql` in lower case, exactly as data-model.md "Sign-in": `spring_session` (`primary_id char(36)`, `session_id char(36)`, `creation_time bigint`, `last_access_time bigint`, `max_inactive_interval int`, `expiry_time bigint` all not null, `principal_name varchar(100)` null), `spring_session_pk`, unique `spring_session_ix1 (session_id)`, `spring_session_ix2 (expiry_time)`, `spring_session_ix3 (principal_name)`; `spring_session_attributes` (`session_primary_id char(36)`, `attribute_name varchar(200)`, `attribute_bytes bytea`, all not null), `spring_session_attributes_pk (session_primary_id, attribute_name)`, `spring_session_attributes_fk` → `spring_session(primary_id)` on delete cascade
-- [ ] T004 [P] [US3] In `R/application.yaml` set `spring.session.timeout: 14d`, `spring.session.jdbc.initialize-schema: never`, and `server.servlet.session.cookie`: `http-only: true`, `same-site: lax`, `secure: true`, `max-age: 400d` with a `ponytail:` comment (R2: the cookie is written only at sign-in, so a sign-in used daily ends after 400 days; rewriting it per response is the upgrade path); in `R/application-local.yaml` set `server.servlet.session.cookie.secure: false` (the Vite proxy is plain http)
-- [ ] T005 [US3] In `B/common/infrastructure/config/SecurityConfig.java` add `.requestCache(cache -> cache.requestCache(new NullRequestCache()))` with a comment on why (R3: the saved request would create a stored sign-in per anonymous request)
-- [ ] T006 [US3] Extend `BT/KinetiqBackendApplicationIT.java`: a session created and saved through the `SessionRepository` bean appears in `spring_session` (count through `JdbcClient`); an anonymous `GET /api/v1/anything` answers 401, sets no `SESSION` cookie and adds no row
-- [ ] T007 Run `./gradlew check` and `./gradlew bootRun` (V5 applied, Hibernate still validates); commit `feat(backend): store sign-ins in the database (#19)`
+- [X] T002 [US3] Add `implementation("org.springframework.boot:spring-boot-starter-session-jdbc")` to `backend/build.gradle.kts` (confirm the artifact name for Boot 4.1 through context7 first)
+- [X] T003 [P] [US3] Write `R/db/migration/V5__create_spring_session.sql` from Spring Session's `schema-postgresql.sql` in lower case, exactly as data-model.md "Sign-in": `spring_session` (`primary_id char(36)`, `session_id char(36)`, `creation_time bigint`, `last_access_time bigint`, `max_inactive_interval int`, `expiry_time bigint` all not null, `principal_name varchar(100)` null), `spring_session_pk`, unique `spring_session_ix1 (session_id)`, `spring_session_ix2 (expiry_time)`, `spring_session_ix3 (principal_name)`; `spring_session_attributes` (`session_primary_id char(36)`, `attribute_name varchar(200)`, `attribute_bytes bytea`, all not null), `spring_session_attributes_pk (session_primary_id, attribute_name)`, `spring_session_attributes_fk` → `spring_session(primary_id)` on delete cascade
+- [X] T004 [P] [US3] In `R/application.yaml` set `spring.session.timeout: 14d`, `spring.session.jdbc.initialize-schema: never`, and `server.servlet.session.cookie`: `http-only: true`, `same-site: lax`, `secure: true`, `max-age: 400d` with a `ponytail:` comment (R2: the cookie is written only at sign-in, so a sign-in used daily ends after 400 days; rewriting it per response is the upgrade path); in `R/application-local.yaml` set `server.servlet.session.cookie.secure: false` (the Vite proxy is plain http)
+- [X] T005 [US3] In `B/common/infrastructure/config/SecurityConfig.java` add `.requestCache(cache -> cache.requestCache(new NullRequestCache()))` with a comment on why (R3: the saved request would create a stored sign-in per anonymous request)
+- [X] T006 [US3] Extend `BT/KinetiqBackendApplicationIT.java`: a session created and saved through the `SessionRepository` bean appears in `spring_session` (count through `JdbcClient`); an anonymous `GET /api/v1/anything` answers 401, sets no `SESSION` cookie and adds no row
+- [X] T007 Run `./gradlew check` and `./gradlew bootRun` (V5 applied, Hibernate still validates); commit `feat(backend): store sign-ins in the database (#19)`
 
 ---
 
