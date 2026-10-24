@@ -1,15 +1,10 @@
-import { render, screen, within } from '@testing-library/react'
+import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { createRoutes } from '@/app/router'
+import { problem, renderAppAt, SIGNED_IN } from '@/test/page'
 
 async function renderTrainerAt(path: string) {
-  render(
-    <RouterProvider
-      router={createMemoryRouter(createRoutes(), { initialEntries: [path] })}
-    />,
-  )
+  renderAppAt(path, SIGNED_IN.TRAINER)
   return within(await screen.findByRole('navigation', { name: 'Trainer area' }))
 }
 
@@ -53,5 +48,35 @@ describe('TrainerArea', () => {
       'aria-current',
     )
     expect(screen.getByRole('banner')).toHaveTextContent('Messages')
+  })
+
+  it('shows who is signed in and signs out to the sign-in page, clearing the tab', async () => {
+    sessionStorage.setItem('kinetiq.quiz', '{}')
+    renderAppAt('/trainer/clients', SIGNED_IN.TRAINER)
+    const user = userEvent.setup()
+
+    expect(await screen.findByText('Marek Nowak')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Sign out' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Sign in' }),
+    ).toBeInTheDocument()
+    expect(sessionStorage.length).toBe(0)
+  })
+
+  it('stays signed in with the generic message when sign-out fails', async () => {
+    renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, () =>
+      problem(500, { status: 500, code: 'internal.error' }),
+    )
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: 'Sign out' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Something went wrong on our side. Try again in a moment.',
+    )
+    expect(
+      screen.getByRole('navigation', { name: 'Trainer area' }),
+    ).toBeInTheDocument()
   })
 })

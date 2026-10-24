@@ -1,5 +1,4 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { EyeIcon, EyeOffIcon } from 'lucide-react'
 import { useState } from 'react'
 import { Controller, useForm, type FieldPath } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -16,17 +15,12 @@ import {
   FieldLabel,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import {
-  InputGroup,
-  InputGroupAddon,
-  InputGroupButton,
-  InputGroupInput,
-} from '@/components/ui/input-group'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
 import { useSignUp } from '../api/account'
 import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
 import { CheckEmailCard } from '../components/check-email-card'
+import { PasswordInput } from '../components/password-input'
 import { signUpSchema, type SignUpValues } from '../sign-up-schema'
 
 type FieldName = FieldPath<SignUpValues>
@@ -67,7 +61,6 @@ export function SignUpPage() {
   const signUp = useSignUp()
   const [sentTo, setSentTo] = useState<string>()
   const [failure, setFailure] = useState<string>()
-  const [passwordShown, setPasswordShown] = useState(false)
   const form = useForm<SignUpValues, unknown, z.output<typeof signUpSchema>>({
     resolver: zodResolver(signUpSchema),
     mode: 'onSubmit',
@@ -87,7 +80,6 @@ export function SignUpPage() {
         onSuccess: () => {
           // the password never stays in the form once the person leaves it
           form.resetField('password')
-          setPasswordShown(false)
           setSentTo(values.email)
         },
         onError: (error) => {
@@ -175,33 +167,14 @@ export function SignUpPage() {
               <FieldLabel htmlFor="password">
                 {t('account.signUp.password')}
               </FieldLabel>
-              <InputGroup className="h-(--control-h-touch)">
-                <InputGroupInput
-                  id="password"
-                  type={passwordShown ? 'text' : 'password'}
-                  autoComplete="new-password"
-                  maxLength={128}
-                  className="h-full text-base md:text-base"
-                  readOnly={busy}
-                  aria-invalid={!!errors.password}
-                  aria-describedby="password-rules"
-                  {...form.register('password')}
-                />
-                <InputGroupAddon align="inline-end">
-                  <InputGroupButton
-                    size="icon-sm"
-                    className="size-11"
-                    aria-label={t(
-                      passwordShown
-                        ? 'account.signUp.hidePassword'
-                        : 'account.signUp.showPassword',
-                    )}
-                    onClick={() => setPasswordShown((shown) => !shown)}
-                  >
-                    {passwordShown ? <EyeOffIcon /> : <EyeIcon />}
-                  </InputGroupButton>
-                </InputGroupAddon>
-              </InputGroup>
+              <PasswordInput
+                id="password"
+                autoComplete="new-password"
+                readOnly={busy}
+                aria-invalid={!!errors.password}
+                aria-describedby="password-rules"
+                {...form.register('password')}
+              />
               {/* the rules are the help text; when they are broken the same text becomes the error */}
               {errors.password ? (
                 <FieldError id="password-rules">
