@@ -161,3 +161,8 @@ export function allowedStep(
   }
   return furthest
 }
+
+/** Whether the review may open: step 7 reached and every earlier step answered. */
+export function isComplete(draft: QuizDraft): boolean {
+  return allowedStep(String(STEP_COUNT), draft) === STEP_COUNT
+}

@@ -3,6 +3,7 @@ import {
   allowedStep,
   draftSchema,
   emptyDraft,
+  isComplete,
   isStepValid,
   type QuizDraft,
 } from './quiz-schema'
@@ -136,4 +137,20 @@ describe('which step may open', () => {
       expect(allowedStep(requested, draft(6))).toBe(6)
     },
   )
+})
+
+describe('whether the review may open', () => {
+  it('opens once step 7 is reached with every answer valid', () => {
+    expect(isComplete({ answers: VALID, reached: 7 })).toBe(true)
+  })
+
+  it('stays closed before step 7 is reached', () => {
+    expect(isComplete({ answers: VALID, reached: 6 })).toBe(false)
+  })
+
+  it('stays closed while an earlier step has no valid answer', () => {
+    expect(isComplete({ answers: { ...VALID, age: '' }, reached: 7 })).toBe(
+      false,
+    )
+  })
 })

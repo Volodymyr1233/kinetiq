@@ -90,3 +90,5 @@ Each entry: decision, reason, alternatives.
 **Decision**: In task #51, Continue on step 7 points to `/app/quiz/review`. Task #56 adds that route. Until then the address falls back to step 7, so the button has no visible effect, except that the device's back needs one extra press to leave step 7.
 
 **Why**: Spec assumption: until task #56, step 7 is the end of the flow. No client can sign in before story #18, so nobody meets the gap outside development.
+
+**Update**: Task #56 added `/app/quiz/review` (`specs/54-quiz-review-submit`, research R1), so Continue on step 7 now opens the review.

@@ -19,6 +19,8 @@ async function signIn(email: string) {
 }
 
 describe('routes', () => {
+  afterEach(() => sessionStorage.clear())
+
   it.each([
     ['/trainer', SIGNED_IN.TRAINER, 'Clients'],
     ['/app', SIGNED_IN.CLIENT, 'Today'],
@@ -28,6 +30,31 @@ describe('routes', () => {
 
     expect(
       await screen.findByRole('heading', { name: heading }),
+    ).toBeInTheDocument()
+  })
+
+  it('opens the quiz review once every answer is in', async () => {
+    sessionStorage.setItem(
+      'kinetiq.quiz',
+      JSON.stringify({
+        answers: {
+          goal: 'BUILD_MUSCLE',
+          experience: 'YEARS_1_TO_2',
+          level: 'INTERMEDIATE',
+          age: '29',
+          height: '168',
+          weight: '62.5',
+          likes: ['WEIGHTS'],
+          days: 3,
+          notes: '',
+        },
+        reached: 7,
+      }),
+    )
+    renderAppAt('/app/quiz/review', SIGNED_IN.CLIENT)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Check your answers' }),
     ).toBeInTheDocument()
   })
 
@@ -55,7 +82,12 @@ describe('guards', () => {
     vi.restoreAllMocks()
   })
 
-  it.each(['/trainer/exercises', '/app/today', '/app/quiz/goal'])(
+  it.each([
+    '/trainer/exercises',
+    '/app/today',
+    '/app/quiz/goal',
+    '/app/quiz/review',
+  ])(
     'sends a visitor who is not signed in from %s to sign-in',
     async (path) => {
       const { router } = renderAppAt(path, null)
@@ -114,7 +146,7 @@ describe('guards', () => {
     ).not.toBeInTheDocument()
   })
 
-  it.each(['/app/today', '/app/quiz'])(
+  it.each(['/app/today', '/app/quiz', '/app/quiz/review'])(
     'sends a trainer who opens %s to the trainer area',
     async (path) => {
       const { router } = renderAppAt(path, SIGNED_IN.TRAINER)
