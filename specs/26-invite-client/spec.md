@@ -102,7 +102,7 @@ A trainer who closed the dialog without copying the link gets a link for an open
 - An invite is open while less than 7 days have passed since it was sent; at exactly 7 days it has expired.
 - An email that gets an account after the invite was sent (for example, by trainer sign-up) keeps its invite in the list until it expires or is revoked; using it is refused by story #30.
 - "Sent" and "Today" use the trainer's time zone.
-- Clipboard access refused by the browser: the "link ready" dialog says "Couldn't copy. Select the link and copy it." and the link field stays selectable; the list's copy action shows the same message as an error toast that stays until dismissed.
+- Clipboard access refused by the browser: the "link ready" dialog says "Couldn't copy. Select the link and copy it." and the link field stays selectable; the list's copy action has already replaced the link, so it shows the new link in a dialog to copy by hand instead of losing it.
 - The trainer closes the "link ready" dialog without copying: the invite still exists and the email was still sent.
 - Email delivery fails or is not configured: the invite is still created and the copyable link still shown; the failure does not reach the trainer.
 - A trainer who makes more than 20 invite requests in one hour, refused ones with a well-formed email included, gets "You've sent many invites. Try again later." and nothing is created or sent.
