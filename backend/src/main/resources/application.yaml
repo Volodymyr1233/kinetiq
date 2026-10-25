@@ -17,6 +17,23 @@ spring:
   docker:
     compose:
       lifecycle-management: start_only
+  session:
+    # idle time; every request starts it again
+    timeout: 14d
+    jdbc:
+      # the tables come from Flyway
+      initialize-schema: never
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        same-site: lax
+        secure: true
+        # without an age the cookie dies with the browser; the server's 14 idle days end a sign-in
+        # ponytail: written only at sign-in, so daily use still ends after 400 days (browser cap); rewrite per answer to lift
+        max-age: 400d
 
 kinetiq:
   # where links in emails point to

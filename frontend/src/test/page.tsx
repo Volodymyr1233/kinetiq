@@ -1,8 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { StrictMode, type ReactNode } from 'react'
-import { MemoryRouter } from 'react-router'
+import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { vi } from 'vitest'
+import { createRoutes } from '@/app/router'
+import { queryClient } from '@/lib/query-client'
 
 export type Reply = (request: Request) => Promise<Response> | Response
 
@@ -42,4 +44,62 @@ export function renderPage(page: ReactNode) {
 
 export function pathsOf(requests: Request[]) {
   return requests.map((request) => new URL(request.url).pathname)
+}
+
+export const SIGNED_IN = {
+  TRAINER: {
+    id: '00000000-0000-4000-8000-000000000001',
+    name: 'Marek Nowak',
+    role: 'TRAINER',
+    timeZone: 'Europe/Warsaw',
+  },
+  CLIENT: {
+    id: '00000000-0000-4000-8000-000000000003',
+    name: 'Anna Kowalska',
+    role: 'CLIENT',
+    timeZone: 'Europe/Warsaw',
+  },
+} as const
+
+export function json(body: object, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
+/**
+ * Renders the whole app at a path with the app's own query client, as the guards use it. The current account is
+ * the given one, or nobody when `null`, until a sign-in or sign-out through `reply` changes it.
+ */
+export function renderAppAt(
+  path: string,
+  account: object | null,
+  reply: Reply = () => new Response(null, { status: 204 }),
+) {
+  queryClient.clear()
+  let current = account
+  const requests = stubApi(async (request) => {
+    const call = `${request.method} ${new URL(request.url).pathname}`
+    if (call === 'GET /api/v1/accounts/me') {
+      return current
+        ? json(current)
+        : json({ status: 401, code: 'request.unauthenticated' }, 401)
+    }
+    const response = await reply(request)
+    // the server ends or starts the sign-in, so later checks answer accordingly
+    if (call === 'DELETE /api/v1/sign-ins/current' && response.ok)
+      current = null
+    if (call === 'POST /api/v1/sign-ins' && response.ok) {
+      current = await response.clone().json()
+    }
+    return response
+  })
+  const router = createMemoryRouter(createRoutes(), { initialEntries: [path] })
+  render(
+    <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+  return { requests, router }
 }

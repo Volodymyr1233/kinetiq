@@ -8,8 +8,10 @@ const alertVariants = cva(
     variants: {
       variant: {
         default: "bg-card text-card-foreground",
+        // Kinetiq tones: a muted surface and a tinted border, body text stays foreground for contrast
         destructive:
-          "bg-card text-destructive *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+          "border-destructive/30 bg-destructive-muted text-foreground *:data-[slot=alert-description]:text-foreground *:[svg]:text-destructive",
+        info: "border-info/30 bg-info-muted text-foreground *:data-[slot=alert-description]:text-foreground *:[svg]:text-info",
       },
     },
     defaultVariants: {

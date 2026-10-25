@@ -5,6 +5,7 @@ import {
   SlidersHorizontalIcon,
   UsersIcon,
 } from 'lucide-react'
+import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
   matchPath,
@@ -17,6 +18,7 @@ import { PlaceholderPage } from '@/app/placeholder-page'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarGroup,
   SidebarHeader,
   SidebarMenu,
@@ -24,6 +26,9 @@ import {
   SidebarMenuItem,
   SidebarProvider,
 } from '@/components/ui/sidebar'
+import { currentAccountQuery } from '@/features/account/api/account'
+import { AccountAvatar } from '@/features/account/components/account-avatar'
+import { SignOutButton } from '@/features/account/components/sign-out-button'
 
 const NAV_ITEMS = [
   { path: 'clients', labelKey: 'nav.clients', Icon: UsersIcon },
@@ -36,6 +41,7 @@ const NAV_ITEMS = [
 export function TrainerArea() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
+  const { data: account } = useQuery(currentAccountQuery)
   const active = NAV_ITEMS.find((item) =>
     matchPath({ path: `/trainer/${item.path}`, end: false }, pathname),
   )
@@ -72,6 +78,20 @@ export function TrainerArea() {
             </nav>
           </SidebarGroup>
         </SidebarContent>
+        <SidebarFooter className="border-sidebar-border gap-3 border-t p-4">
+          {account && (
+            <div className="flex min-w-0 items-center gap-2.5">
+              <AccountAvatar name={account.name} />
+              <div className="min-w-0 text-sm">
+                <p className="truncate font-medium">{account.name}</p>
+                <p className="text-muted-foreground text-xs">
+                  {t(`account.roles.${account.role}`)}
+                </p>
+              </div>
+            </div>
+          )}
+          <SignOutButton variant="outline" className="w-full" />
+        </SidebarFooter>
       </Sidebar>
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="bg-background sticky top-0 z-10 flex h-14 items-center border-b px-6">

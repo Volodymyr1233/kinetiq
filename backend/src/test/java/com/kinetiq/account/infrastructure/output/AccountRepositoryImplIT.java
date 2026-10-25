@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.Account;
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.ConfirmationToken;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Instant;
@@ -38,6 +39,24 @@ class AccountRepositoryImplIT {
                 .get()
                 .usingRecursiveComparison()
                 .isEqualTo(account);
+    }
+
+    @Test
+    void shouldFindAccountWithChangedTimeZone_whenSavedAgain() {
+        Account account = trainer("marek@example.com");
+        repository.save(account);
+        account.changeTimeZone(ZoneId.of("Europe/London"));
+        repository.save(account);
+
+        assertThat(repository.findById(account.getId()))
+                .get()
+                .extracting(Account::getTimeZone)
+                .isEqualTo(ZoneId.of("Europe/London"));
+    }
+
+    @Test
+    void shouldFindNothing_whenIdIsUnknown() {
+        assertThat(repository.findById(AccountId.random())).isEmpty();
     }
 
     @Test

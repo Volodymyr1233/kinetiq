@@ -30,6 +30,9 @@
     "trainer": "Trainer area",
     "client": "Client area"
   },
+  "areaError": {
+    "retry": "Try again"
+  },
   "placeholderPage": {
     "body": "This screen arrives with its feature."
   },
@@ -49,24 +52,54 @@
       "method-not-allowed": "This action is not available. Reload the page and try again.",
       "unsupported-media-type": "The request could not be read. Reload the page and try again.",
       "unauthenticated": "Sign in to continue.",
-      "forbidden": "Your session has expired. Reload the page and try again."
+      "forbidden": "This page was open too long. Reload it and try again.",
+      "not-allowed": "This is not available for your account."
     },
     "internal": {
       "error": "Something went wrong on our side. Try again in a moment."
     },
     "account": {
-      "confirmation-link-invalid": "This link no longer works. Request a new one."
+      "confirmation-link-invalid": "This link no longer works. Request a new one.",
+      "credentials-invalid": "Email or password is wrong. Check both and try again.",
+      "email-not-confirmed": "Confirm your email first, then sign in.",
+      "sign-in-locked": "Too many attempts. Try again later."
     }
   },
   "account": {
     "passwordRules": "8–128 characters with at least one lower-case letter, one upper-case letter, one digit and one special character.",
     "errors": {
+      "signInEmail": "Enter your email.",
+      "signInPassword": "Enter your password.",
       "name": "Enter your name.",
       "nameLength": "Use 100 characters or fewer.",
       "email": "Enter an email like name@example.com.",
       "adult": "Confirm that you are 18 or older."
     },
     "signIn": "Sign in",
+    "signOut": "Sign out",
+    "roles": {
+      "TRAINER": "Trainer",
+      "CLIENT": "Client"
+    },
+    "signInPage": {
+      "title": "Sign in",
+      "description": "Trainers and clients sign in here.",
+      "email": "Email",
+      "emailPlaceholder": "e.g. anna@example.com",
+      "password": "Password",
+      "forgotPassword": "Forgot password?",
+      "submit": "Sign in",
+      "wrongTitle": "Email or password is wrong.",
+      "wrongBody": "Check both and try again.",
+      "lockedTitle": "Too many attempts.",
+      "lockedBody_one": "Try again in {{count}} minute.",
+      "lockedBody_other": "Try again in {{count}} minutes.",
+      "unconfirmedTitle": "Confirm your email",
+      "unconfirmedBody": "We sent a link to <strong>{{email}}</strong>. Open it, then sign in.",
+      "resend": "Resend link",
+      "resent": "Link sent again.",
+      "newTrainer": "New trainer? <signUp>Create an account</signUp>. Clients join from their trainer's invite."
+    },
     "signUp": {
       "title": "Create your trainer account",
       "description": "Your clients join later, from your invite.",

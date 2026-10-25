@@ -5,6 +5,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
@@ -17,6 +18,7 @@ import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -43,6 +45,14 @@ class AccountControllerTest {
 
     @MockitoBean
     private SignUpUseCase signUp;
+
+    @MockitoBean
+    private SourceAddressLimiter limiter;
+
+    @BeforeEach
+    void allowEveryAddress() {
+        when(limiter.tryAcquire(any(), any())).thenReturn(true);
+    }
 
     private static Map<String, Object> validSignUp() {
         return Map.of(
@@ -130,6 +140,16 @@ class AccountControllerTest {
         }
 
         @Test
+        void shouldAcceptWithoutSigningUp_whenAddressMadeTooManySignUps() {
+            when(limiter.tryAcquire(SourceAddressLimiter.Kind.SIGN_UP, "127.0.0.1")).thenReturn(false);
+
+            var result = post("/api/v1/accounts", validSignUp());
+
+            assertThat(result).hasStatus(HttpStatus.ACCEPTED);
+            verify(signUp, never()).signUpTrainer(any());
+        }
+
+        @Test
         void shouldFailValidation_whenTimeZoneIsUnknown() {
             var result = post("/api/v1/accounts", with("timeZone", "Etc/Unknown"));
 
@@ -194,6 +214,17 @@ class AccountControllerTest {
 
             assertThat(result).hasStatus(HttpStatus.ACCEPTED);
             verify(signUp).sendConfirmationLink(new Email("marek@example.com"), Locale.forLanguageTag("pl"));
+        }
+
+        @Test
+        void shouldAcceptWithoutSending_whenAddressAskedTooOften() {
+            when(limiter.tryAcquire(SourceAddressLimiter.Kind.CONFIRMATION_LINK, "127.0.0.1"))
+                    .thenReturn(false);
+
+            var result = post("/api/v1/confirmation-links", Map.of("email", "marek@example.com"));
+
+            assertThat(result).hasStatus(HttpStatus.ACCEPTED);
+            verify(signUp, never()).sendConfirmationLink(any(), any());
         }
 
         @Test

@@ -72,7 +72,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldPassFiltersToUseCase_whenTheyAreGiven() {
         assertThat(get("?category=CORE&name=pla", "en")).hasStatusOk();
 
@@ -80,7 +80,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldPassNoFilters_whenParametersAreAbsent() {
         assertThat(get("", "en")).hasStatusOk();
 
@@ -88,7 +88,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldAnswerInPolishWithEnglishFallback_whenPolishIsAsked() {
         var result = get("", "pl-PL,pl;q=0.9");
 
@@ -99,7 +99,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldAnswerInEnglish_whenLanguageIsUnsupported() {
         var result = get("", "de-DE");
 
@@ -108,7 +108,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldReturnExerciseTotalAndPlans_whenListed() {
         var result = get("", "en");
 
@@ -130,7 +130,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldRefuseWithFieldError_whenCategoryIsUnknown() {
         var result = get("?category=NOPE", "en");
 
@@ -145,7 +145,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldRefuseWithFieldError_whenNameIsLongerThan100() {
         var result = get("?name=" + "a".repeat(101), "en");
 
@@ -159,7 +159,7 @@ class ExerciseControllerTest {
     }
 
     @Test
-    @WithMockUser
+    @WithMockUser(roles = "TRAINER")
     void shouldHideInternals_whenListingFailsUnexpectedly() {
         when(listExercises.list(any())).thenThrow(new IllegalStateException("select * from exercises failed"));
 
@@ -178,6 +178,17 @@ class ExerciseControllerTest {
 
         assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.unauthenticated");
+        verify(listExercises, never()).list(any());
+    }
+
+    @Test
+    @WithMockUser(roles = "CLIENT")
+    void shouldRefuse_whenCallerIsClient() {
+        var result = get("", "en");
+
+        assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.not-allowed");
+        assertThat(result).bodyJson().doesNotHavePath("$.exercises");
         verify(listExercises, never()).list(any());
     }
 }

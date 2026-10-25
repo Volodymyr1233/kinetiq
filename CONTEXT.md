@@ -18,6 +18,10 @@ _Avoid_: Athlete, user, trainee
 What a trainer or client signs in with: name, email, password and role. A trainer creates one by signing up; a client gets one through an invite.
 _Avoid_: User, profile, login
 
+**Sign-in**:
+One browser's signed-in state for one account. It ends when the person signs out or after 14 days without use; an account can have one per device.
+_Avoid_: Session, login
+
 **Confirmation link**:
 A single-use link sent to an account's email that proves the person controls that address.
 _Avoid_: Verification code, activation link

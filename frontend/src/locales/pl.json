@@ -30,6 +30,9 @@
     "trainer": "Panel trenera",
     "client": "Panel klienta"
   },
+  "areaError": {
+    "retry": "Spróbuj ponownie"
+  },
   "placeholderPage": {
     "body": "Ten ekran pojawi się razem ze swoją funkcją."
   },
@@ -49,24 +52,56 @@
       "method-not-allowed": "Ta czynność jest niedostępna. Odśwież stronę i spróbuj ponownie.",
       "unsupported-media-type": "Nie udało się odczytać żądania. Odśwież stronę i spróbuj ponownie.",
       "unauthenticated": "Zaloguj się, aby kontynuować.",
-      "forbidden": "Sesja wygasła. Odśwież stronę i spróbuj ponownie."
+      "forbidden": "Ta strona była otwarta zbyt długo. Odśwież ją i spróbuj ponownie.",
+      "not-allowed": "Ta funkcja nie jest dostępna dla Twojego konta."
     },
     "internal": {
       "error": "Coś poszło nie tak po naszej stronie. Spróbuj ponownie za chwilę."
     },
     "account": {
-      "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy."
+      "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy.",
+      "credentials-invalid": "E-mail lub hasło są nieprawidłowe. Sprawdź oba i spróbuj ponownie.",
+      "email-not-confirmed": "Najpierw potwierdź e-mail, a potem się zaloguj.",
+      "sign-in-locked": "Zbyt wiele prób. Spróbuj ponownie później."
     }
   },
   "account": {
     "passwordRules": "Od 8 do 128 znaków, w tym co najmniej jedna mała litera, jedna wielka litera, jedna cyfra i jeden znak specjalny.",
     "errors": {
+      "signInEmail": "Podaj e-mail.",
+      "signInPassword": "Podaj hasło.",
       "name": "Podaj imię i nazwisko.",
       "nameLength": "Użyj najwyżej 100 znaków.",
       "email": "Podaj e-mail w formacie nazwa@example.com.",
       "adult": "Potwierdź, że masz co najmniej 18 lat."
     },
     "signIn": "Zaloguj się",
+    "signOut": "Wyloguj się",
+    "roles": {
+      "TRAINER": "Trener",
+      "CLIENT": "Klient"
+    },
+    "signInPage": {
+      "title": "Zaloguj się",
+      "description": "Tu logują się trenerzy i klienci.",
+      "email": "E-mail",
+      "emailPlaceholder": "np. anna@example.com",
+      "password": "Hasło",
+      "forgotPassword": "Nie pamiętasz hasła?",
+      "submit": "Zaloguj się",
+      "wrongTitle": "E-mail lub hasło są nieprawidłowe.",
+      "wrongBody": "Sprawdź oba i spróbuj ponownie.",
+      "lockedTitle": "Zbyt wiele prób.",
+      "lockedBody_one": "Spróbuj ponownie za {{count}} minutę.",
+      "lockedBody_few": "Spróbuj ponownie za {{count}} minuty.",
+      "lockedBody_many": "Spróbuj ponownie za {{count}} minut.",
+      "lockedBody_other": "Spróbuj ponownie za {{count}} minuty.",
+      "unconfirmedTitle": "Potwierdź swój e-mail",
+      "unconfirmedBody": "Wysłaliśmy link na adres <strong>{{email}}</strong>. Otwórz go, a potem się zaloguj.",
+      "resend": "Wyślij link ponownie",
+      "resent": "Link wysłany ponownie.",
+      "newTrainer": "Jesteś nowym trenerem? <signUp>Załóż konto</signUp>. Klienci dołączają z zaproszenia od trenera."
+    },
     "signUp": {
       "title": "Załóż konto trenera",
       "description": "Twoi klienci dołączą później, z Twojego zaproszenia.",
