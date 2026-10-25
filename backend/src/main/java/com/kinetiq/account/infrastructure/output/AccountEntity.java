@@ -1,6 +1,9 @@
 package com.kinetiq.account.infrastructure.output;
 
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
+import com.kinetiq.account.domain.model.Theme;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.infrastructure.output.BaseEntity;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -31,6 +34,16 @@ class AccountEntity extends BaseEntity {
     private Role role;
 
     private String timeZone;
+
+    @Enumerated(EnumType.STRING)
+    private WeightUnit units;
+
+    @Enumerated(EnumType.STRING)
+    private Language language;
+
+    @Enumerated(EnumType.STRING)
+    private Theme theme;
+
     private boolean emailConfirmed;
 
     @JdbcTypeCode(SqlTypes.CHAR)

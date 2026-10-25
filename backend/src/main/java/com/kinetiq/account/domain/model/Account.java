@@ -29,6 +29,7 @@ public class Account {
     private final String passwordHash;
     private final Role role;
     private ZoneId timeZone;
+    private AccountSettings settings;
     private boolean emailConfirmed;
 
     @Getter(AccessLevel.NONE)
@@ -37,7 +38,8 @@ public class Account {
     @Getter(AccessLevel.NONE)
     private Instant mailSentAt;
 
-    public static Account signUpTrainer(String name, Email email, String passwordHash, ZoneId timeZone) {
+    public static Account signUpTrainer(
+            String name, Email email, String passwordHash, ZoneId timeZone, Language language) {
         return new Account(
                 AccountId.random(),
                 validName(name),
@@ -45,6 +47,7 @@ public class Account {
                 Objects.requireNonNull(passwordHash),
                 Role.TRAINER,
                 Objects.requireNonNull(timeZone),
+                AccountSettings.startingWith(Objects.requireNonNull(language)),
                 false,
                 null,
                 null);
@@ -57,11 +60,12 @@ public class Account {
             String passwordHash,
             Role role,
             ZoneId timeZone,
+            AccountSettings settings,
             boolean emailConfirmed,
             EmailConfirmation confirmation,
             Instant mailSentAt) {
         return new Account(
-                id, name, email, passwordHash, role, timeZone, emailConfirmed, confirmation, mailSentAt);
+                id, name, email, passwordHash, role, timeZone, settings, emailConfirmed, confirmation, mailSentAt);
     }
 
     public Optional<EmailConfirmation> getConfirmation() {
@@ -89,6 +93,11 @@ public class Account {
     /** Follows the browser, so weeks and days stay right after the person moves or travels. */
     public void changeTimeZone(ZoneId zone) {
         timeZone = Objects.requireNonNull(zone);
+    }
+
+    /** Replaces the person's units, language and theme. */
+    public void changeSettings(AccountSettings settings) {
+        this.settings = Objects.requireNonNull(settings);
     }
 
     public void recordMailSent(Instant now) {

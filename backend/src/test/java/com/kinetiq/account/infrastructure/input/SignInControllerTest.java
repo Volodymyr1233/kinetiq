@@ -15,6 +15,8 @@ import com.kinetiq.account.domain.input.SignInCommand;
 import com.kinetiq.account.domain.input.SignInUseCase;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.infrastructure.config.SecurityConfig;
@@ -59,6 +61,7 @@ class SignInControllerTest {
                 "hash",
                 Role.TRAINER,
                 ZoneId.of("Europe/Warsaw"),
+                AccountSettings.startingWith(Language.EN),
                 true,
                 null,
                 null);

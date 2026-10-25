@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,5 +39,11 @@ class CurrentAccountController {
     @ResponseStatus(HttpStatus.NO_CONTENT)
     void changeTimeZone(@Valid @RequestBody TimeZoneRequest request, Authentication authentication) {
         currentAccount.changeTimeZone(signedIn(authentication), TimeZones.parse(request.timeZone()));
+    }
+
+    /** Changes the settings sent and answers the account as it is now; settings left out stay as stored. */
+    @PatchMapping
+    CurrentAccountResponse update(@Valid @RequestBody UpdateAccountRequest request, Authentication authentication) {
+        return mapper.toResponse(currentAccount.update(signedIn(authentication), mapper.toCommand(request)));
     }
 }

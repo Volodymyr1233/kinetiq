@@ -7,7 +7,9 @@ import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.ConfirmationToken;
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
@@ -63,6 +65,21 @@ class SignUpServiceTest {
                 assertThat(new ConfirmationToken(tokenOf(mail)).hash())
                         .isEqualTo(account.getConfirmation().orElseThrow().tokenHash());
             });
+        }
+
+        @Test
+        void shouldStoreUiLanguage_whenSignedUp() {
+            service.signUpTrainer(signUp("marek@example.com", "Kinetiq-2026"));
+            service.signUpTrainer(new SignUpTrainerCommand(
+                    "Anna Nowak",
+                    new Email("anna@example.com"),
+                    new RawPassword("Kinetiq-2026"),
+                    WARSAW,
+                    Locale.ENGLISH));
+
+            assertThat(accounts.byEmail.get(EMAIL).getSettings().language()).isEqualTo(Language.PL);
+            assertThat(accounts.byEmail.get(new Email("anna@example.com")).getSettings().language())
+                    .isEqualTo(Language.EN);
         }
 
         @Test
@@ -233,6 +250,15 @@ class SignUpServiceTest {
 
     static Account confirmedAccount(String email) {
         return Account.restore(
-                AccountId.random(), "Marek Nowak", new Email(email), "hash", Role.TRAINER, WARSAW, true, null, null);
+                AccountId.random(),
+                "Marek Nowak",
+                new Email(email),
+                "hash",
+                Role.TRAINER,
+                WARSAW,
+                AccountSettings.startingWith(Language.EN),
+                true,
+                null,
+                null);
     }
 }

@@ -23,7 +23,7 @@ class AccountTest {
     private static final Duration DAY = Duration.ofHours(24);
 
     static Account trainer() {
-        return Account.signUpTrainer("Marek Nowak", EMAIL, "hash", WARSAW);
+        return Account.signUpTrainer("Marek Nowak", EMAIL, "hash", WARSAW, Language.EN);
     }
 
     @Nested
@@ -38,20 +38,27 @@ class AccountTest {
         }
 
         @Test
+        void shouldStartWithKilogramsSignUpLanguageAndDeviceTheme_whenSignedUp() {
+            Account account = Account.signUpTrainer("Marek Nowak", EMAIL, "hash", WARSAW, Language.PL);
+
+            assertThat(account.getSettings()).isEqualTo(new AccountSettings(WeightUnit.KG, Language.PL, Theme.SYSTEM));
+        }
+
+        @Test
         void shouldTrimName_whenSurroundedBySpaces() {
-            assertThat(Account.signUpTrainer("  Marek Nowak ", EMAIL, "hash", WARSAW).getName())
+            assertThat(Account.signUpTrainer("  Marek Nowak ", EMAIL, "hash", WARSAW, Language.EN).getName())
                     .isEqualTo("Marek Nowak");
         }
 
         @Test
         void shouldAcceptName_whenItHasPunctuationAndOtherAlphabets() {
-            assertThat(Account.signUpTrainer("Zoë O'Brien-Łukasik", EMAIL, "hash", WARSAW).getName())
+            assertThat(Account.signUpTrainer("Zoë O'Brien-Łukasik", EMAIL, "hash", WARSAW, Language.EN).getName())
                     .isEqualTo("Zoë O'Brien-Łukasik");
         }
 
         @Test
         void shouldAcceptName_whenExactly100Characters() {
-            assertThat(Account.signUpTrainer("a".repeat(100), EMAIL, "hash", WARSAW).getName())
+            assertThat(Account.signUpTrainer("a".repeat(100), EMAIL, "hash", WARSAW, Language.EN).getName())
                     .hasSize(100);
         }
 
@@ -59,14 +66,33 @@ class AccountTest {
         @NullSource
         @ValueSource(strings = {"", "   ", "Marek\nNowak", "Marek\tNowak"})
         void shouldRejectName_whenBlankOrHasControlCharacters(String name) {
-            assertThatThrownBy(() -> Account.signUpTrainer(name, EMAIL, "hash", WARSAW))
+            assertThatThrownBy(() -> Account.signUpTrainer(name, EMAIL, "hash", WARSAW, Language.EN))
                     .isInstanceOf(InvalidValueException.class);
         }
 
         @Test
         void shouldRejectName_when101Characters() {
-            assertThatThrownBy(() -> Account.signUpTrainer("a".repeat(101), EMAIL, "hash", WARSAW))
+            assertThatThrownBy(() -> Account.signUpTrainer("a".repeat(101), EMAIL, "hash", WARSAW, Language.EN))
                     .isInstanceOf(InvalidValueException.class);
+        }
+    }
+
+    @Nested
+    class ChangeSettings {
+
+        @Test
+        void shouldReplaceSettings_whenChanged() {
+            Account account = trainer();
+            AccountSettings chosen = new AccountSettings(WeightUnit.LB, Language.PL, Theme.DARK);
+
+            account.changeSettings(chosen);
+
+            assertThat(account.getSettings()).isEqualTo(chosen);
+        }
+
+        @Test
+        void shouldRefuse_whenSettingsAreMissing() {
+            assertThatThrownBy(() -> trainer().changeSettings(null)).isInstanceOf(NullPointerException.class);
         }
     }
 
@@ -165,6 +191,15 @@ class AccountTest {
 
     static Account confirmed() {
         return Account.restore(
-                AccountId.random(), "Marek Nowak", EMAIL, "hash", Role.TRAINER, WARSAW, true, null, null);
+                AccountId.random(),
+                "Marek Nowak",
+                EMAIL,
+                "hash",
+                Role.TRAINER,
+                WARSAW,
+                AccountSettings.startingWith(Language.EN),
+                true,
+                null,
+                null);
     }
 }

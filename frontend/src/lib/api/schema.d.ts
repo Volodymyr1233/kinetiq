@@ -84,6 +84,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/me": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["find"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch: operations["update"];
+        trace?: never;
+    };
     "/api/v1/exercises": {
         parameters: {
             query?: never;
@@ -108,22 +124,6 @@ export interface paths {
             cookie?: never;
         };
         get: operations["csrf"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
-    "/api/v1/accounts/me": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["find"];
         put?: never;
         post?: never;
         delete?: never;
@@ -166,6 +166,12 @@ export interface components {
             /** @enum {string} */
             role: "TRAINER" | "CLIENT";
             timeZone: string;
+            /** @enum {string} */
+            units: "KG" | "LB";
+            /** @enum {string} */
+            language: "EN" | "PL";
+            /** @enum {string} */
+            theme: "LIGHT" | "DARK" | "SYSTEM";
         };
         ConfirmEmailRequest: {
             token: string;
@@ -179,6 +185,11 @@ export interface components {
             password: string;
             adult?: boolean;
             timeZone: string;
+        };
+        UpdateAccountRequest: {
+            units?: string;
+            language?: string;
+            theme?: string;
         };
         ExerciseListResponse: {
             /** Format: int32 */
@@ -325,6 +336,50 @@ export interface operations {
             };
         };
     };
+    find: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrentAccountResponse"];
+                };
+            };
+        };
+    };
+    update: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrentAccountResponse"];
+                };
+            };
+        };
+    };
     listExercises: {
         parameters: {
             query?: {
@@ -363,26 +418,6 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
-            };
-        };
-    };
-    find: {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["CurrentAccountResponse"];
-                };
             };
         };
     };
