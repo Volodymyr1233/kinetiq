@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 class AccountController {
 
     private final SignUpUseCase signUp;
-    private final SourceAddressLimiter limiter;
+    private final RequestLimiter limiter;
 
     /**
      * Answers {@code 202} whether or not the email already had an account, and also when the address made too many
@@ -30,7 +30,7 @@ class AccountController {
     @PostMapping("/accounts")
     @ResponseStatus(HttpStatus.ACCEPTED)
     void signUp(@Valid @RequestBody SignUpRequest request, Locale locale, HttpServletRequest http) {
-        if (!limiter.tryAcquire(SourceAddressLimiter.Kind.SIGN_UP, http.getRemoteAddr())) {
+        if (!limiter.tryAcquire(RequestLimiter.Kind.SIGN_UP, http.getRemoteAddr())) {
             return;
         }
         signUp.signUpTrainer(new SignUpTrainerCommand(
@@ -52,7 +52,7 @@ class AccountController {
     @ResponseStatus(HttpStatus.ACCEPTED)
     void sendConfirmationLink(
             @Valid @RequestBody ConfirmationLinkRequest request, Locale locale, HttpServletRequest http) {
-        if (!limiter.tryAcquire(SourceAddressLimiter.Kind.CONFIRMATION_LINK, http.getRemoteAddr())) {
+        if (!limiter.tryAcquire(RequestLimiter.Kind.CONFIRMATION_LINK, http.getRemoteAddr())) {
             return;
         }
         signUp.sendConfirmationLink(new Email(request.email()), locale);

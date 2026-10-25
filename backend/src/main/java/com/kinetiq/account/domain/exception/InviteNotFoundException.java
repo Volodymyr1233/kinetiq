@@ -13,4 +13,9 @@ public class InviteNotFoundException extends DomainException {
     public String code() {
         return "invite.not-found";
     }
+
+    @Override
+    public Kind kind() {
+        return Kind.NOT_FOUND;
+    }
 }

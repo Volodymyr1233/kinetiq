@@ -54,7 +54,7 @@ class GlobalExceptionHandlerTest {
     }
 
     @ParameterizedTest
-    @CsvSource({"UNAUTHENTICATED, 401", "NOT_ALLOWED, 403", "TOO_MANY_ATTEMPTS, 429"})
+    @CsvSource({"UNAUTHENTICATED, 401", "NOT_ALLOWED, 403", "TOO_MANY_ATTEMPTS, 429", "NOT_FOUND, 404", "CONFLICT, 409"})
     void shouldAnswerStatusOfItsKind_whenDomainRuleRefuses(DomainException.Kind kind, int status) {
         var result = mvc.get().uri("/test/kind/{kind}", kind).exchange();
 

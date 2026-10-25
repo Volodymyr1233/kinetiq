@@ -32,6 +32,8 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
             case UNAUTHENTICATED -> HttpStatus.UNAUTHORIZED;
             case NOT_ALLOWED -> HttpStatus.FORBIDDEN;
             case TOO_MANY_ATTEMPTS -> HttpStatus.TOO_MANY_REQUESTS;
+            case NOT_FOUND -> HttpStatus.NOT_FOUND;
+            case CONFLICT -> HttpStatus.CONFLICT;
         };
         ProblemDetail problem = problem(status, exception.code());
         exception.properties().forEach(problem::setProperty);
