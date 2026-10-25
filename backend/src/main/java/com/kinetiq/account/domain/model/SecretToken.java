@@ -8,19 +8,19 @@ import java.util.Base64;
 import java.util.HexFormat;
 import java.util.Objects;
 
-/** The secret in a confirmation link. Only its hash is stored. */
-public record ConfirmationToken(String value) {
+/** A secret in a link, such as a confirmation link or an invite. Only its hash is stored. */
+public record SecretToken(String value) {
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
-    public ConfirmationToken {
+    public SecretToken {
         Objects.requireNonNull(value);
     }
 
-    public static ConfirmationToken generate() {
+    public static SecretToken generate() {
         byte[] bytes = new byte[32];
         RANDOM.nextBytes(bytes);
-        return new ConfirmationToken(Base64.getUrlEncoder().withoutPadding().encodeToString(bytes));
+        return new SecretToken(Base64.getUrlEncoder().withoutPadding().encodeToString(bytes));
     }
 
     // 256 random bits need no salt or slow hash: a copy of the table cannot be turned back into links
