@@ -86,7 +86,7 @@ backend/src/
 │           └── output/InviteEntity, InviteMapper, JpaInviteRepository, InviteRepositoryImpl,
 │                      AccountRepositoryImpl + JpaAccountRepository (existsByEmail)
 └── main/resources/
-    ├── db/migration/V6__create_invites.sql
+    ├── db/migration/V7__create_invites.sql
     ├── db/dev-data/R__demo_invites.sql
     └── messages.properties, messages_pl.properties      mail.invite.subject
 
@@ -114,7 +114,7 @@ frontend/src/
 
 | Task | Commit | Contents |
 |---|---|---|
-| #27 | `feat(backend): add invite model and migration (#27)` | `ConfirmationToken` → `SecretToken`; `Invite`, `InviteId`, `InviteStatus`, `SentInvite`, `InviteNotFoundException`; `InviteRepository` + JPA adapter; `V6`; `R__demo_invites.sql`; `InviteTest`, `InviteRepositoryImplIT` |
+| #27 | `feat(backend): add invite model and migration (#27)` | `ConfirmationToken` → `SecretToken`; `Invite`, `InviteId`, `InviteStatus`, `SentInvite`, `InviteNotFoundException`; `InviteRepository` + JPA adapter; `V7`; `R__demo_invites.sql`; `InviteTest`, `InviteRepositoryImplIT` |
 | #28 | `feat(backend): add create, list and revoke invite api (#28)` | `Kind.NOT_FOUND/CONFLICT` and handler; `ManageInvitesUseCase` + `InviteManagementService` (existence check, supersede, mail, list, replace link, revoke, ownership); `existsByEmail`; `RequestLimiter` with `INVITE`; `InviteController` and records; security rule; mail subject EN/PL; `schema.d.ts` |
 | #29 | `feat(frontend): add invite dialog and open-invites list (#29)` | shadcn `dialog`, `alert-dialog`, `sonner`; route and placeholder link; invites page with five states, dialog, revoke confirmation, copy and toasts; EN/PL copy and codes; tests; browser verification |
 

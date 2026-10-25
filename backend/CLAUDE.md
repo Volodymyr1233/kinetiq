@@ -85,6 +85,7 @@ Use the current language and its idioms.
 - Entities extend a shared base with `createdAt`, `updatedAt` and `@Version` once the first entity needs it.
 - Enums are stored as strings. Associations are lazy; fetch what a use case needs with an entity graph or a query.
 - Schema changes are Flyway migrations in `src/main/resources/db/migration`, `V<n>__snake_case.sql`, written by hand with named constraints. Never edit a migration that has been merged. Hibernate only validates (`ddl-auto: validate`).
+- Before opening a pull request that adds a migration, check `master` and the open pull requests for migrations (`gh pr list --json number,files`). If another one already takes your `<n>`, renumber yours to the next unused number: two migrations with the same version merge without a conflict, but Flyway then refuses to start.
 - Demo data goes in `src/main/resources/db/dev-data` as repeatable migrations (`R__*.sql`, idempotent inserts). Only the `local` profile adds that location, so tests and production never run it. Never put real credentials or real personal data in SQL.
 
 ## Web

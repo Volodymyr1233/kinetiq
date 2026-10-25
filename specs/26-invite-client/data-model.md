@@ -49,7 +49,7 @@ OPEN and now ≥ expiresAt: expired (derived); only supersede still applies.
 
 Renamed from `ConfirmationToken`; unchanged otherwise. `generate()`, `value()`, `hash()` (SHA-256 hex), `toString()` hides the value. Used by confirmation links and both invite secrets.
 
-## Table `invites` (`V6__create_invites.sql`)
+## Table `invites` (`V7__create_invites.sql`)
 
 | Column | Type | Constraint |
 |---|---|---|

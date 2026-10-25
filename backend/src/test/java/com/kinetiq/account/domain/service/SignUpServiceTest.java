@@ -8,8 +8,8 @@ import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.AccountSettings;
-import com.kinetiq.account.domain.model.ConfirmationToken;
 import com.kinetiq.account.domain.model.Language;
+import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
@@ -62,7 +62,7 @@ class SignUpServiceTest {
                 assertThat(mail.template()).isEqualTo("confirm-email");
                 assertThat(mail.locale()).isEqualTo(POLISH);
                 assertThat(mail.values().get("link")).startsWith(TOKEN_PREFIX);
-                assertThat(new ConfirmationToken(tokenOf(mail)).hash())
+                assertThat(new SecretToken(tokenOf(mail)).hash())
                         .isEqualTo(account.getConfirmation().orElseThrow().tokenHash());
             });
         }
@@ -96,7 +96,7 @@ class SignUpServiceTest {
             assertThat(account.getPasswordHash()).isEqualTo("hashed:Kinetiq-2026");
             assertThat(account.getConfirmation().orElseThrow().tokenHash())
                     .isNotEqualTo(firstHash)
-                    .isEqualTo(new ConfirmationToken(tokenOf(mails.sent.getLast())).hash());
+                    .isEqualTo(new SecretToken(tokenOf(mails.sent.getLast())).hash());
             assertThat(mails.sent).extracting(Mail::template).containsExactly("confirm-email", "confirm-email");
         }
 
@@ -196,7 +196,7 @@ class SignUpServiceTest {
 
         @Test
         void shouldRefuse_whenLinkIsUnknown() {
-            assertThatThrownBy(() -> service.confirmEmail(ConfirmationToken.generate().value()))
+            assertThatThrownBy(() -> service.confirmEmail(SecretToken.generate().value()))
                     .isInstanceOf(ConfirmationLinkInvalidException.class);
         }
     }
@@ -214,7 +214,7 @@ class SignUpServiceTest {
             assertThat(mails.sent).hasSize(2);
             assertThat(mails.sent.getLast().locale()).isEqualTo(Locale.ENGLISH);
             assertThat(accounts.byEmail.get(EMAIL).getConfirmation().orElseThrow().tokenHash())
-                    .isEqualTo(new ConfirmationToken(tokenOf(mails.sent.getLast())).hash());
+                    .isEqualTo(new SecretToken(tokenOf(mails.sent.getLast())).hash());
         }
 
         @Test

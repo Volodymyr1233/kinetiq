@@ -4,8 +4,8 @@ import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.model.Account;
-import com.kinetiq.account.domain.model.ConfirmationToken;
 import com.kinetiq.account.domain.model.Language;
+import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
@@ -53,7 +53,7 @@ public class SignUpService implements SignUpUseCase {
 
     @Override
     public void confirmEmail(String token) {
-        Account account = accounts.findByConfirmationTokenHash(new ConfirmationToken(token).hash())
+        Account account = accounts.findByConfirmationTokenHash(new SecretToken(token).hash())
                 .orElseThrow(ConfirmationLinkInvalidException::new);
         account.confirmEmail(clock.instant());
         accounts.save(account);
@@ -82,7 +82,7 @@ public class SignUpService implements SignUpUseCase {
     }
 
     private void sendConfirmation(Account account, Locale locale, Instant now) {
-        ConfirmationToken token = ConfirmationToken.generate();
+        SecretToken token = SecretToken.generate();
         account.issueConfirmation(token, now);
         accounts.save(account);
         // a fragment never reaches a server, so the token stays out of access logs and Referer headers

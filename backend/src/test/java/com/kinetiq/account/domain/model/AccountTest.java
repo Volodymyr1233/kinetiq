@@ -102,7 +102,7 @@ class AccountTest {
         @Test
         void shouldExpireIn24Hours_whenIssued() {
             Account account = trainer();
-            ConfirmationToken token = ConfirmationToken.generate();
+            SecretToken token = SecretToken.generate();
 
             account.issueConfirmation(token, NOW);
 
@@ -113,8 +113,8 @@ class AccountTest {
         @Test
         void shouldReplaceEarlierLink_whenIssuedAgain() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
-            ConfirmationToken newer = ConfirmationToken.generate();
+            account.issueConfirmation(SecretToken.generate(), NOW);
+            SecretToken newer = SecretToken.generate();
 
             account.issueConfirmation(newer, NOW.plusSeconds(60));
 
@@ -125,7 +125,7 @@ class AccountTest {
         void shouldRefuse_whenEmailIsConfirmed() {
             Account account = confirmed();
 
-            assertThatThrownBy(() -> account.issueConfirmation(ConfirmationToken.generate(), NOW))
+            assertThatThrownBy(() -> account.issueConfirmation(SecretToken.generate(), NOW))
                     .isInstanceOf(IllegalStateException.class);
         }
     }
@@ -161,7 +161,7 @@ class AccountTest {
         @Test
         void shouldConfirmAndRemoveLink_whenLinkIsValid() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.issueConfirmation(SecretToken.generate(), NOW);
 
             account.confirmEmail(NOW.plus(DAY).minusSeconds(1));
 
@@ -172,7 +172,7 @@ class AccountTest {
         @Test
         void shouldRefuse_whenConfirmedTwice() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.issueConfirmation(SecretToken.generate(), NOW);
             account.confirmEmail(NOW);
 
             assertThatThrownBy(() -> account.confirmEmail(NOW)).isInstanceOf(ConfirmationLinkInvalidException.class);
@@ -181,7 +181,7 @@ class AccountTest {
         @Test
         void shouldRefuseAndStayUnconfirmed_whenExactly24HoursPassed() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.issueConfirmation(SecretToken.generate(), NOW);
 
             assertThatThrownBy(() -> account.confirmEmail(NOW.plus(DAY)))
                     .isInstanceOf(ConfirmationLinkInvalidException.class);
