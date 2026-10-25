@@ -81,6 +81,8 @@ export const createRoutes = (): RouteObject[] => [
   // the quiz has its own address per step and no tab bar, so it sits beside the client area
   {
     path: '/app/quiz/review',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
       Component: async () =>

@@ -5,8 +5,8 @@ How to see the story working and prove it. The rules are in spec.md; the answers
 ## Prerequisites
 
 - Node 24 and the frontend's dependencies (`npm install` in `frontend/`).
-- Task #56: no backend; the review reads the draft in the tab.
-- Tasks #55 and #57: the backend and Docker running.
+- Docker running and the backend started (`./gradlew bootRun` in `backend/`): the quiz is open only to a signed-in client. The review itself reads the draft in the tab.
+- The demo client `demo.client@example.com` with the demo password from the README.
 
 ## Automated checks
 
@@ -15,7 +15,7 @@ How to see the story working and prove it. The rules are in spec.md; the answers
 
 ## Browser check, task #56
 
-Start the frontend (`npm run dev` in `frontend/`), open `http://localhost:5173/app/quiz` at 375 px and answer all seven steps.
+Start the backend and the frontend (`npm run dev` in `frontend/`), sign in as the demo client at `http://localhost:5173/sign-in`, open `http://localhost:5173/app/quiz` at 375 px and answer all seven steps.
 
 1. Continue on step 7 shows "Review", seven done parts, "Check your answers", seven rows in step order and a disabled "Build my plan".
 2. "About you" reads "29 years · 168 cm · 62.5 kg" for those answers; likes read as a list ("Weights, Yoga and Pilates"); empty notes read "No notes".
