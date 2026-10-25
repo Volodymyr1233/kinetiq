@@ -8,7 +8,8 @@ The story adds no API endpoint. What other tasks rely on is listed here: the qui
 |---|---|
 | `/app/quiz` | The step the client may open (data-model.md, "Which step may open"). Replaces the address. |
 | `/app/quiz/1` … `/app/quiz/7` | That step, when it may open. Otherwise the step that may, replacing the address. |
-| `/app/quiz/<anything else>` | Same as `/app/quiz`, until task #56 adds `/app/quiz/review`. |
+| `/app/quiz/review` | The review of story #54 (`specs/54-quiz-review-submit/contracts/api.md`), once every step has a valid answer. Otherwise the step that may open, replacing the address. |
+| `/app/quiz/<anything else>` | Same as `/app/quiz`. |
 
 - No tab bar on any quiz address.
 - Continue pushes the next address, so the browser's back returns to the previous step.

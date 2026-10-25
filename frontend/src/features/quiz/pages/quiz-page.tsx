@@ -55,6 +55,10 @@ export function QuizPage() {
   const answers = useWatch({ control: form.control })
   const headingRef = useRef<HTMLHeadingElement>(null)
   const step = allowedStep(params.step, { answers, reached })
+  const state = location.state as {
+    fromStep?: number
+    fromReview?: boolean
+  } | null
 
   // the tab keeps every change, so a reload loses nothing (FR-019)
   useEffect(() => {
@@ -92,16 +96,19 @@ export function QuizPage() {
   }
 
   function goNext() {
+    // a step opened with Change returns to the review entry, so no second review lands in history
+    if (state?.fromReview) {
+      navigate(-1)
+      return
+    }
     setReached((current) => Math.max(current, Math.min(step + 1, STEP_COUNT)))
-    // the review step comes with task #56; until then the address falls back to step 7
     const next = step < STEP_COUNT ? String(step + 1) : 'review'
     navigate(`/app/quiz/${next}`, { state: { fromStep: step } })
   }
 
   function goBack() {
-    // back through history when the client came from the previous step, so the device's back stays in step
-    const fromStep = (location.state as { fromStep?: number } | null)?.fromStep
-    if (fromStep === step - 1) navigate(-1)
+    // back through history when the client came from the previous step or the review, so the device's back stays in step
+    if (state?.fromReview || state?.fromStep === step - 1) navigate(-1)
     else navigate(`/app/quiz/${step - 1}`, { replace: true })
   }
 
@@ -235,7 +242,7 @@ export function QuizPage() {
           <p className="num text-muted-foreground text-xs tracking-wider uppercase">
             {t('quiz.stepOf', { step, total: STEP_COUNT })}
           </p>
-          {step > 1 && (
+          {(step > 1 || state?.fromReview) && (
             <Button variant="ghost" className="h-12" onClick={goBack}>
               <ChevronLeftIcon data-icon="inline-start" aria-hidden />
               {t('quiz.back')}

@@ -294,6 +294,34 @@
       "hint": "Kontuzje, ograniczenia, sprzęt, którego nie masz. Opcjonalnie.",
       "label": "Notatki dla trenera",
       "placeholder": "np. Lewe kolano sztywnieje przy głębokich przysiadach"
+    },
+    "review": {
+      "label": "Przegląd",
+      "title": "Sprawdź swoje odpowiedzi",
+      "hint": "Twój pierwszy plan powstanie z tych 7 odpowiedzi. Trener sprawdza plan, zanim go zobaczysz.",
+      "rows": {
+        "goal": { "label": "Cel", "change": "Zmień cel" },
+        "experience": {
+          "label": "Staż treningowy",
+          "change": "Zmień staż treningowy"
+        },
+        "level": { "label": "Poziom", "change": "Zmień poziom" },
+        "about": { "label": "O Tobie", "change": "Zmień dane o sobie" },
+        "likes": {
+          "label": "Ulubione treningi",
+          "change": "Zmień ulubione treningi"
+        },
+        "days": { "label": "Dni w tygodniu", "change": "Zmień dni w tygodniu" },
+        "notes": { "label": "Notatki", "change": "Zmień notatki" }
+      },
+      "change": "Zmień",
+      "about_one": "{{count, number}} rok · {{height, number}} cm · {{weight, number}} kg",
+      "about_few": "{{count, number}} lata · {{height, number}} cm · {{weight, number}} kg",
+      "about_many": "{{count, number}} lat · {{height, number}} cm · {{weight, number}} kg",
+      "about_other": "{{count, number}} roku · {{height, number}} cm · {{weight, number}} kg",
+      "noNotes": "Brak notatek",
+      "build": "Zbuduj mój plan",
+      "later": "Później możesz je zmienić razem z trenerem."
     }
   }
 }

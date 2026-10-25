@@ -290,6 +290,29 @@
       "hint": "Injuries, limits, equipment you don't have. Optional.",
       "label": "Notes for your trainer",
       "placeholder": "e.g. Left knee gets stiff on deep squats"
+    },
+    "review": {
+      "label": "Review",
+      "title": "Check your answers",
+      "hint": "Your first plan is built from these 7 answers. Your trainer checks it before you see it.",
+      "rows": {
+        "goal": { "label": "Goal", "change": "Change goal" },
+        "experience": {
+          "label": "Training for",
+          "change": "Change training for"
+        },
+        "level": { "label": "Level", "change": "Change level" },
+        "about": { "label": "About you", "change": "Change about you" },
+        "likes": { "label": "Likes", "change": "Change likes" },
+        "days": { "label": "Days a week", "change": "Change days a week" },
+        "notes": { "label": "Notes", "change": "Change notes" }
+      },
+      "change": "Change",
+      "about_one": "{{count, number}} year · {{height, number}} cm · {{weight, number}} kg",
+      "about_other": "{{count, number}} years · {{height, number}} cm · {{weight, number}} kg",
+      "noNotes": "No notes",
+      "build": "Build my plan",
+      "later": "You can change them later with your trainer."
     }
   }
 }

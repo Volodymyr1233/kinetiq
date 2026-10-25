@@ -1,6 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
 import { createRoutes } from '@/app/router'
 
 function renderAt(path: string) {
@@ -12,6 +12,8 @@ function renderAt(path: string) {
 }
 
 describe('routes', () => {
+  afterEach(() => sessionStorage.clear())
+
   it.each([
     ['/trainer', 'Clients'],
     ['/app', 'Today'],
@@ -21,6 +23,31 @@ describe('routes', () => {
 
     expect(
       await screen.findByRole('heading', { name: heading }),
+    ).toBeInTheDocument()
+  })
+
+  it('opens the quiz review once every answer is in', async () => {
+    sessionStorage.setItem(
+      'kinetiq.quiz',
+      JSON.stringify({
+        answers: {
+          goal: 'BUILD_MUSCLE',
+          experience: 'YEARS_1_TO_2',
+          level: 'INTERMEDIATE',
+          age: '29',
+          height: '168',
+          weight: '62.5',
+          likes: ['WEIGHTS'],
+          days: 3,
+          notes: '',
+        },
+        reached: 7,
+      }),
+    )
+    renderAt('/app/quiz/review')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Check your answers' }),
     ).toBeInTheDocument()
   })
 

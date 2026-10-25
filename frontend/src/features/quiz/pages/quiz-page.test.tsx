@@ -5,6 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import type { QuizDraft } from '../quiz-schema'
 import { QuizPage } from './quiz-page'
+import { ReviewPage } from './review-page'
 
 const ANSWERED: QuizDraft['answers'] = {
   goal: 'BUILD_MUSCLE',
@@ -25,11 +26,14 @@ function store(answers: Partial<QuizDraft['answers']>, reached: number) {
   )
 }
 
-function openQuiz(path: string) {
-  // the same address as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
+function openQuiz(...paths: string[]) {
+  // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
-    [{ path: '/app/quiz/:step?', Component: QuizPage }],
-    { initialEntries: [path] },
+    [
+      { path: '/app/quiz/review', Component: ReviewPage },
+      { path: '/app/quiz/:step?', Component: QuizPage },
+    ],
+    { initialEntries: paths },
   )
   render(<RouterProvider router={router} />)
   return router
@@ -164,6 +168,64 @@ describe('QuizPage', () => {
     expect(continueButton()).toHaveTextContent('Continue')
   })
 
+  it('opens the review after step 7, and Back returns to step 7 without a second review in history', async () => {
+    const user = userEvent.setup()
+    store({}, 7)
+    const router = openQuiz('/app/quiz/6', '/app/quiz/7')
+    await heading('Anything your trainer should know?')
+
+    await user.click(continueButton())
+    await heading('Check your answers')
+    await user.click(screen.getByRole('button', { name: 'Back' }))
+    await heading('Anything your trainer should know?')
+    await router.navigate(-1)
+
+    expect(
+      await heading('How many days a week can you train?'),
+    ).toBeInTheDocument()
+  })
+
+  it('returns to the review with Continue after Change, showing the new answer', async () => {
+    const user = userEvent.setup()
+    store({}, 7)
+    openQuiz('/app/quiz/review')
+    await heading('Check your answers')
+
+    await user.click(screen.getByRole('link', { name: 'Change level' }))
+    await heading('Which fits you best?')
+    await user.click(screen.getByText('Advanced'))
+    await user.click(continueButton())
+
+    expect(await heading('Check your answers')).toHaveFocus()
+    expect(screen.getByText('Advanced')).toBeInTheDocument()
+  })
+
+  it('returns to the review with Back after Change, also from step 1', async () => {
+    const user = userEvent.setup()
+    store({}, 7)
+    openQuiz('/app/quiz/review')
+    await heading('Check your answers')
+
+    await user.click(screen.getByRole('link', { name: 'Change goal' }))
+    await heading('What do you train for?')
+    await user.click(screen.getByRole('button', { name: 'Back' }))
+
+    expect(await heading('Check your answers')).toBeInTheDocument()
+  })
+
+  it('keeps Continue disabled while a step opened with Change is not valid', async () => {
+    const user = userEvent.setup()
+    store({}, 7)
+    openQuiz('/app/quiz/review')
+    await heading('Check your answers')
+
+    await user.click(screen.getByRole('link', { name: 'Change about you' }))
+    await heading('About you')
+    await user.clear(screen.getByRole('textbox', { name: 'Age' }))
+
+    expect(continueButton()).toBeDisabled()
+  })
+
   it('keeps the step and every answer after a reload', async () => {
     const user = userEvent.setup()
     store({ likes: [] }, 5)
@@ -182,7 +244,7 @@ describe('QuizPage', () => {
     ['beyond the furthest step reached', 5, '/app/quiz/7', '/app/quiz/5'],
     ['to the notes past the unseen days step', 6, '/app/quiz/7', '/app/quiz/6'],
     ['with no step', 3, '/app/quiz', '/app/quiz/3'],
-    ['with a step that does not exist', 2, '/app/quiz/review', '/app/quiz/2'],
+    ['with a step that does not exist', 2, '/app/quiz/8', '/app/quiz/2'],
   ])(
     'sends an address %s to the step that may open',
     async (_, reached, path, shown) => {
