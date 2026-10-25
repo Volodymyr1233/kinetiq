@@ -39,12 +39,12 @@ Changes the fields sent; fields left out stay as stored (research R3).
 | `units` | `KG` or `LB` | #43 |
 | `language` | `EN` or `PL` | #43 |
 | `theme` | `LIGHT`, `DARK` or `SYSTEM` | #43 |
-| `name` | trainers only; not blank, at most 100 characters, no control characters (as `SignUpRequest`) | #44 |
+| `name` | trainers only; not blank, at most 100 characters, no control characters (the rules of `SignUpRequest`) | #44 |
 
 | Answer | When |
 |---|---|
 | `200` with the body of `GET /api/v1/accounts/me` | changed, or nothing sent |
-| `400` `validation.failed`, `errors: [{ "field": "units", "code": "pattern" }]` | a value outside its rule (codes `pattern`, `not-blank`, `size`) |
+| `400` `validation.failed`, `errors: [{ "field": "units", "code": "pattern" }]` | a value outside its rule (codes `pattern`, and `size` for a name over 100 characters) |
 | `401` `request.unauthenticated` | no sign-in |
 | `403` `request.forbidden` | missing or wrong anti-forgery token (spec 18) |
 | `403` `account.name-not-changeable` | a client sends `name` (task #44) |

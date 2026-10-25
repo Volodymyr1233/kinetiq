@@ -95,7 +95,7 @@ class SignInControllerTest {
             assertThat(result).bodyJson().extractingPath("$.name").isEqualTo("Marek Nowak");
             assertThat(result).bodyJson().extractingPath("$.role").isEqualTo("TRAINER");
             assertThat(result).bodyJson().extractingPath("$.timeZone").isEqualTo("Europe/Warsaw");
-            assertThat(result).bodyJson().doesNotHavePath("$.email");
+            assertThat(result).bodyJson().extractingPath("$.email").isEqualTo("marek@example.com");
             var context = (SecurityContext) result.getRequest()
                     .getSession()
                     .getAttribute(HttpSessionSecurityContextRepository.SPRING_SECURITY_CONTEXT_KEY);

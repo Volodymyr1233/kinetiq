@@ -163,6 +163,7 @@ export interface components {
             /** Format: uuid */
             id: string;
             name: string;
+            email: string;
             /** @enum {string} */
             role: "TRAINER" | "CLIENT";
             timeZone: string;
@@ -187,6 +188,7 @@ export interface components {
             timeZone: string;
         };
         UpdateAccountRequest: {
+            name?: string;
             units?: string;
             language?: string;
             theme?: string;

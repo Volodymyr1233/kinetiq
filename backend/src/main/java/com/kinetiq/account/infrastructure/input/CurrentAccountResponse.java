@@ -12,6 +12,7 @@ import java.util.UUID;
 record CurrentAccountResponse(
         @NotNull UUID id,
         @NotNull String name,
+        @NotNull String email,
         @NotNull Role role,
         @NotNull String timeZone,
         @NotNull WeightUnit units,

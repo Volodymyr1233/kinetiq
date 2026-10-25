@@ -61,6 +61,18 @@ export async function refreshTimeZone(account: CurrentAccount) {
   }
 }
 
+/** Changes the fields sent and puts the answer in the cache, so every screen and the app's language and theme follow. */
+export function useUpdateAccount() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['UpdateAccountRequest']) =>
+      receive(api.PATCH('/api/v1/accounts/me', { body })),
+    onSuccess: (account) => {
+      queryClient.setQueryData(currentAccountQuery.queryKey, account)
+    },
+  })
+}
+
 export function useSignUp() {
   return useMutation({
     mutationFn: (body: Schemas['SignUpRequest']) =>

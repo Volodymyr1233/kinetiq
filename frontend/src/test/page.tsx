@@ -50,6 +50,7 @@ export const SIGNED_IN = {
   TRAINER: {
     id: '00000000-0000-4000-8000-000000000001',
     name: 'Marek Nowak',
+    email: 'marek@example.com',
     role: 'TRAINER',
     timeZone: 'Europe/Warsaw',
     units: 'KG',
@@ -59,6 +60,7 @@ export const SIGNED_IN = {
   CLIENT: {
     id: '00000000-0000-4000-8000-000000000003',
     name: 'Anna Kowalska',
+    email: 'anna@example.com',
     role: 'CLIENT',
     timeZone: 'Europe/Warsaw',
     units: 'KG',

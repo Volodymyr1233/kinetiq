@@ -138,6 +138,21 @@
       "alreadyConfirmed": "Already confirmed?"
     }
   },
+  "settings": {
+    "profile": "Profile",
+    "name": "Name",
+    "email": "Email",
+    "display": "Display",
+    "units": {
+      "label": "Units",
+      "hint": "New clients start with this. Each client can switch.",
+      "KG": "kg",
+      "LB": "lb"
+    },
+    "languageHint": "Polski uses informal \"ty\" with clients.",
+    "save": "Save changes",
+    "saved": "Settings saved."
+  },
   "exercises": {
     "title": "Exercise library",
     "count_one": "{{shown, number}} of {{count, number}} exercise",
