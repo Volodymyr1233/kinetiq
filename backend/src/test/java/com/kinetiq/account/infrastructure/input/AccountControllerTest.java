@@ -47,7 +47,7 @@ class AccountControllerTest {
     private SignUpUseCase signUp;
 
     @MockitoBean
-    private SourceAddressLimiter limiter;
+    private RequestLimiter limiter;
 
     @BeforeEach
     void allowEveryAddress() {
@@ -141,7 +141,7 @@ class AccountControllerTest {
 
         @Test
         void shouldAcceptWithoutSigningUp_whenAddressMadeTooManySignUps() {
-            when(limiter.tryAcquire(SourceAddressLimiter.Kind.SIGN_UP, "127.0.0.1")).thenReturn(false);
+            when(limiter.tryAcquire(RequestLimiter.Kind.SIGN_UP, "127.0.0.1")).thenReturn(false);
 
             var result = post("/api/v1/accounts", validSignUp());
 
@@ -218,7 +218,7 @@ class AccountControllerTest {
 
         @Test
         void shouldAcceptWithoutSending_whenAddressAskedTooOften() {
-            when(limiter.tryAcquire(SourceAddressLimiter.Kind.CONFIRMATION_LINK, "127.0.0.1"))
+            when(limiter.tryAcquire(RequestLimiter.Kind.CONFIRMATION_LINK, "127.0.0.1"))
                     .thenReturn(false);
 
             var result = post("/api/v1/confirmation-links", Map.of("email", "marek@example.com"));

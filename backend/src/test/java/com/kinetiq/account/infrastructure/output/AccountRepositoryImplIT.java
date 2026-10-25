@@ -154,6 +154,14 @@ class AccountRepositoryImplIT {
     }
 
     @Test
+    void shouldTellWhetherEmailHasAccount_whenAsked() {
+        repository.save(trainer("marek@example.com"));
+
+        assertThat(repository.existsByEmail(new Email(" Marek@Example.com"))).isTrue();
+        assertThat(repository.existsByEmail(new Email("anna@example.com"))).isFalse();
+    }
+
+    @Test
     void shouldSetTimestampsAndVersion_whenSaved() {
         Account account = trainer("marek@example.com");
         repository.save(account);
