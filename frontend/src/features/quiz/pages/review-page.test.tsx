@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
+import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
 import type { QuizDraft } from '../quiz-schema'
 import { QuizPage } from './quiz-page'
 import { ReviewPage } from './review-page'
@@ -26,7 +27,7 @@ function store(answers: Partial<QuizDraft['answers']> = {}, reached = 7) {
   )
 }
 
-function openReview() {
+function openReview(unit: WeightUnit = 'KG') {
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [
@@ -35,7 +36,11 @@ function openReview() {
     ],
     { initialEntries: ['/app/quiz/review'] },
   )
-  render(<RouterProvider router={router} />)
+  render(
+    <WeightUnitContext value={unit}>
+      <RouterProvider router={router} />
+    </WeightUnitContext>,
+  )
   return router
 }
 
@@ -74,6 +79,14 @@ describe('ReviewPage', () => {
     ]) {
       expect(screen.getByText(value)).toBeInTheDocument()
     }
+  })
+
+  it('shows the body weight in pounds when the unit is lb', async () => {
+    store({ weight: '137.8' })
+    openReview('LB')
+    await reviewHeading()
+
+    expect(screen.getByText('29 years · 168 cm · 137.8 lb')).toBeInTheDocument()
   })
 
   it('lists likes in screen order, whatever order they were stored in', async () => {

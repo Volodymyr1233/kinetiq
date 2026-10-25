@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useWeightUnit } from '@/lib/weight'
 import { MultipleChoice } from '../components/multiple-choice'
 import { NotesField } from '../components/notes-field'
 import { NumberField } from '../components/number-field'
@@ -14,7 +15,7 @@ import { Stepper } from '../components/stepper'
 import { loadDraft, saveDraft } from '../quiz-draft'
 import {
   allowedStep,
-  answersSchema,
+  answersSchemaFor,
   DAYS_MAX,
   DAYS_MIN,
   EXPERIENCES,
@@ -42,6 +43,7 @@ type OptionStep = 'goal' | 'experience' | 'level' | 'likes'
 
 export function QuizPage() {
   const { t } = useTranslation()
+  const unit = useWeightUnit()
   const params = useParams()
   const location = useLocation()
   const navigate = useNavigate()
@@ -49,12 +51,12 @@ export function QuizPage() {
   const [reached, setReached] = useState(draft.reached)
   const form = useForm<QuizAnswers, unknown, QuizAnswers>({
     mode: 'onTouched',
-    resolver: zodResolver(answersSchema),
+    resolver: zodResolver(answersSchemaFor(unit)),
     defaultValues: draft.answers,
   })
   const answers = useWatch({ control: form.control })
   const headingRef = useRef<HTMLHeadingElement>(null)
-  const step = allowedStep(params.step, { answers, reached })
+  const step = allowedStep(params.step, { answers, reached }, unit)
   const state = location.state as {
     fromStep?: number
     fromReview?: boolean
@@ -116,6 +118,9 @@ export function QuizPage() {
     name: 'age' | 'height' | 'weight',
     inputMode: 'numeric' | 'decimal',
   ) {
+    // the weight is asked in the person's unit, so its unit, example and note follow it
+    const texts =
+      name === 'weight' ? `quiz.about.weight.${unit}` : `quiz.about.${name}`
     return (
       <Controller
         control={form.control}
@@ -124,8 +129,8 @@ export function QuizPage() {
           <NumberField
             id={`quiz-${name}`}
             label={t(`quiz.about.${name}.label`)}
-            unit={t(`quiz.about.${name}.unit`)}
-            placeholder={t(`quiz.about.${name}.placeholder`)}
+            unit={t(`${texts}.unit`)}
+            placeholder={t(`${texts}.placeholder`)}
             inputMode={inputMode}
             value={field.value}
             onChange={field.onChange}
@@ -136,7 +141,7 @@ export function QuizPage() {
                 ? t(fieldState.error.message)
                 : undefined
             }
-            note={name === 'weight' ? t('quiz.about.weight.note') : undefined}
+            note={name === 'weight' ? t(`${texts}.note`) : undefined}
           />
         )}
       />
@@ -283,7 +288,7 @@ export function QuizPage() {
         <Button
           size="touch"
           className="w-full"
-          disabled={!isStepValid(step, answers)}
+          disabled={!isStepValid(step, answers, unit)}
           onClick={goNext}
         >
           {step === STEP_COUNT && notesEmpty
