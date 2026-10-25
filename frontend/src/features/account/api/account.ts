@@ -18,7 +18,7 @@ async function send<T>(call: Promise<{ error?: T }>) {
   if (error !== undefined) throw error
 }
 
-async function receive<D, E>(call: Promise<{ data?: D; error?: E }>) {
+export async function receive<D, E>(call: Promise<{ data?: D; error?: E }>) {
   const { data, error } = await call
   if (error !== undefined) throw error
   return data as D
