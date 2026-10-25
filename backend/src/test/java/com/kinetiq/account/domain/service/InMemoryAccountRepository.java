@@ -38,6 +38,11 @@ class InMemoryAccountRepository implements AccountRepository {
     }
 
     @Override
+    public boolean existsByEmail(Email email) {
+        return byEmail.containsKey(email);
+    }
+
+    @Override
     public Optional<Account> findByConfirmationTokenHash(String tokenHash) {
         return byEmail.values().stream()
                 .filter(account -> account.getConfirmation()

@@ -54,7 +54,7 @@ public class SecurityConfig {
                                 "/api/v1/confirmation-links",
                                 "/api/v1/sign-ins")
                         .permitAll()
-                        .requestMatchers("/api/v1/exercises/**")
+                        .requestMatchers("/api/v1/exercises/**", "/api/v1/invites/**")
                         .hasRole("TRAINER")
                         .anyRequest()
                         .authenticated())

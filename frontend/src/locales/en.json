@@ -63,6 +63,11 @@
       "credentials-invalid": "Email or password is wrong. Check both and try again.",
       "email-not-confirmed": "Confirm your email first, then sign in.",
       "sign-in-locked": "Too many attempts. Try again later."
+    },
+    "invite": {
+      "account-exists": "This email already has an account.",
+      "limit-reached": "You've sent many invites. Try again later.",
+      "not-found": "This invite is no longer open."
     }
   },
   "account": {
@@ -354,6 +359,57 @@
       "noNotes": "No notes",
       "build": "Build my plan",
       "later": "You can change them later with your trainer."
+    }
+  },
+  "invites": {
+    "title": "Open invites",
+    "description": "A client who joins moves to All clients. Links stop working when they expire or you revoke them.",
+    "open": "Open invites",
+    "inviteClient": "Invite client",
+    "loading": "Loading invites",
+    "retry": "Try again",
+    "empty": "No open invites. Invites you send show up here until the client joins.",
+    "columns": {
+      "email": "Email",
+      "sent": "Sent",
+      "expires": "Expires",
+      "actions": "Actions"
+    },
+    "today": "Today",
+    "daysLeft_one": "In {{count}} day",
+    "daysLeft_other": "In {{count}} days",
+    "copyNewLink": "Copy new link",
+    "copyNewLinkHint": "The link you copied before stops working.",
+    "copied": "Copied",
+    "newLinkCopied": "New link copied",
+    "copyFailed": "Couldn't copy. Select the link and copy it.",
+    "revoke": "Revoke",
+    "revokeFor": "Revoke the invite for {{email}}",
+    "dialog": {
+      "title": "Invite a client",
+      "description": "We email them a link to join you. You can copy the link too.",
+      "email": "Client's email",
+      "emailPlaceholder": "e.g. julia@example.com",
+      "cancel": "Cancel",
+      "send": "Send invite",
+      "sentTitle": "Invite sent to {{email}}",
+      "sentDescription": "The link works for 7 days. Copy it to send it another way.",
+      "link": "Invite link",
+      "copyLink": "Copy link",
+      "linkCopied": "Link copied",
+      "linkWarning": "Anyone with the link can join as this client. Send it only to them.",
+      "done": "Done"
+    },
+    "newLinkDialog": {
+      "title": "New link for {{email}}",
+      "description": "The link you copied before no longer works. Copy this one to send it."
+    },
+    "revokeDialog": {
+      "title": "Revoke the invite for {{email}}?",
+      "description": "The link stops working. You can send a new invite later.",
+      "cancel": "Cancel",
+      "confirm": "Revoke invite",
+      "revoked": "Invite revoked"
     }
   }
 }

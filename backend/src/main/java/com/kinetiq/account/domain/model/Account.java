@@ -82,7 +82,7 @@ public class Account {
     }
 
     /** Issues a new confirmation link and replaces any earlier one, so only the newest works. */
-    public void issueConfirmation(ConfirmationToken token, Instant now) {
+    public void issueConfirmation(SecretToken token, Instant now) {
         if (emailConfirmed) {
             throw new IllegalStateException("email is already confirmed");
         }

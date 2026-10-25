@@ -1,7 +1,14 @@
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 
 // stands in for screens whose feature has not been built yet
-export function PlaceholderPage({ title }: { title: string }) {
+export function PlaceholderPage({
+  title,
+  children,
+}: {
+  title: string
+  children?: ReactNode
+}) {
   const { t } = useTranslation()
 
   return (
@@ -10,6 +17,7 @@ export function PlaceholderPage({ title }: { title: string }) {
       <p className="text-muted-foreground text-sm">
         {t('placeholderPage.body')}
       </p>
+      {children}
     </div>
   )
 }
