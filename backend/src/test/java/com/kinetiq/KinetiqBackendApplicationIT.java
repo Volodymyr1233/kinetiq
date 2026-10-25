@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.account.domain.output.AccountRepository;
@@ -131,6 +133,7 @@ class KinetiqBackendApplicationIT {
                 hasher.hash(new RawPassword("Kinetiq-2026")),
                 Role.TRAINER,
                 ZoneId.of("Europe/Warsaw"),
+                AccountSettings.startingWith(Language.EN),
                 true,
                 null,
                 null));
@@ -197,6 +200,7 @@ class KinetiqBackendApplicationIT {
                 hasher.hash(new RawPassword("Kinetiq-2026")),
                 role,
                 ZoneId.of("Europe/Warsaw"),
+                AccountSettings.startingWith(Language.EN),
                 true,
                 null,
                 null));

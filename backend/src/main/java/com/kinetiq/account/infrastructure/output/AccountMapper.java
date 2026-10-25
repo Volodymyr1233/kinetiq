@@ -2,6 +2,7 @@ package com.kinetiq.account.infrastructure.output;
 
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.EmailConfirmation;
 import com.kinetiq.common.domain.model.Email;
 import java.time.ZoneId;
@@ -27,11 +28,15 @@ interface AccountMapper {
                 entity.getPasswordHash(),
                 entity.getRole(),
                 ZoneId.of(entity.getTimeZone()),
+                new AccountSettings(entity.getUnits(), entity.getLanguage(), entity.getTheme()),
                 entity.isEmailConfirmed(),
                 confirmation,
                 entity.getMailSentAt());
     }
 
+    @Mapping(target = "units", source = "settings.units")
+    @Mapping(target = "language", source = "settings.language")
+    @Mapping(target = "theme", source = "settings.theme")
     @Mapping(target = "confirmationTokenHash", ignore = true)
     @Mapping(target = "confirmationExpiresAt", ignore = true)
     @Mapping(target = "mailSentAt", ignore = true)

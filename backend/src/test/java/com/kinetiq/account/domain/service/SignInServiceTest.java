@@ -9,6 +9,8 @@ import com.kinetiq.account.domain.exception.SignInLockedException;
 import com.kinetiq.account.domain.input.SignInCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Duration;
@@ -35,6 +37,7 @@ class SignInServiceTest {
                 "hashed:" + PASSWORD,
                 role,
                 ZoneId.of("Europe/Warsaw"),
+                AccountSettings.startingWith(Language.EN),
                 confirmed,
                 null,
                 null);

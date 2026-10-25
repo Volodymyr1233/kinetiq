@@ -5,6 +5,7 @@ import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.ConfirmationToken;
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
@@ -41,7 +42,11 @@ public class SignUpService implements SignUpUseCase {
                         existing -> remind(existing, command.locale(), now),
                         () -> sendConfirmation(
                                 Account.signUpTrainer(
-                                        command.name(), command.email(), passwordHash, command.timeZone()),
+                                        command.name(),
+                                        command.email(),
+                                        passwordHash,
+                                        command.timeZone(),
+                                        Language.from(command.locale())),
                                 command.locale(),
                                 now));
     }

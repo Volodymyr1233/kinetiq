@@ -10,4 +10,7 @@ public interface CurrentAccountUseCase {
 
     /** Stores the browser's time zone; the same zone changes nothing. */
     void changeTimeZone(AccountId id, ZoneId zone);
+
+    /** Changes the values the command sends and answers the account as it is now. */
+    Account update(AccountId id, UpdateAccountCommand command);
 }

@@ -10,9 +10,14 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 
 import com.kinetiq.account.domain.exception.AccountNotFoundException;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.account.domain.input.UpdateAccountCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
+import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
+import com.kinetiq.account.domain.model.Theme;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.infrastructure.config.SecurityConfig;
 import com.kinetiq.common.infrastructure.config.WebConfig;
@@ -20,6 +25,8 @@ import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -55,22 +62,38 @@ class CurrentAccountControllerTest {
         return request.exchange();
     }
 
+    private MvcTestResult patch(String body, RequestPostProcessor... user) {
+        var request = mvc.patch()
+                .uri("/api/v1/accounts/me")
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body);
+        for (RequestPostProcessor processor : user) {
+            request.with(processor);
+        }
+        return request.exchange();
+    }
+
+    private static Account client(AccountSettings settings) {
+        return Account.restore(
+                ID,
+                "Anna Kowalska",
+                new Email("anna@example.com"),
+                "hash",
+                Role.CLIENT,
+                ZoneId.of("Europe/Warsaw"),
+                settings,
+                true,
+                null,
+                null);
+    }
+
     @Nested
     class Find {
 
         @Test
         void shouldAnswerSignedInAccount_whenSignedIn() {
-            when(currentAccount.find(ID))
-                    .thenReturn(Account.restore(
-                            ID,
-                            "Anna Kowalska",
-                            new Email("anna@example.com"),
-                            "hash",
-                            Role.CLIENT,
-                            ZoneId.of("Europe/Warsaw"),
-                            true,
-                            null,
-                            null));
+            when(currentAccount.find(ID)).thenReturn(client(AccountSettings.startingWith(Language.EN)));
 
             var result = mvc.get().uri("/api/v1/accounts/me").with(CLIENT).exchange();
 
@@ -79,6 +102,9 @@ class CurrentAccountControllerTest {
             assertThat(result).bodyJson().extractingPath("$.name").isEqualTo("Anna Kowalska");
             assertThat(result).bodyJson().extractingPath("$.role").isEqualTo("CLIENT");
             assertThat(result).bodyJson().extractingPath("$.timeZone").isEqualTo("Europe/Warsaw");
+            assertThat(result).bodyJson().extractingPath("$.units").isEqualTo("KG");
+            assertThat(result).bodyJson().extractingPath("$.language").isEqualTo("EN");
+            assertThat(result).bodyJson().extractingPath("$.theme").isEqualTo("SYSTEM");
         }
 
         @Test
@@ -127,6 +153,44 @@ class CurrentAccountControllerTest {
             assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED);
             assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.unauthenticated");
             verify(currentAccount, never()).changeTimeZone(any(), any());
+        }
+    }
+
+    @Nested
+    class Update {
+
+        @Test
+        void shouldChangeOnlyTheSentValueAndAnswerAccount_whenValid() {
+            when(currentAccount.update(ID, new UpdateAccountCommand(null, null, Theme.DARK)))
+                    .thenReturn(client(new AccountSettings(WeightUnit.KG, Language.EN, Theme.DARK)));
+
+            var result = patch("{\"theme\":\"DARK\"}", CLIENT);
+
+            assertThat(result).hasStatusOk();
+            assertThat(result).bodyJson().extractingPath("$.theme").isEqualTo("DARK");
+            assertThat(result).bodyJson().extractingPath("$.units").isEqualTo("KG");
+            verify(currentAccount).update(ID, new UpdateAccountCommand(null, null, Theme.DARK));
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"units", "language", "theme"})
+        void shouldFailValidationOnThatField_whenValueIsUnknown(String field) {
+            var result = patch("{\"" + field + "\":\"XX\"}", CLIENT);
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("validation.failed");
+            assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo(field);
+            assertThat(result).bodyJson().extractingPath("$.errors[0].code").isEqualTo("pattern");
+            verify(currentAccount, never()).update(any(), any());
+        }
+
+        @Test
+        void shouldAnswerUnauthenticated_whenNobodyIsSignedIn() {
+            var result = patch("{\"theme\":\"DARK\"}");
+
+            assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED);
+            assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.unauthenticated");
+            verify(currentAccount, never()).update(any(), any());
         }
     }
 }

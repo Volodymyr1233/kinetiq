@@ -52,12 +52,18 @@ export const SIGNED_IN = {
     name: 'Marek Nowak',
     role: 'TRAINER',
     timeZone: 'Europe/Warsaw',
+    units: 'KG',
+    language: 'EN',
+    theme: 'SYSTEM',
   },
   CLIENT: {
     id: '00000000-0000-4000-8000-000000000003',
     name: 'Anna Kowalska',
     role: 'CLIENT',
     timeZone: 'Europe/Warsaw',
+    units: 'KG',
+    language: 'EN',
+    theme: 'SYSTEM',
   },
 } as const
 

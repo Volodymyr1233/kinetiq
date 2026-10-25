@@ -2,6 +2,7 @@ package com.kinetiq.account.domain.service;
 
 import com.kinetiq.account.domain.exception.AccountNotFoundException;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.account.domain.input.UpdateAccountCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.output.AccountRepository;
@@ -26,5 +27,13 @@ public class CurrentAccountService implements CurrentAccountUseCase {
         }
         account.changeTimeZone(zone);
         accounts.save(account);
+    }
+
+    @Override
+    public Account update(AccountId id, UpdateAccountCommand command) {
+        Account account = find(id);
+        account.changeSettings(account.getSettings().with(command.units(), command.language(), command.theme()));
+        accounts.save(account);
+        return account;
     }
 }

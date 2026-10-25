@@ -4,8 +4,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.exception.AccountNotFoundException;
+import com.kinetiq.account.domain.input.UpdateAccountCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.AccountSettings;
+import com.kinetiq.account.domain.model.Language;
+import com.kinetiq.account.domain.model.Theme;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.domain.model.Email;
 import java.time.ZoneId;
 import org.junit.jupiter.api.Nested;
@@ -17,8 +22,8 @@ class CurrentAccountServiceTest {
 
     private final InMemoryAccountRepository accounts = new InMemoryAccountRepository();
     private final CurrentAccountService service = new CurrentAccountService(accounts);
-    private final Account trainer =
-            accounts.add(Account.signUpTrainer("Marek Nowak", new Email("marek@example.com"), "hash", WARSAW));
+    private final Account trainer = accounts.add(
+            Account.signUpTrainer("Marek Nowak", new Email("marek@example.com"), "hash", WARSAW, Language.EN));
 
     @Nested
     class Find {
@@ -50,6 +55,35 @@ class CurrentAccountServiceTest {
             service.changeTimeZone(trainer.getId(), WARSAW);
 
             assertThat(accounts.saves).isZero();
+        }
+    }
+
+    @Nested
+    class Update {
+
+        @Test
+        void shouldChangeOnlyTheValuesSent_whenOthersAreMissing() {
+            Account updated = service.update(trainer.getId(), new UpdateAccountCommand(WeightUnit.LB, null, Theme.DARK));
+
+            assertThat(updated.getSettings()).isEqualTo(new AccountSettings(WeightUnit.LB, Language.EN, Theme.DARK));
+            assertThat(accounts.saves).isOne();
+        }
+
+        @Test
+        void shouldKeepSettings_whenNothingIsSent() {
+            AccountSettings before = trainer.getSettings();
+
+            service.update(trainer.getId(), new UpdateAccountCommand(null, null, null));
+
+            assertThat(trainer.getSettings()).isEqualTo(before);
+        }
+
+        @Test
+        void shouldCountAsSignedOut_whenAccountNoLongerExists() {
+            UpdateAccountCommand command = new UpdateAccountCommand(null, Language.PL, null);
+
+            assertThatThrownBy(() -> service.update(AccountId.random(), command))
+                    .isInstanceOf(AccountNotFoundException.class);
         }
     }
 }
