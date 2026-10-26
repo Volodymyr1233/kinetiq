@@ -54,6 +54,15 @@ export const createRoutes = (): RouteObject[] => [
     },
   },
   {
+    path: '/reset-password',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/reset-password-page'))
+          .ResetPasswordPage,
+    },
+  },
+  {
     path: '/trainer',
     loader: requireRole('TRAINER'),
     ErrorBoundary: AreaErrorPage,

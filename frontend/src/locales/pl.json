@@ -62,7 +62,8 @@
       "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy.",
       "credentials-invalid": "E-mail lub hasło są nieprawidłowe. Sprawdź oba i spróbuj ponownie.",
       "email-not-confirmed": "Najpierw potwierdź e-mail, a potem się zaloguj.",
-      "sign-in-locked": "Zbyt wiele prób. Spróbuj ponownie później."
+      "sign-in-locked": "Zbyt wiele prób. Spróbuj ponownie później.",
+      "password-reset-link-invalid": "Ten link już nie działa. Poproś o nowy."
     },
     "invite": {
       "account-exists": "Ten e-mail ma już konto.",
@@ -143,6 +144,32 @@
       "email": "E-mail",
       "submit": "Wyślij nowy link",
       "alreadyConfirmed": "Konto już potwierdzone?"
+    },
+    "reset": {
+      "request": {
+        "title": "Zresetuj hasło",
+        "description": "Podaj e-mail, a wyślemy Ci link do ustawienia nowego hasła.",
+        "submit": "Wyślij link"
+      },
+      "sent": {
+        "title": "Sprawdź skrzynkę e-mail",
+        "description": "Jeśli istnieje konto dla <strong>{{email}}</strong>, wysłaliśmy link do ustawienia nowego hasła. Działa raz i wygasa po 1 godzinie."
+      },
+      "set": {
+        "title": "Ustaw nowe hasło",
+        "description": "Wybierz hasło, którego nie używasz nigdzie indziej.",
+        "password": "Nowe hasło",
+        "submit": "Ustaw hasło"
+      },
+      "done": {
+        "title": "Hasło zmienione",
+        "description": "Wylogowaliśmy Cię na wszystkich urządzeniach. Zaloguj się nowym hasłem."
+      },
+      "expired": {
+        "title": "Ten link już nie działa",
+        "description": "Link do resetu hasła działa raz i wygasa po 1 godzinie. Podaj e-mail, aby dostać nowy."
+      },
+      "remembered": "Pamiętasz hasło?"
     }
   },
   "exercises": {

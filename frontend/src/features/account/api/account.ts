@@ -82,6 +82,20 @@ export function useRequestConfirmationLink() {
   })
 }
 
+export function useRequestPasswordReset() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      send(api.POST('/api/v1/password-reset-links', { body: { email } })),
+  })
+}
+
+export function useSetPassword() {
+  return useMutation({
+    mutationFn: (body: Schemas['SetPasswordRequest']) =>
+      send(api.POST('/api/v1/password-resets', { body })),
+  })
+}
+
 export function useSignIn() {
   const queryClient = useQueryClient()
   return useMutation({
