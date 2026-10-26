@@ -108,6 +108,28 @@ class AccountRepositoryImplIT {
     }
 
     @Test
+    void shouldFindAccountByResetToken_andNotAfterReset() {
+        Account account = trainer("marek@example.com");
+        SecretToken token = SecretToken.generate();
+        account.issuePasswordReset(token, Instant.parse("2026-10-25T10:00:00Z"));
+        repository.save(account);
+
+        assertThat(repository.findByPasswordResetTokenHash(token.hash()))
+                .get()
+                .extracting(Account::getId)
+                .isEqualTo(account.getId());
+
+        account.resetPassword("new-hash", Instant.parse("2026-10-25T10:30:00Z"));
+        repository.save(account);
+
+        assertThat(repository.findByPasswordResetTokenHash(token.hash())).isEmpty();
+        assertThat(repository.findById(account.getId()))
+                .get()
+                .extracting(Account::getPasswordHash)
+                .isEqualTo("new-hash");
+    }
+
+    @Test
     void shouldFindNothing_whenIdIsUnknown() {
         assertThat(repository.findById(AccountId.random())).isEmpty();
     }

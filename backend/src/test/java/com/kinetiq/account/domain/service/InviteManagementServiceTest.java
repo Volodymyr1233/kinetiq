@@ -101,6 +101,7 @@ class InviteManagementServiceTest {
                     AccountSettings.startingWith(Language.EN),
                     role == Role.CLIENT,
                     null,
+                    null,
                     null));
 
             assertThatThrownBy(() -> invite(trainer, new Email("OLA@Example.com")))

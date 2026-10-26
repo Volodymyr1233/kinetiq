@@ -85,6 +85,7 @@ class CurrentAccountControllerTest {
                 settings,
                 true,
                 null,
+                null,
                 null);
     }
 

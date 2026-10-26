@@ -40,7 +40,7 @@ class SignInServiceTest {
                 AccountSettings.startingWith(Language.EN),
                 confirmed,
                 null,
-                null);
+                null, null);
     }
 
     private Account signIn(String email, String password) {

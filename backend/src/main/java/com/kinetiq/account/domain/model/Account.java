@@ -1,6 +1,7 @@
 package com.kinetiq.account.domain.model;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
+import com.kinetiq.account.domain.exception.PasswordResetLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Duration;
@@ -21,12 +22,13 @@ public class Account {
 
     private static final Pattern CONTROL_CHARACTER = Pattern.compile("\\p{Cc}");
     private static final Duration CONFIRMATION_VALIDITY = Duration.ofHours(24);
+    private static final Duration RESET_VALIDITY = Duration.ofHours(1);
     private static final Duration MAIL_INTERVAL = Duration.ofSeconds(60);
 
     private final AccountId id;
     private final String name;
     private final Email email;
-    private final String passwordHash;
+    private String passwordHash;
     private final Role role;
     private ZoneId timeZone;
     private AccountSettings settings;
@@ -37,6 +39,9 @@ public class Account {
 
     @Getter(AccessLevel.NONE)
     private Instant mailSentAt;
+
+    @Getter(AccessLevel.NONE)
+    private PasswordReset passwordReset;
 
     public static Account signUpTrainer(
             String name, Email email, String passwordHash, ZoneId timeZone, Language language) {
@@ -49,6 +54,7 @@ public class Account {
                 Objects.requireNonNull(timeZone),
                 AccountSettings.startingWith(Objects.requireNonNull(language)),
                 false,
+                null,
                 null,
                 null);
     }
@@ -63,13 +69,28 @@ public class Account {
             AccountSettings settings,
             boolean emailConfirmed,
             EmailConfirmation confirmation,
-            Instant mailSentAt) {
+            Instant mailSentAt,
+            PasswordReset passwordReset) {
         return new Account(
-                id, name, email, passwordHash, role, timeZone, settings, emailConfirmed, confirmation, mailSentAt);
+                id,
+                name,
+                email,
+                passwordHash,
+                role,
+                timeZone,
+                settings,
+                emailConfirmed,
+                confirmation,
+                mailSentAt,
+                passwordReset);
     }
 
     public Optional<EmailConfirmation> getConfirmation() {
         return Optional.ofNullable(confirmation);
+    }
+
+    public Optional<PasswordReset> getPasswordReset() {
+        return Optional.ofNullable(passwordReset);
     }
 
     public Optional<Instant> getMailSentAt() {
@@ -88,6 +109,21 @@ public class Account {
         }
         confirmation = new EmailConfirmation(token.hash(), now.plus(CONFIRMATION_VALIDITY));
         mailSentAt = now;
+    }
+
+    /** Issues a new password reset link and replaces any earlier one, so only the newest works. */
+    public void issuePasswordReset(SecretToken token, Instant now) {
+        passwordReset = new PasswordReset(token.hash(), now.plus(RESET_VALIDITY));
+        mailSentAt = now;
+    }
+
+    /** Replaces the password and removes the link, so it works at most once. */
+    public void resetPassword(String newPasswordHash, Instant now) {
+        if (passwordReset == null || !now.isBefore(passwordReset.expiresAt())) {
+            throw new PasswordResetLinkInvalidException();
+        }
+        passwordHash = Objects.requireNonNull(newPasswordHash);
+        passwordReset = null;
     }
 
     /** Follows the browser, so weeks and days stay right after the person moves or travels. */
