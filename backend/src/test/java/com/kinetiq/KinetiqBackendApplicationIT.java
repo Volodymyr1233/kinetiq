@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.jayway.jsonpath.JsonPath;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.RawPassword;
@@ -13,6 +14,7 @@ import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
 import jakarta.servlet.http.Cookie;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -137,6 +139,7 @@ class KinetiqBackendApplicationIT {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
+                null,
                 null));
         Cookie token = csrfToken();
 
@@ -204,8 +207,34 @@ class KinetiqBackendApplicationIT {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
+                null,
                 null));
         return id;
+    }
+
+    @Test
+    void shouldEndEverySignInAndAcceptNewPassword_whenPasswordIsReset() {
+        AccountId id = saveAccount("it.reset@example.com", Role.TRAINER);
+        Cookie laptop = signIn("it.reset@example.com").getResponse().getCookie("SESSION");
+        Cookie phone = signIn("it.reset@example.com").getResponse().getCookie("SESSION");
+        SecretToken link = SecretToken.generate();
+        Account account = accounts.findById(id).orElseThrow();
+        account.issuePasswordReset(link, Instant.now());
+        accounts.save(account);
+        Cookie token = csrfToken();
+
+        var reset = mvc.post()
+                .uri("/api/v1/password-resets")
+                .cookie(token)
+                .header("X-XSRF-TOKEN", token.getValue())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\":\"%s\",\"password\":\"New-pass-2026\"}".formatted(link.value()))
+                .exchange();
+
+        assertThat(reset).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(laptop)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(phone)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(signIn("it.reset@example.com")).hasStatus(HttpStatus.UNAUTHORIZED);
     }
 
     private MvcTestResult signIn(String email, Cookie... cookies) {

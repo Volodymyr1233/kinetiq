@@ -11,4 +11,6 @@ interface JpaAccountRepository extends JpaRepository<AccountEntity, UUID> {
     boolean existsByEmail(String email);
 
     Optional<AccountEntity> findByConfirmationTokenHash(String confirmationTokenHash);
+
+    Optional<AccountEntity> findByResetTokenHash(String resetTokenHash);
 }

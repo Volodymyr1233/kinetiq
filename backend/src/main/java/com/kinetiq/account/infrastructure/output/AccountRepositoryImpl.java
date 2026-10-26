@@ -42,4 +42,9 @@ class AccountRepositoryImpl implements AccountRepository {
     public Optional<Account> findByConfirmationTokenHash(String tokenHash) {
         return jpa.findByConfirmationTokenHash(tokenHash).map(mapper::toDomain);
     }
+
+    @Override
+    public Optional<Account> findByPasswordResetTokenHash(String tokenHash) {
+        return jpa.findByResetTokenHash(tokenHash).map(mapper::toDomain);
+    }
 }

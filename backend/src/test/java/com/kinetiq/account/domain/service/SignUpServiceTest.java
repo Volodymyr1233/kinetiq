@@ -259,6 +259,7 @@ class SignUpServiceTest {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
+                null,
                 null);
     }
 }

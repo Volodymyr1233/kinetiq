@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
+import com.kinetiq.account.domain.exception.PasswordResetLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Duration;
@@ -189,6 +190,49 @@ class AccountTest {
         }
     }
 
+    @Nested
+    class ResetPassword {
+
+        @Test
+        void shouldExpireInAnHour_whenIssued() {
+            Account account = confirmed();
+            SecretToken token = SecretToken.generate();
+
+            account.issuePasswordReset(token, NOW);
+
+            assertThat(account.getPasswordReset())
+                    .contains(new PasswordReset(token.hash(), NOW.plus(Duration.ofHours(1))));
+            assertThat(account.getMailSentAt()).contains(NOW);
+        }
+
+        @Test
+        void shouldChangePasswordAndRemoveLink_whenLinkIsValid() {
+            Account account = confirmed();
+            account.issuePasswordReset(SecretToken.generate(), NOW);
+
+            account.resetPassword("new-hash", NOW.plusSeconds(59 * 60));
+
+            assertThat(account.getPasswordHash()).isEqualTo("new-hash");
+            assertThat(account.getPasswordReset()).isEmpty();
+        }
+
+        @Test
+        void shouldRefuseAndKeepPassword_whenExactlyAnHourPassed() {
+            Account account = confirmed();
+            account.issuePasswordReset(SecretToken.generate(), NOW);
+
+            assertThatThrownBy(() -> account.resetPassword("new-hash", NOW.plus(Duration.ofHours(1))))
+                    .isInstanceOf(PasswordResetLinkInvalidException.class);
+            assertThat(account.getPasswordHash()).isEqualTo("hash");
+        }
+
+        @Test
+        void shouldRefuse_whenNoLinkWasIssued() {
+            assertThatThrownBy(() -> confirmed().resetPassword("new-hash", NOW))
+                    .isInstanceOf(PasswordResetLinkInvalidException.class);
+        }
+    }
+
     static Account confirmed() {
         return Account.restore(
                 AccountId.random(),
@@ -199,6 +243,7 @@ class AccountTest {
                 WARSAW,
                 AccountSettings.startingWith(Language.EN),
                 true,
+                null,
                 null,
                 null);
     }

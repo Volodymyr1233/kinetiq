@@ -3,6 +3,7 @@ package com.kinetiq.account.domain.service;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.EmailConfirmation;
+import com.kinetiq.account.domain.model.PasswordReset;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
 import java.util.HashMap;
@@ -47,6 +48,16 @@ class InMemoryAccountRepository implements AccountRepository {
         return byEmail.values().stream()
                 .filter(account -> account.getConfirmation()
                         .map(EmailConfirmation::tokenHash)
+                        .filter(tokenHash::equals)
+                        .isPresent())
+                .findFirst();
+    }
+
+    @Override
+    public Optional<Account> findByPasswordResetTokenHash(String tokenHash) {
+        return byEmail.values().stream()
+                .filter(account -> account.getPasswordReset()
+                        .map(PasswordReset::tokenHash)
                         .filter(tokenHash::equals)
                         .isPresent())
                 .findFirst();

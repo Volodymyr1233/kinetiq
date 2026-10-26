@@ -17,6 +17,7 @@ class RequestLimiter {
     enum Kind {
         SIGN_UP(10),
         CONFIRMATION_LINK(10),
+        PASSWORD_RESET(10),
         INVITE(20);
 
         private final int limit;
