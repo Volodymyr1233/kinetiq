@@ -1,6 +1,7 @@
-import { CircleAlertIcon, SearchIcon } from 'lucide-react'
+import { CircleAlertIcon, PlusIcon, SearchIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { toast } from 'sonner'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -19,8 +20,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { useDebouncedValue } from '@/hooks/use-debounced-value'
 import { errorMessageKey } from '@/lib/api/problem'
-import { CATEGORIES, useExercises, type Category } from '../api/exercises'
+import {
+  CATEGORIES,
+  useExercises,
+  type Category,
+  type Exercise,
+} from '../api/exercises'
 import { ExerciseDetail } from '../components/exercise-detail'
+import { ExerciseDialog } from '../components/exercise-dialog'
 import { ExerciseTable } from '../components/exercise-table'
 
 const ALL = 'ALL'
@@ -48,20 +55,39 @@ export function ExerciseLibraryPage() {
     setSearch('')
   }
 
+  // filters reset, so the saved exercise is listed whatever its category and name
+  function showSaved(exercise: Exercise, created: boolean) {
+    clearFilters()
+    setChosenId(exercise.id)
+    toast.success(
+      t(created ? 'exercises.toast.added' : 'exercises.toast.saved', {
+        name: exercise.name,
+      }),
+    )
+  }
+
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
-      <div className="flex flex-col gap-1">
-        <h1 className="font-heading text-2xl font-semibold">
-          {t('exercises.title')}
-        </h1>
-        <p role="status" className="text-muted-foreground text-sm">
-          {query.data
-            ? t('exercises.count', {
-                shown: exercises.length,
-                count: query.data.total,
-              })
-            : query.isPending && t('exercises.loading')}
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-col gap-1">
+          <h1 className="font-heading text-2xl font-semibold">
+            {t('exercises.title')}
+          </h1>
+          <p role="status" className="text-muted-foreground text-sm">
+            {query.data
+              ? t('exercises.count', {
+                  shown: exercises.length,
+                  count: query.data.total,
+                })
+              : query.isPending && t('exercises.loading')}
+          </p>
+        </div>
+        <ExerciseDialog onSaved={showSaved}>
+          <Button>
+            <PlusIcon data-icon="inline-start" aria-hidden="true" />
+            {t('exercises.add')}
+          </Button>
+        </ExerciseDialog>
       </div>
       <ToggleGroup
         type="single"
@@ -130,10 +156,15 @@ export function ExerciseLibraryPage() {
                 <EmptyTitle>{t('exercises.empty.title')}</EmptyTitle>
                 <EmptyDescription>{t('exercises.empty.body')}</EmptyDescription>
               </EmptyHeader>
-              <EmptyContent>
+              <EmptyContent className="flex-row justify-center">
                 <Button variant="outline" size="sm" onClick={clearFilters}>
                   {t('exercises.empty.clear')}
                 </Button>
+                <ExerciseDialog onSaved={showSaved}>
+                  <Button variant="outline" size="sm">
+                    {t('exercises.add')}
+                  </Button>
+                </ExerciseDialog>
               </EmptyContent>
             </Empty>
           ) : (
@@ -148,7 +179,7 @@ export function ExerciseLibraryPage() {
         </div>
         {chosen && !query.isError && (
           <aside className="max-w-full flex-[1_1_300px]">
-            <ExerciseDetail exercise={chosen} />
+            <ExerciseDetail exercise={chosen} onSaved={showSaved} />
           </aside>
         )}
       </div>

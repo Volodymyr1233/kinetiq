@@ -1,9 +1,12 @@
+import { PencilIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
 import type { Exercise } from '../api/exercises'
 import { defaultLabel, plansLabel } from '../format'
+import { ExerciseDialog } from './exercise-dialog'
 
 function Row({
   label,
@@ -22,22 +25,44 @@ function Row({
   )
 }
 
-export function ExerciseDetail({ exercise }: { exercise: Exercise }) {
+export function ExerciseDetail({
+  exercise,
+  onSaved,
+}: {
+  exercise: Exercise
+  onSaved: (exercise: Exercise, created: boolean) => void
+}) {
   const { t } = useTranslation()
 
   return (
     <Card>
       <CardHeader className="gap-3">
-        <Badge variant="secondary">
-          {t(`exercises.categories.${exercise.category}`)}
-        </Badge>
+        <div className="flex min-h-8 items-center justify-between gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Badge variant="secondary">
+              {t(`exercises.categories.${exercise.category}`)}
+            </Badge>
+            {/* explains why a starter exercise has no Edit */}
+            {exercise.starter && (
+              <Badge variant="outline">{t('exercises.starter')}</Badge>
+            )}
+          </div>
+          {!exercise.starter && (
+            <ExerciseDialog exercise={exercise} onSaved={onSaved}>
+              <Button variant="ghost" size="sm">
+                <PencilIcon data-icon="inline-start" aria-hidden="true" />
+                {t('exercises.edit')}
+              </Button>
+            </ExerciseDialog>
+          )}
+        </div>
         <h2 className="font-heading text-lg font-semibold">{exercise.name}</h2>
       </CardHeader>
       <CardContent>
         <dl className="flex flex-col gap-2">
           <Row
             label={t('exercises.detail.equipment')}
-            value={exercise.equipment}
+            value={exercise.equipment || t('exercises.notSet')}
             measured={false}
           />
           <Row
@@ -65,7 +90,7 @@ export function ExerciseDetail({ exercise }: { exercise: Exercise }) {
             <h3 className="text-muted-foreground text-xs font-medium uppercase">
               {t('exercises.detail.cues')}
             </h3>
-            <p>{exercise.cues}</p>
+            <p className="whitespace-pre-line">{exercise.cues}</p>
           </div>
         )}
       </CardContent>
