@@ -9,6 +9,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 import com.kinetiq.account.domain.exception.AccountNotFoundException;
+import com.kinetiq.account.domain.exception.NameNotChangeableException;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.input.UpdateAccountCommand;
 import com.kinetiq.account.domain.model.Account;
@@ -101,6 +102,7 @@ class CurrentAccountControllerTest {
             assertThat(result).hasStatusOk();
             assertThat(result).bodyJson().extractingPath("$.id").isEqualTo(ID.value().toString());
             assertThat(result).bodyJson().extractingPath("$.name").isEqualTo("Anna Kowalska");
+            assertThat(result).bodyJson().extractingPath("$.email").isEqualTo("anna@example.com");
             assertThat(result).bodyJson().extractingPath("$.role").isEqualTo("CLIENT");
             assertThat(result).bodyJson().extractingPath("$.timeZone").isEqualTo("Europe/Warsaw");
             assertThat(result).bodyJson().extractingPath("$.units").isEqualTo("KG");
@@ -162,7 +164,7 @@ class CurrentAccountControllerTest {
 
         @Test
         void shouldChangeOnlyTheSentValueAndAnswerAccount_whenValid() {
-            when(currentAccount.update(ID, new UpdateAccountCommand(null, null, Theme.DARK)))
+            when(currentAccount.update(ID, new UpdateAccountCommand(null, null, null, Theme.DARK)))
                     .thenReturn(client(new AccountSettings(WeightUnit.KG, Language.EN, Theme.DARK)));
 
             var result = patch("{\"theme\":\"DARK\"}", CLIENT);
@@ -170,7 +172,7 @@ class CurrentAccountControllerTest {
             assertThat(result).hasStatusOk();
             assertThat(result).bodyJson().extractingPath("$.theme").isEqualTo("DARK");
             assertThat(result).bodyJson().extractingPath("$.units").isEqualTo("KG");
-            verify(currentAccount).update(ID, new UpdateAccountCommand(null, null, Theme.DARK));
+            verify(currentAccount).update(ID, new UpdateAccountCommand(null, null, null, Theme.DARK));
         }
 
         @ParameterizedTest
@@ -183,6 +185,38 @@ class CurrentAccountControllerTest {
             assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo(field);
             assertThat(result).bodyJson().extractingPath("$.errors[0].code").isEqualTo("pattern");
             verify(currentAccount, never()).update(any(), any());
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"   ", "Anna\\nNowak"})
+        void shouldFailValidationOnName_whenBlankOrHasControlCharacters(String name) {
+            var result = patch("{\"name\":\"" + name + "\"}", CLIENT);
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("name");
+            assertThat(result).bodyJson().extractingPath("$.errors[0].code").isEqualTo("pattern");
+            verify(currentAccount, never()).update(any(), any());
+        }
+
+        @Test
+        void shouldFailValidationOnName_when101Characters() {
+            var result = patch("{\"name\":\"" + "a".repeat(101) + "\"}", CLIENT);
+
+            assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+            assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("name");
+            assertThat(result).bodyJson().extractingPath("$.errors[0].code").isEqualTo("size");
+            verify(currentAccount, never()).update(any(), any());
+        }
+
+        @Test
+        void shouldRefuse_whenClientChangesName() {
+            when(currentAccount.update(ID, new UpdateAccountCommand("Anna Nowak", null, null, null)))
+                    .thenThrow(new NameNotChangeableException());
+
+            var result = patch("{\"name\":\"Anna Nowak\"}", CLIENT);
+
+            assertThat(result).hasStatus(HttpStatus.FORBIDDEN);
+            assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("account.name-not-changeable");
         }
 
         @Test

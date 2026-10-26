@@ -104,7 +104,15 @@ export const createRoutes = (): RouteObject[] => [
               .ExerciseLibraryPage,
         },
       },
-      trainerPlaceholder('settings'),
+      {
+        path: 'settings',
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/account/pages/settings-page'))
+              .SettingsPage,
+        },
+      },
     ],
   },
   // the quiz has its own address per step and no tab bar, so it sits beside the client area

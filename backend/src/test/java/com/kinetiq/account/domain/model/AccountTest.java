@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
+import com.kinetiq.account.domain.exception.NameNotChangeableException;
 import com.kinetiq.account.domain.exception.PasswordResetLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
@@ -75,6 +76,47 @@ class AccountTest {
         void shouldRejectName_when101Characters() {
             assertThatThrownBy(() -> Account.signUpTrainer("a".repeat(101), EMAIL, "hash", WARSAW, Language.EN))
                     .isInstanceOf(InvalidValueException.class);
+        }
+    }
+
+    @Nested
+    class Rename {
+
+        @Test
+        void shouldStoreTrimmedName_whenTrainerRenames() {
+            Account account = trainer();
+
+            account.rename("  Marek Kowalski ");
+
+            assertThat(account.getName()).isEqualTo("Marek Kowalski");
+        }
+
+        @ParameterizedTest
+        @ValueSource(strings = {"   ", "Marek\nNowak"})
+        void shouldRefuse_whenNameBreaksSignUpRules(String name) {
+            Account account = trainer();
+
+            assertThatThrownBy(() -> account.rename(name)).isInstanceOf(InvalidValueException.class);
+            assertThat(account.getName()).isEqualTo("Marek Nowak");
+        }
+
+        @Test
+        void shouldRefuse_whenClientRenames() {
+            Account client = Account.restore(
+                    AccountId.random(),
+                    "Anna Kowalska",
+                    new Email("anna@example.com"),
+                    "hash",
+                    Role.CLIENT,
+                    WARSAW,
+                    AccountSettings.startingWith(Language.EN),
+                    true,
+                    null,
+                    null,
+                    null);
+
+            assertThatThrownBy(() -> client.rename("Anna Nowak")).isInstanceOf(NameNotChangeableException.class);
+            assertThat(client.getName()).isEqualTo("Anna Kowalska");
         }
     }
 

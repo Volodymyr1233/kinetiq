@@ -172,6 +172,21 @@
       "remembered": "Pamiętasz hasło?"
     }
   },
+  "settings": {
+    "profile": "Profil",
+    "name": "Imię i nazwisko",
+    "email": "E-mail",
+    "display": "Wyświetlanie",
+    "units": {
+      "label": "Jednostki",
+      "hint": "Nowi klienci zaczynają z tą jednostką. Każdy może ją zmienić.",
+      "KG": "kg",
+      "LB": "lb"
+    },
+    "languageHint": "Po polsku zwracamy się do klientów na „ty”.",
+    "save": "Zapisz zmiany",
+    "saved": "Zapisano ustawienia."
+  },
   "exercises": {
     "title": "Biblioteka ćwiczeń",
     "count_one": "{{shown, number}} z {{count, number}} ćwiczenia",

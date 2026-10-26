@@ -63,24 +63,36 @@ class CurrentAccountServiceTest {
 
         @Test
         void shouldChangeOnlyTheValuesSent_whenOthersAreMissing() {
-            Account updated = service.update(trainer.getId(), new UpdateAccountCommand(WeightUnit.LB, null, Theme.DARK));
+            Account updated =
+                    service.update(trainer.getId(), new UpdateAccountCommand(null, WeightUnit.LB, null, Theme.DARK));
 
             assertThat(updated.getSettings()).isEqualTo(new AccountSettings(WeightUnit.LB, Language.EN, Theme.DARK));
+            assertThat(updated.getName()).isEqualTo("Marek Nowak");
             assertThat(accounts.saves).isOne();
+        }
+
+        @Test
+        void shouldRenameAndKeepSettings_whenOnlyANameIsSent() {
+            AccountSettings before = trainer.getSettings();
+
+            service.update(trainer.getId(), new UpdateAccountCommand("Marek Kowalski", null, null, null));
+
+            assertThat(trainer.getName()).isEqualTo("Marek Kowalski");
+            assertThat(trainer.getSettings()).isEqualTo(before);
         }
 
         @Test
         void shouldKeepSettings_whenNothingIsSent() {
             AccountSettings before = trainer.getSettings();
 
-            service.update(trainer.getId(), new UpdateAccountCommand(null, null, null));
+            service.update(trainer.getId(), new UpdateAccountCommand(null, null, null, null));
 
             assertThat(trainer.getSettings()).isEqualTo(before);
         }
 
         @Test
         void shouldCountAsSignedOut_whenAccountNoLongerExists() {
-            UpdateAccountCommand command = new UpdateAccountCommand(null, Language.PL, null);
+            UpdateAccountCommand command = new UpdateAccountCommand(null, null, Language.PL, null);
 
             assertThatThrownBy(() -> service.update(AccountId.random(), command))
                     .isInstanceOf(AccountNotFoundException.class);

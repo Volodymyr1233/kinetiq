@@ -32,6 +32,9 @@ public class CurrentAccountService implements CurrentAccountUseCase {
     @Override
     public Account update(AccountId id, UpdateAccountCommand command) {
         Account account = find(id);
+        if (command.name() != null) {
+            account.rename(command.name());
+        }
         account.changeSettings(account.getSettings().with(command.units(), command.language(), command.theme()));
         accounts.save(account);
         return account;

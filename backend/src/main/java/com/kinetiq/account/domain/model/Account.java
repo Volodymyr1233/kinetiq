@@ -1,6 +1,7 @@
 package com.kinetiq.account.domain.model;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
+import com.kinetiq.account.domain.exception.NameNotChangeableException;
 import com.kinetiq.account.domain.exception.PasswordResetLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
@@ -26,7 +27,7 @@ public class Account {
     private static final Duration MAIL_INTERVAL = Duration.ofSeconds(60);
 
     private final AccountId id;
-    private final String name;
+    private String name;
     private final Email email;
     private String passwordHash;
     private final Role role;
@@ -129,6 +130,14 @@ public class Account {
     /** Follows the browser, so weeks and days stay right after the person moves or travels. */
     public void changeTimeZone(ZoneId zone) {
         timeZone = Objects.requireNonNull(zone);
+    }
+
+    /** Changes a trainer's name under the sign-up rules; a client cannot change their name. */
+    public void rename(String name) {
+        if (role != Role.TRAINER) {
+            throw new NameNotChangeableException();
+        }
+        this.name = validName(name);
     }
 
     /** Replaces the person's units, language and theme. */
