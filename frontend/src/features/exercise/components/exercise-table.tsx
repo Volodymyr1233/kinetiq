@@ -63,7 +63,7 @@ export function ExerciseTable({
                 {t(`exercises.categories.${exercise.category}`)}
               </TableCell>
               <TableCell className="text-muted-foreground whitespace-normal">
-                {exercise.equipment}
+                {exercise.equipment || t('exercises.notSet')}
               </TableCell>
               <TableCell className="num text-right">
                 {defaultLabel(t, exercise)}

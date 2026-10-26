@@ -69,6 +69,11 @@
       "account-exists": "Ten e-mail ma już konto.",
       "limit-reached": "Wysłano dużo zaproszeń. Spróbuj później.",
       "not-found": "To zaproszenie nie jest już otwarte."
+    },
+    "exercise": {
+      "name-taken": "Ćwiczenie o tej nazwie jest już w bibliotece.",
+      "not-found": "Tego ćwiczenia nie można edytować.",
+      "limit-reached": "Osiągnięto limit 200 własnych ćwiczeń."
     }
   },
   "account": {
@@ -251,6 +256,44 @@
     },
     "error": {
       "retry": "Spróbuj ponownie"
+    },
+    "add": "Dodaj ćwiczenie",
+    "edit": "Edytuj",
+    "starter": "Startowe",
+    "notSet": "Nie podano",
+    "dialog": {
+      "addTitle": "Dodaj ćwiczenie",
+      "editTitle": "Edytuj ćwiczenie",
+      "name": "Nazwa",
+      "namePlaceholder": "np. Przysiad kielichowy",
+      "category": "Kategoria",
+      "measure": "Miara",
+      "measures": {
+        "REPS": "Powtórzenia",
+        "SECONDS": "Sekundy"
+      },
+      "equipment": "Sprzęt (opcjonalnie)",
+      "sets": "Serie",
+      "reps": "Powtórzenia",
+      "seconds": "Sekundy",
+      "rest": "Przerwa",
+      "restUnit": "s",
+      "cues": "Wskazówki (opcjonalnie)",
+      "cancel": "Anuluj",
+      "save": "Zapisz ćwiczenie"
+    },
+    "toast": {
+      "added": "{{name}} dodano do biblioteki.",
+      "saved": "Zapisano: {{name}}."
+    },
+    "errors": {
+      "name": "Podaj nazwę.",
+      "nameLength": "Użyj maksymalnie 100 znaków.",
+      "sets": "Podaj od 1 do 20 serii.",
+      "amount": "Podaj liczbę od 1 do 3600.",
+      "rest": "Podaj od 0 do 600 sekund.",
+      "equipmentLength": "Użyj maksymalnie 50 znaków.",
+      "cuesLength": "Użyj maksymalnie 500 znaków."
     }
   },
   "quiz": {

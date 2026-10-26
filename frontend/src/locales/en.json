@@ -69,6 +69,11 @@
       "account-exists": "This email already has an account.",
       "limit-reached": "You've sent many invites. Try again later.",
       "not-found": "This invite is no longer open."
+    },
+    "exercise": {
+      "name-taken": "An exercise with this name is already in the library.",
+      "not-found": "This exercise can't be edited.",
+      "limit-reached": "You've reached the limit of 200 own exercises."
     }
   },
   "account": {
@@ -245,6 +250,44 @@
     },
     "error": {
       "retry": "Try again"
+    },
+    "add": "Add exercise",
+    "edit": "Edit",
+    "starter": "Starter",
+    "notSet": "Not set",
+    "dialog": {
+      "addTitle": "Add exercise",
+      "editTitle": "Edit exercise",
+      "name": "Name",
+      "namePlaceholder": "e.g. Goblet squat",
+      "category": "Category",
+      "measure": "Measure",
+      "measures": {
+        "REPS": "Repetitions",
+        "SECONDS": "Seconds"
+      },
+      "equipment": "Equipment (optional)",
+      "sets": "Sets",
+      "reps": "Reps",
+      "seconds": "Seconds",
+      "rest": "Rest",
+      "restUnit": "s",
+      "cues": "Cues (optional)",
+      "cancel": "Cancel",
+      "save": "Save exercise"
+    },
+    "toast": {
+      "added": "{{name}} added to the library.",
+      "saved": "{{name}} saved."
+    },
+    "errors": {
+      "name": "Enter a name.",
+      "nameLength": "Use 100 characters or fewer.",
+      "sets": "Enter 1 to 20 sets.",
+      "amount": "Enter 1 to 3600.",
+      "rest": "Enter 0 to 600 seconds.",
+      "equipmentLength": "Use 50 characters or fewer.",
+      "cuesLength": "Use 500 characters or fewer."
     }
   },
   "quiz": {
