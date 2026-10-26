@@ -331,10 +331,18 @@
       },
       "weight": {
         "label": "Masa ciała",
-        "unit": "kg",
-        "placeholder": "np. 62,5",
-        "error": "Podaj masę ciała od 30 do 250 kg.",
-        "note": "Na funty przełączysz się później w ustawieniach."
+        "KG": {
+          "unit": "kg",
+          "placeholder": "np. 62,5",
+          "error": "Podaj masę ciała od 30 do 250 kg.",
+          "note": "Na funty przełączysz się później w ustawieniach."
+        },
+        "LB": {
+          "unit": "lb",
+          "placeholder": "np. 137,8",
+          "error": "Podaj masę ciała od 66,1 do 551,2 lb.",
+          "note": "Na kilogramy przełączysz się później w ustawieniach."
+        }
       }
     },
     "likes": {
@@ -397,10 +405,10 @@
         "notes": { "label": "Notatki", "change": "Zmień notatki" }
       },
       "change": "Zmień",
-      "about_one": "{{count, number}} rok · {{height, number}} cm · {{weight, number}} kg",
-      "about_few": "{{count, number}} lata · {{height, number}} cm · {{weight, number}} kg",
-      "about_many": "{{count, number}} lat · {{height, number}} cm · {{weight, number}} kg",
-      "about_other": "{{count, number}} roku · {{height, number}} cm · {{weight, number}} kg",
+      "about_one": "{{count, number}} rok · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
+      "about_few": "{{count, number}} lata · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
+      "about_many": "{{count, number}} lat · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
+      "about_other": "{{count, number}} roku · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
       "noNotes": "Brak notatek",
       "build": "Zbuduj mój plan",
       "later": "Później możesz je zmienić razem z trenerem."

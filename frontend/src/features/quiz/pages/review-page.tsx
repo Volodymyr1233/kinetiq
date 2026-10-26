@@ -4,18 +4,19 @@ import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { parseWeight, useWeightUnit } from '@/lib/weight'
 import { loadDraft } from '../quiz-draft'
 import {
   allowedStep,
   isComplete,
   LIKES,
-  parseWeight,
   parseWholeNumber,
   STEP_COUNT,
 } from '../quiz-schema'
 
 export function ReviewPage() {
   const { t } = useTranslation()
+  const unit = useWeightUnit()
   const location = useLocation()
   const navigate = useNavigate()
   const [draft] = useState(loadDraft)
@@ -26,9 +27,12 @@ export function ReviewPage() {
     headingRef.current?.focus()
   }, [])
 
-  if (!isComplete(draft)) {
+  if (!isComplete(draft, unit)) {
     return (
-      <Navigate replace to={`/app/quiz/${allowedStep(undefined, draft)}`} />
+      <Navigate
+        replace
+        to={`/app/quiz/${allowedStep(undefined, draft, unit)}`}
+      />
     )
   }
 
@@ -46,7 +50,10 @@ export function ReviewPage() {
       value: t('quiz.review.about', {
         count: parseWholeNumber(answers.age),
         height: parseWholeNumber(answers.height),
+        // the draft holds the weight as typed, in the unit the step showed
         weight: parseWeight(answers.weight),
+        // not `unit`: i18next hands its options to the number format, where `unit` means something else
+        weightUnit: t(`quiz.about.weight.${unit}.unit`),
       }),
       measured: true,
     },

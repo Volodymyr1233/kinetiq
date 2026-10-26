@@ -60,6 +60,21 @@ describe('quiz rules', () => {
   })
 
   it.each([
+    ['66.0', false],
+    ['66.1', true],
+    ['137,8', true],
+    ['300', true],
+    ['551.2', true],
+    ['551.3', false],
+  ])('weight %j in pounds is valid: %s', (weight, valid) => {
+    expect(isStepValid(4, { ...VALID, weight }, 'LB')).toBe(valid)
+  })
+
+  it('checks a weight against kilograms when the unit is kg', () => {
+    expect(isStepValid(4, { ...VALID, weight: '300' }, 'KG')).toBe(false)
+  })
+
+  it.each([
     [[], false],
     [['CARDIO'], true],
     [['CARDIO', 'CARDIO'], false],

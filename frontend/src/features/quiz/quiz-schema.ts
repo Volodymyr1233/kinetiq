@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { parseWeight, toKg, type WeightUnit } from '@/lib/weight'
 
 // option codes are what is stored and sent; labels come from the locale files (data-model.md)
 export const GOALS = [
@@ -40,13 +41,6 @@ export function parseWholeNumber(text: string): number | undefined {
   return /^\d+$/.test(trimmed) ? Number(trimmed) : undefined
 }
 
-export function parseWeight(text: string): number | undefined {
-  const trimmed = text.trim()
-  return /^\d+([.,]\d)?$/.test(trimmed)
-    ? Number(trimmed.replace(',', '.'))
-    : undefined
-}
-
 const within = (value: number | undefined, min: number, max: number) =>
   value !== undefined && value >= min && value <= max
 
@@ -67,12 +61,6 @@ const rules = {
       (text) => within(parseWholeNumber(text), 120, 230),
       'quiz.about.height.error',
     ),
-  weight: z
-    .string()
-    .refine(
-      (text) => within(parseWeight(text), 30, 250),
-      'quiz.about.weight.error',
-    ),
   likes: z
     .array(z.enum(LIKES))
     .min(1)
@@ -82,9 +70,18 @@ const rules = {
   notes: z.string().max(NOTES_MAX_LENGTH),
 }
 
-export const answersSchema = z.object(rules)
+// the weight is typed in the person's unit; its bounds are in kilograms, as stored
+const rulesFor = (unit: WeightUnit) => ({
+  ...rules,
+  weight: z.string().refine((text) => {
+    const weight = parseWeight(text)
+    return weight !== undefined && within(toKg(weight, unit), 30, 250)
+  }, `quiz.about.weight.${unit}.error`),
+})
 
-export type QuizAnswers = z.infer<typeof answersSchema>
+export const answersSchemaFor = (unit: WeightUnit) => z.object(rulesFor(unit))
+
+export type QuizAnswers = z.infer<ReturnType<typeof answersSchemaFor>>
 
 /** What the browser tab keeps: answers as typed, and the furthest step reached with Continue. */
 export type QuizDraft = {
@@ -115,7 +112,11 @@ export const draftSchema = z
         level: rules.level.optional().catch(undefined),
         age: rules.age.catch(emptyDraft.answers.age),
         height: rules.height.catch(emptyDraft.answers.height),
-        weight: rules.weight.catch(emptyDraft.answers.weight),
+        // only the form is checked: whether it is in range depends on the person's unit
+        weight: z
+          .string()
+          .refine((text) => text === '' || parseWeight(text) !== undefined)
+          .catch(emptyDraft.answers.weight),
         likes: rules.likes.catch(emptyDraft.answers.likes),
         days: rules.days.catch(emptyDraft.answers.days),
         notes: rules.notes.catch(emptyDraft.answers.notes),
@@ -138,9 +139,11 @@ const STEP_FIELDS: Record<number, (keyof QuizAnswers)[]> = {
 export function isStepValid(
   step: number,
   answers: Partial<Record<keyof QuizAnswers, unknown>>,
+  unit: WeightUnit = 'KG',
 ): boolean {
+  const stepRules = rulesFor(unit)
   return (STEP_FIELDS[step] ?? []).every(
-    (field) => rules[field].safeParse(answers[field]).success,
+    (field) => stepRules[field].safeParse(answers[field]).success,
   )
 }
 
@@ -151,18 +154,19 @@ export function allowedStep(
     answers: Partial<Record<keyof QuizAnswers, unknown>>
     reached: number
   },
+  unit: WeightUnit = 'KG',
 ): number {
   const asked = /^[1-7]$/.test(requested ?? '')
     ? Number(requested)
     : draft.reached
   const furthest = Math.min(asked, draft.reached)
   for (let step = 1; step < furthest; step++) {
-    if (!isStepValid(step, draft.answers)) return step
+    if (!isStepValid(step, draft.answers, unit)) return step
   }
   return furthest
 }
 
 /** Whether the review may open: step 7 reached and every earlier step answered. */
-export function isComplete(draft: QuizDraft): boolean {
-  return allowedStep(String(STEP_COUNT), draft) === STEP_COUNT
+export function isComplete(draft: QuizDraft, unit: WeightUnit = 'KG'): boolean {
+  return allowedStep(String(STEP_COUNT), draft, unit) === STEP_COUNT
 }

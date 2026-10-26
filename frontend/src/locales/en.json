@@ -325,10 +325,18 @@
       },
       "weight": {
         "label": "Body weight",
-        "unit": "kg",
-        "placeholder": "e.g. 62.5",
-        "error": "Enter a weight between 30 and 250 kg.",
-        "note": "Switch to lb later in settings."
+        "KG": {
+          "unit": "kg",
+          "placeholder": "e.g. 62.5",
+          "error": "Enter a weight between 30 and 250 kg.",
+          "note": "Switch to lb later in settings."
+        },
+        "LB": {
+          "unit": "lb",
+          "placeholder": "e.g. 137.8",
+          "error": "Enter a weight between 66.1 and 551.2 lb.",
+          "note": "Switch to kg later in settings."
+        }
       }
     },
     "likes": {
@@ -388,8 +396,8 @@
         "notes": { "label": "Notes", "change": "Change notes" }
       },
       "change": "Change",
-      "about_one": "{{count, number}} year · {{height, number}} cm · {{weight, number}} kg",
-      "about_other": "{{count, number}} years · {{height, number}} cm · {{weight, number}} kg",
+      "about_one": "{{count, number}} year · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
+      "about_other": "{{count, number}} years · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
       "noNotes": "No notes",
       "build": "Build my plan",
       "later": "You can change them later with your trainer."

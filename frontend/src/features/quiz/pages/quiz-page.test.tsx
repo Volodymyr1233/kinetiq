@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
+import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
 import type { QuizDraft } from '../quiz-schema'
 import { QuizPage } from './quiz-page'
 import { ReviewPage } from './review-page'
@@ -27,6 +28,10 @@ function store(answers: Partial<QuizDraft['answers']>, reached: number) {
 }
 
 function openQuiz(...paths: string[]) {
+  return openQuizIn('KG', ...paths)
+}
+
+function openQuizIn(unit: WeightUnit, ...paths: string[]) {
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [
@@ -35,7 +40,11 @@ function openQuiz(...paths: string[]) {
     ],
     { initialEntries: paths },
   )
-  render(<RouterProvider router={router} />)
+  render(
+    <WeightUnitContext value={unit}>
+      <RouterProvider router={router} />
+    </WeightUnitContext>,
+  )
   return router
 }
 
@@ -131,6 +140,30 @@ describe('QuizPage', () => {
       screen.getByRole('textbox', { name: 'Body weight' }),
       '62,5',
     )
+    expect(continueButton()).toBeEnabled()
+  })
+
+  it('asks for the body weight in pounds when the unit is lb', async () => {
+    const user = userEvent.setup()
+    store({ weight: '' }, 4)
+    openQuizIn('LB', '/app/quiz/4')
+    await heading('About you')
+    const weight = screen.getByRole('textbox', { name: 'Body weight' })
+
+    expect(weight).toHaveAttribute('placeholder', 'e.g. 137.8')
+    expect(weight).toHaveAccessibleDescription(expect.stringContaining('lb'))
+    expect(
+      screen.getByText('Switch to kg later in settings.'),
+    ).toBeInTheDocument()
+
+    await user.type(weight, '60')
+    await user.tab()
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'Enter a weight between 66.1 and 551.2 lb.',
+    )
+
+    await user.clear(weight)
+    await user.type(weight, '137.8')
     expect(continueButton()).toBeEnabled()
   })
 
