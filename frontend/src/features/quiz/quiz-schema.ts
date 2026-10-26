@@ -83,10 +83,11 @@ export const answersSchemaFor = (unit: WeightUnit) => z.object(rulesFor(unit))
 
 export type QuizAnswers = z.infer<ReturnType<typeof answersSchemaFor>>
 
-/** What the browser tab keeps: answers as typed, and the furthest step reached with Continue. */
+/** What the browser tab keeps: answers as typed, the unit the weight was typed in, and the furthest step reached with Continue. */
 export type QuizDraft = {
   answers: Partial<Pick<QuizAnswers, 'goal' | 'experience' | 'level'>> &
     Omit<QuizAnswers, 'goal' | 'experience' | 'level'>
+  weightUnit?: WeightUnit
   reached: number
 }
 
@@ -122,6 +123,10 @@ export const draftSchema = z
         notes: rules.notes.catch(emptyDraft.answers.notes),
       })
       .catch(emptyDraft.answers),
+    weightUnit: z
+      .enum(['KG', 'LB'] as const satisfies readonly WeightUnit[])
+      .optional()
+      .catch(undefined),
     reached: z.number().int().min(1).max(STEP_COUNT).catch(emptyDraft.reached),
   })
   .catch(emptyDraft)

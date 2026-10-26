@@ -20,10 +20,18 @@ const ANSWERED: QuizDraft['answers'] = {
   notes: '',
 }
 
-function store(answers: Partial<QuizDraft['answers']> = {}, reached = 7) {
+function store(
+  answers: Partial<QuizDraft['answers']> = {},
+  reached = 7,
+  weightUnit?: WeightUnit,
+) {
   sessionStorage.setItem(
     'kinetiq.quiz',
-    JSON.stringify({ answers: { ...ANSWERED, ...answers }, reached }),
+    JSON.stringify({
+      answers: { ...ANSWERED, ...answers },
+      weightUnit,
+      reached,
+    }),
   )
 }
 
@@ -87,6 +95,14 @@ describe('ReviewPage', () => {
     await reviewHeading()
 
     expect(screen.getByText('29 years · 168 cm · 137.8 lb')).toBeInTheDocument()
+  })
+
+  it('shows a weight typed in lb in kg once the unit is kg', async () => {
+    store({ weight: '137.8' }, 7, 'LB')
+    openReview('KG')
+    await reviewHeading()
+
+    expect(screen.getByText('29 years · 168 cm · 62.5 kg')).toBeInTheDocument()
   })
 
   it('lists likes in screen order, whatever order they were stored in', async () => {
