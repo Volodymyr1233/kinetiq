@@ -20,10 +20,18 @@ const ANSWERED: QuizDraft['answers'] = {
   notes: '',
 }
 
-function store(answers: Partial<QuizDraft['answers']>, reached: number) {
+function store(
+  answers: Partial<QuizDraft['answers']>,
+  reached: number,
+  weightUnit?: WeightUnit,
+) {
   sessionStorage.setItem(
     'kinetiq.quiz',
-    JSON.stringify({ answers: { ...ANSWERED, ...answers }, reached }),
+    JSON.stringify({
+      answers: { ...ANSWERED, ...answers },
+      weightUnit,
+      reached,
+    }),
   )
 }
 
@@ -165,6 +173,41 @@ describe('QuizPage', () => {
     await user.clear(weight)
     await user.type(weight, '137.8')
     expect(continueButton()).toBeEnabled()
+  })
+
+  it.each([
+    ['in lb in kg', '137.8', 'LB', 'KG', '62.5'],
+    ['in kg in lb', '62.5', 'KG', 'LB', '137.8'],
+    [
+      'with a comma in the other unit, keeping the comma',
+      '62,5',
+      'KG',
+      'LB',
+      '137,8',
+    ],
+    ['in the person’s unit as typed', '62,5', 'KG', 'KG', '62,5'],
+    ['kept before units were kept as typed', '62,5', undefined, 'LB', '62,5'],
+  ] as const)(
+    'shows a weight typed %s',
+    async (_, weight, typedIn, unit, shown) => {
+      store({ weight }, 4, typedIn)
+      openQuizIn(unit, '/app/quiz/4')
+      await heading('About you')
+
+      expect(screen.getByRole('textbox', { name: 'Body weight' })).toHaveValue(
+        shown,
+      )
+    },
+  )
+
+  it('keeps a converted weight in the tab with the new unit', async () => {
+    store({ weight: '137.8' }, 4, 'LB')
+    openQuizIn('KG', '/app/quiz/4')
+    await heading('About you')
+
+    expect(
+      JSON.parse(sessionStorage.getItem('kinetiq.quiz') ?? '{}'),
+    ).toMatchObject({ answers: { weight: '62.5' }, weightUnit: 'KG' })
   })
 
   it('opens step 5 with nothing chosen and step 6 at 3 days', async () => {

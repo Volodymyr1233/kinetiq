@@ -19,7 +19,7 @@ export function ReviewPage() {
   const unit = useWeightUnit()
   const location = useLocation()
   const navigate = useNavigate()
-  const [draft] = useState(loadDraft)
+  const [draft] = useState(() => loadDraft(unit))
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   // a screen reader starts at the review's heading, as on every step (spec 50, FR-015)
@@ -50,7 +50,7 @@ export function ReviewPage() {
       value: t('quiz.review.about', {
         count: parseWholeNumber(answers.age),
         height: parseWholeNumber(answers.height),
-        // the draft holds the weight as typed, in the unit the step showed
+        // loadDraft gives the weight in the person's unit, converted if it was typed in the other one
         weight: parseWeight(answers.weight),
         // not `unit`: i18next hands its options to the number format, where `unit` means something else
         weightUnit: t(`quiz.about.weight.${unit}.unit`),

@@ -56,7 +56,9 @@ Each entry: decision, reason, alternatives. Task #43 is final; the entries for t
 
 ## R9 — Weights in the chosen unit (task #46, outline)
 
-**Decision**: `lib/weight.ts` holds the conversion (1 lb = 0.45359237 kg), formatting (at most one decimal, in the UI language) and parsing (a dot or a comma) for kg and lb, with unit tests (issue #46). The person's unit reaches features through a context in `lib/`, provided by `app/` from the current account, since a feature does not import another feature (`frontend/CLAUDE.md`). The quiz keeps the typed text in its draft and checks it against 30–250 kg after conversion; the review formats it; the submit of task #57 sends kg.
+**Decision**: `lib/weight.ts` holds the conversion (1 lb = 0.45359237 kg), formatting (at most one decimal, in the UI language) and parsing (a dot or a comma) for kg and lb, with unit tests (issue #46). The person's unit reaches features through a context in `lib/`, provided by `app/` from the current account, since a feature does not import another feature (`frontend/CLAUDE.md`). The quiz keeps the typed text in its draft and checks it against 30–250 kg after conversion; the review formats it; the submit of task #57 sends kg. The draft also keeps the unit the weight was typed in, so a draft read after the person switched units shows the weight converted (task #208, spec User Story 4, scenario 3); the submit of task #57 converts from that unit.
+
+**Alternatives** (task #208): keeping the weight in kg in the draft (each keystroke would be rounded through a conversion while typing); converting where the weight is shown (step 4 and the review would each repeat it, and the tab would keep a value in the old unit).
 
 **Why**: Spec FR-013 to FR-016 and Clarifications. One module is used by every screen with a weight, so the round trip of FR-014 is proven once.
 

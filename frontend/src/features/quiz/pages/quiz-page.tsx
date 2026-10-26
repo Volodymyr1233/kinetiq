@@ -47,7 +47,7 @@ export function QuizPage() {
   const params = useParams()
   const location = useLocation()
   const navigate = useNavigate()
-  const [draft] = useState(loadDraft)
+  const [draft] = useState(() => loadDraft(unit))
   const [reached, setReached] = useState(draft.reached)
   const form = useForm<QuizAnswers, unknown, QuizAnswers>({
     mode: 'onTouched',
@@ -64,12 +64,13 @@ export function QuizPage() {
 
   // the tab keeps every change, so a reload loses nothing (FR-019)
   useEffect(() => {
-    saveDraft({ answers: form.getValues(), reached })
+    saveDraft({ answers: form.getValues(), weightUnit: unit, reached })
     return form.subscribe({
       formState: { values: true },
-      callback: ({ values }) => saveDraft({ answers: values, reached }),
+      callback: ({ values }) =>
+        saveDraft({ answers: values, weightUnit: unit, reached }),
     })
-  }, [form, reached])
+  }, [form, unit, reached])
 
   // a screen reader reads the new question after every step change (FR-015)
   useEffect(() => {
