@@ -2,6 +2,7 @@ package com.kinetiq.exercise.domain.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.input.ExerciseListing;
 import com.kinetiq.exercise.domain.input.ListExercisesQuery;
 import com.kinetiq.exercise.domain.model.Category;
@@ -9,7 +10,6 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
-import com.kinetiq.exercise.domain.output.ExerciseRepository;
 import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
@@ -18,6 +18,7 @@ import org.junit.jupiter.api.Test;
 class ExerciseListingServiceTest {
 
     private static final Locale POLISH = Locale.forLanguageTag("pl");
+    private static final AccountId TRAINER = AccountId.random();
 
     private static Exercise exercise(String id, String english, String polish, Category category) {
         return new Exercise(
@@ -39,8 +40,8 @@ class ExerciseListingServiceTest {
     private static final Exercise PLANK = exercise("04", "Plank", "Deska", Category.CORE);
 
     private static ExerciseListing list(List<Exercise> library, Category category, String name, Locale locale) {
-        ExerciseRepository repository = () -> library;
-        return new ExerciseListingService(repository).list(new ListExercisesQuery(category, name, locale));
+        return new ExerciseListingService(new InMemoryExerciseRepository(library.toArray(Exercise[]::new)))
+                .list(new ListExercisesQuery(TRAINER, category, name, locale));
     }
 
     private static ExerciseListing list(Category category, String name) {
@@ -121,5 +122,39 @@ class ExerciseListingServiceTest {
     @Test
     void shouldReportNoPlans_whenPlansDoNotExistYet() {
         assertThat(list(null, "").entries()).extracting(ExerciseListing.Entry::plansUsing).containsOnly(0);
+    }
+
+    private static Exercise own(String id, String name, AccountId owner) {
+        return new Exercise(
+                new ExerciseId(UUID.fromString("00000000-0000-4000-9200-0000000000" + id)),
+                owner,
+                new LocalizedText(name, ""),
+                Category.LEGS,
+                new LocalizedText("", ""),
+                Measure.REPS,
+                3,
+                10,
+                90,
+                new LocalizedText("", ""));
+    }
+
+    @Test
+    void shouldListOwnWithStarterByNameAndCountBoth_whenTrainerHasOwnExercises() {
+        List<Exercise> library = List.of(SQUAT, PLANK, own("01", "Goblet squat", TRAINER));
+
+        ExerciseListing listing = list(library, null, "", Locale.ENGLISH);
+
+        assertThat(englishNames(listing)).containsExactly("Back squat", "Goblet squat", "Plank");
+        assertThat(listing.total()).isEqualTo(3);
+    }
+
+    @Test
+    void shouldHideAnotherTrainersExercise_whenListingSearchingAndCounting() {
+        List<Exercise> library = List.of(SQUAT, PLANK, own("01", "Goblet squat", AccountId.random()));
+
+        assertThat(englishNames(list(library, null, "", Locale.ENGLISH))).containsExactly("Back squat", "Plank");
+        ExerciseListing search = list(library, null, "goblet", Locale.ENGLISH);
+        assertThat(search.entries()).isEmpty();
+        assertThat(search.total()).isEqualTo(2);
     }
 }

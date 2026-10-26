@@ -18,7 +18,7 @@ public class ExerciseListingService implements ListExercisesUseCase {
     // filtered in memory: the library is about 40 rows, and Polish collation is simpler here than in SQL
     @Override
     public ExerciseListing list(ListExercisesQuery query) {
-        List<Exercise> library = exercises.findStarter();
+        List<Exercise> library = exercises.findVisibleTo(query.trainer());
         Collator collator = Collator.getInstance(query.locale());
         collator.setStrength(Collator.PRIMARY);
         Comparator<Exercise> byName = Comparator.comparing(
