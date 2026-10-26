@@ -79,7 +79,7 @@ frontend/src/
 ├── app/                 the observer that applies language and theme (#43); client-area.tsx sheet (#45); router.ts settings route (#44)
 ├── lib/i18n.ts          starts with the remembered language (#43)
 ├── lib/weight.ts        conversion, formatting, parsing (+ .test.ts) (#46)
-├── features/account/    api/account.ts update mutation (#44 or #45); pages/settings-page.tsx (#44); components/ display settings (#45)
+├── features/account/    api/account.ts update mutation (#44), its key and scope (#45); pages/settings-page.tsx (#44); components/ display settings (#45)
 ├── features/quiz/       body weight and review in the person's unit (#46)
 └── locales/en.json, pl.json   settings texts (#44, #45), weight texts (#46)
 ```
@@ -95,7 +95,7 @@ frontend/src/
 | #45 | `feat(frontend): add display settings to the client sheet` | The sheet's units, language and theme with immediate save and revert on failure; texts; tests |
 | #46 | `feat(frontend): show and enter weights in the chosen unit` | `lib/weight.ts` with unit tests; the unit context; the quiz's body weight and the review in the person's unit; texts; tests |
 
-Task order: #43 first; #44, #45 and #46 each need only #43.
+Task order: #43 first; #44 and #46 each need only #43; #45 also uses the update mutation and `email` of #44.
 
 ## Tests
 
@@ -109,7 +109,7 @@ Task order: #43 first; #44, #45 and #46 each need only #43.
 | App test (#43) | Signed in with `PL` and `DARK`, the app shows Polish and the dark theme over the device's earlier choice; after sign-out the device keeps them |
 | `i18n` start (#43) | The remembered language wins over the browser's; without one, the browser's |
 | Settings page tests (#44) | Fields show the stored values; "Save changes" disabled until a change; only changed fields sent; "Settings saved."; name messages; failure keeps changes |
-| Sheet tests (#45) | A choice applies and sends one field; failure puts the old value back and shows the message |
+| Sheet tests (#45) | A choice sends one field and stays chosen; two quick choices are stored in the order made; a failure shows the stored value again and the message |
 | `weight.test.ts` (#46) | kg ↔ lb, formatting per language, parsing with dot and comma, the round trip for 30.0–250.0 kg |
 | Quiz tests (#46) | The body weight in lb, its bounds message in lb, the note naming the other unit, the review in lb |
 
@@ -119,7 +119,7 @@ Task order: #43 first; #44, #45 and #46 each need only #43.
 |---|---|---|
 | A client's starting settings when joining (story #30) were asked of the owner of story #30 | #43 | If task #32 is merged before #43, #43 sets them at join; otherwise task #32 does |
 | Migration number `V6` | #43 | Checked on `master` before merging (research R10) |
-| `email` in the current account | #44, #45 | Added by whichever of the two starts first |
+| `email` in the current account | #44, #45 | Added by #44; #45 uses it |
 
 ## Complexity Tracking
 

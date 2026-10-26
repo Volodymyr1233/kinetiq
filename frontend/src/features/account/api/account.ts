@@ -61,11 +61,18 @@ export async function refreshTimeZone(account: CurrentAccount) {
   }
 }
 
+export type AccountUpdate = Schemas['UpdateAccountRequest']
+
+export const updateAccountKey = ['update-account']
+
 /** Changes the fields sent and puts the answer in the cache, so every screen and the app's language and theme follow. */
 export function useUpdateAccount() {
   const queryClient = useQueryClient()
   return useMutation({
-    mutationFn: (body: Schemas['UpdateAccountRequest']) =>
+    mutationKey: updateAccountKey,
+    // one after another in the order made, so the last of several quick choices is what stays stored
+    scope: { id: 'update-account' },
+    mutationFn: (body: AccountUpdate) =>
       receive(api.PATCH('/api/v1/accounts/me', { body })),
     onSuccess: (account) => {
       queryClient.setQueryData(currentAccountQuery.queryKey, account)

@@ -73,14 +73,14 @@ description: "Tasks for story #42, Trainer and client change their settings"
 
 ## Phase 4: task #45, client settings sheet (US3)
 
-**Blocked by**: task #43 (and #11, closed; both linked on GitHub). Uses `useUpdateAccount()` (T024) and `email` (T023); if task #44 is not merged when this task starts, those two tasks are done here. Refine T030–T033 before starting.
+**Blocked by**: task #43 (and #11, closed; both linked on GitHub). Uses `useUpdateAccount()` (T024) and `email` (T023) of task #44, so its pull request opens after #44 is merged. T030–T033 are refined to the code of tasks #43 and #44.
 
 **Goal**: The sheet as on the board "Today · settings sheet": units, language and theme that save at once.
 
-- [ ] T030 [US3] Create `F/features/account/components/display-settings.tsx` (research R8): Units, Language and Theme as `ToggleGroup`s with 48 px items (`frontend/CLAUDE.md`: client touch targets) and the board's hints ("Weights in your plan and logs show in kg." naming the chosen unit, "System follows your phone."); a choice updates the cached current account at once and sends that one field with `useUpdateAccount()`; on failure the earlier account is put back and a translated message shows; texts in `F/locales/en.json` and `F/locales/pl.json`
-- [ ] T031 [US3] In `F/app/client-area.tsx` `SettingsSheet`: the email under the name, `DisplaySettings`, "Changes save right away." above "Sign out"; remove the comment "units, language and theme join the sheet with task #45"
-- [ ] T032 [US3] Write `F/features/account/components/display-settings.test.tsx` and extend `F/app/client-area.test.tsx`: a choice applies at once and sends one field; a failure puts the old value back and shows the message; the sheet shows name, email and "Sign out"
-- [ ] T033 In `specs/50-client-quiz/quickstart.md` and `specs/54-quiz-review-submit/quickstart.md`, step 9, replace "Set the browser's language to Polish and reload" with choosing Polski in the settings sheet, since a signed-in client's language comes from the account since task #43; verify in the browser per `quickstart.md` for task #45 at 375 px, light and dark, English and Polish, keyboard only, console; run `npm run check`; open the pull request for #45 after the user agrees (title `feat(frontend): add display settings to the client sheet`, `Closes #45`)
+- [X] T030 [US3] In `F/features/account/api/account.ts` give `useUpdateAccount()` the `mutationKey` `['update-account']` and the `scope` `{ id: 'update-account' }`, so choices reach the server one after another in the order made (spec, Edge Cases: the last one stays). Create `F/features/account/components/display-settings.tsx` (research R8): Units, Language and Theme as full-width `ToggleGroup`s shaped as the board's segmented control, items 48 px high (`frontend/CLAUDE.md`: client touch targets), each group named by its title and described by its hint; the hints "Weights in your plan and logs show in kg." (naming the chosen unit) and "System follows your phone."; a choice shows at once from the pending update (`useMutationState`) and applies when the server's answer reaches the cache (research R5); after a failure the stored value shows again with the message for the error's code (`errorMessageKey`) in an `Alert`; choosing the chosen option again changes nothing. Texts `settings.sheet.*` (Theme, the two hints, "Changes save right away.") in `F/locales/en.json` and `F/locales/pl.json`; option labels reuse `settings.units.*`, `language.*` and `theme.*`
+- [X] T031 [US3] In `F/app/client-area.tsx` `SettingsSheet`: the email under the name (truncated as the name is), `DisplaySettings` in a `Card`, "Changes save right away." centred under it, then "Sign out"; the sheet as wide as the screen on a phone, as on the board (its `w-full` lost to the sheet's own `data-[side=right]:w-3/4`, so it covered three quarters); remove the comment "units, language and theme join the sheet with task #45"
+- [X] T032 [US3] Extend `F/app/client-area.test.tsx`, which opens the sheet in the whole app: name, email and the stored choices shown; choosing Polski sends one `PATCH` with only `language` and Polski stays chosen; two quick choices (lb, then Dark) both stay chosen and are stored in the order made; a failed choice shows the stored option again and the message. `DisplaySettings` is used only in the sheet, so it needs no test file of its own
+- [X] T033 In `specs/50-client-quiz/quickstart.md` and `specs/54-quiz-review-submit/quickstart.md`, step 9, replace "Set the browser's language to Polish and reload" with choosing Polski in the settings sheet, since a signed-in client's language comes from the account since task #43; verify in the browser per `quickstart.md` for task #45 at 375 px, light and dark, English and Polish, keyboard only, console; run `npm run check`; open the pull request for #45 after the user agrees (title `feat(frontend): add display settings to the client sheet`, `Closes #45`)
 
 ---
 
@@ -106,7 +106,7 @@ description: "Tasks for story #42, Trainer and client change their settings"
 
 ## Dependencies
 
-- T001 with #43. #43 (T002–T021) → #44 (T022–T029), #45 (T030–T033) and #46 (T034–T038), each needing only #43; #45 also needs T023 and T024 from #44 or does them itself. T039 last.
+- T001 with #43. #43 (T002–T021) → #44 (T022–T029) and #46 (T034–T038), each needing only #43; #45 (T030–T033) also needs T023 and T024 from #44. T039 last.
 - Inside #43: T002 and T009 are independent; T003 follows T002; T004 needs T002; T005 follows T004; T006 and T007 need T004; T008 follows T007; T010 needs T004 and T009; T011 follows T010; T012 needs T007; T013 follows T012; T014 needs T002–T013; T015 needs T014; T016 is independent of the backend; T017 follows T016; T018 needs T015; T019 follows T018; T020 needs everything before it.
 - Inside #44: T024 and T025 are independent; T026 needs T023–T025.
 - Inside #46: T035 needs T034; T036 needs T035.
@@ -119,3 +119,10 @@ description: "Tasks for story #42, Trainer and client change their settings"
 ## Implementation strategy
 
 Build #43 first and open one pull request per task after its gates and the user's approval. #43 makes the settings real and applies them; #44 and #45 let each role change them; #46 makes the unit visible in every weight. The last of #44, #45 and #46 to merge also closes the story.
+
+---
+
+## Phase 7: Convergence
+
+- [ ] T040 [US4] Keep the unit a body weight was typed in with the quiz draft (`F/features/quiz/quiz-schema.ts`, `F/features/quiz/quiz-draft.ts`), and on step 4 (`F/features/quiz/pages/quiz-page.tsx`) and the review (`F/features/quiz/pages/review-page.tsx`) show a weight typed in the other unit converted with `toKg` and `fromKg` of `F/lib/weight.ts`; extend the quiz tests: 137.8 typed in lb shows as 62.5 kg on step 4 and the review once the unit is kg, per US4/AC3 and quickstart.md, task #46 (contradicts)
+- [ ] T041 [US2] [US3] Show the chosen option of every settings toggle group by more than its fill, with a cue of at least 3:1 against its surroundings (in the sheet the fill measures 1.09:1 light and 1.24:1 dark; on the trainer screen the fill is the only cue), in `F/features/account/components/display-settings.tsx` and `F/features/account/pages/settings-page.tsx`; check light and dark per SC-005, per FR-018 (contradicts)

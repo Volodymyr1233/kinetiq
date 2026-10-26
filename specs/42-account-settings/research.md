@@ -48,9 +48,11 @@ Each entry: decision, reason, alternatives. Task #43 is final; the entries for t
 
 **Decision**: `/trainer/settings` loads a `SettingsPage` from `features/account/pages/`, built with react-hook-form and zod as the sign-up page is, with the name rules shared with `sign-up-schema.ts`. Units and appearance use the shadcn `ToggleGroup`; the language uses the shadcn `Select` (added with the CLI), as on the board. Saving sends only the changed fields (react-hook-form's dirty fields), then shows "Settings saved." in a status region (spec, Clarifications).
 
-## R8 — Client settings sheet (task #45, outline)
+## R8 — Client settings sheet (task #45)
 
-**Decision**: The sheet in `app/client-area.tsx` gets a component from `features/account/components/` with three `ToggleGroup`s. A choice updates the cached account at once, so R5 applies it, and sends that one field; on failure the earlier account is put back and a translated message shows (spec FR-012).
+**Decision**: The sheet in `app/client-area.tsx` gets `DisplaySettings` from `features/account/components/` with three `ToggleGroup`s. A choice sends that one field and shows at once from the pending request (`useMutationState`); the server's answer goes into the cached account, so R5 applies language and theme. Updates share one mutation scope, so they reach the server in the order made and the last choice stays (spec, Edge Cases). On failure the pending choice disappears, so the stored value shows again, with a translated message (spec FR-012).
+
+**Alternatives**: writing the choice into the cached account before the answer. The answer to an earlier choice would briefly undo a later one, and a failed language or theme would flip back after it had already applied.
 
 ## R9 — Weights in the chosen unit (task #46, outline)
 

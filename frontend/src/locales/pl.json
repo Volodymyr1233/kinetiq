@@ -185,7 +185,13 @@
     },
     "languageHint": "Po polsku zwracamy się do klientów na „ty”.",
     "save": "Zapisz zmiany",
-    "saved": "Zapisano ustawienia."
+    "saved": "Zapisano ustawienia.",
+    "sheet": {
+      "unitsHint": "Ciężary w planie i zapisanych seriach są w {{weightUnit}}.",
+      "theme": "Motyw",
+      "themeHint": "Systemowy bierze tryb jasny lub ciemny z telefonu.",
+      "autosave": "Zmiany zapisują się od razu."
+    }
   },
   "exercises": {
     "title": "Biblioteka ćwiczeń",
