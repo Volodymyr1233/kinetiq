@@ -8,5 +8,9 @@ interface JpaAccountRepository extends JpaRepository<AccountEntity, UUID> {
 
     Optional<AccountEntity> findByEmail(String email);
 
+    boolean existsByEmail(String email);
+
     Optional<AccountEntity> findByConfirmationTokenHash(String confirmationTokenHash);
+
+    Optional<AccountEntity> findByResetTokenHash(String resetTokenHash);
 }

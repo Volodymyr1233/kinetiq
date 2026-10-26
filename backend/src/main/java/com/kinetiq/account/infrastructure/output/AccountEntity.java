@@ -51,4 +51,9 @@ class AccountEntity extends BaseEntity {
 
     private Instant confirmationExpiresAt;
     private Instant mailSentAt;
+
+    @JdbcTypeCode(SqlTypes.CHAR)
+    private String resetTokenHash;
+
+    private Instant resetExpiresAt;
 }

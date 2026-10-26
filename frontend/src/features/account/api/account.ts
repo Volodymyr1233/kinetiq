@@ -18,7 +18,7 @@ async function send<T>(call: Promise<{ error?: T }>) {
   if (error !== undefined) throw error
 }
 
-async function receive<D, E>(call: Promise<{ data?: D; error?: E }>) {
+export async function receive<D, E>(call: Promise<{ data?: D; error?: E }>) {
   const { data, error } = await call
   if (error !== undefined) throw error
   return data as D
@@ -91,6 +91,20 @@ export function useRequestConfirmationLink() {
   return useMutation({
     mutationFn: (email: string) =>
       send(api.POST('/api/v1/confirmation-links', { body: { email } })),
+  })
+}
+
+export function useRequestPasswordReset() {
+  return useMutation({
+    mutationFn: (email: string) =>
+      send(api.POST('/api/v1/password-reset-links', { body: { email } })),
+  })
+}
+
+export function useSetPassword() {
+  return useMutation({
+    mutationFn: (body: Schemas['SetPasswordRequest']) =>
+      send(api.POST('/api/v1/password-resets', { body })),
   })
 }
 

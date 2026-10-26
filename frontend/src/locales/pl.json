@@ -62,7 +62,13 @@
       "confirmation-link-invalid": "Ten link już nie działa. Poproś o nowy.",
       "credentials-invalid": "E-mail lub hasło są nieprawidłowe. Sprawdź oba i spróbuj ponownie.",
       "email-not-confirmed": "Najpierw potwierdź e-mail, a potem się zaloguj.",
-      "sign-in-locked": "Zbyt wiele prób. Spróbuj ponownie później."
+      "sign-in-locked": "Zbyt wiele prób. Spróbuj ponownie później.",
+      "password-reset-link-invalid": "Ten link już nie działa. Poproś o nowy."
+    },
+    "invite": {
+      "account-exists": "Ten e-mail ma już konto.",
+      "limit-reached": "Wysłano dużo zaproszeń. Spróbuj później.",
+      "not-found": "To zaproszenie nie jest już otwarte."
     }
   },
   "account": {
@@ -138,6 +144,32 @@
       "email": "E-mail",
       "submit": "Wyślij nowy link",
       "alreadyConfirmed": "Konto już potwierdzone?"
+    },
+    "reset": {
+      "request": {
+        "title": "Zresetuj hasło",
+        "description": "Podaj e-mail, a wyślemy Ci link do ustawienia nowego hasła.",
+        "submit": "Wyślij link"
+      },
+      "sent": {
+        "title": "Sprawdź skrzynkę e-mail",
+        "description": "Jeśli istnieje konto dla <strong>{{email}}</strong>, wysłaliśmy link do ustawienia nowego hasła. Działa raz i wygasa po 1 godzinie."
+      },
+      "set": {
+        "title": "Ustaw nowe hasło",
+        "description": "Wybierz hasło, którego nie używasz nigdzie indziej.",
+        "password": "Nowe hasło",
+        "submit": "Ustaw hasło"
+      },
+      "done": {
+        "title": "Hasło zmienione",
+        "description": "Wylogowaliśmy Cię na wszystkich urządzeniach. Zaloguj się nowym hasłem."
+      },
+      "expired": {
+        "title": "Ten link już nie działa",
+        "description": "Link do resetu hasła działa raz i wygasa po 1 godzinie. Podaj e-mail, aby dostać nowy."
+      },
+      "remembered": "Pamiętasz hasło?"
     }
   },
   "settings": {
@@ -372,6 +404,59 @@
       "noNotes": "Brak notatek",
       "build": "Zbuduj mój plan",
       "later": "Później możesz je zmienić razem z trenerem."
+    }
+  },
+  "invites": {
+    "title": "Otwarte zaproszenia",
+    "description": "Klient, który dołączy, trafia do listy Wszyscy klienci. Linki przestają działać, gdy wygasną lub je unieważnisz.",
+    "open": "Otwarte zaproszenia",
+    "inviteClient": "Zaproś klienta",
+    "loading": "Wczytywanie zaproszeń",
+    "retry": "Spróbuj ponownie",
+    "empty": "Brak otwartych zaproszeń. Wysłane zaproszenia są tu widoczne, dopóki klient nie dołączy.",
+    "columns": {
+      "email": "E-mail",
+      "sent": "Wysłano",
+      "expires": "Wygasa",
+      "actions": "Działania"
+    },
+    "today": "Dzisiaj",
+    "daysLeft_one": "Za {{count}} dzień",
+    "daysLeft_few": "Za {{count}} dni",
+    "daysLeft_many": "Za {{count}} dni",
+    "daysLeft_other": "Za {{count}} dnia",
+    "copyNewLink": "Kopiuj nowy link",
+    "copyNewLinkHint": "Link skopiowany wcześniej przestanie działać.",
+    "copied": "Skopiowano",
+    "newLinkCopied": "Skopiowano nowy link",
+    "copyFailed": "Nie udało się skopiować. Zaznacz link i skopiuj go.",
+    "revoke": "Unieważnij",
+    "revokeFor": "Unieważnij zaproszenie dla {{email}}",
+    "dialog": {
+      "title": "Zaproś klienta",
+      "description": "Wyślemy mu e-mailem link do dołączenia. Możesz też skopiować link.",
+      "email": "E-mail klienta",
+      "emailPlaceholder": "np. julia@example.com",
+      "cancel": "Anuluj",
+      "send": "Wyślij zaproszenie",
+      "sentTitle": "Wysłano zaproszenie do {{email}}",
+      "sentDescription": "Link działa przez 7 dni. Skopiuj go, aby wysłać w inny sposób.",
+      "link": "Link do zaproszenia",
+      "copyLink": "Kopiuj link",
+      "linkCopied": "Skopiowano link",
+      "linkWarning": "Każdy, kto ma ten link, może dołączyć jako ten klient. Wyślij go tylko jemu.",
+      "done": "Gotowe"
+    },
+    "newLinkDialog": {
+      "title": "Nowy link dla {{email}}",
+      "description": "Link skopiowany wcześniej już nie działa. Skopiuj ten, aby go wysłać."
+    },
+    "revokeDialog": {
+      "title": "Unieważnić zaproszenie dla {{email}}?",
+      "description": "Link przestanie działać. Później możesz wysłać nowe zaproszenie.",
+      "cancel": "Anuluj",
+      "confirm": "Unieważnij zaproszenie",
+      "revoked": "Unieważniono zaproszenie"
     }
   }
 }

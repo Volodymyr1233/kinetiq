@@ -1,12 +1,18 @@
 package com.kinetiq.account.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.account.domain.input.ManageInvitesUseCase;
+import com.kinetiq.account.domain.input.ResetPasswordUseCase;
 import com.kinetiq.account.domain.input.SignInUseCase;
 import com.kinetiq.account.domain.input.SignUpUseCase;
 import com.kinetiq.account.domain.output.AccountRepository;
+import com.kinetiq.account.domain.output.AccountSessions;
 import com.kinetiq.account.domain.output.FailedSignInsRepository;
+import com.kinetiq.account.domain.output.InviteRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.account.domain.service.CurrentAccountService;
+import com.kinetiq.account.domain.service.InviteManagementService;
+import com.kinetiq.account.domain.service.PasswordResetService;
 import com.kinetiq.account.domain.service.SignInService;
 import com.kinetiq.account.domain.service.SignUpService;
 import com.kinetiq.common.domain.output.MailSender;
@@ -26,6 +32,25 @@ class AccountConfig {
             MailSender mailSender,
             @Value("${kinetiq.app-url}") URI appUrl) {
         return new SignUpService(accounts, hasher, mailSender, Clock.systemUTC(), appUrl);
+    }
+
+    @Bean
+    ResetPasswordUseCase resetPasswordUseCase(
+            AccountRepository accounts,
+            PasswordHasher hasher,
+            AccountSessions sessions,
+            MailSender mailSender,
+            @Value("${kinetiq.app-url}") URI appUrl) {
+        return new PasswordResetService(accounts, hasher, sessions, mailSender, Clock.systemUTC(), appUrl);
+    }
+
+    @Bean
+    ManageInvitesUseCase manageInvitesUseCase(
+            InviteRepository invites,
+            AccountRepository accounts,
+            MailSender mailSender,
+            @Value("${kinetiq.app-url}") URI appUrl) {
+        return new InviteManagementService(invites, accounts, mailSender, Clock.systemUTC(), appUrl);
     }
 
     @Bean

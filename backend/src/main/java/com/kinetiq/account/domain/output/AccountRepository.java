@@ -13,5 +13,9 @@ public interface AccountRepository {
 
     Optional<Account> findByEmail(Email email);
 
+    boolean existsByEmail(Email email);
+
     Optional<Account> findByConfirmationTokenHash(String tokenHash);
+
+    Optional<Account> findByPasswordResetTokenHash(String tokenHash);
 }

@@ -2,8 +2,10 @@ package com.kinetiq;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.jayway.jsonpath.JsonPath;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.RawPassword;
@@ -12,6 +14,7 @@ import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
 import jakarta.servlet.http.Cookie;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
@@ -136,6 +139,7 @@ class KinetiqBackendApplicationIT {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
+                null,
                 null));
         Cookie token = csrfToken();
 
@@ -203,8 +207,34 @@ class KinetiqBackendApplicationIT {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
+                null,
                 null));
         return id;
+    }
+
+    @Test
+    void shouldEndEverySignInAndAcceptNewPassword_whenPasswordIsReset() {
+        AccountId id = saveAccount("it.reset@example.com", Role.TRAINER);
+        Cookie laptop = signIn("it.reset@example.com").getResponse().getCookie("SESSION");
+        Cookie phone = signIn("it.reset@example.com").getResponse().getCookie("SESSION");
+        SecretToken link = SecretToken.generate();
+        Account account = accounts.findById(id).orElseThrow();
+        account.issuePasswordReset(link, Instant.now());
+        accounts.save(account);
+        Cookie token = csrfToken();
+
+        var reset = mvc.post()
+                .uri("/api/v1/password-resets")
+                .cookie(token)
+                .header("X-XSRF-TOKEN", token.getValue())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"token\":\"%s\",\"password\":\"New-pass-2026\"}".formatted(link.value()))
+                .exchange();
+
+        assertThat(reset).hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(laptop)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(phone)).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(signIn("it.reset@example.com")).hasStatus(HttpStatus.UNAUTHORIZED);
     }
 
     private MvcTestResult signIn(String email, Cookie... cookies) {
@@ -216,6 +246,49 @@ class KinetiqBackendApplicationIT {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"email\":\"%s\",\"password\":\"Kinetiq-2026\"}".formatted(email))
                 .exchange();
+    }
+
+    @Test
+    void shouldManageOwnInvitesOnly_whenTrainersAreSignedIn() throws Exception {
+        saveAccount("it.inviter@example.com", Role.TRAINER);
+        saveAccount("it.other@example.com", Role.TRAINER);
+        Cookie trainer = signIn("it.inviter@example.com").getResponse().getCookie("SESSION");
+        Cookie other = signIn("it.other@example.com").getResponse().getCookie("SESSION");
+
+        var created = send(trainer, mvc.post().uri("/api/v1/invites"), "{\"email\":\"it.invited@example.com\"}");
+        assertThat(created).hasStatus(HttpStatus.CREATED);
+        assertThat(created).bodyJson().extractingPath("$.link").asString().contains("/join#token=");
+        String id = JsonPath.read(created.getResponse().getContentAsString(), "$.invite.id");
+
+        assertThat(mvc.get().uri("/api/v1/invites").cookie(trainer))
+                .bodyJson()
+                .extractingPath("$.invites[*].id")
+                .asArray()
+                .containsExactly(id);
+        assertThat(send(trainer, mvc.post().uri("/api/v1/invites/{id}/links", id), null))
+                .hasStatus(HttpStatus.CREATED);
+        assertThat(send(other, mvc.delete().uri("/api/v1/invites/{id}", id), null))
+                .hasStatus(HttpStatus.NOT_FOUND)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("invite.not-found");
+        assertThat(send(trainer, mvc.delete().uri("/api/v1/invites/{id}", id), null))
+                .hasStatus(HttpStatus.NO_CONTENT);
+        assertThat(mvc.get().uri("/api/v1/invites").cookie(trainer))
+                .bodyJson()
+                .extractingPath("$.invites")
+                .asArray()
+                .isEmpty();
+    }
+
+    // a state-changing request of a signed-in person, with a CSRF token fetched for that sign-in
+    private MvcTestResult send(Cookie session, MockMvcTester.MockMvcRequestBuilder request, String json) {
+        Cookie token = csrfToken(session);
+        request.cookie(session, token).header("X-XSRF-TOKEN", token.getValue());
+        if (json != null) {
+            request.contentType(MediaType.APPLICATION_JSON).content(json);
+        }
+        return request.exchange();
     }
 
     @Test

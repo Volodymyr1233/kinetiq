@@ -64,7 +64,7 @@ class SignInControllerTest {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
-                null);
+                null, null);
     }
 
     private MvcTestResult signIn(Object body, MockHttpSession session) {

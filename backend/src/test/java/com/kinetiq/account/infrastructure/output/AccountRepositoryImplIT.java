@@ -7,8 +7,8 @@ import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.AccountSettings;
-import com.kinetiq.account.domain.model.ConfirmationToken;
 import com.kinetiq.account.domain.model.Language;
+import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.model.Theme;
 import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.domain.model.Email;
@@ -108,6 +108,28 @@ class AccountRepositoryImplIT {
     }
 
     @Test
+    void shouldFindAccountByResetToken_andNotAfterReset() {
+        Account account = trainer("marek@example.com");
+        SecretToken token = SecretToken.generate();
+        account.issuePasswordReset(token, Instant.parse("2026-10-25T10:00:00Z"));
+        repository.save(account);
+
+        assertThat(repository.findByPasswordResetTokenHash(token.hash()))
+                .get()
+                .extracting(Account::getId)
+                .isEqualTo(account.getId());
+
+        account.resetPassword("new-hash", Instant.parse("2026-10-25T10:30:00Z"));
+        repository.save(account);
+
+        assertThat(repository.findByPasswordResetTokenHash(token.hash())).isEmpty();
+        assertThat(repository.findById(account.getId()))
+                .get()
+                .extracting(Account::getPasswordHash)
+                .isEqualTo("new-hash");
+    }
+
+    @Test
     void shouldFindNothing_whenIdIsUnknown() {
         assertThat(repository.findById(AccountId.random())).isEmpty();
     }
@@ -124,7 +146,7 @@ class AccountRepositoryImplIT {
     @Test
     void shouldFindAccountWithItsLink_whenTokenHashMatches() {
         Account account = trainer("marek@example.com");
-        ConfirmationToken token = ConfirmationToken.generate();
+        SecretToken token = SecretToken.generate();
         account.issueConfirmation(token, Instant.parse("2026-10-19T10:00:00Z"));
         repository.save(account);
 
@@ -132,14 +154,14 @@ class AccountRepositoryImplIT {
                 .get()
                 .usingRecursiveComparison()
                 .isEqualTo(account);
-        assertThat(repository.findByConfirmationTokenHash(ConfirmationToken.generate().hash()))
+        assertThat(repository.findByConfirmationTokenHash(SecretToken.generate().hash()))
                 .isEmpty();
     }
 
     @Test
     void shouldClearStoredLink_whenEmailIsConfirmed() {
         Account account = trainer("marek@example.com");
-        ConfirmationToken token = ConfirmationToken.generate();
+        SecretToken token = SecretToken.generate();
         account.issueConfirmation(token, Instant.parse("2026-10-19T10:00:00Z"));
         repository.save(account);
         jpa.flush();
@@ -151,6 +173,14 @@ class AccountRepositoryImplIT {
         assertThat(repository.findByConfirmationTokenHash(token.hash())).isEmpty();
         assertThat(repository.findByEmail(account.getEmail()).orElseThrow().isEmailConfirmed())
                 .isTrue();
+    }
+
+    @Test
+    void shouldTellWhetherEmailHasAccount_whenAsked() {
+        repository.save(trainer("marek@example.com"));
+
+        assertThat(repository.existsByEmail(new Email(" Marek@Example.com"))).isTrue();
+        assertThat(repository.existsByEmail(new Email("anna@example.com"))).isFalse();
     }
 
     @Test

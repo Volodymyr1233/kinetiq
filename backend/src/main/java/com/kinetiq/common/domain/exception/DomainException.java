@@ -10,7 +10,9 @@ public abstract class DomainException extends RuntimeException {
         INVALID,
         UNAUTHENTICATED,
         NOT_ALLOWED,
-        TOO_MANY_ATTEMPTS
+        TOO_MANY_ATTEMPTS,
+        NOT_FOUND,
+        CONFLICT
     }
 
     protected DomainException(String message) {

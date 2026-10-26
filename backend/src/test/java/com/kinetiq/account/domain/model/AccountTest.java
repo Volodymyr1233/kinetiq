@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
 import com.kinetiq.account.domain.exception.NameNotChangeableException;
+import com.kinetiq.account.domain.exception.PasswordResetLinkInvalidException;
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import com.kinetiq.common.domain.model.Email;
 import java.time.Duration;
@@ -111,6 +112,7 @@ class AccountTest {
                     AccountSettings.startingWith(Language.EN),
                     true,
                     null,
+                    null,
                     null);
 
             assertThatThrownBy(() -> client.rename("Anna Nowak")).isInstanceOf(NameNotChangeableException.class);
@@ -143,7 +145,7 @@ class AccountTest {
         @Test
         void shouldExpireIn24Hours_whenIssued() {
             Account account = trainer();
-            ConfirmationToken token = ConfirmationToken.generate();
+            SecretToken token = SecretToken.generate();
 
             account.issueConfirmation(token, NOW);
 
@@ -154,8 +156,8 @@ class AccountTest {
         @Test
         void shouldReplaceEarlierLink_whenIssuedAgain() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
-            ConfirmationToken newer = ConfirmationToken.generate();
+            account.issueConfirmation(SecretToken.generate(), NOW);
+            SecretToken newer = SecretToken.generate();
 
             account.issueConfirmation(newer, NOW.plusSeconds(60));
 
@@ -166,7 +168,7 @@ class AccountTest {
         void shouldRefuse_whenEmailIsConfirmed() {
             Account account = confirmed();
 
-            assertThatThrownBy(() -> account.issueConfirmation(ConfirmationToken.generate(), NOW))
+            assertThatThrownBy(() -> account.issueConfirmation(SecretToken.generate(), NOW))
                     .isInstanceOf(IllegalStateException.class);
         }
     }
@@ -202,7 +204,7 @@ class AccountTest {
         @Test
         void shouldConfirmAndRemoveLink_whenLinkIsValid() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.issueConfirmation(SecretToken.generate(), NOW);
 
             account.confirmEmail(NOW.plus(DAY).minusSeconds(1));
 
@@ -213,7 +215,7 @@ class AccountTest {
         @Test
         void shouldRefuse_whenConfirmedTwice() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.issueConfirmation(SecretToken.generate(), NOW);
             account.confirmEmail(NOW);
 
             assertThatThrownBy(() -> account.confirmEmail(NOW)).isInstanceOf(ConfirmationLinkInvalidException.class);
@@ -222,11 +224,54 @@ class AccountTest {
         @Test
         void shouldRefuseAndStayUnconfirmed_whenExactly24HoursPassed() {
             Account account = trainer();
-            account.issueConfirmation(ConfirmationToken.generate(), NOW);
+            account.issueConfirmation(SecretToken.generate(), NOW);
 
             assertThatThrownBy(() -> account.confirmEmail(NOW.plus(DAY)))
                     .isInstanceOf(ConfirmationLinkInvalidException.class);
             assertThat(account.isEmailConfirmed()).isFalse();
+        }
+    }
+
+    @Nested
+    class ResetPassword {
+
+        @Test
+        void shouldExpireInAnHour_whenIssued() {
+            Account account = confirmed();
+            SecretToken token = SecretToken.generate();
+
+            account.issuePasswordReset(token, NOW);
+
+            assertThat(account.getPasswordReset())
+                    .contains(new PasswordReset(token.hash(), NOW.plus(Duration.ofHours(1))));
+            assertThat(account.getMailSentAt()).contains(NOW);
+        }
+
+        @Test
+        void shouldChangePasswordAndRemoveLink_whenLinkIsValid() {
+            Account account = confirmed();
+            account.issuePasswordReset(SecretToken.generate(), NOW);
+
+            account.resetPassword("new-hash", NOW.plusSeconds(59 * 60));
+
+            assertThat(account.getPasswordHash()).isEqualTo("new-hash");
+            assertThat(account.getPasswordReset()).isEmpty();
+        }
+
+        @Test
+        void shouldRefuseAndKeepPassword_whenExactlyAnHourPassed() {
+            Account account = confirmed();
+            account.issuePasswordReset(SecretToken.generate(), NOW);
+
+            assertThatThrownBy(() -> account.resetPassword("new-hash", NOW.plus(Duration.ofHours(1))))
+                    .isInstanceOf(PasswordResetLinkInvalidException.class);
+            assertThat(account.getPasswordHash()).isEqualTo("hash");
+        }
+
+        @Test
+        void shouldRefuse_whenNoLinkWasIssued() {
+            assertThatThrownBy(() -> confirmed().resetPassword("new-hash", NOW))
+                    .isInstanceOf(PasswordResetLinkInvalidException.class);
         }
     }
 
@@ -240,6 +285,7 @@ class AccountTest {
                 WARSAW,
                 AccountSettings.startingWith(Language.EN),
                 true,
+                null,
                 null,
                 null);
     }

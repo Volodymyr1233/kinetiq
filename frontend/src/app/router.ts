@@ -54,6 +54,15 @@ export const createRoutes = (): RouteObject[] => [
     },
   },
   {
+    path: '/reset-password',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/reset-password-page'))
+          .ResetPasswordPage,
+    },
+  },
+  {
     path: '/trainer',
     loader: requireRole('TRAINER'),
     ErrorBoundary: AreaErrorPage,
@@ -63,7 +72,27 @@ export const createRoutes = (): RouteObject[] => [
     },
     children: [
       { index: true, loader: () => redirect('/trainer/clients') },
-      trainerPlaceholder('clients'),
+      {
+        path: 'clients',
+        children: [
+          {
+            index: true,
+            lazy: {
+              Component: async () =>
+                (await import('@/app/trainer-area')).ClientsPlaceholder,
+            },
+          },
+          {
+            path: 'invites',
+            HydrateFallback: BlankWhileLoading,
+            lazy: {
+              Component: async () =>
+                (await import('@/features/account/pages/invites-page'))
+                  .InvitesPage,
+            },
+          },
+        ],
+      },
       trainerPlaceholder('approvals'),
       trainerPlaceholder('messages'),
       {

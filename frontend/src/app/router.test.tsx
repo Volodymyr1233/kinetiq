@@ -33,6 +33,24 @@ describe('routes', () => {
     ).toBeInTheDocument()
   })
 
+  it('reaches the open invites from the clients section, which stays current', async () => {
+    const user = userEvent.setup()
+    const { router } = renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, () =>
+      json({ invites: [] }),
+    )
+
+    await user.click(await screen.findByRole('link', { name: 'Open invites' }))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Open invites' }),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/trainer/clients/invites')
+    expect(screen.getByRole('link', { name: 'Clients' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
   it('opens the quiz review once every answer is in', async () => {
     sessionStorage.setItem(
       'kinetiq.quiz',
