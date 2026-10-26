@@ -65,3 +65,11 @@ Each entry: decision, reason, alternatives. Task #43 is final; the entries for t
 ## R10 — Migration number (task #43)
 
 **Decision**: `V6` is the next free number on `master`. If another task merges a `V6` first, this task renumbers its own migration before merging; a merged migration is never edited (`backend/CLAUDE.md`).
+
+## R11 — The chosen option's cue (task #209)
+
+**Decision**: Both settings screens use one segmented choice, `SettingToggleGroup` in `features/account/components/`, shaped as both boards show it: options on a muted track, the chosen one raised on the background in a medium font weight. The chosen option also carries a 1 px ink border (`border-primary`; a transparent border on the others keeps their size), separate from the focus ring so both show on the focused chosen option, the design system's line for a selected element (a selected card has an ink border) and its rule that no state is shown by colour alone (principle 5). The sheet's version is full width with 48 px options; the trainer screen's keeps the default size.
+
+**Why**: Spec FR-018, FR-017 and SC-005. The fill alone measured 1.09:1 in light and 1.24:1 in dark in the sheet, below the 3:1 of WCAG 1.4.11. The trainer screen used shadcn's outline toggle (task #44), which differs from the board "Trainer · settings" and showed the choice by its fill only. One component gives the same settings one look and one cue, and holds the check that choosing the chosen option again keeps it.
+
+**Alternatives**: a check icon in the chosen option (on neither board, and it moves the label); a bolder label only (still no cue of 3:1); keeping the trainer's outline toggle and adding the line only (two looks for the same settings, and the board's look missing); copying the classes into both screens (the same long styling twice).

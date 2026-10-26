@@ -25,13 +25,13 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { errorMessageKey } from '@/lib/api/problem'
 import {
   currentAccountQuery,
   useUpdateAccount,
   type CurrentAccount,
 } from '../api/account'
+import { SettingToggleGroup } from '../components/setting-toggle-group'
 import { signUpSchema } from '../sign-up-schema'
 
 const UNITS = ['KG', 'LB'] as const
@@ -134,11 +134,6 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
     })
   })
 
-  // a single toggle group can be cleared by choosing the chosen option again; a setting always has a value
-  const keepValue = (onChange: (value: string) => void) => (value: string) => {
-    if (value) onChange(value)
-  }
-
   function displayRow(
     id: string,
     label: string,
@@ -226,22 +221,17 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
                 control={form.control}
                 name="units"
                 render={({ field }) => (
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    spacing={0}
+                  <SettingToggleGroup
                     value={field.value}
-                    onValueChange={keepValue(field.onChange)}
+                    onValueChange={field.onChange}
+                    options={UNITS.map((unit) => ({
+                      value: unit,
+                      label: t(`settings.units.${unit}`),
+                    }))}
                     disabled={busy}
                     aria-labelledby="settings-units"
                     aria-describedby="settings-units-hint"
-                  >
-                    {UNITS.map((unit) => (
-                      <ToggleGroupItem key={unit} value={unit}>
-                        {t(`settings.units.${unit}`)}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
+                  />
                 )}
               />,
             )}
@@ -284,21 +274,16 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
                 control={form.control}
                 name="theme"
                 render={({ field }) => (
-                  <ToggleGroup
-                    type="single"
-                    variant="outline"
-                    spacing={0}
+                  <SettingToggleGroup
                     value={field.value}
-                    onValueChange={keepValue(field.onChange)}
+                    onValueChange={field.onChange}
+                    options={THEMES.map((theme) => ({
+                      value: theme,
+                      label: t(`theme.${theme.toLowerCase()}`),
+                    }))}
                     disabled={busy}
                     aria-labelledby="settings-theme"
-                  >
-                    {THEMES.map((theme) => (
-                      <ToggleGroupItem key={theme} value={theme}>
-                        {t(`theme.${theme.toLowerCase()}`)}
-                      </ToggleGroupItem>
-                    ))}
-                  </ToggleGroup>
+                  />
                 )}
               />,
             )}

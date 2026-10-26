@@ -8,7 +8,6 @@ import {
   FieldGroup,
   FieldTitle,
 } from '@/components/ui/field'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { errorMessageKey } from '@/lib/api/problem'
 import {
   updateAccountKey,
@@ -16,6 +15,7 @@ import {
   type AccountUpdate,
   type CurrentAccount,
 } from '../api/account'
+import { SettingToggleGroup } from './setting-toggle-group'
 
 const OPTIONS = {
   units: ['KG', 'LB'],
@@ -39,11 +39,6 @@ export function DisplaySettings({ account }: { account: CurrentAccount }) {
     { units: account.units, language: account.language, theme: account.theme },
   )
 
-  function choose(setting: Setting, value: string) {
-    // a single toggle group sends an empty value when the chosen option is chosen again; a setting always has one
-    if (value) update.mutate({ [setting]: value })
-  }
-
   function group(
     setting: Setting,
     title: string,
@@ -54,25 +49,17 @@ export function DisplaySettings({ account }: { account: CurrentAccount }) {
     return (
       <Field>
         <FieldTitle id={id}>{title}</FieldTitle>
-        <ToggleGroup
-          type="single"
-          spacing={1}
+        <SettingToggleGroup
+          touch
           value={shown[setting]}
-          onValueChange={(value) => choose(setting, value)}
+          onValueChange={(value) => update.mutate({ [setting]: value })}
+          options={OPTIONS[setting].map((option) => ({
+            value: option,
+            label: labelOf(option),
+          }))}
           aria-labelledby={id}
           aria-describedby={hint ? `${id}-hint` : undefined}
-          className="bg-muted w-full rounded-lg p-1"
-        >
-          {OPTIONS[setting].map((option) => (
-            <ToggleGroupItem
-              key={option}
-              value={option}
-              className="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground h-12 flex-1 font-normal hover:bg-transparent data-[state=on]:font-medium data-[state=on]:shadow-sm"
-            >
-              {labelOf(option)}
-            </ToggleGroupItem>
-          ))}
-        </ToggleGroup>
+        />
         {hint && <FieldDescription id={`${id}-hint`}>{hint}</FieldDescription>}
       </Field>
     )

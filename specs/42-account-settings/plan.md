@@ -79,7 +79,7 @@ frontend/src/
 ├── app/                 the observer that applies language and theme (#43); client-area.tsx sheet (#45); router.ts settings route (#44)
 ├── lib/i18n.ts          starts with the remembered language (#43)
 ├── lib/weight.ts        conversion, formatting, parsing (+ .test.ts) (#46)
-├── features/account/    api/account.ts update mutation (#44), its key and scope (#45); pages/settings-page.tsx (#44); components/ display settings (#45)
+├── features/account/    api/account.ts update mutation (#44), its key and scope (#45); pages/settings-page.tsx (#44); components/ display settings (#45) and the settings' segmented choice (#209)
 ├── features/quiz/       body weight and review in the person's unit (#46)
 └── locales/en.json, pl.json   settings texts (#44, #45), weight texts (#46)
 ```
