@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/exercises/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["updateExercise"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/me/time-zone": {
         parameters: {
             query?: never;
@@ -62,6 +78,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["replaceLink"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/exercises": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listExercises"];
+        put?: never;
+        post: operations["createExercise"];
         delete?: never;
         options?: never;
         head?: never;
@@ -132,22 +164,6 @@ export interface paths {
         patch: operations["update"];
         trace?: never;
     };
-    "/api/v1/exercises": {
-        parameters: {
-            query?: never;
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        get: operations["listExercises"];
-        put?: never;
-        post?: never;
-        delete?: never;
-        options?: never;
-        head?: never;
-        patch?: never;
-        trace?: never;
-    };
     "/api/v1/csrf": {
         parameters: {
             query?: never;
@@ -200,6 +216,39 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        UpdateExerciseRequest: {
+            name: string;
+            /** @enum {string} */
+            category: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
+            equipment: string;
+            /** Format: int32 */
+            sets?: number;
+            /** Format: int32 */
+            amount?: number;
+            /** Format: int32 */
+            restSeconds?: number;
+            cues: string;
+        };
+        ExerciseResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            category: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
+            equipment: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            /** Format: int32 */
+            sets: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            restSeconds: number;
+            cues: string;
+            /** Format: int32 */
+            plansUsing: number;
+            starter: boolean;
+        };
         TimeZoneRequest: {
             timeZone: string;
         };
@@ -240,6 +289,21 @@ export interface components {
         InviteLinkResponse: {
             link: string;
         };
+        CreateExerciseRequest: {
+            name: string;
+            /** @enum {string} */
+            category: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            equipment: string;
+            /** Format: int32 */
+            sets?: number;
+            /** Format: int32 */
+            amount?: number;
+            /** Format: int32 */
+            restSeconds?: number;
+            cues: string;
+        };
         ConfirmEmailRequest: {
             token: string;
         };
@@ -266,25 +330,6 @@ export interface components {
             total: number;
             exercises: components["schemas"]["ExerciseResponse"][];
         };
-        ExerciseResponse: {
-            /** Format: uuid */
-            id: string;
-            name: string;
-            /** @enum {string} */
-            category: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
-            equipment: string;
-            /** @enum {string} */
-            measure: "REPS" | "SECONDS";
-            /** Format: int32 */
-            sets: number;
-            /** Format: int32 */
-            amount: number;
-            /** Format: int32 */
-            restSeconds: number;
-            cues: string;
-            /** Format: int32 */
-            plansUsing: number;
-        };
     };
     responses: never;
     parameters: never;
@@ -294,6 +339,32 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    updateExercise: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["UpdateExerciseRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExerciseResponse"];
+                };
+            };
+        };
+    };
     changeTimeZone: {
         parameters: {
             query?: never;
@@ -406,6 +477,53 @@ export interface operations {
             };
         };
     };
+    listExercises: {
+        parameters: {
+            query?: {
+                category?: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
+                name?: string;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExerciseListResponse"];
+                };
+            };
+        };
+    };
+    createExercise: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CreateExerciseRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ExerciseResponse"];
+                };
+            };
+        };
+    };
     confirmEmail: {
         parameters: {
             query?: never;
@@ -512,29 +630,6 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CurrentAccountResponse"];
-                };
-            };
-        };
-    };
-    listExercises: {
-        parameters: {
-            query?: {
-                category?: "CHEST" | "BACK" | "LEGS" | "SHOULDERS" | "ARMS" | "CORE" | "FULL_BODY" | "CARDIO" | "MOBILITY";
-                name?: string;
-            };
-            header?: never;
-            path?: never;
-            cookie?: never;
-        };
-        requestBody?: never;
-        responses: {
-            /** @description OK */
-            200: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "*/*": components["schemas"]["ExerciseListResponse"];
                 };
             };
         };

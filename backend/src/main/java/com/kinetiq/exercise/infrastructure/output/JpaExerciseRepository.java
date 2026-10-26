@@ -6,5 +6,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 interface JpaExerciseRepository extends JpaRepository<ExerciseEntity, UUID> {
 
-    List<ExerciseEntity> findByOwnerIdIsNull();
+    List<ExerciseEntity> findByOwnerIdIsNullOrOwnerId(UUID ownerId);
 }

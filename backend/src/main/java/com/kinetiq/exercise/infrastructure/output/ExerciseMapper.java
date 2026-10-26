@@ -10,7 +10,7 @@ import org.mapstruct.MappingConstants;
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 interface ExerciseMapper {
 
-    // the aggregate validates in its constructor; nothing saves exercises before story #47
+    // the aggregate validates in its constructor, so a row it would refuse fails on reading
     default Exercise toDomain(ExerciseEntity entity) {
         return new Exercise(
                 new ExerciseId(entity.getId()),
@@ -23,5 +23,26 @@ interface ExerciseMapper {
                 entity.getDefaultAmount(),
                 entity.getRestSeconds(),
                 new LocalizedText(entity.getCues(), entity.getCuesPl()));
+    }
+
+    // written by hand because each text splits into two columns, and an empty Polish text is stored as null
+    default void update(Exercise exercise, ExerciseEntity entity) {
+        entity.setId(exercise.getId().value());
+        entity.setOwnerId(exercise.getOwner().map(AccountId::value).orElse(null));
+        entity.setName(exercise.getName().en());
+        entity.setNamePl(polish(exercise.getName()));
+        entity.setCategory(exercise.getCategory());
+        entity.setEquipment(exercise.getEquipment().en());
+        entity.setEquipmentPl(polish(exercise.getEquipment()));
+        entity.setMeasure(exercise.getMeasure());
+        entity.setDefaultSets(exercise.getDefaultSets());
+        entity.setDefaultAmount(exercise.getDefaultAmount());
+        entity.setRestSeconds(exercise.getRestSeconds());
+        entity.setCues(exercise.getCues().en());
+        entity.setCuesPl(polish(exercise.getCues()));
+    }
+
+    private static String polish(LocalizedText text) {
+        return text.pl().isEmpty() ? null : text.pl();
     }
 }

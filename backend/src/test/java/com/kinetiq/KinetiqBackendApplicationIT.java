@@ -34,6 +34,8 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 @AutoConfigureMockMvc
 class KinetiqBackendApplicationIT {
 
+    private static final String STARTER_PLANK = "00000000-0000-4000-9100-000000000026";
+
     @Autowired
     private MockMvcTester mvc;
 
@@ -105,7 +107,7 @@ class KinetiqBackendApplicationIT {
     }
 
     @Test
-    @WithMockUser(roles = "TRAINER")
+    @WithMockUser(username = "00000000-0000-4000-8000-0000000000aa", roles = "TRAINER")
     void shouldListStarterExercises_whenCallerIsSignedIn() {
         assertThat(mvc.get().uri("/api/v1/exercises"))
                 .hasStatusOk()
@@ -250,6 +252,65 @@ class KinetiqBackendApplicationIT {
                 .extractingPath("$.invites")
                 .asArray()
                 .isEmpty();
+    }
+
+    @Test
+    void shouldKeepOwnExercisesApart_whenTwoTrainersManageThem() throws Exception {
+        saveAccount("it.coach.a@example.com", Role.TRAINER);
+        saveAccount("it.coach.b@example.com", Role.TRAINER);
+        Cookie trainerA = signIn("it.coach.a@example.com").getResponse().getCookie("SESSION");
+        Cookie trainerB = signIn("it.coach.b@example.com").getResponse().getCookie("SESSION");
+        String exercise =
+                """
+                {"name":"%s","category":"LEGS","measure":"REPS","equipment":"Dumbbell",
+                 "sets":3,"amount":10,"restSeconds":90,"cues":""}
+                """;
+
+        var created = send(trainerA, mvc.post().uri("/api/v1/exercises"), exercise.formatted("Goblet squat"));
+        assertThat(created).hasStatus(HttpStatus.CREATED);
+        assertThat(created).bodyJson().extractingPath("$.starter").isEqualTo(false);
+        String id = JsonPath.read(created.getResponse().getContentAsString(), "$.id");
+        String edit = exercise.formatted("Goblet squat hold").replace("\"measure\":\"REPS\",", "");
+        assertThat(send(trainerA, mvc.put().uri("/api/v1/exercises/{id}", id), edit))
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.name")
+                .isEqualTo("Goblet squat hold");
+
+        assertThat(mvc.get().uri("/api/v1/exercises?name=goblet").cookie(trainerA))
+                .bodyJson()
+                .extractingPath("$.exercises[*].id")
+                .asArray()
+                .containsExactly(id);
+        var listedToB = mvc.get().uri("/api/v1/exercises?name=goblet").cookie(trainerB).exchange();
+        assertThat(listedToB).bodyJson().extractingPath("$.exercises").asArray().isEmpty();
+        assertThat(listedToB).bodyJson().extractingPath("$.total").isEqualTo(40);
+
+        assertThat(send(trainerB, mvc.put().uri("/api/v1/exercises/{id}", id), edit))
+                .hasStatus(HttpStatus.NOT_FOUND)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("exercise.not-found");
+        assertThat(send(trainerA, mvc.put().uri("/api/v1/exercises/{id}", STARTER_PLANK), edit))
+                .hasStatus(HttpStatus.NOT_FOUND)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("exercise.not-found");
+        assertThat(send(trainerA, mvc.delete().uri("/api/v1/exercises/{id}", id), null))
+                .hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
+        assertThat(send(trainerB, mvc.post().uri("/api/v1/exercises"), exercise.formatted("Goblet squat hold")))
+                .hasStatus(HttpStatus.CREATED);
+        for (String starterName : new String[] {"plank", "Deska"}) {
+            assertThat(send(trainerA, mvc.post().uri("/api/v1/exercises"), exercise.formatted(starterName)))
+                    .hasStatus(HttpStatus.CONFLICT)
+                    .bodyJson()
+                    .extractingPath("$.code")
+                    .isEqualTo("exercise.name-taken");
+        }
+        assertThat(mvc.get().uri("/api/v1/exercises").cookie(trainerA))
+                .bodyJson()
+                .extractingPath("$.total")
+                .isEqualTo(41);
     }
 
     // a state-changing request of a signed-in person, with a CSRF token fetched for that sign-in

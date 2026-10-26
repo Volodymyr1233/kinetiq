@@ -3,6 +3,7 @@ package com.kinetiq.exercise.infrastructure.output;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kinetiq.TestcontainersConfiguration;
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.Category;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.LocalizedText;
@@ -26,7 +27,8 @@ class StarterExerciseSetIT {
 
     @BeforeEach
     void loadStarter() {
-        starter = repository.findStarter();
+        // an account with no own exercises sees exactly the starter set
+        starter = repository.findVisibleTo(AccountId.random());
     }
 
     @Test

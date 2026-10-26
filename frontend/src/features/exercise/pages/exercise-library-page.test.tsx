@@ -16,6 +16,7 @@ function exercise(fields: Partial<Exercise> & Pick<Exercise, 'id' | 'name'>) {
     restSeconds: 120,
     cues: 'Brace first.',
     plansUsing: 0,
+    starter: true,
     ...fields,
   } satisfies Exercise
 }
