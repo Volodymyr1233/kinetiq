@@ -25,7 +25,7 @@ Start the backend and the frontend (`npm run dev` in `frontend/`), sign in as th
 6. Reload on the review: it shows again with every answer.
 7. Clear the age on step 4, then open `/app/quiz/review` by address: step 4 is shown.
 8. Keyboard only: every "Change" link is reachable with a visible focus ring and is named for its row; focus is on the heading after opening the review.
-9. Set the browser's language to Polish and reload: every text changes, numbers use a decimal comma, likes are separated by commas.
+9. Open `/app/today`, choose Polski in the settings sheet from the header, and go back to the review with the browser's Back button: every text changes, numbers use a decimal comma, likes are separated by commas. Choose English in the sheet again afterwards.
 10. Repeat 1–3 in dark mode. The console shows no errors.
 
 ## Browser check, tasks #55 and #57

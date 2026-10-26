@@ -183,7 +183,13 @@
     },
     "languageHint": "Polski uses informal \"ty\" with clients.",
     "save": "Save changes",
-    "saved": "Settings saved."
+    "saved": "Settings saved.",
+    "sheet": {
+      "unitsHint": "Weights in your plan and logs show in {{weightUnit}}.",
+      "theme": "Theme",
+      "themeHint": "System follows your phone.",
+      "autosave": "Changes save right away."
+    }
   },
   "exercises": {
     "title": "Exercise library",

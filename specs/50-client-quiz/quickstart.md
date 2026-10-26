@@ -29,5 +29,5 @@ Start the frontend (`npm run dev` in `frontend/`) and open `http://localhost:517
 6. Press the browser's back twice: step 5 with its answers. Reload: still step 5, answers kept.
 7. Open `/app/quiz/7` by address after reaching only step 5: step 5 is shown.
 8. Keyboard only: Tab reaches every option, field and button with a visible focus ring; arrow keys move within the radio group; Space toggles a checkbox. After Continue, focus is on the new heading.
-9. Set the browser's language to Polish and reload (the app follows the browser's language): every text changes, answers stay, the weight example reads "np. 62,5".
+9. Open `/app/today`, choose Polski in the settings sheet from the header, and go back to the step with the browser's Back button: every text changes, answers stay, the weight example reads "np. 62,5". Choose English in the sheet again afterwards.
 10. Repeat 1–5 in dark mode. The console shows no errors.

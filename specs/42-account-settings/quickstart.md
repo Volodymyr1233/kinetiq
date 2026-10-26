@@ -29,5 +29,5 @@ Task #43 has no screen to change settings yet; this check proves that the accoun
 Refined when those tasks start:
 
 - #44: as the demo trainer, open Settings, change the name, units, language and appearance, save: "Settings saved.", the sidebar shows the new name, the app switches language and theme; sign in from another browser: the same settings.
-- #45: as the demo client, open the settings sheet from the header, choose Polski, Dark and lb: each applies at once; sign in from another browser: the same settings.
+- #45: as the demo client at 375 px, open the settings sheet from the header: name, email, kg, English and System chosen. Choose Polski, Dark and lb: each shows at once, the app turns Polish and dark, and the units hint names lb. Reload: the same. Sign in from another browser: the same settings. With the backend stopped, a choice shows the stored option again and a message. Set the demo client back to kg, English and System.
 - #46: as the demo client with lb, answer the quiz's body weight in lb (for example 137.8): the review shows 137.8 lb; choose kg in the settings sheet and open the review again: 62.5 kg.
