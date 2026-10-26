@@ -62,7 +62,8 @@
       "confirmation-link-invalid": "This link no longer works. Request a new one.",
       "credentials-invalid": "Email or password is wrong. Check both and try again.",
       "email-not-confirmed": "Confirm your email first, then sign in.",
-      "sign-in-locked": "Too many attempts. Try again later."
+      "sign-in-locked": "Too many attempts. Try again later.",
+      "password-reset-link-invalid": "This link no longer works. Request a new one."
     },
     "invite": {
       "account-exists": "This email already has an account.",
@@ -141,6 +142,32 @@
       "email": "Email",
       "submit": "Send new link",
       "alreadyConfirmed": "Already confirmed?"
+    },
+    "reset": {
+      "request": {
+        "title": "Reset your password",
+        "description": "Enter your email and we will send you a link to set a new password.",
+        "submit": "Send reset link"
+      },
+      "sent": {
+        "title": "Check your email",
+        "description": "If an account exists for <strong>{{email}}</strong>, we sent a link to set a new password. It works once and expires after 1 hour."
+      },
+      "set": {
+        "title": "Set a new password",
+        "description": "Choose a password you do not use anywhere else.",
+        "password": "New password",
+        "submit": "Set password"
+      },
+      "done": {
+        "title": "Password changed",
+        "description": "You were signed out on every device. Sign in with your new password."
+      },
+      "expired": {
+        "title": "This link no longer works",
+        "description": "Password reset links work once and expire after 1 hour. Enter your email to get a new one."
+      },
+      "remembered": "Remembered it?"
     }
   },
   "exercises": {
