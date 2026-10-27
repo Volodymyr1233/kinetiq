@@ -334,6 +334,7 @@ export interface components {
             language: "EN" | "PL";
             /** @enum {string} */
             theme: "LIGHT" | "DARK" | "SYSTEM";
+            emailConfirmed: boolean;
         };
         SetPasswordRequest: {
             token: string;

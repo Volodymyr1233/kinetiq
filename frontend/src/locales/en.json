@@ -142,7 +142,8 @@
     },
     "confirmed": {
       "title": "Email confirmed",
-      "description": "Your trainer account is ready. Sign in to start."
+      "description": "Your email is confirmed.",
+      "continue": "Continue"
     },
     "expired": {
       "title": "This link no longer works",
@@ -198,6 +199,12 @@
       "invalidDescription": "The invite expired, was already used or was cancelled. Ask your trainer for a new one.",
       "signInInstead": "Sign in instead",
       "invalidNote": "Use this if you already joined."
+    },
+    "banner": {
+      "text": "Confirm your email: we sent a link to {{email}}.",
+      "resend": "Resend",
+      "sent": "Sent",
+      "resent": "We sent a new link."
     }
   },
   "settings": {

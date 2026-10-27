@@ -144,7 +144,8 @@
     },
     "confirmed": {
       "title": "E-mail potwierdzony",
-      "description": "Twoje konto trenera jest gotowe. Zaloguj się, aby zacząć."
+      "description": "Twój e-mail jest potwierdzony.",
+      "continue": "Dalej"
     },
     "expired": {
       "title": "Ten link już nie działa",
@@ -200,6 +201,12 @@
       "invalidDescription": "Zaproszenie wygasło, zostało już użyte lub anulowane. Poproś trenera o nowe.",
       "signInInstead": "Zaloguj się",
       "invalidNote": "Wybierz to, jeśli masz już konto."
+    },
+    "banner": {
+      "text": "Potwierdź e-mail: wysłaliśmy link na adres {{email}}.",
+      "resend": "Wyślij ponownie",
+      "sent": "Wysłano",
+      "resent": "Wysłaliśmy nowy link."
     }
   },
   "settings": {

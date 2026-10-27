@@ -102,6 +102,9 @@ public class SignUpService implements SignUpUseCase {
         invite.use(now);
         accounts.save(client);
         invites.save(invite);
+        if (!client.isEmailConfirmed()) {
+            sendConfirmation(client, command.locale(), now);
+        }
         return client;
     }
 

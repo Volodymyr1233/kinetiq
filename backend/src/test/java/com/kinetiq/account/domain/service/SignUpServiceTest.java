@@ -293,6 +293,26 @@ class SignUpServiceTest {
         }
 
         @Test
+        void shouldMailConfirmationLinkThatConfirms_whenCopiedSecretIsUsed() {
+            Account client = service.joinAsClient(join(sent.linkToken()));
+
+            assertThat(mails.sent).singleElement().satisfies(mail -> {
+                assertThat(mail.to()).isEqualTo(INVITED);
+                assertThat(mail.template()).isEqualTo("confirm-email");
+                assertThat(mail.locale()).isEqualTo(POLISH);
+            });
+            service.confirmEmail(tokenOf(mails.sent.getFirst()));
+            assertThat(client.isEmailConfirmed()).isTrue();
+        }
+
+        @Test
+        void shouldMailNothing_whenEmailedSecretIsUsed() {
+            service.joinAsClient(join(sent.emailToken()));
+
+            assertThat(mails.sent).isEmpty();
+        }
+
+        @Test
         void shouldRefuseSecondJoin_whenInviteWasUsed() {
             service.joinAsClient(join(sent.emailToken()));
             // without the account, only the used invite stands in the way
