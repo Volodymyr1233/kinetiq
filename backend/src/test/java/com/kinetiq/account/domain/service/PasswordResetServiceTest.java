@@ -44,6 +44,7 @@ class PasswordResetServiceTest {
                 EMAIL,
                 "old-hash",
                 Role.TRAINER,
+                null,
                 WARSAW,
                 AccountSettings.startingWith(Language.EN),
                 true,

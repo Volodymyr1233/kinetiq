@@ -31,6 +31,7 @@ interface AccountMapper {
                 new Email(entity.getEmail()),
                 entity.getPasswordHash(),
                 entity.getRole(),
+                entity.getTrainerId() == null ? null : new AccountId(entity.getTrainerId()),
                 ZoneId.of(entity.getTimeZone()),
                 new AccountSettings(entity.getUnits(), entity.getLanguage(), entity.getTheme()),
                 entity.isEmailConfirmed(),
@@ -42,6 +43,7 @@ interface AccountMapper {
     @Mapping(target = "units", source = "settings.units")
     @Mapping(target = "language", source = "settings.language")
     @Mapping(target = "theme", source = "settings.theme")
+    @Mapping(target = "trainerId", ignore = true)
     @Mapping(target = "confirmationTokenHash", ignore = true)
     @Mapping(target = "confirmationExpiresAt", ignore = true)
     @Mapping(target = "mailSentAt", ignore = true)
@@ -52,6 +54,7 @@ interface AccountMapper {
     // MapStruct 1.6 cannot read Optional properties
     @AfterMapping
     default void updateOptionalFields(Account account, @MappingTarget AccountEntity entity) {
+        entity.setTrainerId(account.getTrainerId().map(AccountId::value).orElse(null));
         entity.setConfirmationTokenHash(
                 account.getConfirmation().map(EmailConfirmation::tokenHash).orElse(null));
         entity.setConfirmationExpiresAt(

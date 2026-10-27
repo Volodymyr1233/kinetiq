@@ -31,6 +31,10 @@ public class Account {
     private final Email email;
     private String passwordHash;
     private final Role role;
+
+    @Getter(AccessLevel.NONE)
+    private final AccountId trainerId;
+
     private ZoneId timeZone;
     private AccountSettings settings;
     private boolean emailConfirmed;
@@ -52,6 +56,7 @@ public class Account {
                 Objects.requireNonNull(email),
                 Objects.requireNonNull(passwordHash),
                 Role.TRAINER,
+                null,
                 Objects.requireNonNull(timeZone),
                 AccountSettings.startingWith(Objects.requireNonNull(language)),
                 false,
@@ -66,6 +71,7 @@ public class Account {
             Email email,
             String passwordHash,
             Role role,
+            AccountId trainerId,
             ZoneId timeZone,
             AccountSettings settings,
             boolean emailConfirmed,
@@ -78,12 +84,18 @@ public class Account {
                 email,
                 passwordHash,
                 role,
+                trainerId,
                 timeZone,
                 settings,
                 emailConfirmed,
                 confirmation,
                 mailSentAt,
                 passwordReset);
+    }
+
+    /** The client's trainer; empty for a trainer. */
+    public Optional<AccountId> getTrainerId() {
+        return Optional.ofNullable(trainerId);
     }
 
     public Optional<EmailConfirmation> getConfirmation() {

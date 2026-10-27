@@ -255,6 +255,7 @@ class SignUpServiceTest {
                 new Email(email),
                 "hash",
                 Role.TRAINER,
+                null,
                 WARSAW,
                 AccountSettings.startingWith(Language.EN),
                 true,

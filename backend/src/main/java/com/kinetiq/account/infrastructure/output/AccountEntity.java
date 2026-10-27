@@ -33,6 +33,8 @@ class AccountEntity extends BaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    private UUID trainerId;
+
     private String timeZone;
 
     @Enumerated(EnumType.STRING)
