@@ -50,6 +50,7 @@ class PasswordResetServiceTest {
                 true,
                 null,
                 null,
+                null,
                 null));
     }
 

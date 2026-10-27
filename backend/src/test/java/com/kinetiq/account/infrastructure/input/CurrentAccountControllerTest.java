@@ -22,6 +22,7 @@ import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.infrastructure.config.SecurityConfig;
 import com.kinetiq.common.infrastructure.config.WebConfig;
+import java.time.Instant;
 import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.Nested;
@@ -88,7 +89,8 @@ class CurrentAccountControllerTest {
                 true,
                 null,
                 null,
-                null);
+                null,
+                Instant.EPOCH);
     }
 
     @Nested

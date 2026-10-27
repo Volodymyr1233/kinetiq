@@ -29,6 +29,50 @@ class AccountTest {
     }
 
     @Nested
+    class JoinAsClient {
+
+        private static final AccountId TRAINER_ID = AccountId.random();
+        private static final AccountSettings SETTINGS = AccountSettings.startingWith(Language.PL);
+
+        private static Account join(String name, AccountId trainerId, Instant consentAt) {
+            return Account.joinAsClient(
+                    name, new Email("anna@example.com"), "hash", WARSAW, SETTINGS, trainerId, consentAt, true);
+        }
+
+        @Test
+        void shouldCreateClientWithTrainerAndConsent_whenJoined() {
+            Account client = join("  Anna Kowalska ", TRAINER_ID, NOW);
+
+            assertThat(client.getName()).isEqualTo("Anna Kowalska");
+            assertThat(client.getRole()).isEqualTo(Role.CLIENT);
+            assertThat(client.getTrainerId()).contains(TRAINER_ID);
+            assertThat(client.getHealthDataConsentAt()).contains(NOW);
+            assertThat(client.getSettings()).isEqualTo(SETTINGS);
+        }
+
+        @ParameterizedTest
+        @NullSource
+        @ValueSource(strings = {"   ", "Anna\tKowalska"})
+        void shouldRefuse_whenNameBreaksSignUpRules(String name) {
+            assertThatThrownBy(() -> join(name, TRAINER_ID, NOW)).isInstanceOf(InvalidValueException.class);
+        }
+
+        @Test
+        void shouldRefuse_whenNameIsLongerThan100Characters() {
+            assertThat(join("a".repeat(100), TRAINER_ID, NOW).getName()).hasSize(100);
+            assertThatThrownBy(() -> join("a".repeat(101), TRAINER_ID, NOW))
+                    .isInstanceOf(InvalidValueException.class);
+        }
+
+        @Test
+        void shouldRequireTrainerAndConsentTime_whenJoined() {
+            assertThatThrownBy(() -> join("Anna Kowalska", null, NOW)).isInstanceOf(NullPointerException.class);
+            assertThatThrownBy(() -> join("Anna Kowalska", TRAINER_ID, null))
+                    .isInstanceOf(NullPointerException.class);
+        }
+    }
+
+    @Nested
     class SignUpTrainer {
 
         @Test
@@ -114,7 +158,8 @@ class AccountTest {
                     true,
                     null,
                     null,
-                    null);
+                    null,
+                    Instant.EPOCH);
 
             assertThatThrownBy(() -> client.rename("Anna Nowak")).isInstanceOf(NameNotChangeableException.class);
             assertThat(client.getName()).isEqualTo("Anna Kowalska");
@@ -287,6 +332,7 @@ class AccountTest {
                 WARSAW,
                 AccountSettings.startingWith(Language.EN),
                 true,
+                null,
                 null,
                 null,
                 null);

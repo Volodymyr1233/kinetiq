@@ -21,6 +21,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
+import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
@@ -57,7 +58,8 @@ class AccountRepositoryImplIT {
                 true,
                 null,
                 null,
-                null);
+                null,
+                Instant.EPOCH);
     }
 
     @Test
@@ -101,13 +103,79 @@ class AccountRepositoryImplIT {
         assertThatThrownBy(() -> jdbc.update(
                         """
                         insert into accounts (id, name, email, password_hash, role, time_zone, email_confirmed,
-                                              created_at, updated_at, version)
+                                              health_data_consent_at, created_at, updated_at, version)
                         values (?, 'Anna Kowalska', 'anna@example.com', 'hash', 'CLIENT', 'Europe/Warsaw', true,
-                                now(), now(), 0)
+                                now(), now(), now(), 0)
                         """,
                         UUID.randomUUID()))
                 .isInstanceOf(DataIntegrityViolationException.class)
                 .hasStackTraceContaining("ck_accounts_client_trainer");
+    }
+
+    @Test
+    void shouldFail_whenClientRowHasNoConsentTime() {
+        Account trainer = trainer("marek@example.com");
+        repository.save(trainer);
+        jpa.flush();
+
+        assertThatThrownBy(() -> jdbc.update(
+                        """
+                        insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone,
+                                              email_confirmed, created_at, updated_at, version)
+                        values (?, 'Anna Kowalska', 'anna@example.com', 'hash', 'CLIENT', ?, 'Europe/Warsaw', true,
+                                now(), now(), 0)
+                        """,
+                        UUID.randomUUID(),
+                        trainer.getId().value()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasStackTraceContaining("ck_accounts_client_consent");
+    }
+
+    @Test
+    void shouldKeepTrainerAndConsentTime_whenJoinedClientIsSavedAndFoundAgain() {
+        Account trainer = trainer("marek@example.com");
+        repository.save(trainer);
+        Instant consentAt = Instant.parse("2026-10-26T09:30:00Z");
+        Account client = Account.joinAsClient(
+                "Anna Kowalska",
+                new Email("anna@example.com"),
+                "hash",
+                ZoneId.of("Europe/Warsaw"),
+                AccountSettings.startingWith(Language.PL),
+                trainer.getId(),
+                consentAt,
+                true);
+        repository.save(client);
+        jpa.flush();
+        entityManager.clear();
+
+        Account found = repository.findById(client.getId()).orElseThrow();
+        assertThat(found.getRole()).isEqualTo(Role.CLIENT);
+        assertThat(found.getTrainerId()).contains(trainer.getId());
+        assertThat(found.getHealthDataConsentAt()).contains(consentAt);
+        assertThat(repository.findClientsOf(trainer.getId()))
+                .extracting(Account::getId)
+                .containsExactly(client.getId());
+    }
+
+    @Test
+    void shouldNameUniqueEmailConstraint_whenSecondAccountTakesEmail() {
+        repository.save(trainer("marek@example.com"));
+        jpa.flush();
+        repository.save(trainer("marek@example.com"));
+
+        assertThatThrownBy(jpa::flush)
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .satisfies(error -> assertThat(constraintName(error)).isEqualToIgnoringCase("uq_accounts_email"));
+    }
+
+    private static String constraintName(Throwable error) {
+        for (Throwable cause = error; cause != null; cause = cause.getCause()) {
+            if (cause instanceof ConstraintViolationException violation) {
+                return violation.getConstraintName();
+            }
+        }
+        return null;
     }
 
     @Test
@@ -133,9 +201,9 @@ class AccountRepositoryImplIT {
                 .createNativeQuery(
                         """
                         insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone,
-                                              email_confirmed, created_at, updated_at, version)
+                                              email_confirmed, health_data_consent_at, created_at, updated_at, version)
                         values (?1, 'Anna Kowalska', 'anna@example.com', 'hash', 'CLIENT', ?2, 'Europe/Warsaw',
-                                true, now(), now(), 0)
+                                true, now(), now(), now(), 0)
                         """)
                 .setParameter(1, id)
                 .setParameter(2, trainer.getId().value())
@@ -207,15 +275,6 @@ class AccountRepositoryImplIT {
     @Test
     void shouldFindNothing_whenIdIsUnknown() {
         assertThat(repository.findById(AccountId.random())).isEmpty();
-    }
-
-    @Test
-    void shouldFail_whenEmailIsTaken() {
-        repository.save(trainer("marek@example.com"));
-        jpa.flush();
-        repository.save(trainer("marek@example.com"));
-
-        assertThatThrownBy(jpa::flush).isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

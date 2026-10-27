@@ -67,6 +67,7 @@
     },
     "invite": {
       "account-exists": "This email already has an account.",
+      "link-invalid": "This link no longer works. Ask your trainer for a new one.",
       "limit-reached": "You've sent many invites. Try again later.",
       "not-found": "This invite is no longer open."
     },

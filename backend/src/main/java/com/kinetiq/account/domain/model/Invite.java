@@ -57,6 +57,11 @@ public class Invite {
         return status == InviteStatus.OPEN && now.isBefore(expiresAt);
     }
 
+    /** Whether the token is the emailed secret, the one that proves control of the address. */
+    public boolean provesEmail(SecretToken token) {
+        return token.hash().equals(emailTokenHash);
+    }
+
     /** Issues a new secret for the trainer to copy; the one copied before stops working, the emailed one does not. */
     public SecretToken replaceLink(Instant now) {
         requireOpen(now);

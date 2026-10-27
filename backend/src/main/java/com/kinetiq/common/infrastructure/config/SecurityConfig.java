@@ -44,7 +44,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers(API_DOCS)
                         .permitAll()
-                        // sign-up, sign-in and password reset: the person has no account or sign-in yet (specs "Public endpoints")
+                        // sign-up, joining, sign-in and password reset: the person has no account or sign-in yet
+                        // (specs "Public endpoints")
                         .requestMatchers(HttpMethod.GET, "/api/v1/csrf")
                         .permitAll()
                         .requestMatchers(
@@ -54,7 +55,9 @@ public class SecurityConfig {
                                 "/api/v1/confirmation-links",
                                 "/api/v1/password-reset-links",
                                 "/api/v1/password-resets",
-                                "/api/v1/sign-ins")
+                                "/api/v1/sign-ins",
+                                "/api/v1/invite-checks",
+                                "/api/v1/invite-acceptances")
                         .permitAll()
                         .requestMatchers("/api/v1/exercises/**", "/api/v1/invites/**")
                         .hasRole("TRAINER")

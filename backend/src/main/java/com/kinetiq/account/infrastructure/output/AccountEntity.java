@@ -58,4 +58,5 @@ class AccountEntity extends BaseEntity {
     private String resetTokenHash;
 
     private Instant resetExpiresAt;
+    private Instant healthDataConsentAt;
 }

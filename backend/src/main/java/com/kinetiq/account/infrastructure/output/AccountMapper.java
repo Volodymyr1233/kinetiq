@@ -37,7 +37,8 @@ interface AccountMapper {
                 entity.isEmailConfirmed(),
                 confirmation,
                 entity.getMailSentAt(),
-                passwordReset);
+                passwordReset,
+                entity.getHealthDataConsentAt());
     }
 
     @Mapping(target = "units", source = "settings.units")
@@ -49,6 +50,7 @@ interface AccountMapper {
     @Mapping(target = "mailSentAt", ignore = true)
     @Mapping(target = "resetTokenHash", ignore = true)
     @Mapping(target = "resetExpiresAt", ignore = true)
+    @Mapping(target = "healthDataConsentAt", ignore = true)
     void update(Account account, @MappingTarget AccountEntity entity);
 
     // MapStruct 1.6 cannot read Optional properties
@@ -60,6 +62,7 @@ interface AccountMapper {
         entity.setConfirmationExpiresAt(
                 account.getConfirmation().map(EmailConfirmation::expiresAt).orElse(null));
         entity.setMailSentAt(account.getMailSentAt().orElse(null));
+        entity.setHealthDataConsentAt(account.getHealthDataConsentAt().orElse(null));
         entity.setResetTokenHash(
                 account.getPasswordReset().map(PasswordReset::tokenHash).orElse(null));
         entity.setResetExpiresAt(

@@ -103,7 +103,8 @@ class InviteManagementServiceTest {
                     role == Role.CLIENT,
                     null,
                     null,
-                    null));
+                    null,
+                    role == Role.CLIENT ? Instant.EPOCH : null));
 
             assertThatThrownBy(() -> invite(trainer, new Email("OLA@Example.com")))
                     .isInstanceOf(InviteAccountExistsException.class);
