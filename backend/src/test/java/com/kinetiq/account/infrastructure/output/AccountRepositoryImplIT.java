@@ -8,6 +8,7 @@ import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.Language;
+import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.model.Theme;
 import com.kinetiq.account.domain.model.WeightUnit;
@@ -21,6 +22,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.jdbc.core.JdbcTemplate;
 
 @DataJpaTest
 @Import({TestcontainersConfiguration.class, AccountRepositoryImpl.class, AccountMapperImpl.class})
@@ -35,8 +37,77 @@ class AccountRepositoryImplIT {
     @Autowired
     private EntityManager entityManager;
 
+    @Autowired
+    private JdbcTemplate jdbc;
+
     private static Account trainer(String email) {
         return Account.signUpTrainer("Marek Nowak", new Email(email), "hash", ZoneId.of("Europe/Warsaw"), Language.EN);
+    }
+
+    private static Account client(String name, String email, Account trainer) {
+        return Account.restore(
+                AccountId.random(),
+                name,
+                new Email(email),
+                "hash",
+                Role.CLIENT,
+                trainer.getId(),
+                ZoneId.of("Europe/Warsaw"),
+                AccountSettings.startingWith(Language.EN),
+                true,
+                null,
+                null,
+                null);
+    }
+
+    @Test
+    void shouldFindExactlyEachTrainersClientsOrderedByName_whenTwoTrainersHaveClients() {
+        Account marek = trainer("marek@example.com");
+        Account ola = trainer("ola@example.com");
+        Account lonely = trainer("lonely@example.com");
+        repository.save(marek);
+        repository.save(ola);
+        repository.save(lonely);
+        Account zofia = client("Zofia Wójcik", "zofia@example.com", marek);
+        Account anna = client("Anna Kowalska", "anna@example.com", marek);
+        Account piotr = client("Piotr Lis", "piotr@example.com", ola);
+        repository.save(zofia);
+        repository.save(anna);
+        repository.save(piotr);
+        jpa.flush();
+        entityManager.clear();
+
+        assertThat(repository.findClientsOf(marek.getId()))
+                .extracting(Account::getId)
+                .containsExactly(anna.getId(), zofia.getId());
+        assertThat(repository.findClientsOf(ola.getId()))
+                .singleElement()
+                .satisfies(found -> assertThat(found.getTrainerId()).contains(ola.getId()));
+        assertThat(repository.findClientsOf(lonely.getId())).isEmpty();
+    }
+
+    @Test
+    void shouldKeepNoTrainer_whenTrainerIsSavedAndFoundAgain() {
+        Account account = trainer("marek@example.com");
+        repository.save(account);
+        jpa.flush();
+        entityManager.clear();
+
+        assertThat(repository.findById(account.getId()).orElseThrow().getTrainerId()).isEmpty();
+    }
+
+    @Test
+    void shouldFail_whenClientRowHasNoTrainer() {
+        assertThatThrownBy(() -> jdbc.update(
+                        """
+                        insert into accounts (id, name, email, password_hash, role, time_zone, email_confirmed,
+                                              created_at, updated_at, version)
+                        values (?, 'Anna Kowalska', 'anna@example.com', 'hash', 'CLIENT', 'Europe/Warsaw', true,
+                                now(), now(), 0)
+                        """,
+                        UUID.randomUUID()))
+                .isInstanceOf(DataIntegrityViolationException.class)
+                .hasStackTraceContaining("ck_accounts_client_trainer");
     }
 
     @Test
@@ -54,16 +125,20 @@ class AccountRepositoryImplIT {
 
     @Test
     void shouldStartWithKilogramsEnglishAndDeviceTheme_whenRowHasNoSettings() {
+        Account trainer = trainer("marek@example.com");
+        repository.save(trainer);
+        jpa.flush();
         UUID id = UUID.randomUUID();
         entityManager
                 .createNativeQuery(
                         """
-                        insert into accounts (id, name, email, password_hash, role, time_zone, email_confirmed,
-                                              created_at, updated_at, version)
-                        values (?1, 'Anna Kowalska', 'anna@example.com', 'hash', 'CLIENT', 'Europe/Warsaw', true,
-                                now(), now(), 0)
+                        insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone,
+                                              email_confirmed, created_at, updated_at, version)
+                        values (?1, 'Anna Kowalska', 'anna@example.com', 'hash', 'CLIENT', ?2, 'Europe/Warsaw',
+                                true, now(), now(), 0)
                         """)
                 .setParameter(1, id)
+                .setParameter(2, trainer.getId().value())
                 .executeUpdate();
 
         assertThat(repository.findById(new AccountId(id)).orElseThrow().getSettings())

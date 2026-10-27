@@ -97,6 +97,7 @@ class InviteManagementServiceTest {
                     new Email("ola@example.com"),
                     "hash",
                     role,
+                    role == Role.CLIENT ? AccountId.random() : null,
                     ZoneId.of("Europe/Warsaw"),
                     AccountSettings.startingWith(Language.EN),
                     role == Role.CLIENT,

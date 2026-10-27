@@ -82,6 +82,7 @@ class CurrentAccountControllerTest {
                 new Email("anna@example.com"),
                 "hash",
                 Role.CLIENT,
+                AccountId.random(),
                 ZoneId.of("Europe/Warsaw"),
                 settings,
                 true,

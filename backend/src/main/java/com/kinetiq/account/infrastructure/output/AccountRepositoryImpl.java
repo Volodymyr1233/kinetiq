@@ -4,6 +4,7 @@ import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -46,5 +47,12 @@ class AccountRepositoryImpl implements AccountRepository {
     @Override
     public Optional<Account> findByPasswordResetTokenHash(String tokenHash) {
         return jpa.findByResetTokenHash(tokenHash).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<Account> findClientsOf(AccountId trainerId) {
+        return jpa.findByTrainerIdOrderByNameAsc(trainerId.value()).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 }

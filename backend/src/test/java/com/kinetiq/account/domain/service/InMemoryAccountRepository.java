@@ -6,7 +6,9 @@ import com.kinetiq.account.domain.model.EmailConfirmation;
 import com.kinetiq.account.domain.model.PasswordReset;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
+import java.util.Comparator;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -61,5 +63,13 @@ class InMemoryAccountRepository implements AccountRepository {
                         .filter(tokenHash::equals)
                         .isPresent())
                 .findFirst();
+    }
+
+    @Override
+    public List<Account> findClientsOf(AccountId trainerId) {
+        return byEmail.values().stream()
+                .filter(account -> account.getTrainerId().filter(trainerId::equals).isPresent())
+                .sorted(Comparator.comparing(Account::getName))
+                .toList();
     }
 }

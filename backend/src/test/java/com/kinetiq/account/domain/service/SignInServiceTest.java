@@ -36,6 +36,7 @@ class SignInServiceTest {
                 new Email(email),
                 "hashed:" + PASSWORD,
                 role,
+                role == Role.CLIENT ? AccountId.random() : null,
                 ZoneId.of("Europe/Warsaw"),
                 AccountSettings.startingWith(Language.EN),
                 confirmed,

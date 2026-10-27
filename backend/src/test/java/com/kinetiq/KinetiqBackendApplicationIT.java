@@ -137,6 +137,7 @@ class KinetiqBackendApplicationIT {
                 new Email("it.trainer@example.com"),
                 hasher.hash(new RawPassword("Kinetiq-2026")),
                 Role.TRAINER,
+                null,
                 ZoneId.of("Europe/Warsaw"),
                 AccountSettings.startingWith(Language.EN),
                 true,
@@ -197,7 +198,9 @@ class KinetiqBackendApplicationIT {
         assertThat(mvc.get().uri("/api/v1/exercises").cookie(session)).hasStatus(HttpStatus.FORBIDDEN);
     }
 
+    // a client gets a trainer of their own, as the database requires
     private AccountId saveAccount(String email, Role role) {
+        AccountId trainerId = role == Role.CLIENT ? saveAccount("coach." + email, Role.TRAINER) : null;
         AccountId id = AccountId.random();
         accounts.save(Account.restore(
                 id,
@@ -205,6 +208,7 @@ class KinetiqBackendApplicationIT {
                 new Email(email),
                 hasher.hash(new RawPassword("Kinetiq-2026")),
                 role,
+                trainerId,
                 ZoneId.of("Europe/Warsaw"),
                 AccountSettings.startingWith(Language.EN),
                 true,

@@ -60,6 +60,7 @@ class SignInControllerTest {
                 new Email("marek@example.com"),
                 "hash",
                 Role.TRAINER,
+                null,
                 ZoneId.of("Europe/Warsaw"),
                 AccountSettings.startingWith(Language.EN),
                 true,
