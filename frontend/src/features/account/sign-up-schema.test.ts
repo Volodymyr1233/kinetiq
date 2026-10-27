@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isValidPassword, signUpSchema } from './sign-up-schema'
+import { isValidPassword, joinSchema, signUpSchema } from './sign-up-schema'
 
 const valid = {
   name: 'Marek Nowak',
@@ -82,5 +82,34 @@ describe('signUpSchema', () => {
         email: 'a'.repeat(242) + '@example.com',
       }),
     ).toBeUndefined()
+  })
+})
+
+describe('joinSchema', () => {
+  const join = {
+    name: 'Anna Kowalska',
+    password: 'Kinetiq-2026',
+    atLeastSixteen: true,
+    healthDataConsent: true,
+  }
+
+  function messages(values: Partial<typeof join>) {
+    const result = joinSchema.safeParse({ ...join, ...values })
+    return result.success
+      ? []
+      : result.error.issues.map((issue) => issue.message)
+  }
+
+  it('accepts a trimmed name, a valid password and both boxes ticked', () => {
+    expect(messages({ name: '  Anna Kowalska ' })).toEqual([])
+  })
+
+  it('asks for each box with its own message', () => {
+    expect(
+      messages({ atLeastSixteen: false, healthDataConsent: false }),
+    ).toEqual([
+      'account.errors.atLeastSixteen',
+      'account.errors.healthDataConsent',
+    ])
   })
 })

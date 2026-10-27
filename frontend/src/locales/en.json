@@ -85,7 +85,9 @@
       "name": "Enter your name.",
       "nameLength": "Use 100 characters or fewer.",
       "email": "Enter an email like name@example.com.",
-      "adult": "Confirm that you are 18 or older."
+      "adult": "Confirm that you are 18 or older.",
+      "atLeastSixteen": "Confirm that you are 16 or older.",
+      "healthDataConsent": "Agree to this to join. Your plan depends on this data."
     },
     "signIn": "Sign in",
     "signOut": "Sign out",
@@ -174,6 +176,28 @@
         "description": "Password reset links work once and expire after 1 hour. Enter your email to get a new one."
       },
       "remembered": "Remembered it?"
+    },
+    "join": {
+      "checking": "Checking your invite",
+      "retry": "Try again",
+      "invitedBy": "{{trainerName}} invited you",
+      "title": "Join {{trainerFirst}} on Kinetiq",
+      "description": "Create your account. Then 7 questions, and {{trainerFirst}} builds your plan.",
+      "emailHelp": "From your invite. You sign in with it.",
+      "namePlaceholder": "e.g. Anna Kowalska",
+      "atLeastSixteen": "I am 16 or older",
+      "consent": "I agree that Kinetiq processes my health data (sleep, soreness, stress, body weight and training logs) so {{trainerFirst}} can plan my training.",
+      "privacyNotice": "Privacy notice",
+      "opensInNewTab": "(opens in a new tab)",
+      "submit": "Create account",
+      "haveAccount": "Have an account?",
+      "joinedTitle": "You're in, {{clientFirst}}",
+      "joinedDescription": "Answer 7 questions. {{trainerFirst}} uses them to build your plan.",
+      "startQuiz": "Start the quiz",
+      "invalidTitle": "This link no longer works",
+      "invalidDescription": "The invite expired, was already used or was cancelled. Ask your trainer for a new one.",
+      "signInInstead": "Sign in instead",
+      "invalidNote": "Use this if you already joined."
     }
   },
   "settings": {

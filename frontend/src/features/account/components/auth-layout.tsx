@@ -21,7 +21,8 @@ export function AuthLayout({ children }: { children: ReactNode }) {
         </span>
         Kinetiq
       </p>
-      <main className="flex w-full max-w-[400px] flex-col gap-4">
+      {/* a long name or email without spaces wraps instead of widening the page */}
+      <main className="flex w-full max-w-[400px] flex-col gap-4 wrap-anywhere">
         {children}
       </main>
     </div>

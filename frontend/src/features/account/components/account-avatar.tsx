@@ -8,13 +8,13 @@ function initials(name: string) {
   return letters.map((word) => word[0]!.toLocaleUpperCase()).join('')
 }
 
-/** The signed-in person's initials; the name is shown beside it, so the avatar itself is hidden from screen readers. */
+/** A person's initials; the name is shown beside it, so the avatar itself is hidden from screen readers. */
 export function AccountAvatar({
   name,
   size,
 }: {
   name: string
-  size?: 'default' | 'lg'
+  size?: 'default' | 'lg' | 'xl'
 }) {
   return (
     <Avatar size={size} aria-hidden="true">

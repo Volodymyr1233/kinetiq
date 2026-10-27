@@ -21,33 +21,11 @@ import { useSignUp } from '../api/account'
 import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
 import { CheckEmailCard } from '../components/check-email-card'
 import { PasswordInput } from '../components/password-input'
+import { serverFieldErrors, serverMessage } from '../field-errors'
 import { signUpSchema, type SignUpValues } from '../sign-up-schema'
 import { browserTimeZone } from '../time-zone'
 
-type FieldName = FieldPath<SignUpValues>
-
-const FIELDS: FieldName[] = ['name', 'email', 'password', 'adult']
-
-// one message per field and rule, the same whether the form or the server found it (FR-025)
-function serverMessage(field: FieldName, code: string) {
-  if (field === 'name') {
-    return code === 'size' ? 'account.errors.nameLength' : 'account.errors.name'
-  }
-  if (field === 'password') return 'account.passwordRules'
-  return `account.errors.${field}`
-}
-
-function serverFieldErrors(error: unknown) {
-  const errors =
-    typeof error === 'object' && error !== null && 'errors' in error
-      ? error.errors
-      : undefined
-  if (!Array.isArray(errors)) return []
-  return errors.filter(
-    (fieldError): fieldError is { field: FieldName; code: string } =>
-      FIELDS.includes(fieldError?.field),
-  )
-}
+const FIELDS: FieldPath<SignUpValues>[] = ['name', 'email', 'password', 'adult']
 
 const touchInput = 'h-(--control-h-touch) text-base md:text-base'
 
@@ -79,7 +57,7 @@ export function SignUpPage() {
           setSentTo(values.email)
         },
         onError: (error) => {
-          const fieldErrors = serverFieldErrors(error)
+          const fieldErrors = serverFieldErrors(error, FIELDS)
           fieldErrors.forEach(({ field, code }, index) =>
             form.setError(
               field,

@@ -85,7 +85,9 @@
       "name": "Podaj imię i nazwisko.",
       "nameLength": "Użyj najwyżej 100 znaków.",
       "email": "Podaj e-mail w formacie nazwa@example.com.",
-      "adult": "Potwierdź, że masz co najmniej 18 lat."
+      "adult": "Potwierdź, że masz co najmniej 18 lat.",
+      "atLeastSixteen": "Potwierdź, że masz co najmniej 16 lat.",
+      "healthDataConsent": "Zaznacz zgodę, aby dołączyć. Twój plan zależy od tych danych."
     },
     "signIn": "Zaloguj się",
     "signOut": "Wyloguj się",
@@ -176,6 +178,28 @@
         "description": "Link do resetu hasła działa raz i wygasa po 1 godzinie. Podaj e-mail, aby dostać nowy."
       },
       "remembered": "Pamiętasz hasło?"
+    },
+    "join": {
+      "checking": "Sprawdzamy Twoje zaproszenie",
+      "retry": "Spróbuj ponownie",
+      "invitedBy": "{{trainerName}} zaprasza Cię",
+      "title": "{{trainerFirst}} czeka na Ciebie w Kinetiq",
+      "description": "Załóż konto. Potem 7 pytań i {{trainerFirst}} ułoży Twój plan.",
+      "emailHelp": "Z Twojego zaproszenia. Tym adresem będziesz się logować.",
+      "namePlaceholder": "np. Anna Kowalska",
+      "atLeastSixteen": "Mam co najmniej 16 lat",
+      "consent": "Zgadzam się, aby Kinetiq przetwarzał moje dane o zdrowiu (sen, bolesność mięśni, stres, masa ciała i zapisy treningów), dzięki czemu {{trainerFirst}} zaplanuje mój trening.",
+      "privacyNotice": "Informacja o prywatności",
+      "opensInNewTab": "(otwiera się w nowej karcie)",
+      "submit": "Załóż konto",
+      "haveAccount": "Masz już konto?",
+      "joinedTitle": "Witaj, {{clientFirst}}",
+      "joinedDescription": "Odpowiedz na 7 pytań. Na ich podstawie {{trainerFirst}} ułoży Twój plan.",
+      "startQuiz": "Rozpocznij quiz",
+      "invalidTitle": "Ten link już nie działa",
+      "invalidDescription": "Zaproszenie wygasło, zostało już użyte lub anulowane. Poproś trenera o nowe.",
+      "signInInstead": "Zaloguj się",
+      "invalidNote": "Wybierz to, jeśli masz już konto."
     }
   },
   "settings": {

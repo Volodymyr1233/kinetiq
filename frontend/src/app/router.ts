@@ -54,6 +54,14 @@ export const createRoutes = (): RouteObject[] => [
     },
   },
   {
+    path: '/join',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/account/pages/join-page')).JoinPage,
+    },
+  },
+  {
     path: '/reset-password',
     HydrateFallback: BlankWhileLoading,
     lazy: {
