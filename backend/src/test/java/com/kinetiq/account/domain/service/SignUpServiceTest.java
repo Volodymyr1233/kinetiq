@@ -4,14 +4,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.exception.ConfirmationLinkInvalidException;
+import com.kinetiq.account.domain.exception.InviteLinkInvalidException;
+import com.kinetiq.account.domain.input.InviteDetails;
+import com.kinetiq.account.domain.input.JoinCommand;
 import com.kinetiq.account.domain.input.SignUpTrainerCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.AccountSettings;
+import com.kinetiq.account.domain.model.Invite;
+import com.kinetiq.account.domain.model.InviteStatus;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.SecretToken;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
+import com.kinetiq.account.domain.model.SentInvite;
+import com.kinetiq.account.domain.model.Theme;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.domain.output.Mail;
 import java.net.URI;
@@ -31,11 +39,12 @@ class SignUpServiceTest {
     private static final String TOKEN_PREFIX = APP_URL + "/confirm-email#token=";
 
     private final InMemoryAccountRepository accounts = new InMemoryAccountRepository();
+    private final InMemoryInviteRepository invites = new InMemoryInviteRepository();
     private final RecordingPasswordHasher hasher = new RecordingPasswordHasher();
     private final RecordingMailSender mails = new RecordingMailSender();
     private final MutableClock clock = new MutableClock(Instant.parse("2026-10-19T10:00:00Z"));
     private final SignUpService service =
-            new SignUpService(accounts, hasher, mails, clock, URI.create(APP_URL));
+            new SignUpService(accounts, invites, hasher, mails, clock, URI.create(APP_URL));
 
     private static SignUpTrainerCommand signUp(String email, String password) {
         return new SignUpTrainerCommand("Marek Nowak", new Email(email), new RawPassword(password), WARSAW, POLISH);
@@ -202,6 +211,161 @@ class SignUpServiceTest {
     }
 
     @Nested
+    class JoinThroughInvite {
+
+        private static final Email INVITED = new Email("anna@example.com");
+
+        private final Account trainer = accounts.add(confirmedAccount());
+        private final SentInvite sent = send(trainer);
+        private final Invite invite = sent.invite();
+
+        private SentInvite send(Account from) {
+            SentInvite created = Invite.send(from.getId(), INVITED, clock.instant());
+            invites.save(created.invite());
+            return created;
+        }
+
+        private JoinCommand join(SecretToken token) {
+            return new JoinCommand(token.value(), "  Anna Kowalska ", new RawPassword("Kinetiq-2026"), WARSAW, POLISH);
+        }
+
+        private void assertRefusedChangingNothing(SecretToken token) {
+            int saves = accounts.saves;
+            int hashes = hasher.calls;
+            InviteStatus status = invite.getStatus();
+
+            assertThatThrownBy(() -> service.checkInvite(token.value())).isInstanceOf(InviteLinkInvalidException.class);
+            assertThatThrownBy(() -> service.joinAsClient(join(token))).isInstanceOf(InviteLinkInvalidException.class);
+            assertThat(accounts.saves).isEqualTo(saves);
+            assertThat(accounts.byEmail).doesNotContainKey(INVITED);
+            assertThat(hasher.calls).isEqualTo(hashes);
+            assertThat(invite.getStatus()).isEqualTo(status);
+        }
+
+        @Test
+        void shouldTellEmailAndTrainerAndChangeNothing_whenEitherSecretIsChecked() {
+            for (SecretToken token : new SecretToken[] {sent.emailToken(), sent.linkToken()}) {
+                assertThat(service.checkInvite(token.value())).isEqualTo(new InviteDetails(INVITED, "Marek Nowak"));
+            }
+            assertThat(invite.getStatus()).isEqualTo(InviteStatus.OPEN);
+            assertThat(accounts.saves).isZero();
+            assertThat(hasher.calls).isZero();
+        }
+
+        @Test
+        void shouldCreateConfirmedClientOfTrainerAndUseInvite_whenEmailedSecretIsUsed() {
+            Account client = service.joinAsClient(join(sent.emailToken()));
+
+            assertThat(accounts.byEmail.get(INVITED)).isSameAs(client);
+            assertThat(client.getRole()).isEqualTo(Role.CLIENT);
+            assertThat(client.getName()).isEqualTo("Anna Kowalska");
+            assertThat(client.getPasswordHash()).isEqualTo("hashed:Kinetiq-2026");
+            assertThat(client.getTimeZone()).isEqualTo(WARSAW);
+            assertThat(client.isEmailConfirmed()).isTrue();
+            assertThat(client.getTrainerId()).contains(trainer.getId());
+            assertThat(client.getHealthDataConsentAt()).contains(clock.instant());
+            assertThat(client.getSettings()).isEqualTo(new AccountSettings(WeightUnit.KG, Language.PL, Theme.SYSTEM));
+            assertThat(invite.getStatus()).isEqualTo(InviteStatus.USED);
+            assertThat(accounts.findClientsOf(trainer.getId())).containsExactly(client);
+        }
+
+        @Test
+        void shouldStartWithTrainersUnitsAndUiLanguage_whenTrainerUsesPounds() {
+            trainer.changeSettings(new AccountSettings(WeightUnit.LB, Language.PL, Theme.DARK));
+
+            Account client = service.joinAsClient(new JoinCommand(
+                    sent.emailToken().value(),
+                    "Anna Kowalska",
+                    new RawPassword("Kinetiq-2026"),
+                    WARSAW,
+                    Locale.ENGLISH));
+
+            assertThat(client.getSettings()).isEqualTo(new AccountSettings(WeightUnit.LB, Language.EN, Theme.SYSTEM));
+        }
+
+        @Test
+        void shouldCreateUnconfirmedClient_whenCopiedSecretIsUsed() {
+            Account client = service.joinAsClient(join(sent.linkToken()));
+
+            assertThat(client.isEmailConfirmed()).isFalse();
+            assertThat(client.getTrainerId()).contains(trainer.getId());
+            assertThat(invite.getStatus()).isEqualTo(InviteStatus.USED);
+        }
+
+        @Test
+        void shouldRefuseSecondJoin_whenInviteWasUsed() {
+            service.joinAsClient(join(sent.emailToken()));
+            // without the account, only the used invite stands in the way
+            accounts.byEmail.remove(INVITED);
+
+            assertRefusedChangingNothing(sent.emailToken());
+            assertRefusedChangingNothing(sent.linkToken());
+        }
+
+        @Test
+        void shouldRefuse_whenInviteExpiredExactlySevenDaysAfterSending() {
+            clock.advance(Invite.VALIDITY);
+
+            assertRefusedChangingNothing(sent.emailToken());
+        }
+
+        @Test
+        void shouldRefuse_whenInviteWasRevoked() {
+            invite.revoke(clock.instant());
+
+            assertRefusedChangingNothing(sent.emailToken());
+        }
+
+        @Test
+        void shouldRefuse_whenInviteWasSuperseded() {
+            invite.supersede();
+
+            assertRefusedChangingNothing(sent.linkToken());
+        }
+
+        @Test
+        void shouldRefuseOldCopiedLinkOnly_whenCopiedLinkWasReplaced() {
+            SecretToken newLink = invite.replaceLink(clock.instant());
+
+            assertRefusedChangingNothing(sent.linkToken());
+            assertThat(service.checkInvite(newLink.value()).email()).isEqualTo(INVITED);
+        }
+
+        @Test
+        void shouldRefuse_whenTokenIsUnknown() {
+            assertRefusedChangingNothing(SecretToken.generate());
+        }
+
+        @Test
+        void shouldRefuse_whenInvitedEmailGotAnAccount() {
+            accounts.add(confirmedAccount(INVITED.value()));
+            int saves = accounts.saves;
+
+            assertThatThrownBy(() -> service.checkInvite(sent.emailToken().value()))
+                    .isInstanceOf(InviteLinkInvalidException.class);
+            assertThatThrownBy(() -> service.joinAsClient(join(sent.emailToken())))
+                    .isInstanceOf(InviteLinkInvalidException.class);
+            assertThat(accounts.saves).isEqualTo(saves);
+            assertThat(hasher.calls).isZero();
+            assertThat(invite.getStatus()).isEqualTo(InviteStatus.OPEN);
+        }
+
+        @Test
+        void shouldMakeClientOfJoinedTrainerOnly_whenTwoTrainersInvitedTheEmail() {
+            Account ola = accounts.add(confirmedAccount("ola@example.com"));
+            SentInvite fromOla = send(ola);
+
+            Account client = service.joinAsClient(join(fromOla.linkToken()));
+
+            assertThat(client.getTrainerId()).contains(ola.getId());
+            assertThat(accounts.findClientsOf(ola.getId())).containsExactly(client);
+            assertThat(accounts.findClientsOf(trainer.getId())).isEmpty();
+            assertThatThrownBy(() -> service.checkInvite(sent.emailToken().value()))
+                    .isInstanceOf(InviteLinkInvalidException.class);
+        }
+    }
+
+    @Nested
     class SendConfirmationLink {
 
         @Test
@@ -259,6 +423,7 @@ class SignUpServiceTest {
                 WARSAW,
                 AccountSettings.startingWith(Language.EN),
                 true,
+                null,
                 null,
                 null,
                 null);

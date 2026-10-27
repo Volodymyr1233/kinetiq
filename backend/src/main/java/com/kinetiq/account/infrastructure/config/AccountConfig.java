@@ -28,10 +28,11 @@ class AccountConfig {
     @Bean
     SignUpUseCase signUpUseCase(
             AccountRepository accounts,
+            InviteRepository invites,
             PasswordHasher hasher,
             MailSender mailSender,
             @Value("${kinetiq.app-url}") URI appUrl) {
-        return new SignUpService(accounts, hasher, mailSender, Clock.systemUTC(), appUrl);
+        return new SignUpService(accounts, invites, hasher, mailSender, Clock.systemUTC(), appUrl);
     }
 
     @Bean

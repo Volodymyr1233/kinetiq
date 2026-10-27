@@ -67,6 +67,7 @@
     },
     "invite": {
       "account-exists": "Ten e-mail ma już konto.",
+      "link-invalid": "Ten link już nie działa. Poproś trenera o nowy.",
       "limit-reached": "Wysłano dużo zaproszeń. Spróbuj później.",
       "not-found": "To zaproszenie nie jest już otwarte."
     },

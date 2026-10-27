@@ -48,6 +48,9 @@ public class Account {
     @Getter(AccessLevel.NONE)
     private PasswordReset passwordReset;
 
+    @Getter(AccessLevel.NONE)
+    private final Instant healthDataConsentAt;
+
     public static Account signUpTrainer(
             String name, Email email, String passwordHash, ZoneId timeZone, Language language) {
         return new Account(
@@ -62,7 +65,37 @@ public class Account {
                 false,
                 null,
                 null,
+                null,
                 null);
+    }
+
+    /**
+     * Creates a client who joined through their trainer's invite. The email is confirmed only when the person proved
+     * they control it, by using the emailed secret. Every argument is required.
+     */
+    public static Account joinAsClient(
+            String name,
+            Email email,
+            String passwordHash,
+            ZoneId timeZone,
+            AccountSettings settings,
+            AccountId trainerId,
+            Instant consentAt,
+            boolean emailConfirmed) {
+        return new Account(
+                AccountId.random(),
+                validName(name),
+                Objects.requireNonNull(email),
+                Objects.requireNonNull(passwordHash),
+                Role.CLIENT,
+                Objects.requireNonNull(trainerId),
+                Objects.requireNonNull(timeZone),
+                Objects.requireNonNull(settings),
+                emailConfirmed,
+                null,
+                null,
+                null,
+                Objects.requireNonNull(consentAt));
     }
 
     public static Account restore(
@@ -77,7 +110,8 @@ public class Account {
             boolean emailConfirmed,
             EmailConfirmation confirmation,
             Instant mailSentAt,
-            PasswordReset passwordReset) {
+            PasswordReset passwordReset,
+            Instant healthDataConsentAt) {
         return new Account(
                 id,
                 name,
@@ -90,12 +124,18 @@ public class Account {
                 emailConfirmed,
                 confirmation,
                 mailSentAt,
-                passwordReset);
+                passwordReset,
+                healthDataConsentAt);
     }
 
     /** The client's trainer; empty for a trainer. */
     public Optional<AccountId> getTrainerId() {
         return Optional.ofNullable(trainerId);
+    }
+
+    /** When a client agreed to the processing of their health data; empty for a trainer. */
+    public Optional<Instant> getHealthDataConsentAt() {
+        return Optional.ofNullable(healthDataConsentAt);
     }
 
     public Optional<EmailConfirmation> getConfirmation() {

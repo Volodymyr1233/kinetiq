@@ -6,18 +6,10 @@ import com.kinetiq.account.domain.model.Account;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
-import java.util.List;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.context.SecurityContextHolderStrategy;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.security.web.context.SecurityContextRepository;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -30,12 +22,9 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 class SignInController {
 
-    private final SecurityContextHolderStrategy contexts = SecurityContextHolder.getContextHolderStrategy();
-
     private final SignInUseCase signIn;
     private final AccountWebMapper mapper;
-    private final SessionAuthenticationStrategy sessionStrategy;
-    private final SecurityContextRepository contextRepository;
+    private final SignIns signIns;
     private final LogoutHandler logoutHandler;
 
     /**
@@ -46,16 +35,7 @@ class SignInController {
     CurrentAccountResponse signIn(
             @Valid @RequestBody SignInRequest body, HttpServletRequest request, HttpServletResponse response) {
         Account account = signIn.signIn(new SignInCommand(body.email(), body.password()));
-        // the account id, never the email, so the session table holds no personal data
-        Authentication authentication = UsernamePasswordAuthenticationToken.authenticated(
-                account.getId().value().toString(),
-                null,
-                List.of(new SimpleGrantedAuthority("ROLE_" + account.getRole().name())));
-        sessionStrategy.onAuthentication(authentication, request, response);
-        SecurityContext context = contexts.createEmptyContext();
-        context.setAuthentication(authentication);
-        contexts.setContext(context);
-        contextRepository.saveContext(context, request, response);
+        signIns.start(account, request, response);
         return mapper.toResponse(account);
     }
 

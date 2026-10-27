@@ -143,6 +143,7 @@ class KinetiqBackendApplicationIT {
                 true,
                 null,
                 null,
+                null,
                 null));
         Cookie token = csrfToken();
 
@@ -214,7 +215,8 @@ class KinetiqBackendApplicationIT {
                 true,
                 null,
                 null,
-                null));
+                null,
+                trainerId == null ? null : Instant.now()));
         return id;
     }
 
@@ -285,6 +287,69 @@ class KinetiqBackendApplicationIT {
                 .extractingPath("$.invites")
                 .asArray()
                 .isEmpty();
+    }
+
+    @Test
+    void shouldJoinAsClientOfInvitingTrainerOnly_whenTwoTrainersInvitedTheEmail() throws Exception {
+        AccountId inviter = saveAccount("it.join.first@example.com", Role.TRAINER);
+        saveAccount("it.join.second@example.com", Role.TRAINER);
+        Cookie first = signIn("it.join.first@example.com").getResponse().getCookie("SESSION");
+        Cookie second = signIn("it.join.second@example.com").getResponse().getCookie("SESSION");
+        String firstToken = inviteToken(first, "it.joiner@example.com");
+        String secondToken = inviteToken(second, "it.joiner@example.com");
+
+        assertThat(anonymous("/api/v1/invite-checks", "{\"token\":\"%s\"}".formatted(firstToken)))
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.email")
+                .isEqualTo("it.joiner@example.com");
+        String join =
+                """
+                {"token":"%s","name":"Anna Kowalska","password":"Kinetiq-2026","atLeastSixteen":true,
+                 "healthDataConsent":true,"timeZone":"Europe/Warsaw"}
+                """;
+        var joined = anonymous("/api/v1/invite-acceptances", join.formatted(firstToken));
+
+        assertThat(joined).hasStatus(HttpStatus.CREATED);
+        Cookie client = joined.getResponse().getCookie("SESSION");
+        assertThat(client).isNotNull();
+        assertThat(mvc.get().uri("/api/v1/accounts/me").cookie(client))
+                .bodyJson()
+                .extractingPath("$.role")
+                .isEqualTo("CLIENT");
+        var row = jdbc.sql("select trainer_id, health_data_consent_at from accounts where email = ?")
+                .param("it.joiner@example.com")
+                .query()
+                .singleRow();
+        assertThat(row.get("trainer_id")).isEqualTo(inviter.value());
+        assertThat(row.get("health_data_consent_at")).isNotNull();
+        assertThat(anonymous("/api/v1/invite-acceptances", join.formatted(firstToken)))
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("invite.link-invalid");
+        assertThat(anonymous("/api/v1/invite-checks", "{\"token\":\"%s\"}".formatted(secondToken)))
+                .hasStatus(HttpStatus.BAD_REQUEST)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("invite.link-invalid");
+    }
+
+    private String inviteToken(Cookie trainer, String email) throws Exception {
+        var created = send(trainer, mvc.post().uri("/api/v1/invites"), "{\"email\":\"%s\"}".formatted(email));
+        String link = JsonPath.read(created.getResponse().getContentAsString(), "$.link");
+        return link.substring(link.indexOf("#token=") + "#token=".length());
+    }
+
+    private MvcTestResult anonymous(String uri, String json) {
+        Cookie token = csrfToken();
+        return mvc.post()
+                .uri(uri)
+                .cookie(token)
+                .header("X-XSRF-TOKEN", token.getValue())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json)
+                .exchange();
     }
 
     @Test

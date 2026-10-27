@@ -41,7 +41,8 @@ class SignInServiceTest {
                 AccountSettings.startingWith(Language.EN),
                 confirmed,
                 null,
-                null, null);
+                null, null,
+                role == Role.CLIENT ? Instant.EPOCH : null);
     }
 
     private Account signIn(String email, String password) {

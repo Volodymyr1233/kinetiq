@@ -116,6 +116,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/invite-checks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["checkInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/invite-acceptances": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["acceptInvite"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/exercises": {
         parameters: {
             query?: never;
@@ -328,6 +360,21 @@ export interface components {
         };
         InviteLinkResponse: {
             link: string;
+        };
+        InviteCheckRequest: {
+            token: string;
+        };
+        InviteCheckResponse: {
+            email: string;
+            trainerName: string;
+        };
+        AcceptInviteRequest: {
+            token: string;
+            name: string;
+            password: string;
+            atLeastSixteen?: boolean;
+            healthDataConsent?: boolean;
+            timeZone: string;
         };
         CreateExerciseRequest: {
             name: string;
@@ -558,6 +605,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["InviteLinkResponse"];
+                };
+            };
+        };
+    };
+    checkInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["InviteCheckRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["InviteCheckResponse"];
+                };
+            };
+        };
+    };
+    acceptInvite: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AcceptInviteRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["CurrentAccountResponse"];
                 };
             };
         };

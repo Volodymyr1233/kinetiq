@@ -41,7 +41,7 @@ import org.springframework.test.web.servlet.assertj.MvcTestResult;
 import tools.jackson.databind.json.JsonMapper;
 
 @WebMvcTest(SignInController.class)
-@Import({SecurityConfig.class, WebConfig.class, AccountWebMapperImpl.class})
+@Import({SecurityConfig.class, WebConfig.class, AccountWebMapperImpl.class, SignIns.class})
 class SignInControllerTest {
 
     private static final JsonMapper JSON = JsonMapper.builder().build();
@@ -65,7 +65,8 @@ class SignInControllerTest {
                 AccountSettings.startingWith(Language.EN),
                 true,
                 null,
-                null, null);
+                null, null,
+                null);
     }
 
     private MvcTestResult signIn(Object body, MockHttpSession session) {
