@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { CircleCheckIcon, Link2OffIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
@@ -11,9 +12,14 @@ import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
-import { useConfirmEmail, useRequestConfirmationLink } from '../api/account'
+import {
+  currentAccountQuery,
+  useConfirmEmail,
+  useRequestConfirmationLink,
+} from '../api/account'
 import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
 import { CheckEmailCard } from '../components/check-email-card'
+import { landingFor } from '../landing'
 import { emailSchema } from '../sign-up-schema'
 
 const newLinkSchema = z.object({ email: emailSchema })
@@ -27,6 +33,7 @@ export function ConfirmEmailPage() {
   const { t } = useTranslation()
   const [token] = useState(tokenFromAddress)
   const confirm = useConfirmEmail()
+  const queryClient = useQueryClient()
   const started = useRef(false)
 
   useEffect(() => {
@@ -34,31 +41,22 @@ export function ConfirmEmailPage() {
     if (started.current) return
     started.current = true
     window.history.replaceState(null, '', window.location.pathname)
-    if (token) confirm.mutate(token)
-  }, [token, confirm])
+    if (token) {
+      confirm.mutate(token, {
+        // an open client app in this browser drops its banner
+        onSuccess: () =>
+          void queryClient.invalidateQueries({
+            queryKey: currentAccountQuery.queryKey,
+          }),
+      })
+    }
+  }, [token, confirm, queryClient])
 
   if (!token || confirm.isError) {
     return <NewLinkState failure={confirm.error} />
   }
 
-  if (confirm.isSuccess) {
-    return (
-      <AuthLayout>
-        <AuthCard
-          focusHeading
-          icon={<CircleCheckIcon aria-hidden="true" />}
-          iconClassName="bg-success-muted text-success"
-          title={t('account.confirmed.title')}
-          description={t('account.confirmed.description')}
-        >
-          {/* confirming does not sign the person in */}
-          <Button asChild size="touch" className="w-full">
-            <Link to="/sign-in">{t('account.signIn')}</Link>
-          </Button>
-        </AuthCard>
-      </AuthLayout>
-    )
-  }
+  if (confirm.isSuccess) return <ConfirmedState />
 
   return (
     <AuthLayout>
@@ -69,6 +67,34 @@ export function ConfirmEmailPage() {
       <p role="status" className="sr-only">
         {t('account.confirming.title')}
       </p>
+    </AuthLayout>
+  )
+}
+
+function ConfirmedState() {
+  const { t } = useTranslation()
+  // confirming does not sign anyone in; a person already signed in here continues to their area
+  const { data: account } = useQuery(currentAccountQuery)
+
+  return (
+    <AuthLayout>
+      <AuthCard
+        focusHeading
+        icon={<CircleCheckIcon aria-hidden="true" />}
+        iconClassName="bg-success-muted text-success"
+        title={t('account.confirmed.title')}
+        description={t('account.confirmed.description')}
+      >
+        <Button asChild size="touch" className="w-full">
+          {account ? (
+            <Link to={landingFor(account.role)}>
+              {t('account.confirmed.continue')}
+            </Link>
+          ) : (
+            <Link to="/sign-in">{t('account.signIn')}</Link>
+          )}
+        </Button>
+      </AuthCard>
     </AuthLayout>
   )
 }

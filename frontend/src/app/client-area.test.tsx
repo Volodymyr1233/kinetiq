@@ -180,4 +180,21 @@ describe('ClientArea', () => {
       'Something went wrong on our side. Try again in a moment.',
     )
   })
+
+  it('asks an unconfirmed client to confirm the email on a tab page', async () => {
+    renderAppAt('/app/plan', { ...SIGNED_IN.CLIENT, emailConfirmed: false })
+
+    expect(
+      await screen.findByText(
+        'Confirm your email: we sent a link to anna@example.com.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Resend' })).toBeInTheDocument()
+  })
+
+  it('shows no banner to a confirmed client', async () => {
+    await renderClientAt('/app/today')
+
+    expect(screen.queryByText(/Confirm your email/)).not.toBeInTheDocument()
+  })
 })

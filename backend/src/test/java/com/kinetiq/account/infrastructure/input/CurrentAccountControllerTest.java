@@ -77,6 +77,10 @@ class CurrentAccountControllerTest {
     }
 
     private static Account client(AccountSettings settings) {
+        return client(settings, true);
+    }
+
+    private static Account client(AccountSettings settings, boolean emailConfirmed) {
         return Account.restore(
                 ID,
                 "Anna Kowalska",
@@ -86,7 +90,7 @@ class CurrentAccountControllerTest {
                 AccountId.random(),
                 ZoneId.of("Europe/Warsaw"),
                 settings,
-                true,
+                emailConfirmed,
                 null,
                 null,
                 null,
@@ -111,6 +115,17 @@ class CurrentAccountControllerTest {
             assertThat(result).bodyJson().extractingPath("$.units").isEqualTo("KG");
             assertThat(result).bodyJson().extractingPath("$.language").isEqualTo("EN");
             assertThat(result).bodyJson().extractingPath("$.theme").isEqualTo("SYSTEM");
+            assertThat(result).bodyJson().extractingPath("$.emailConfirmed").isEqualTo(true);
+        }
+
+        @Test
+        void shouldTellEmailIsNotConfirmed_whenClientJoinedWithCopiedLink() {
+            when(currentAccount.find(ID)).thenReturn(client(AccountSettings.startingWith(Language.EN), false));
+
+            var result = mvc.get().uri("/api/v1/accounts/me").with(CLIENT).exchange();
+
+            assertThat(result).hasStatusOk();
+            assertThat(result).bodyJson().extractingPath("$.emailConfirmed").isEqualTo(false);
         }
 
         @Test

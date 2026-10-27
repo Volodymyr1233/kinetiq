@@ -17,4 +17,5 @@ record CurrentAccountResponse(
         @NotNull String timeZone,
         @NotNull WeightUnit units,
         @NotNull Language language,
-        @NotNull Theme theme) {}
+        @NotNull Theme theme,
+        @NotNull boolean emailConfirmed) {}

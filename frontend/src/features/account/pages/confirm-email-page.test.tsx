@@ -2,7 +2,14 @@ import { screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { ConfirmEmailPage } from './confirm-email-page'
-import { pathsOf, problem, renderPage, stubApi } from '@/test/page'
+import {
+  json,
+  pathsOf,
+  problem,
+  renderPage,
+  SIGNED_IN,
+  stubApi,
+} from '@/test/page'
 
 describe('ConfirmEmailPage', () => {
   beforeEach(() => {
@@ -19,19 +26,40 @@ describe('ConfirmEmailPage', () => {
     expect(window.location.hash).toBe('')
   })
 
-  it('confirms once, even though StrictMode runs effects twice, and offers sign-in', async () => {
-    const requests = stubApi(() => new Response(null, { status: 204 }))
+  it('confirms once, even though StrictMode runs effects twice, and offers sign-in to someone not signed in', async () => {
+    const requests = stubApi((request) =>
+      request.method === 'GET'
+        ? problem(401, { code: 'request.unauthenticated' })
+        : new Response(null, { status: 204 }),
+    )
     renderPage(<ConfirmEmailPage />)
 
     expect(
       await screen.findByRole('heading', { name: 'Email confirmed' }),
     ).toHaveFocus()
-    expect(screen.getByRole('link', { name: 'Sign in' })).toHaveAttribute(
-      'href',
-      '/sign-in',
-    )
-    expect(pathsOf(requests)).toEqual(['/api/v1/email-confirmations'])
+    expect(screen.getByText('Your email is confirmed.')).toBeInTheDocument()
+    expect(
+      await screen.findByRole('link', { name: 'Sign in' }),
+    ).toHaveAttribute('href', '/sign-in')
+    expect(
+      pathsOf(requests).filter(
+        (path) => path === '/api/v1/email-confirmations',
+      ),
+    ).toHaveLength(1)
     expect(await requests[0].json()).toEqual({ token: 'abc' })
+  })
+
+  it('offers Continue to the client app when a client is signed in here', async () => {
+    stubApi((request) =>
+      request.method === 'GET'
+        ? json(SIGNED_IN.CLIENT)
+        : new Response(null, { status: 204 }),
+    )
+    renderPage(<ConfirmEmailPage />)
+
+    expect(
+      await screen.findByRole('link', { name: 'Continue' }),
+    ).toHaveAttribute('href', '/app')
   })
 
   it('offers a new link when the link no longer works, then shows "Check your email"', async () => {

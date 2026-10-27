@@ -18,6 +18,7 @@ import {
 } from '@/components/ui/sheet'
 import { currentAccountQuery } from '@/features/account/api/account'
 import { AccountAvatar } from '@/features/account/components/account-avatar'
+import { ConfirmEmailBanner } from '@/features/account/components/confirm-email-banner'
 import { DisplaySettings } from '@/features/account/components/display-settings'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
 import { cn } from '@/lib/utils'
@@ -44,6 +45,7 @@ export function ClientArea() {
         </h1>
         <SettingsSheet />
       </header>
+      <ConfirmEmailBanner />
       {/* bottom padding keeps the last content above the fixed tab bar */}
       <main className="flex-1 pb-20">
         <Outlet />
