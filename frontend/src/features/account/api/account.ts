@@ -127,6 +127,27 @@ export function useSignIn() {
   })
 }
 
+/** Who sent the invite and to which email; changes nothing, so opening the link twice is harmless. */
+export const inviteCheckQuery = (token: string) =>
+  queryOptions({
+    queryKey: ['invite-check', token],
+    queryFn: () =>
+      receive(api.POST('/api/v1/invite-checks', { body: { token } })),
+  })
+
+/** Creates the client account and signs it in here, replacing any earlier sign-in in this browser. */
+export function useJoin() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: (body: Schemas['AcceptInviteRequest']) =>
+      receive(api.POST('/api/v1/invite-acceptances', { body })),
+    onSuccess: (account) => {
+      clearTabStorage()
+      queryClient.setQueryData(currentAccountQuery.queryKey, account)
+    },
+  })
+}
+
 export function useSignOut() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
