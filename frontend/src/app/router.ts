@@ -153,8 +153,7 @@ export const createRoutes = (): RouteObject[] => [
     ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
-      Component: async () =>
-        (await import('@/features/quiz/pages/review-page')).ReviewPage,
+      Component: async () => (await import('@/app/quiz-area')).QuizReviewRoute,
     },
   },
   {
@@ -163,8 +162,7 @@ export const createRoutes = (): RouteObject[] => [
     ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
-      Component: async () =>
-        (await import('@/features/quiz/pages/waiting-page')).WaitingPage,
+      Component: async () => (await import('@/app/quiz-area')).QuizWaitingRoute,
     },
   },
   {
@@ -173,8 +171,7 @@ export const createRoutes = (): RouteObject[] => [
     ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
-      Component: async () =>
-        (await import('@/features/quiz/pages/quiz-page')).QuizPage,
+      Component: async () => (await import('@/app/quiz-area')).QuizStepsRoute,
     },
   },
   {

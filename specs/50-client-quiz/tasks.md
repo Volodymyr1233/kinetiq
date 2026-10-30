@@ -82,9 +82,22 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ---
 
+## Phase 6: task #216, settings in the quiz and the waiting state (FR-031)
+
+**Blocked by**: task #57 (the waiting state; linked on GitHub). Added after the story was planned (spec, Clarifications 2026-10-30); it comes before task #53, which is blocked by it.
+
+**Goal**: Every quiz step, the review and the waiting state open the client's settings sheet, so a client there can change units, language and theme and sign out.
+
+- [X] T031 Move `SettingsSheet` from `F/app/client-area.tsx` to `F/app/settings-sheet.tsx` (exported, unchanged) and use it in the client area's header; create `F/app/quiz-area.tsx` with `QuizStepsRoute`, `QuizReviewRoute` and `QuizWaitingRoute`, which render `QuizPage`, `ReviewPage` and `WaitingPage` with `settings={<SettingsSheet />}`, the first two keyed by `useWeightUnit()` so a unit changed in the sheet reloads the draft converted (plan, Project Structure); point the three quiz routes in `F/app/router.ts` at them
+- [X] T032 Give `Q/pages/quiz-page.tsx`, `Q/pages/review-page.tsx` and `Q/pages/waiting-page.tsx` an optional `settings` node: at the header's right after Back on the steps and the review, in a header row above the heading on the waiting page
+- [X] T033 Write `F/app/quiz-area.test.tsx` through the app's routes (`renderAppAt`): on a quiz step and on the waiting state, Settings opens the sheet and "Sign out" ends the sign-in, clears the draft and opens sign-in; on step 4 with a typed weight, choosing lb in the sheet shows that weight in lb. For that, `renderAppAt` in `F/test/page.tsx` wraps the routes in `WeightUnitProvider`, as `F/app/app.tsx` does, and its stubbed server keeps the settings sent with `PATCH /api/v1/accounts/me`
+- [X] T034 Verify in the browser per `quickstart.md`, "Browser check, task #216", at 375 px, light and dark, English and Polish, keyboard only, console; run `npm run check` in `frontend/`; open the pull request for #216 after the user agrees (title `feat(frontend): add settings to the quiz and the waiting state`, `Closes #216`), naming that the boards show no settings there and the place follows the design system
+
+---
+
 ## Dependencies
 
-- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #53 (T025–T029), which also waits for tasks #25, #57, #22 and #24, the quiz status read of story #54 and the agreed way to remove the draft on sign-out. T030 last.
+- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #216 (T031–T034), which waits for #57 → #53 (T025–T029), which also waits for tasks #25, #57, #216, #22 and #24, the quiz status read of story #54 and the agreed way to remove the draft on sign-out. T030 last.
 - Inside #52: T002 before T004; T003–T013 are independent of each other except that each test follows its component; T014 needs T002–T013.
 - Inside #51: T016–T019 are independent; T017 follows T016; T020 needs T016, T018 and T019 and the components of #52; T021 needs T020; T022 needs T020 and T021; T023 needs everything before it.
 - Inside #53: T026 needs T025; T028 needs T026 and T027.

@@ -4,6 +4,7 @@ import { StrictMode, type ReactNode } from 'react'
 import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { vi } from 'vitest'
 import { createRoutes } from '@/app/router'
+import { WeightUnitProvider } from '@/app/weight-unit-provider'
 import { queryClient } from '@/lib/query-client'
 
 export type Reply = (request: Request) => Promise<Response> | Response
@@ -97,18 +98,25 @@ export function renderAppAt(
         : json({ status: 401, code: 'request.unauthenticated' }, 401)
     }
     const response = await reply(request)
-    // the server ends or starts the sign-in, so later checks answer accordingly
+    // the server ends or starts the sign-in and keeps changed settings, so later checks answer accordingly
     if (call === 'DELETE /api/v1/sign-ins/current' && response.ok)
       current = null
-    if (call === 'POST /api/v1/sign-ins' && response.ok) {
+    if (
+      (call === 'POST /api/v1/sign-ins' ||
+        call === 'PATCH /api/v1/accounts/me') &&
+      response.ok
+    ) {
       current = await response.clone().json()
     }
     return response
   })
   const router = createMemoryRouter(createRoutes(), { initialEntries: [path] })
+  // the weight unit follows the account, as in app.tsx
   render(
     <QueryClientProvider client={queryClient}>
-      <RouterProvider router={router} />
+      <WeightUnitProvider>
+        <RouterProvider router={router} />
+      </WeightUnitProvider>
     </QueryClientProvider>,
   )
   return { requests, router }
