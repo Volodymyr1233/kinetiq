@@ -371,7 +371,7 @@ export interface components {
         };
         QuizStatusResponse: {
             /** @enum {string} */
-            status?: "NOT_SUBMITTED" | "WAITING_FOR_PLAN" | "PLAN_PUBLISHED";
+            status: "NOT_SUBMITTED" | "WAITING_FOR_PLAN" | "PLAN_PUBLISHED";
         };
         SetPasswordRequest: {
             token: string;
