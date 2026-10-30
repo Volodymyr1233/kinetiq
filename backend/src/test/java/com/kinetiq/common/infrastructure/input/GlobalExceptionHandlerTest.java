@@ -36,7 +36,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldHideInternals_whenExceptionIsUnexpected() {
-        var result = mvc.get().uri("/test/unexpected").exchange();
+        var result = mvc.get().uri("/api/test/unexpected").exchange();
 
         assertThat(result).hasStatus(HttpStatus.INTERNAL_SERVER_ERROR).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(result).bodyText().doesNotContain("secret", "IllegalStateException");
@@ -46,7 +46,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldUseItsCode_whenDomainRuleIsBroken() {
-        var result = mvc.get().uri("/test/domain").exchange();
+        var result = mvc.get().uri("/api/test/domain").exchange();
 
         assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
         assertThat(result).bodyText().doesNotContain("secret");
@@ -56,7 +56,7 @@ class GlobalExceptionHandlerTest {
     @ParameterizedTest
     @CsvSource({"UNAUTHENTICATED, 401", "NOT_ALLOWED, 403", "TOO_MANY_ATTEMPTS, 429", "NOT_FOUND, 404", "CONFLICT, 409"})
     void shouldAnswerStatusOfItsKind_whenDomainRuleRefuses(DomainException.Kind kind, int status) {
-        var result = mvc.get().uri("/test/kind/{kind}", kind).exchange();
+        var result = mvc.get().uri("/api/test/kind/{kind}", kind).exchange();
 
         assertThat(result).hasStatus(status);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("test.refused");
@@ -64,7 +64,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldCopyItsProperties_whenDomainRuleHasThem() {
-        var result = mvc.get().uri("/test/kind/{kind}", "TOO_MANY_ATTEMPTS").exchange();
+        var result = mvc.get().uri("/api/test/kind/{kind}", "TOO_MANY_ATTEMPTS").exchange();
 
         assertThat(result).bodyJson().extractingPath("$.waitSeconds").isEqualTo(90);
     }
@@ -72,7 +72,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldAnswerInvalidWithoutDetail_whenJsonIsMalformed() {
         var result = mvc.post()
-                .uri("/test/body")
+                .uri("/api/test/body")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{")
@@ -86,7 +86,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldAnswerUnsupportedMediaType_whenBodyIsNotJson() {
         var result = mvc.post()
-                .uri("/test/body")
+                .uri("/api/test/body")
                 .with(csrf())
                 .contentType(MediaType.TEXT_PLAIN)
                 .content("name")
@@ -98,7 +98,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldAnswerMethodNotAllowed_whenMethodIsWrong() {
-        var result = mvc.delete().uri("/test/body").with(csrf()).exchange();
+        var result = mvc.delete().uri("/api/test/body").with(csrf()).exchange();
 
         assertThat(result).hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.method-not-allowed");
@@ -106,7 +106,7 @@ class GlobalExceptionHandlerTest {
 
     @Test
     void shouldAnswerNotFound_whenEndpointDoesNotExist() {
-        var result = mvc.get().uri("/test/missing").exchange();
+        var result = mvc.get().uri("/api/test/missing").exchange();
 
         assertThat(result).hasStatus(HttpStatus.NOT_FOUND);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.not-found");
@@ -115,7 +115,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldListFieldCodes_whenBodyBreaksRules() {
         var result = mvc.post()
-                .uri("/test/body")
+                .uri("/api/test/body")
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"\",\"nickname\":\"far too long\"}")
@@ -134,7 +134,7 @@ class GlobalExceptionHandlerTest {
     @Test
     void shouldAnswerForbiddenWithCode_whenCsrfTokenIsMissing() {
         var result = mvc.post()
-                .uri("/test/body")
+                .uri("/api/test/body")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{\"name\":\"a\"}")
                 .exchange();
@@ -146,7 +146,7 @@ class GlobalExceptionHandlerTest {
     @Test
     @WithAnonymousUser
     void shouldAnswerUnauthenticatedWithCode_whenCallerIsAnonymous() {
-        var result = mvc.get().uri("/test/domain").exchange();
+        var result = mvc.get().uri("/api/test/domain").exchange();
 
         assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED).hasContentType(MediaType.APPLICATION_PROBLEM_JSON);
         assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.unauthenticated");
@@ -155,12 +155,12 @@ class GlobalExceptionHandlerTest {
     @RestController
     static class ThrowingController {
 
-        @GetMapping("/test/unexpected")
+        @GetMapping("/api/test/unexpected")
         void unexpected() {
             throw new IllegalStateException("secret table users");
         }
 
-        @GetMapping("/test/domain")
+        @GetMapping("/api/test/domain")
         void domain() {
             throw new DomainException("secret rule") {
                 @Override
@@ -170,7 +170,7 @@ class GlobalExceptionHandlerTest {
             };
         }
 
-        @GetMapping("/test/kind/{kind}")
+        @GetMapping("/api/test/kind/{kind}")
         void kind(@PathVariable DomainException.Kind kind) {
             throw new DomainException("secret rule") {
                 @Override
@@ -190,7 +190,7 @@ class GlobalExceptionHandlerTest {
             };
         }
 
-        @PostMapping("/test/body")
+        @PostMapping("/api/test/body")
         void body(@Valid @RequestBody TestRequest request) {}
 
         record TestRequest(@NotBlank String name, @Size(max = 5) String nickname) {}

@@ -1,0 +1,13 @@
+.git
+.claude
+.specify
+.idea
+.vscode
+specs
+docs
+.env
+.env.*
+frontend/node_modules
+frontend/dist
+backend/build
+backend/.gradle
