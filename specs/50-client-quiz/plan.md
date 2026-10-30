@@ -83,7 +83,9 @@ frontend/src/
 └── locales/en.json, pl.json                       quiz.* (#52 for the character count, #51 for the steps)
 ```
 
-Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` around the client routes. Its exact files depend on task #25 and the quiz status read of story #54, and are planned when they are merged.
+Task #53 wraps the client area (`app/client-area.tsx`) in the quiz status check that task #57 built for the quiz pages (`features/quiz/components/quiz-status-check.tsx`, spec 54 research R12), so the area shows only once a plan is published; the landing after sign-in is `/app`, so the area's check covers it.
+
+Task #226 (FR-020) ties the tab's storage to the signed-in account in the area guard (`app/guards.ts`, with `claimTabStorage` beside `clearTabStorage` in `features/account/api/account.ts`), so the quiz feature needs no account id.
 
 Task #226 (FR-020) ties the tab's storage to the signed-in account in the area guard (`app/guards.ts`, with `claimTabStorage` beside `clearTabStorage` in `features/account/api/account.ts`), so the quiz feature needs no account id.
 
@@ -97,7 +99,7 @@ Task #216 (FR-031) moves the client's settings sheet from `app/client-area.tsx` 
 |---|---|---|
 | #52 | `feat(frontend): add quiz question components` | Spec Kit files of story #50; `radio-group` from the CLI; five components with tests; their own string (the character count) in EN and PL; browser check through a throwaway page (R11). The components only show what they are given; the rules come with #51 |
 | #51 | `feat(frontend): add quiz step flow` | `quiz-schema.ts` with tests, `quiz-draft.ts`, `quiz-page.tsx` with tests, the route, every step's strings in EN and PL, browser check per quickstart.md |
-| #53 | `feat(frontend): send clients to the quiz until submitted` | Status hook, entry check with loading and error states, tests per case of US3 |
+| #53 | `feat(frontend): send clients to the quiz until submitted` | The client area inside the quiz status check of task #57, with its loading and error states; tests per case of US3; browser check per quickstart.md |
 | #216 | `feat(frontend): add settings to the quiz and the waiting state` | The settings sheet in its own `app/` file, `quiz-area.tsx` and its routes, the `settings` place in the quiz pages' headers, tests through the app's routes, browser check per quickstart.md |
 | #226 | `feat(frontend): tie quiz answers to the signed-in account` | The tab's storage tied to the account in the area guard (Open items), a guard test for FR-020, browser check per quickstart.md |
 | #228 | `docs(docs): bring the quiz's quickstart and data model up to date` | The findings of the story's convergence check (`tasks.md` Phase 8): the quickstart's check of the step flow and the data model's lifecycle follow the merged quiz |
@@ -114,6 +116,7 @@ Task order: #52, #51, then #216 once #57 is merged, then #53 once #25, #57, #216
 | `number-field.test.tsx` | Label and unit announced; a given message is shown, linked by `aria-describedby` with `aria-invalid`; the note shows when there is no message; leaving the field reports it (`onBlur`) |
 | `stepper.test.tsx` | − and + change by one; marked disabled at both bounds and no change past them, focus kept; new value announced; accessible names |
 | `notes-field.test.tsx` | Counter follows the text; typing stops at the limit; pasting longer text keeps the first 500 |
+| `client-area.test.tsx` (#53) | A client who has not submitted is sent from `/app` and every tab to the quiz, one who submitted to the waiting state; only a loading status while the status is read; a failure's message and "Try again"; a published plan shows the area |
 | `router.test.tsx` (#226) | Quiz answers left in the tab by another account are not shown; the own account's answers are |
 | `quiz-area.test.tsx` (#216) | On a quiz step and on the waiting state, Settings opens the sheet and "Sign out" ends the sign-in, clears the draft and opens sign-in; a unit changed in the sheet on step 4 shows the typed weight in the new unit |
 | `quiz-page.test.tsx` | Step 1 with no Back and Continue disabled; Continue enabled only when valid; a number field's message appears after leaving it, disappears once valid and is still there after going back and returning; answers kept through Continue, Back and remount (reload); addresses beyond the furthest step or past an invalid step go back to the allowed step; step 6 cannot be skipped by address; focus on the new heading; step 7 button text; stored invalid answer dropped; broken stored data gives a fresh start; Polish strings and number example |
@@ -124,7 +127,7 @@ Task order: #52, #51, then #216 once #57 is merged, then #53 once #25, #57, #216
 |---|---|---|
 | Tie the draft to the signed-in account (FR-020) | #226 | Settled when #53 started, as task #226: the area guard keeps the account id in the tab and empties a tab that another account used (`claimTabStorage`), before any page reads the quiz draft; the quiz feature imports nothing from `features/account` |
 | Remove the draft on sign-out (FR-019) | #24 | Settled by task #24: signing out empties the tab's storage, as signing in and joining (task #33) do |
-| Endpoint and fields of the quiz status, and whether #55 or #57 builds it | Story #54 | Defined in the spec of story #54 |
+| Endpoint and fields of the quiz status, and whether #55 or #57 builds it | Story #54 | Settled by story #54: `GET /api/v1/quiz`, built by task #55 |
 
 ## Complexity Tracking
 

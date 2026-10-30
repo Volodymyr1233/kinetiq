@@ -1,7 +1,7 @@
 import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { json, problem, renderAppAt, SIGNED_IN } from '@/test/page'
+import { json, problem, quizStatus, renderAppAt, SIGNED_IN } from '@/test/page'
 
 function zoneOfBrowser(zone: string) {
   const options = new Intl.DateTimeFormat().resolvedOptions()
@@ -10,12 +10,6 @@ function zoneOfBrowser(zone: string) {
     timeZone: zone,
   })
 }
-
-// the quiz pages read the quiz status; every other call gets an empty answer
-const quizStatus = (status: string) => (request: Request) =>
-  new URL(request.url).pathname === '/api/v1/quiz'
-    ? json({ status })
-    : new Response(null, { status: 204 })
 
 async function signIn(email: string) {
   const user = userEvent.setup()
@@ -28,11 +22,11 @@ describe('routes', () => {
   afterEach(() => sessionStorage.clear())
 
   it.each([
-    ['/trainer', SIGNED_IN.TRAINER, 'Clients'],
-    ['/app', SIGNED_IN.CLIENT, 'Today'],
-    ['/app/quiz', SIGNED_IN.CLIENT, 'What do you train for?'],
-  ])('loads the area at %s', async (path, account, heading) => {
-    renderAppAt(path, account, quizStatus('NOT_SUBMITTED'))
+    ['/trainer', SIGNED_IN.TRAINER, 'PLAN_PUBLISHED', 'Clients'],
+    ['/app', SIGNED_IN.CLIENT, 'PLAN_PUBLISHED', 'Today'],
+    ['/app/quiz', SIGNED_IN.CLIENT, 'NOT_SUBMITTED', 'What do you train for?'],
+  ])('loads the area at %s', async (path, account, status, heading) => {
+    renderAppAt(path, account, quizStatus(status))
 
     expect(
       await screen.findByRole('heading', { name: heading }),
@@ -165,10 +159,14 @@ describe('guards', () => {
   })
 
   it('lands in the own area when the page asked for belongs to the other role', async () => {
-    const { router } = renderAppAt('/trainer/exercises', null, (request) =>
-      new URL(request.url).pathname === '/api/v1/sign-ins'
-        ? json(SIGNED_IN.CLIENT)
-        : new Response(null, { status: 204 }),
+    const { router } = renderAppAt(
+      '/trainer/exercises',
+      null,
+      quizStatus('PLAN_PUBLISHED', (request) =>
+        new URL(request.url).pathname === '/api/v1/sign-ins'
+          ? json(SIGNED_IN.CLIENT)
+          : new Response(null, { status: 204 }),
+      ),
     )
 
     await signIn('anna@example.com')
@@ -179,7 +177,11 @@ describe('guards', () => {
   })
 
   it('sends a client who opens the trainer area to the client app', async () => {
-    const { router } = renderAppAt('/trainer/clients', SIGNED_IN.CLIENT)
+    const { router } = renderAppAt(
+      '/trainer/clients',
+      SIGNED_IN.CLIENT,
+      quizStatus('PLAN_PUBLISHED'),
+    )
 
     expect(
       await screen.findByRole('heading', { name: 'Today' }),
@@ -203,7 +205,11 @@ describe('guards', () => {
   )
 
   it('sends a signed-in person away from the sign-in page', async () => {
-    const { router } = renderAppAt('/sign-in', SIGNED_IN.CLIENT)
+    const { router } = renderAppAt(
+      '/sign-in',
+      SIGNED_IN.CLIENT,
+      quizStatus('PLAN_PUBLISHED'),
+    )
 
     await waitFor(() =>
       expect(router.state.location.pathname).toBe('/app/today'),

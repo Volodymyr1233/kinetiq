@@ -7,6 +7,7 @@ import {
 import { useTranslation } from 'react-i18next'
 import { matchPath, NavLink, Outlet, useLocation } from 'react-router'
 import { ConfirmEmailBanner } from '@/features/account/components/confirm-email-banner'
+import { QuizStatusCheck } from '@/features/quiz/components/quiz-status-check'
 import { cn } from '@/lib/utils'
 import { SettingsSheet } from './settings-sheet'
 
@@ -24,50 +25,53 @@ export function ClientArea() {
     matchPath({ path: `/app/${tab.path}`, end: false }, pathname),
   )
 
+  // until a plan is published, the quiz or the waiting state stands in for every tab (spec 50, User Story 3)
   return (
-    <div className="mx-auto flex min-h-svh max-w-[640px] flex-col">
-      <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-3">
-        <h1 className="text-xl font-semibold">
-          {active ? t(active.labelKey) : ''}
-        </h1>
-        <SettingsSheet />
-      </header>
-      <ConfirmEmailBanner />
-      {/* bottom padding keeps the last content above the fixed tab bar */}
-      <main className="flex-1 pb-20">
-        <Outlet />
-      </main>
-      <nav
-        aria-label={t('areas.client')}
-        className="bg-background fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)]"
-      >
-        <ul className="mx-auto grid max-w-[640px] grid-cols-4">
-          {TABS.map(({ path, labelKey, Icon }) => (
-            <li key={path}>
-              <NavLink
-                to={path}
-                className={cn(
-                  'focus-visible:ring-ring/50 flex min-h-14 flex-col items-center justify-center gap-1 rounded-md text-xs outline-none focus-visible:ring-3',
-                  active?.path === path
-                    ? 'text-foreground font-medium'
-                    : 'text-muted-foreground',
-                )}
-              >
-                <span
+    <QuizStatusCheck status="PLAN_PUBLISHED">
+      <div className="mx-auto flex min-h-svh max-w-[640px] flex-col">
+        <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-3">
+          <h1 className="text-xl font-semibold">
+            {active ? t(active.labelKey) : ''}
+          </h1>
+          <SettingsSheet />
+        </header>
+        <ConfirmEmailBanner />
+        {/* bottom padding keeps the last content above the fixed tab bar */}
+        <main className="flex-1 pb-20">
+          <Outlet />
+        </main>
+        <nav
+          aria-label={t('areas.client')}
+          className="bg-background fixed inset-x-0 bottom-0 border-t pb-[env(safe-area-inset-bottom)]"
+        >
+          <ul className="mx-auto grid max-w-[640px] grid-cols-4">
+            {TABS.map(({ path, labelKey, Icon }) => (
+              <li key={path}>
+                <NavLink
+                  to={path}
                   className={cn(
-                    'rounded-full px-3 py-0.5',
-                    active?.path === path && 'bg-brand-muted',
+                    'focus-visible:ring-ring/50 flex min-h-14 flex-col items-center justify-center gap-1 rounded-md text-xs outline-none focus-visible:ring-3',
+                    active?.path === path
+                      ? 'text-foreground font-medium'
+                      : 'text-muted-foreground',
                   )}
                 >
-                  <Icon aria-hidden className="size-5" />
-                </span>
-                {t(labelKey)}
-              </NavLink>
-            </li>
-          ))}
-        </ul>
-      </nav>
-    </div>
+                  <span
+                    className={cn(
+                      'rounded-full px-3 py-0.5',
+                      active?.path === path && 'bg-brand-muted',
+                    )}
+                  >
+                    <Icon aria-hidden className="size-5" />
+                  </span>
+                  {t(labelKey)}
+                </NavLink>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </div>
+    </QuizStatusCheck>
   )
 }
 

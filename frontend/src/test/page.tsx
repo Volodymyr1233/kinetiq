@@ -79,6 +79,17 @@ export function json(body: object, status = 200) {
   })
 }
 
+/** Answers the quiz status read with the given status and every other call with `reply`. */
+export function quizStatus(
+  status: string,
+  reply: Reply = () => new Response(null, { status: 204 }),
+): Reply {
+  return (request) =>
+    request.method === 'GET' && new URL(request.url).pathname === '/api/v1/quiz'
+      ? json({ status })
+      : reply(request)
+}
+
 /**
  * Renders the whole app at a path with the app's own query client, as the guards use it. The current account is
  * the given one, or nobody when `null`, until a sign-in or sign-out through `reply` changes it.
