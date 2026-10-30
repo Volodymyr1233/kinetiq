@@ -102,7 +102,7 @@ description: "Tasks for story #50, Client answers the quiz"
 
 - [X] T027 [US2] Tie the tab's storage to the signed-in account (spec FR-020): add `claimTabStorage(account)` beside `clearTabStorage` in `F/features/account/api/account.ts`, which keeps the account id under `kinetiq.account` in `sessionStorage` and empties the tab first when another account's id is there; call it in `requireRole` of `F/app/guards.ts` once the role is right, so it runs before any area or quiz page reads the quiz draft. The quiz feature stays unchanged
 - [X] T035 [US2] Write a guard test in `F/app/router.test.tsx` through the app's routes (`renderAppAt`): quiz answers left in the tab by another account are not shown, and the own account's answers are
-- [ ] T036 Run `npm run check` in `frontend/`; verify in the browser per `quickstart.md`, "Browser check, task #226", console included; open the pull request for #226 after the user agrees (title `feat(frontend): tie quiz answers to the signed-in account`, `Closes #226`)
+- [X] T036 Run `npm run check` in `frontend/`; verify in the browser per `quickstart.md`, "Browser check, task #226", console included; open the pull request for #226 after the user agrees (title `feat(frontend): tie quiz answers to the signed-in account`, `Closes #226`)
 
 ---
 
