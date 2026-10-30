@@ -100,8 +100,9 @@ Task #216 (FR-031) moves the client's settings sheet from `app/client-area.tsx` 
 | #53 | `feat(frontend): send clients to the quiz until submitted` | Status hook, entry check with loading and error states, tests per case of US3 |
 | #216 | `feat(frontend): add settings to the quiz and the waiting state` | The settings sheet in its own `app/` file, `quiz-area.tsx` and its routes, the `settings` place in the quiz pages' headers, tests through the app's routes, browser check per quickstart.md |
 | #226 | `feat(frontend): tie quiz answers to the signed-in account` | The tab's storage tied to the account in the area guard (Open items), a guard test for FR-020, browser check per quickstart.md |
+| #228 | `docs(docs): bring the quiz's quickstart and data model up to date` | The findings of the story's convergence check (`tasks.md` Phase 8): the quickstart's check of the step flow and the data model's lifecycle follow the merged quiz |
 
-Task order: #52, #51, then #216 once #57 is merged, then #53 once #25, #57, #216 and the quiz status read of story #54 are merged; #226 at any time after #22, #24 and #25.
+Task order: #52, #51, then #216 once #57 is merged, then #53 once #25, #57, #216 and the quiz status read of story #54 are merged; #226 at any time after #22, #24 and #25; #228 after the convergence check that found it.
 
 ## Tests
 

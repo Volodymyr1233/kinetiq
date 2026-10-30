@@ -77,7 +77,7 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ## Phase 5: Convergence
 
-- [ ] T030 Before the pull request of the story's last task to merge (#53 or #226), run `/speckit-converge` on its branch and walk through `quickstart.md` once more; that pull request also closes the story (`Closes #50`)
+- [ ] T030 Before the story's last task to merge (#53 or #228) is merged, run `/speckit-converge` on its branch and walk through `quickstart.md` once more; that task's pull request also closes the story (`Closes #50`)
 
 ---
 
@@ -108,7 +108,7 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ## Dependencies
 
-- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #216 (T031–T034), which waits for #57 → #53 (T025, T026, T028, T029), which also waits for tasks #25 and #57 and the quiz status read of story #54. #226 (T027, T035, T036) is independent of #53. T030 last, on the branch of whichever of #53 and #226 merges last, before its pull request.
+- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #216 (T031–T034), which waits for #57 → #53 (T025, T026, T028, T029), which also waits for tasks #25 and #57 and the quiz status read of story #54. #226 (T027, T035, T036) and #228 (T037, T038) are independent of #53. T030 last, on the branch of whichever of #53 and #228 merges last, before it is merged.
 - Inside #52: T002 before T004; T003–T013 are independent of each other except that each test follows its component; T014 needs T002–T013.
 - Inside #51: T016–T019 are independent; T017 follows T016; T020 needs T016, T018 and T019 and the components of #52; T021 needs T020; T022 needs T020 and T021; T023 needs everything before it.
 - Inside #53: T026 needs T025; T028 needs T026; T029 needs T028.
@@ -122,3 +122,10 @@ description: "Tasks for story #50, Client answers the quiz"
 ## Implementation strategy
 
 Build in order and open one pull request per task after its gate (`npm run check`) and the user's approval. #52 gives tested building blocks; #51 is the MVP of the story, a client can answer the whole quiz; #53 completes the story once sign-in and the quiz API exist.
+
+## Phase 8: Convergence, task #228
+
+**Blocked by**: nothing open. Added by the story's convergence check (T030), run on the branch of task #53.
+
+- [X] T037 Update `quickstart.md`, "Browser check (task #51)": the quiz needs the backend and a signed-in demo client since tasks #25 and #57 (the Prerequisites line and the opening line), and step 9 opens the settings sheet from the quiz's own header (task #216), since `/app/today` sends a client without a submitted quiz to the quiz (task #53); step 7 starts in a new tab, since the steps before it already reach step 7 per plan: Work per task, #51 browser check per quickstart.md (partial)
+- [X] T038 Correct `data-model.md`, "Lifecycle": the draft is removed on sign-out by task #24, which empties the tab's storage on signing in, joining and signing out, and a tab that another account used starts empty (task #226) per FR-019, FR-020 (partial)
