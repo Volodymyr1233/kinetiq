@@ -36,8 +36,8 @@ description: "Tasks for story #109, Client checks in and sees readiness"
 - [X] T004 [US1] Test in `BT/domain/model/ReadinessTest.java`: the issue's examples and both extremes; all 125 combinations in range 0 to 100 and strictly monotonic per answer (SC-001); band edges on scores 44, 45, 69, 70 and on real answers 42, 50, 58, 67, 75; refusal of answers outside 1 to 5 and of scores outside 0 to 100
 - [X] T005 [US1] Mutation check: change the soreness term to `soreness − 1`, and `>=` to `>` at 70; `ReadinessTest` MUST fail for each change; restore the code afterwards (quickstart step 4)
 - [X] T006 [US1] Run `./gradlew test --tests '*ReadinessTest' --tests '*HexagonalArchitectureTest'` (quickstart steps 1 and 2); both pass and the `readiness` domain depends only on the JDK and `common`
-- [X] T007 [US1] Run `./gradlew check` in `backend/` (quickstart step 3); `BUILD SUCCESSFUL`, and report its real result
-- [X] T008 [US1] Run `/speckit-converge` for this task; commit the code, tests and spec locally as one commit `feat(backend): add readiness score and band`; ask before any push
+- [X] T007 [US1] Run `./gradlew check` in `backend/` (quickstart step 3); `BUILD SUCCESSFUL`
+- [X] T008 [US1] Run `/speckit-converge` for this task; commit the code, tests and spec locally as one commit `feat(backend): add readiness score and band`
 
 **Checkpoint**: #111 is done when T001 to T008 are checked; no API, no migration and no frontend change, so no `schema.d.ts`.
 
@@ -80,4 +80,4 @@ description: "Tasks for story #109, Client checks in and sees readiness"
 
 ## Implementation strategy
 
-MVP of this branch is US1 (#111): the calculation, fully tested. Stop after T008, report the real results and wait for the go-ahead to push.
+MVP of this branch is US1 (#111): the calculation, fully tested. Stop after T008; the pull request follows.
