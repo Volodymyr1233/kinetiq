@@ -46,7 +46,7 @@ Stored as JSON under `sessionStorage["kinetiq.quiz"]`.
 
 **Which step may open** (research R4): the requested step, but no further than `reached`, and no further than the first earlier step that is not valid.
 
-**Lifecycle**: empty → filled step by step → removed when the quiz is submitted (task #57) and on sign-out (task #53). The draft is never sent anywhere before submitting.
+**Lifecycle**: empty → filled step by step → removed when the quiz is submitted (task #57). The tab's storage, the draft with it, is also emptied on signing in, joining and signing out (tasks #24 and #33), and when an account opens a tab that another account used (task #226). The draft is never sent anywhere before submitting.
 
 ## Submitted answers (task #55, for reference)
 
