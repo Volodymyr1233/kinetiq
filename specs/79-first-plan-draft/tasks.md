@@ -82,8 +82,8 @@ description: "Tasks for story #79, First plan is drafted from the quiz"
 
 - [X] T016 Run `./gradlew test --tests '*KinetiqBackendApplicationIT'` with no `OPENROUTER_API_KEY` set (quickstart step 1); it passes
 - [X] T017 Mutation checks (quickstart step 5): remove the condition on the bean, then `LlmConfigTest` MUST fail; log the key inside the bean method, then `LlmChatModelTest` MUST fail; restore the code afterwards
-- [X] T018 Run `./gradlew check` in `backend/`; `BUILD SUCCESSFUL`, including `HexagonalArchitectureTest`; report its real result, and if it fails because Spring AI 2.0.1 does not fit Spring Boot 4.1.1, stop and change the plan (plan.md, Re-check after design)
-- [X] T019 Run `/speckit-converge` for this task; commit the code, tests and spec locally as `feat(backend): add Spring AI client for OpenRouter`; ask before any push
+- [X] T018 Run `./gradlew check` in `backend/`; `BUILD SUCCESSFUL`, including `HexagonalArchitectureTest`; if it fails because Spring AI 2.0.1 does not fit Spring Boot 4.1.1, change the plan before building more (plan.md, Re-check after design)
+- [X] T019 Run `/speckit-converge` for this task; commit the code, tests and spec locally as `feat(backend): add Spring AI client for OpenRouter`
 
 ---
 
@@ -95,4 +95,4 @@ description: "Tasks for story #79, First plan is drafted from the quiz"
 
 ## Implementation strategy
 
-MVP of this branch is US1 (#80): the connection, fully tested without the provider. Stop after T019, report the real results and wait for the go-ahead to push.
+MVP of this branch is US1 (#80): the connection, fully tested without the provider. Stop after T019; the pull request follows.
