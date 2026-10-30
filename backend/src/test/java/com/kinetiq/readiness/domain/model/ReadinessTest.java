@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.common.domain.exception.InvalidValueException;
 import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -31,6 +32,73 @@ class ReadinessTest {
         void shouldReject_whenAnAnswerIsOutsideOneToFive(int sleep, int soreness, int stress) {
             assertThatThrownBy(() -> Readiness.fromCheckIn(sleep, soreness, stress))
                     .isInstanceOf(InvalidValueException.class);
+        }
+    }
+
+    // the answers are few enough to try every one: 5 x 5 x 5
+    @Nested
+    class EveryCheckIn {
+
+        private static void forEachCheckIn(CheckInAssertion assertion) {
+            for (int sleep = 1; sleep <= 5; sleep++) {
+                for (int soreness = 1; soreness <= 5; soreness++) {
+                    for (int stress = 1; stress <= 5; stress++) {
+                        assertion.check(sleep, soreness, stress);
+                    }
+                }
+            }
+        }
+
+        private interface CheckInAssertion {
+            void check(int sleep, int soreness, int stress);
+        }
+
+        @Test
+        void shouldScoreFromZeroToHundred_whateverTheAnswers() {
+            forEachCheckIn((sleep, soreness, stress) -> assertThat(
+                            Readiness.fromCheckIn(sleep, soreness, stress).score())
+                    .isBetween(0, 100));
+        }
+
+        @Test
+        void shouldNeverLowerTheScore_whenSleepImproves() {
+            forEachCheckIn((sleep, soreness, stress) -> {
+                if (sleep < 5) {
+                    assertThat(Readiness.fromCheckIn(sleep + 1, soreness, stress).score())
+                            .isGreaterThan(Readiness.fromCheckIn(sleep, soreness, stress).score());
+                }
+            });
+        }
+
+        @Test
+        void shouldNeverRaiseTheScore_whenSorenessOrStressGrows() {
+            forEachCheckIn((sleep, soreness, stress) -> {
+                if (soreness < 5) {
+                    assertThat(Readiness.fromCheckIn(sleep, soreness + 1, stress).score())
+                            .isLessThan(Readiness.fromCheckIn(sleep, soreness, stress).score());
+                }
+                if (stress < 5) {
+                    assertThat(Readiness.fromCheckIn(sleep, soreness, stress + 1).score())
+                            .isLessThan(Readiness.fromCheckIn(sleep, soreness, stress).score());
+                }
+            });
+        }
+
+        // no answers give exactly 45 or 70, so the edges are met through the nearest scores
+        @ParameterizedTest
+        @CsvSource({
+            "2, 3, 3, 42, RECOVERY_DAY",
+            "3, 3, 3, 50, TAKE_IT_EASIER",
+            "4, 3, 3, 58, TAKE_IT_EASIER",
+            "4, 2, 3, 67, TAKE_IT_EASIER",
+            "4, 2, 2, 75, READY",
+        })
+        void shouldPlaceTheBand_whenAnswersLandNearAnEdge(
+                int sleep, int soreness, int stress, int score, ReadinessBand band) {
+            Readiness readiness = Readiness.fromCheckIn(sleep, soreness, stress);
+
+            assertThat(readiness.score()).isEqualTo(score);
+            assertThat(readiness.band()).isEqualTo(band);
         }
     }
 
