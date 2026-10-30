@@ -93,6 +93,27 @@ export const createRoutes = (): RouteObject[] => [
             },
           },
           {
+            path: ':id',
+            HydrateFallback: BlankWhileLoading,
+            lazy: {
+              Component: async () =>
+                (await import('@/features/client/pages/client-page'))
+                  .ClientPage,
+            },
+            // the tabs are empty until their features land
+            children: [undefined, 'plan', 'logs', 'messages'].map(
+              (path): RouteObject => ({
+                path,
+                index: path === undefined,
+                lazy: {
+                  Component: async () =>
+                    (await import('@/features/client/pages/client-page'))
+                      .ClientTabEmpty,
+                },
+              }),
+            ),
+          },
+          {
             path: 'invites',
             HydrateFallback: BlankWhileLoading,
             lazy: {

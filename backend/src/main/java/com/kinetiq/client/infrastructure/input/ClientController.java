@@ -1,11 +1,12 @@
 package com.kinetiq.client.infrastructure.input;
 
 import com.kinetiq.account.domain.model.AccountId;
-import com.kinetiq.client.domain.input.ListClientsUseCase;
+import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -14,7 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 class ClientController {
 
-    private final ListClientsUseCase clients;
+    private final ViewClientsUseCase clients;
     private final ClientWebMapper mapper;
 
     // sign-in stores the account id as the principal's name
@@ -26,5 +27,11 @@ class ClientController {
     @GetMapping
     ClientListResponse listClients(Authentication authentication) {
         return mapper.toListResponse(clients.listClients(signedIn(authentication)));
+    }
+
+    /** One of the signed-in trainer's own clients. {@code 404} for an unknown client and another trainer's alike. */
+    @GetMapping("/{id}")
+    ClientResponse getClient(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(clients.getClient(signedIn(authentication), new AccountId(id)));
     }
 }

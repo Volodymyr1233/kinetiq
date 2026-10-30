@@ -529,6 +529,24 @@
       "NO_QUIZ": "Quiz jeszcze nie wypełniony",
       "PLAN_TO_REVIEW": "Plan do przejrzenia"
     },
+    "page": {
+      "back": "Wszyscy klienci",
+      "loading": "Wczytywanie klienta",
+      "goal": "Cel: {{goal}}",
+      "tabsLabel": "Sekcje klienta",
+      "tabs": {
+        "overview": "Przegląd",
+        "plan": "Plan",
+        "logs": "Zapisy",
+        "messages": "Wiadomości"
+      },
+      "tabEmpty": "Na razie pusto. Ta karta wypełni się wraz z kolejną funkcją.",
+      "notFound": {
+        "title": "Nie znaleziono klienta",
+        "body": "Ten klient nie istnieje albo nie jest Twoim klientem.",
+        "action": "Wróć do wszystkich klientów"
+      }
+    },
     "search": {
       "label": "Szukaj klientów po imieniu i nazwisku",
       "placeholder": "Szukaj klienta"
