@@ -57,7 +57,7 @@ After step 7 the client sees all seven answers on one screen. Each answer has a 
 
 1. **Given** the review with valid answers, **When** the client chooses "Build my plan", **Then** the answers are stored for that client with the time they were submitted, the draft kept in the browser tab is removed, and the waiting state of User Story 3 shows.
 2. **Given** a client who has already submitted, **When** another submit arrives (a second tab, a repeated request), **Then** it is refused with the stable code `quiz.already-submitted`, the stored answers do not change, and the screen shows the waiting state.
-3. **Given** a submit that breaks any rule of spec 50 (sent around the screen), **When** it arrives, **Then** it is refused with a code per field, and nothing is stored.
+3. **Given** a submit that breaks any rule of spec 50 (sent around the screen), **When** it arrives, **Then** it is refused with a code per field, or, when the request cannot be read (an unknown code, a number sent as text), as unreadable with `request.invalid`; nothing is stored.
 4. **Given** the client chooses "Build my plan", **When** the request fails (no connection, server error), **Then** the review stays with a message in the UI's language and "Try again"; the answers stay in the tab.
 5. **Given** the button was chosen, **When** the request is on its way, **Then** the button cannot be chosen again, so one press sends one submit.
 
@@ -107,7 +107,7 @@ After submitting, the client sees that their plan is being built, then that thei
 **Submitting** (tasks #55 and #57)
 
 - **FR-007**: "Build my plan" MUST send the seven answers once. While the request is on its way the button cannot be chosen again.
-- **FR-008**: The server MUST check every rule of spec 50 (FR-001 to FR-008, data model "Submitted answers") and refuse a submit that breaks one with a code per field. Nothing is stored on a refusal.
+- **FR-008**: The server MUST check every rule of spec 50 (FR-001 to FR-008, data model "Submitted answers") and refuse a submit that breaks one with a code per field. A request that cannot be read (an unknown code, an empty like, a number sent as text) is refused as a whole with `request.invalid`, as the exercise API does (contracts/api.md). Nothing is stored on a refusal.
 - **FR-009**: The server MUST store a client's answers once, with the time of submitting. A later submit for the same client is refused with the stable code `quiz.already-submitted`; stored answers never change. This holds even when two submits arrive at the same moment: storage itself allows one submission per client.
 - **FR-010**: Only a signed-in client can submit or read their own quiz. Another role is refused by role with the standard "not allowed" refusal, as in the sign-in story (#18); without a session the request gets the standard unauthenticated refusal. No operation addresses a quiz by id, so no client can reach another client's quiz.
 - **FR-011**: The server MUST tell the signed-in client whether their quiz was submitted and whether a plan is published. Until plans exist, "published" is always false. This is the status read task #53 needs (spec 50, contracts).
