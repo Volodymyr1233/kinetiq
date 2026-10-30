@@ -1,5 +1,6 @@
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 import {
+  claimTabStorage,
   currentAccountQuery,
   refreshTimeZone,
   statusOf,
@@ -10,7 +11,8 @@ import { queryClient } from '@/lib/query-client'
 
 /**
  * Lets only the given role into an area. Nobody signed in goes to sign-in and comes back to this page; the other
- * role goes to its own area. Any other failure reaches the route's error page.
+ * role goes to its own area. Any other failure reaches the route's error page. What the tab keeps then belongs to
+ * the account let in, before any page reads it.
  */
 export function requireRole(role: CurrentAccount['role']) {
   return async ({ request }: LoaderFunctionArgs) => {
@@ -23,6 +25,7 @@ export function requireRole(role: CurrentAccount['role']) {
       throw redirect(`/sign-in?next=${encodeURIComponent(pathname + search)}`)
     }
     if (account.role !== role) throw redirect(landingFor(account.role))
+    claimTabStorage(account)
     void refreshTimeZone(account)
     return null
   }

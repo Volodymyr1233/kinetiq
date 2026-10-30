@@ -58,4 +58,4 @@ A client with a published plan cannot be shown in the browser at the time of thi
 Start the backend (`./gradlew bootRun` in `backend/`) and the frontend, and work at 375 px.
 
 1. Sign in as `demo.client@example.com`, answer step 1 and continue. Reload: the answer stays.
-2. Duplicate the browser tab, sign out in the first tab and sign in there as `demo.client.waiting@example.com`. Reload the second tab: it shows the waiting state, and its session storage (the browser's developer tools) no longer holds `kinetiq.quiz`. The console shows no errors.
+2. Open the app in a second tab, sign out there and sign in as `demo.client.waiting@example.com`. Reload the first tab: it shows the waiting state, and its session storage (the browser's developer tools) no longer holds `kinetiq.quiz`. The console shows no errors.

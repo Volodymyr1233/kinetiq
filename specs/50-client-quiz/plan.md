@@ -87,6 +87,8 @@ Task #53 wraps the client area (`app/client-area.tsx`) in the quiz status check 
 
 Task #226 (FR-020) ties the tab's storage to the signed-in account in the area guard (`app/guards.ts`, with `claimTabStorage` beside `clearTabStorage` in `features/account/api/account.ts`), so the quiz feature needs no account id.
 
+Task #226 (FR-020) ties the tab's storage to the signed-in account in the area guard (`app/guards.ts`, with `claimTabStorage` beside `clearTabStorage` in `features/account/api/account.ts`), so the quiz feature needs no account id.
+
 Task #216 (FR-031) moves the client's settings sheet from `app/client-area.tsx` to `app/settings-sheet.tsx` and adds `app/quiz-area.tsx`, which renders the quiz pages with the sheet's button: a feature imports neither `app/` nor another feature (`frontend/CLAUDE.md`), so the quiz pages take an optional `settings` node for their header. The quiz steps and the review are keyed by the weight unit there, so a unit changed in the sheet reloads the draft, converted (story #42), instead of keeping a number typed in the old unit.
 
 **Structure Decision**: One feature, `quiz`, as `CONTEXT.md` names it. The question patterns are used only by the quiz, so they stay in the feature, not in `components/`.

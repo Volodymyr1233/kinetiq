@@ -123,6 +123,7 @@ describe('routes', () => {
 describe('guards', () => {
   afterEach(() => {
     vi.restoreAllMocks()
+    sessionStorage.clear()
   })
 
   it.each([
@@ -245,5 +246,39 @@ describe('guards', () => {
     await screen.findByRole('navigation', { name: 'Trainer area' })
 
     expect(requests.some((request) => request.method === 'PUT')).toBe(false)
+  })
+
+  // an answer to step 1, which lets step 2 open
+  const STARTED = JSON.stringify({
+    answers: { goal: 'BUILD_MUSCLE' },
+    reached: 2,
+  })
+
+  it('does not show quiz answers that another account left in the tab', async () => {
+    sessionStorage.setItem(
+      'kinetiq.account',
+      '00000000-0000-4000-8000-000000000005',
+    )
+    sessionStorage.setItem('kinetiq.quiz', STARTED)
+    renderAppAt('/app/quiz/2', SIGNED_IN.CLIENT, quizStatus('NOT_SUBMITTED'))
+
+    expect(
+      await screen.findByRole('heading', { name: 'What do you train for?' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('radio', { name: /Build muscle/ }),
+    ).not.toBeChecked()
+  })
+
+  it('keeps the quiz answers of the account signed in', async () => {
+    sessionStorage.setItem('kinetiq.account', SIGNED_IN.CLIENT.id)
+    sessionStorage.setItem('kinetiq.quiz', STARTED)
+    renderAppAt('/app/quiz/2', SIGNED_IN.CLIENT, quizStatus('NOT_SUBMITTED'))
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'How long have you trained regularly?',
+      }),
+    ).toBeInTheDocument()
   })
 })

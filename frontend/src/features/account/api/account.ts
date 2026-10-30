@@ -39,6 +39,19 @@ export function clearTabStorage() {
   }
 }
 
+const TAB_OWNER = 'kinetiq.account'
+
+/** The tab keeps data for one account: a tab that another account used here starts empty for this one. */
+export function claimTabStorage(account: CurrentAccount) {
+  try {
+    const owner = sessionStorage.getItem(TAB_OWNER)
+    if (owner !== null && owner !== account.id) sessionStorage.clear()
+    sessionStorage.setItem(TAB_OWNER, account.id)
+  } catch {
+    // storage can be unavailable (private mode); then the tab keeps nothing to protect
+  }
+}
+
 export const currentAccountQuery = queryOptions({
   queryKey: ['current-account'],
   queryFn: () => receive(api.GET('/api/v1/accounts/me')),
