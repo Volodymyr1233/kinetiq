@@ -30,11 +30,12 @@ Request:
 }
 ```
 
-`notes` may be absent or `null`; it is trimmed, and empty text is stored as none.
+`notes` may be absent or `null`; it is trimmed, and empty text is stored as none. `likes` is a set: a code sent twice counts once.
 
 - `201`: `{ "status": "WAITING_FOR_PLAN" }`
 - `400` `validation.failed` with `errors: [{ field, code }]`: a rule of spec 50 is broken; nothing is stored
-- `400` `quiz.already-submitted`: the client has submitted before, also when two submits race (research R9)
+- `400` `request.invalid`: a body that cannot be read, such as an unknown code or a number sent as text, as in the exercise API; nothing is stored
+- `409` `quiz.already-submitted`: the client has submitted before, also when two submits race (research R8, R9)
 - `401` `request.unauthenticated`, `403` `request.not-allowed`: as above
 
 ## Addresses (frontend)

@@ -14,7 +14,7 @@ The answer codes and rules are spec 50's (`specs/50-client-quiz/data-model.md`, 
 | `age` | `int` | 16–99 |
 | `heightCm` | `int` | 120–230 |
 | `weightKg` | `BigDecimal`, scale 1 | 30.0–250.0, at most one decimal |
-| `likes` | `Set<Like>` | 1–5 distinct codes |
+| `likes` | `Set<Like>` | 1–5 codes; a set, so each code appears once |
 | `daysPerWeek` | `int` | 2–6 |
 | `notes` | `Optional<String>` | trimmed; absent when empty after trimming; at most 500 UTF-16 units |
 | `submittedAt` | `Instant` | time of the submit |
@@ -33,15 +33,17 @@ Every rule is checked in the compact constructor or factory and throws `InvalidV
 
 ## Table `quiz_submissions` (task #55)
 
+Migration `V12__create_quiz_submissions.sql`. Whole numbers are `integer`, as in `exercises`, matching the entity's `int` fields.
+
 | Column | Type | Constraint |
 |---|---|---|
 | `id` | `uuid` | `pk_quiz_submissions` |
 | `client_id` | `uuid not null` | `fk_quiz_submissions_client` → `accounts(id)`; `uq_quiz_submissions_client` |
 | `goal`, `experience`, `level` | `varchar(32) not null` | check constraints with the codes |
-| `age` | `smallint not null` | check 16–99 |
-| `height_cm` | `smallint not null` | check 120–230 |
+| `age` | `integer not null` | check 16–99 |
+| `height_cm` | `integer not null` | check 120–230 |
 | `weight_kg` | `numeric(4,1) not null` | check 30.0–250.0 |
-| `days_per_week` | `smallint not null` | check 2–6 |
+| `days_per_week` | `integer not null` | check 2–6 |
 | `notes` | `varchar(500)` | null when empty |
 | `submitted_at` | `timestamptz not null` | |
 | `created_at`, `updated_at`, `version` | as `BaseEntity` | |
@@ -56,7 +58,7 @@ Every rule is checked in the compact constructor or factory and throws `InvalidV
 
 ## Demo data (task #55)
 
-`db/dev-data/R__demo_quiz.sql`: one submission for the demo client account of story #18, so the waiting state can be seen locally. Idempotent insert.
+`db/dev-data/R__demo_quiz.sql`: one submission for a second demo client, `demo.client.waiting@example.com`, so the waiting state can be seen locally. That client is added to `R__demo_accounts.sql` and the README as a client of `demo.trainer@example.com`. `demo.client@example.com` keeps no submission, so it can still answer and submit the quiz (quickstart.md). Idempotent inserts.
 
 ## Draft in the tab (frontend)
 

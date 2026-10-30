@@ -52,6 +52,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/quiz": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["status"];
+        put?: never;
+        post: operations["submit"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/password-resets": {
         parameters: {
             query?: never;
@@ -336,6 +352,27 @@ export interface components {
             theme: "LIGHT" | "DARK" | "SYSTEM";
             emailConfirmed: boolean;
         };
+        SubmitQuizRequest: {
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** @enum {string} */
+            experience: "LESS_THAN_3_MONTHS" | "MONTHS_3_TO_6" | "MONTHS_6_TO_12" | "YEARS_1_TO_2" | "YEARS_2_TO_5" | "YEARS_5_PLUS";
+            /** @enum {string} */
+            level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ATHLETE";
+            /** Format: int32 */
+            age?: number;
+            /** Format: int32 */
+            heightCm?: number;
+            weightKg: number;
+            likes: ("WEIGHTS" | "CARDIO" | "HIIT" | "YOGA_PILATES" | "BODYWEIGHT")[];
+            /** Format: int32 */
+            daysPerWeek?: number;
+            notes?: string;
+        };
+        QuizStatusResponse: {
+            /** @enum {string} */
+            status?: "NOT_SUBMITTED" | "WAITING_FOR_PLAN" | "PLAN_PUBLISHED";
+        };
         SetPasswordRequest: {
             token: string;
             password: string;
@@ -496,6 +533,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CurrentAccountResponse"];
+                };
+            };
+        };
+    };
+    status: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuizStatusResponse"];
+                };
+            };
+        };
+    };
+    submit: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SubmitQuizRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuizStatusResponse"];
                 };
             };
         };

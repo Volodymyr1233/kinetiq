@@ -30,4 +30,4 @@ Start the backend and the frontend (`npm run dev` in `frontend/`), sign in as th
 
 ## Browser check, tasks #55 and #57
 
-Refined when those tasks start: sign in as the demo client, submit from the review, see the building state then the reviewing state, reload, open `/app/quiz/1` and `/app/quiz/review` (both show the waiting state), and submit from a second tab (the waiting state, nothing stored twice).
+Task #55 has no screen; its tests cover it (`./gradlew check`). Refined when task #57 starts: sign in as the demo client, submit from the review, see the building state then the reviewing state, reload, open `/app/quiz/1` and `/app/quiz/review` (both show the waiting state), and submit from a second tab (the waiting state, nothing stored twice). `demo.client.waiting@example.com` has a submission in the demo data and shows the waiting state at once. A submit stays in the local database until it is recreated.

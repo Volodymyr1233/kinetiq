@@ -12,7 +12,11 @@ values ('00000000-0000-4000-8000-000000000001', 'Demo Trainer', 'demo.trainer@ex
         'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0),
        ('00000000-0000-4000-8000-000000000004', 'Demo Trainer Two', 'demo.trainer2@example.com',
         '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
-        'TRAINER', null, 'Europe/Warsaw', true, null, now(), now(), 0)
+        'TRAINER', null, 'Europe/Warsaw', true, null, now(), now(), 0),
+       -- has submitted the quiz (R__demo_quiz.sql), while the first demo client can still answer it
+       ('00000000-0000-4000-8000-000000000005', 'Demo Client Waiting', 'demo.client.waiting@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
 on conflict do nothing;
 
 -- databases created before V10 and V11 hold the demo client without a trainer and consent
