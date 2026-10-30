@@ -36,6 +36,10 @@ npm run dev
 
 Starts the app on http://localhost:5173. Requests to `/api` are proxied to the backend.
 
+### Drafting with a language model
+
+Kinetiq drafts a client's first plan with a language model through [OpenRouter](https://openrouter.ai). Without a key everything still works and plans are drafted from a fixed template, so you only need a key to try the real thing. Set `OPENROUTER_API_KEY` in the environment of the backend (your shell or the IDE run configuration); `KINETIQ_LLM_MODEL` optionally changes the model. `.env.example` names both. The backend does not read a `.env` file by itself, and the key is never committed.
+
 ## Check before committing
 
 ```bash

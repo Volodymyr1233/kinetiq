@@ -20,8 +20,12 @@ repositories {
 val mapstructVersion = "1.6.3"
 val springdocVersion = "3.1.1"
 val archunitVersion = "1.5.1"
+val springAiVersion = "2.0.1"
 
 dependencies {
+    implementation(platform("org.springframework.ai:spring-ai-bom:$springAiVersion"))
+    // the library, not the starter: the starter refuses to start without a key
+    implementation("org.springframework.ai:spring-ai-openai")
     implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-flyway")

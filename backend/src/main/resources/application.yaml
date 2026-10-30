@@ -38,6 +38,13 @@ server:
 kinetiq:
   # where links in emails point to
   app-url: ${KINETIQ_APP_URL:http://localhost:5173}
+  llm:
+    # empty means no language model: drafting uses the fixed template and nothing is called
+    api-key: ${OPENROUTER_API_KEY:}
+    base-url: https://openrouter.ai/api/v1
+    # OpenRouter's router over its free models
+    model: openrouter/free
+    timeout: 30s
 
 management:
   endpoints:
