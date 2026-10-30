@@ -102,3 +102,10 @@ description: "Tasks for story #54, Client reviews and submits the quiz"
 ## Implementation strategy
 
 Build in order and open one pull request per task after its gate and the user's approval. #56 lets a client check the answers; #55 stores them once; #57 completes the story: submit and wait.
+
+---
+
+## Phase 6: Convergence
+
+- [X] T033 Add a case to `BT/quiz/infrastructure/input/QuizControllerTest.java` in which the use case fails unexpectedly on a submit: `500` with `internal.error` and a body without the exception's text, class names or SQL, as `ExerciseControllerTest` does, per SC-006 (partial)
+- [X] T034 State in `spec.md`, FR-008 and User Story 2 scenario 3, that a body that cannot be read (an unknown code, `null` in likes, a number sent as text) is refused as `request.invalid` without a code per field, as contracts/api.md says, per FR-008 (partial)

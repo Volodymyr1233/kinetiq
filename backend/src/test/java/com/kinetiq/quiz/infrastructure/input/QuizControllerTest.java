@@ -204,6 +204,18 @@ class QuizControllerTest {
         }
 
         @Test
+        void shouldHideInternals_whenSubmittingFailsUnexpectedly() {
+            when(quiz.submit(any()))
+                    .thenThrow(new IllegalStateException("insert into quiz_submissions failed"));
+
+            var result = post(BODY, CLIENT);
+
+            assertThat(result).hasStatus(HttpStatus.INTERNAL_SERVER_ERROR);
+            assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("internal.error");
+            assertThat(result).bodyText().doesNotContain("insert", "quiz_submissions", "IllegalStateException", "failed");
+        }
+
+        @Test
         void shouldRefuse_whenCallerIsAnonymous() {
             var result = mvc.post()
                     .uri("/api/v1/quiz")
