@@ -42,3 +42,10 @@ Start the backend (`./gradlew bootRun` in `backend/`) and the frontend, sign in 
 4. Sign in as `demo.client.waiting@example.com` and open `/app/quiz/waiting`: the Settings button sits above the heading and opens the same sheet.
 5. Choose "Sign out" there: the sign-in page opens. Sign in as the demo client, whose quiz answers in this tab are gone.
 6. Keyboard only: the Settings button is reachable with a visible focus ring and is named "Settings"; Escape closes the sheet and returns focus to it. The console shows no errors.
+
+## Browser check, task #226
+
+Start the backend (`./gradlew bootRun` in `backend/`) and the frontend, and work at 375 px.
+
+1. Sign in as `demo.client@example.com`, answer step 1 and continue. Reload: the answer stays.
+2. Open the app in a second tab, sign out there and sign in as `demo.client.waiting@example.com`. Reload the first tab: it shows the waiting state, and its session storage (the browser's developer tools) no longer holds `kinetiq.quiz`. The console shows no errors.

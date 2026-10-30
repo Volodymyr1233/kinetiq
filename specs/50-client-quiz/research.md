@@ -24,7 +24,7 @@ Each entry: decision, reason, alternatives.
 
 **Alternatives**: `localStorage` (outlives the tab, rejected in the spec); keeping only valid answers in storage (a half-typed value on step 4 would vanish on Back, against US2 scenario 3).
 
-**Later**: Tying the draft to the signed-in account (FR-020) and removing it on sign-out (FR-019) need the current-account API (task #22) and the sign-out action (task #24). Both land in task #53, see plan "Open items".
+**Later**: Tying the draft to the signed-in account (FR-020) and removing it on sign-out (FR-019) need the current-account API (task #22) and the sign-out action (task #24). Removing it on sign-out came with task #24; tying it to the account is task #226, see plan "Open items".
 
 ## R4 — One URL per step, Back follows browser history
 

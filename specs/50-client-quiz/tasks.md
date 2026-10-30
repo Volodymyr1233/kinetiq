@@ -8,7 +8,7 @@ description: "Tasks for story #50, Client answers the quiz"
 
 **Tests**: Required by the Definition of Done (`CLAUDE.md`) and principle V. Tests sit in the same phase as the code they cover.
 
-**Organization**: Phases follow the GitHub tasks, not the spec's user stories, because each task is its own pull request, squash merged (`CLAUDE.md`, Workflow). #52 builds the question patterns (US1), #51 the step flow (US1, US2), #53 the entry routing (US3). Story labels show which spec story a task serves.
+**Organization**: Phases follow the GitHub tasks, not the spec's user stories, because each task is its own pull request, squash merged (`CLAUDE.md`, Workflow). #52 builds the question patterns (US1), #51 the step flow (US1, US2), #53 the entry routing (US3), #226 the quiz answers per account (US2). Story labels show which spec story a task serves.
 
 **Paths**: `F` = `frontend/src`, `Q` = `frontend/src/features/quiz`.
 
@@ -64,21 +64,20 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ## Phase 4: task #53, client entry routing (US3)
 
-**Blocked by**: task #25 (route guards), the quiz status read of story #54 (task #55 or #57, settled in that story's spec), task #57 (the waiting state it sends clients to), task #22 (current account, for T027), task #24 (sign-out, for T027) and the agreed way to remove the draft on sign-out (plan, "Open items"). Only #25 is linked as a blocker on GitHub; the others are recorded here. Re-read them when merged and refine T025–T029 to their actual code before starting.
+**Blocked by**: task #25 (route guards), the quiz status read of story #54 (task #55 or #57, settled in that story's spec) and task #57 (the waiting state it sends clients to). Only #25 is linked as a blocker on GitHub; the others are recorded here. Re-read them when merged and refine T025–T029 to their actual code before starting. Tying the quiz answers to the account (T027) moved to task #226 (Phase 7), since this task's issue covers only the routing.
 
 **Goal**: A signed-in client without a submitted quiz gets the quiz from every client page; a client who submitted gets the waiting state; a client with a published plan gets the app; loading and failure as spec FR-026.
 
 - [ ] T025 [P] [US3] Create `Q/api/quiz.ts` with a `useQuizStatus()` query over the status read of story #54 (`api.GET` typed by `F/lib/api/schema.d.ts`), throwing the problem detail on error as `F/features/exercise/api/exercises.ts` does
 - [ ] T026 [US3] Add the entry check in `F/app/` around the client routes, on top of the guards of task #25 (the quiz pages already follow the status, task #57, spec 54 research R12): while the status is pending, a neutral loading state and nothing else; on failure, `t(errorMessageKey(error))` from `F/lib/api/problem.ts` and a "Try again" button that refetches; not submitted → `/app/quiz`; submitted without a published plan → the waiting state of task #57; published plan → the requested client page, and the quiz sends them into the app
-- [ ] T027 [US3] Tie the draft to the signed-in account (spec FR-020) with the current-account API of task #22: store the account id with the draft and treat a draft of another account as empty; remove the draft on sign-out in the way settled in plan, "Open items". The quiz gets the account id from `F/app/` (the entry check of T026 knows the signed-in client) or from shared code in `F/lib/`, never by importing `features/account` (`frontend/CLAUDE.md`: a feature does not import from another feature)
-- [ ] T028 [US3] Write tests for each case of US3 (scenarios 1–4) and for FR-020: not submitted, submitted without a plan, published plan, pending, failure with an unknown and a known code, "Try again", a draft of another account not shown
-- [ ] T029 Run `npm run check` (and `./gradlew check` if the backend was touched); verify in the browser at 375 px, light and dark; open the pull request for #53 after the user agrees (title `feat(frontend): send clients to the quiz until submitted`, `Closes #53` and `Closes #50` as the story's last task)
+- [ ] T028 [US3] Write tests for each case of US3 (scenarios 1–4): not submitted, submitted without a plan, published plan, pending, failure with an unknown and a known code, "Try again"
+- [ ] T029 Run `npm run check` (and `./gradlew check` if the backend was touched); verify in the browser at 375 px, light and dark; open the pull request for #53 after the user agrees (title `feat(frontend): send clients to the quiz until submitted`, `Closes #53`)
 
 ---
 
 ## Phase 5: Convergence
 
-- [ ] T030 Run `/speckit-converge` on the branch of task #53, the story's last task, and walk through `quickstart.md` once more
+- [ ] T030 Before the pull request of the story's last task to merge (#53 or #226), run `/speckit-converge` on its branch and walk through `quickstart.md` once more; that pull request also closes the story (`Closes #50`)
 
 ---
 
@@ -95,12 +94,25 @@ description: "Tasks for story #50, Client answers the quiz"
 
 ---
 
+## Phase 7: task #226, quiz answers belong to the signed-in account (FR-020)
+
+**Blocked by**: nothing open; it builds on tasks #22, #24, #25 and #33, all merged. Added when task #53 started: the plan had given this work to #53, whose issue covers only the routing.
+
+**Goal**: Quiz answers left in the tab by another account are never shown (US2, scenario 7); the own account's answers stay. Removing the quiz draft on sign-out needs nothing new: signing out, signing in and joining already empty the tab (tasks #24 and #33).
+
+- [X] T027 [US2] Tie the tab's storage to the signed-in account (spec FR-020): add `claimTabStorage(account)` beside `clearTabStorage` in `F/features/account/api/account.ts`, which keeps the account id under `kinetiq.account` in `sessionStorage` and empties the tab first when another account's id is there; call it in `requireRole` of `F/app/guards.ts` once the role is right, so it runs before any area or quiz page reads the quiz draft. The quiz feature stays unchanged
+- [X] T035 [US2] Write a guard test in `F/app/router.test.tsx` through the app's routes (`renderAppAt`): quiz answers left in the tab by another account are not shown, and the own account's answers are
+- [ ] T036 Run `npm run check` in `frontend/`; verify in the browser per `quickstart.md`, "Browser check, task #226", console included; open the pull request for #226 after the user agrees (title `feat(frontend): tie quiz answers to the signed-in account`, `Closes #226`)
+
+---
+
 ## Dependencies
 
-- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #216 (T031–T034), which waits for #57 → #53 (T025–T029), which also waits for tasks #25, #57, #216, #22 and #24, the quiz status read of story #54 and the agreed way to remove the draft on sign-out. T030 last.
+- T001 with #52. #52 (T002–T015) → #51 (T016–T024) → #216 (T031–T034), which waits for #57 → #53 (T025, T026, T028, T029), which also waits for tasks #25 and #57 and the quiz status read of story #54. #226 (T027, T035, T036) is independent of #53. T030 last, on the branch of whichever of #53 and #226 merges last, before its pull request.
 - Inside #52: T002 before T004; T003–T013 are independent of each other except that each test follows its component; T014 needs T002–T013.
 - Inside #51: T016–T019 are independent; T017 follows T016; T020 needs T016, T018 and T019 and the components of #52; T021 needs T020; T022 needs T020 and T021; T023 needs everything before it.
-- Inside #53: T026 needs T025; T028 needs T026 and T027.
+- Inside #53: T026 needs T025; T028 needs T026; T029 needs T028.
+- Inside #226: T035 needs T027; T036 needs both.
 
 ## Parallel examples
 
