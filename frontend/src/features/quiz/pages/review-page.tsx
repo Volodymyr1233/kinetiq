@@ -1,5 +1,5 @@
 import { ChevronLeftIcon, CircleAlertIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -20,15 +20,16 @@ import {
   STEP_COUNT,
 } from '../quiz-schema'
 
-export function ReviewPage() {
+/** The review of the seven answers; `settings` is shown at the header's right, given by the app. */
+export function ReviewPage({ settings }: { settings?: ReactNode }) {
   return (
     <QuizStatusCheck status="NOT_SUBMITTED">
-      <Review />
+      <Review settings={settings} />
     </QuizStatusCheck>
   )
 }
 
-function Review() {
+function Review({ settings }: { settings?: ReactNode }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
   const location = useLocation()
@@ -104,10 +105,13 @@ function Review() {
           <p className="num text-muted-foreground text-xs tracking-wider uppercase">
             {t('quiz.review.label')}
           </p>
-          <Button variant="ghost" className="h-12" onClick={goBack}>
-            <ChevronLeftIcon data-icon="inline-start" aria-hidden />
-            {t('quiz.back')}
-          </Button>
+          <div className="flex items-center">
+            <Button variant="ghost" className="h-12" onClick={goBack}>
+              <ChevronLeftIcon data-icon="inline-start" aria-hidden />
+              {t('quiz.back')}
+            </Button>
+            {settings}
+          </div>
         </div>
         <div aria-hidden className="flex gap-1.5">
           {Array.from({ length: STEP_COUNT }, (_, index) => (

@@ -26,6 +26,10 @@
 - Q: What happens to answers kept in the tab that no longer fit the quiz's rules (an option removed by an update, data changed by hand)? → A: Only those answers are dropped. The client answers those steps again.
 - Q: Which steps can the client open directly by address? → A: Only steps they have already reached with Continue, so step 6, which starts at 3, cannot be skipped unseen.
 
+### Session 2026-10-30
+
+- Q: The quiz and the waiting state have no settings sheet, and after task #53 a client without a published plan reaches no client page. How do they sign out, or change the theme or the quiz's language? → A: The quiz steps, the review and the waiting state get the Settings button of the Today header, opening the same settings sheet (task #216).
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Client answers seven questions, one per step (Priority: P1)
@@ -156,6 +160,10 @@ The quiz is the client's way into Kinetiq. Until they submit it, every client pa
 - **FR-028**: The quiz MUST follow the board's quiz screens at 375 px: the client column up to 640 px wide, no tab bar, and the main button fixed at the bottom. Continue uses the default action colour. Brand lime marks only the current part of the progress bar.
 - **FR-029**: Every text of the quiz MUST exist in English and Polish. The Polish texts are natural Polish, in the same informal form as the rest of the app. Numbers follow the UI language ("62.5" in English, "62,5" in Polish).
 - **FR-030**: The quiz MUST be built from Kinetiq tokens and shadcn components, in light and dark.
+
+**Settings** (task #216)
+
+- **FR-031**: Every quiz step, the review and the waiting state (story #54) MUST offer the Settings button of the Today header, opening the same settings sheet: units, language, theme and "Sign out". A change applies at once; a body weight already typed shows in the new unit (story #42). The boards show no settings on these screens, so their place follows the design system (Navigation).
 
 ### Public endpoints
 

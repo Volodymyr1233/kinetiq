@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronLeftIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { Controller, useForm, useWatch } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Navigate, useLocation, useNavigate, useParams } from 'react-router'
@@ -42,15 +42,16 @@ const STEP_KEYS = [
 
 type OptionStep = 'goal' | 'experience' | 'level' | 'likes'
 
-export function QuizPage() {
+/** The quiz's steps; `settings` is shown at the header's right, given by the app, which owns the settings sheet. */
+export function QuizPage({ settings }: { settings?: ReactNode }) {
   return (
     <QuizStatusCheck status="NOT_SUBMITTED">
-      <QuizSteps />
+      <QuizSteps settings={settings} />
     </QuizStatusCheck>
   )
 }
 
-function QuizSteps() {
+function QuizSteps({ settings }: { settings?: ReactNode }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
   const params = useParams()
@@ -257,12 +258,15 @@ function QuizSteps() {
           <p className="num text-muted-foreground text-xs tracking-wider uppercase">
             {t('quiz.stepOf', { step, total: STEP_COUNT })}
           </p>
-          {(step > 1 || state?.fromReview) && (
-            <Button variant="ghost" className="h-12" onClick={goBack}>
-              <ChevronLeftIcon data-icon="inline-start" aria-hidden />
-              {t('quiz.back')}
-            </Button>
-          )}
+          <div className="flex items-center">
+            {(step > 1 || state?.fromReview) && (
+              <Button variant="ghost" className="h-12" onClick={goBack}>
+                <ChevronLeftIcon data-icon="inline-start" aria-hidden />
+                {t('quiz.back')}
+              </Button>
+            )}
+            {settings}
+          </div>
         </div>
         <div aria-hidden className="flex gap-1.5">
           {Array.from({ length: STEP_COUNT }, (_, index) => (

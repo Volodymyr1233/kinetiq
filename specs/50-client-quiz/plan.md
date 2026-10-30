@@ -85,6 +85,8 @@ frontend/src/
 
 Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` around the client routes. Its exact files depend on task #25 and the quiz status read of story #54, and are planned when they are merged.
 
+Task #216 (FR-031) moves the client's settings sheet from `app/client-area.tsx` to `app/settings-sheet.tsx` and adds `app/quiz-area.tsx`, which renders the quiz pages with the sheet's button: a feature imports neither `app/` nor another feature (`frontend/CLAUDE.md`), so the quiz pages take an optional `settings` node for their header. The quiz steps and the review are keyed by the weight unit there, so a unit changed in the sheet reloads the draft, converted (story #42), instead of keeping a number typed in the old unit.
+
 **Structure Decision**: One feature, `quiz`, as `CONTEXT.md` names it. The question patterns are used only by the quiz, so they stay in the feature, not in `components/`.
 
 ## Work per task (one pull request each, squash merged)
@@ -94,8 +96,9 @@ Task #53 adds a quiz status hook in `features/quiz/api/` and a check in `app/` a
 | #52 | `feat(frontend): add quiz question components` | Spec Kit files of story #50; `radio-group` from the CLI; five components with tests; their own string (the character count) in EN and PL; browser check through a throwaway page (R11). The components only show what they are given; the rules come with #51 |
 | #51 | `feat(frontend): add quiz step flow` | `quiz-schema.ts` with tests, `quiz-draft.ts`, `quiz-page.tsx` with tests, the route, every step's strings in EN and PL, browser check per quickstart.md |
 | #53 | `feat(frontend): send clients to the quiz until submitted` | Status hook, entry check with loading and error states, tests per case of US3; account tie-in and sign-out removal of the draft (Open items) |
+| #216 | `feat(frontend): add settings to the quiz and the waiting state` | The settings sheet in its own `app/` file, `quiz-area.tsx` and its routes, the `settings` place in the quiz pages' headers, tests through the app's routes, browser check per quickstart.md |
 
-Task order: #52, #51, then #53 once #25, #57, #22, #24 and the quiz status read of story #54 are merged.
+Task order: #52, #51, then #216 once #57 is merged, then #53 once #25, #57, #216, #22, #24 and the quiz status read of story #54 are merged.
 
 ## Tests
 
@@ -107,6 +110,7 @@ Task order: #52, #51, then #53 once #25, #57, #22, #24 and the quiz status read 
 | `number-field.test.tsx` | Label and unit announced; a given message is shown, linked by `aria-describedby` with `aria-invalid`; the note shows when there is no message; leaving the field reports it (`onBlur`) |
 | `stepper.test.tsx` | − and + change by one; marked disabled at both bounds and no change past them, focus kept; new value announced; accessible names |
 | `notes-field.test.tsx` | Counter follows the text; typing stops at the limit; pasting longer text keeps the first 500 |
+| `quiz-area.test.tsx` (#216) | On a quiz step and on the waiting state, Settings opens the sheet and "Sign out" ends the sign-in, clears the draft and opens sign-in; a unit changed in the sheet on step 4 shows the typed weight in the new unit |
 | `quiz-page.test.tsx` | Step 1 with no Back and Continue disabled; Continue enabled only when valid; a number field's message appears after leaving it, disappears once valid and is still there after going back and returning; answers kept through Continue, Back and remount (reload); addresses beyond the furthest step or past an invalid step go back to the allowed step; step 6 cannot be skipped by address; focus on the new heading; step 7 button text; stored invalid answer dropped; broken stored data gives a fresh start; Polish strings and number example |
 
 ## Open items for later tasks

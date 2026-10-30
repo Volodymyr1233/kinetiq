@@ -31,3 +31,14 @@ Start the frontend (`npm run dev` in `frontend/`) and open `http://localhost:517
 8. Keyboard only: Tab reaches every option, field and button with a visible focus ring; arrow keys move within the radio group; Space toggles a checkbox. After Continue, focus is on the new heading.
 9. Open `/app/today`, choose Polski in the settings sheet from the header, and go back to the step with the browser's Back button: every text changes, answers stay, the weight example reads "np. 62,5". Choose English in the sheet again afterwards.
 10. Repeat 1–5 in dark mode. The console shows no errors.
+
+## Browser check, task #216
+
+Start the backend (`./gradlew bootRun` in `backend/`) and the frontend, sign in as the demo client and work at 375 px.
+
+1. On step 1 the header shows the Settings button on the right; on steps 2–7 and on the review it sits after Back. It opens the settings sheet with units, language, theme and "Sign out".
+2. On step 4 type weight 62,5 and choose lb in the sheet: the field shows 137.8 in lb. Choose kg again: 62.5.
+3. Choose Polski and then the dark theme in the sheet: the quiz changes at once, answers stay. Choose English and the system theme again.
+4. Sign in as `demo.client.waiting@example.com` and open `/app/quiz/waiting`: the Settings button sits above the heading and opens the same sheet.
+5. Choose "Sign out" there: the sign-in page opens. Sign in as the demo client, whose quiz answers in this tab are gone.
+6. Keyboard only: the Settings button is reachable with a visible focus ring and is named "Settings"; Escape closes the sheet and returns focus to it. The console shows no errors.
