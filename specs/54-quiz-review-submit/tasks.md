@@ -76,13 +76,13 @@ description: "Tasks for story #54, Client reviews and submits the quiz"
 - [X] T028 [US2] [US3] In `Q/pages/review-page.tsx`, give "Build my plan" its action: while the mutation is pending, show the building state (its title, its text with the draft's days, and a skeleton card of the plan summary, the design system's `Card` loading state; design system 6.1 names the work being done); on success `clearDraft()` and replace the address with `/app/quiz/waiting`; on `quiz.already-submitted` `clearDraft()`, invalidate the status query and go to the waiting state; on other failures keep the review with `t(errorMessageKey(error))` and "Try again" (spec FR-013)
 - [X] T029 [US3] Create `Q/components/quiz-status-check.tsx` (research R12) and use it in `Q/pages/quiz-page.tsx`, `Q/pages/review-page.tsx` and a new `Q/pages/waiting-page.tsx`, with its lazy route `/app/quiz/waiting` in `F/app/router.ts` beside `/app/quiz/review`: neutral loading state while the status loads; on failure the translated message and "Try again"; the reviewing state for `WAITING_FOR_PLAN`, heading and text only (the board's trainer avatar and name, draft summary and "Message Marek" wait for an API with the trainer's name, the plan stories and messaging, spec Clarifications); the change of state announced and focus on the new heading (FR-017)
 - [X] T030 [US2] [US3] Write `Q/pages/waiting-page.test.tsx` and extend `Q/pages/review-page.test.tsx` and `Q/pages/quiz-page.test.tsx` with a stubbed API: building state while sending; reviewing state after success and after a remount; `quiz.already-submitted` shows the waiting state; a failure shows the message and "Try again"; the draft is gone after success; loading and error of the status read; a step and the review send a client who submitted to the waiting state, and the waiting page sends one who did not to the quiz; in `F/app/router.test.tsx`, `/app/quiz/waiting` opens the waiting page, not a step
-- [ ] T031 Verify in the browser per `quickstart.md`, "Browser check, task #57", at 375 px, light and dark, English and Polish, keyboard only, console; run `npm run check` in `frontend/`; open the pull request for #57 after the user agrees (title `feat(frontend): add quiz submit and waiting states`, `Closes #57` and `Closes #54` as the story's last task); its "What changed" names what the waiting state leaves out and until when (T029)
+- [X] T031 Verify in the browser per `quickstart.md`, "Browser check, task #57", at 375 px, light and dark, English and Polish, keyboard only, console; run `npm run check` in `frontend/`; open the pull request for #57 after the user agrees (title `feat(frontend): add quiz submit and waiting states`, `Closes #57` and `Closes #54` as the story's last task); its "What changed" names what the waiting state leaves out and until when (T029)
 
 ---
 
 ## Phase 5: Convergence
 
-- [ ] T032 Run `/speckit-converge` on the branch of task #57, the story's last task, and walk through `quickstart.md` once more
+- [X] T032 Run `/speckit-converge` on the branch of task #57, the story's last task, and walk through `quickstart.md` once more
 
 ---
 
