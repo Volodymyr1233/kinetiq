@@ -497,6 +497,37 @@
     "loading": "Loading",
     "retry": "Try again"
   },
+  "clients": {
+    "title": "Clients",
+    "loading": "Loading clients",
+    "retry": "Try again",
+    "count_one": "{{shown, number}} of {{count, number}} client",
+    "count_other": "{{shown, number}} of {{count, number}} clients",
+    "noValue": "None yet",
+    "columns": {
+      "name": "Client",
+      "goal": "Goal",
+      "plan": "Plan",
+      "lastLog": "Last log"
+    },
+    "planStates": {
+      "NO_QUIZ": "No quiz yet",
+      "PLAN_TO_REVIEW": "Plan to review"
+    },
+    "search": {
+      "label": "Search clients by name",
+      "placeholder": "Search by name"
+    },
+    "empty": {
+      "title": "No clients yet",
+      "body": "Invite a client. They show up here once they join."
+    },
+    "noMatch": {
+      "title": "No client matches that name",
+      "body": "Check the spelling or clear the search.",
+      "clear": "Clear search"
+    }
+  },
   "invites": {
     "title": "Open invites",
     "description": "A client who joins moves to All clients. Links stop working when they expire or you revoke them.",

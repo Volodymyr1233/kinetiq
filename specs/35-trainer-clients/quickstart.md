@@ -22,3 +22,12 @@ Expected: `BUILD SUCCESSFUL`.
 ## 3. Contract
 
 With the backend running, in `frontend/`: `npm run gen:api`. `schema.d.ts` gains `ClientListResponse` and `ClientResponse` and nothing else changes; then `npm run check`.
+
+## 4. The screen (#37)
+
+`npm run dev` in `frontend/` with the backend running; sign in as a trainer who has clients (the demo trainer, password in the README).
+
+- `/trainer/clients` shows the clients in a table: client, goal, plan, last log. A client who answered the quiz shows a goal and "Plan to review"; one who did not shows "No quiz yet"; last log reads "None yet".
+- Type part of a name in the search box: the table narrows, whatever the letter case; the line under the title counts "2 of 3 clients". Text that matches nobody shows "No client matches that name" with "Clear search".
+- A trainer with no clients (the second demo trainer) sees "No clients yet" and "Invite client", which opens the invites page. "Open invites" in the header does the same.
+- Check it at 1280 px in light and dark, switch the language to Polish, and use Tab: the search box, the buttons and the links all show a focus ring.

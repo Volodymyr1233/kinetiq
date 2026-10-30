@@ -29,6 +29,18 @@ description: "Tasks for story #35, Trainer sees their clients (task #36 first)"
 - [X] T008 Regenerate `frontend/src/lib/api/schema.d.ts` (`npm run gen:api`, backend running) and run `npm run check`
 - [X] T009 `./gradlew check` passes (Docker running), including `HexagonalArchitectureTest`; commit `feat(backend): add client list api (#36)`; follow `quickstart.md` step 2 by hand
 
+## Phase 3: task #37, all-clients table with search (US2)
+
+**Goal**: `/trainer/clients` lists the clients from `GET /api/v1/clients` with a search by name and an empty state with the invite action (spec FR-005, FR-007).
+
+**Paths**: `F` = `frontend/src`.
+
+- [X] T010 [US2] `F/features/client/api/clients.ts`: `useClients` (the response type comes from the generated schema)
+- [X] T011 [US2] `F/features/client/components/client-table.tsx` and `pages/clients-page.tsx`: columns Client, Goal, Plan, Last log; plan state as a badge with text; "None yet" for a goal and a last log that are not there; search over the list already read; empty state with an invite link; state for no match; loading and error with retry
+- [X] T012 [US2] Route `/trainer/clients` renders `ClientsPage`; `ClientsPlaceholder` and its link are removed from `F/app/trainer-area.tsx`
+- [X] T013 [US2] Strings `clients.*` in `F/locales/en.json` and `pl.json` (the goal names reuse `quiz.goal.options`)
+- [X] T014 [US2] Tests `F/features/client/pages/clients-page.test.tsx`: rows in the order received with goal and plan state; "None yet"; search by part of a name in any letter case, with spaces around; no match and clearing; empty state with the invite link and no search box; error and retry
+- [X] T015 `npm run check` passes; commit `feat(frontend): add all-clients table with search (#37)`; look at the screen at 1280 px, light and dark, by keyboard (the Definition of Done), following `quickstart.md` step 4
 ## Dependencies
 
 T002 → T003 → T004; T002 → T005 → T006 → T007; T008 after T005; T009 last.
