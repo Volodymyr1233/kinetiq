@@ -72,6 +72,7 @@ frontend/src/
 │   ├── quiz-schema.ts (+ .test.ts)                isComplete(draft) (#56)
 │   ├── quiz-draft.ts                              clearDraft() (#57)
 │   ├── api/quiz.ts                                useQuizStatus, useSubmitQuiz (#57)
+│   ├── components/quiz-status-check.tsx           the quiz pages follow the status (#57, research R12)
 │   └── pages/
 │       ├── review-page.tsx (+ .test.tsx)          the review (#56)
 │       ├── quiz-page.tsx (+ .test.tsx)            Continue and Back after Change (#56)
@@ -101,7 +102,7 @@ backend/src/main/java/com/kinetiq/common/infrastructure/config/SecurityConfig.ja
 |---|---|---|
 | #56 | `feat(frontend): add quiz review step` | Spec Kit files of story #54; `isComplete`; the review page, its route and tests; Continue and Back after Change in the step page; `quiz.review.*` in EN and PL; "Build my plan" disabled until #57 (R5); spec 50's research R12 and routes contract updated; browser check per quickstart.md |
 | #55 | `feat(backend): add quiz answers model and submit api` | Domain model with every rule and its tests, service with the one-submission rule, migration, persistence with the race test, controller with validation and role tests, `SecurityConfig`, demo data, `schema.d.ts` |
-| #57 | `feat(frontend): add quiz submit and waiting states` | Status and submit hooks, "Build my plan" action, building and reviewing states, waiting route, draft removal, loading and error states, tests |
+| #57 | `feat(frontend): add quiz submit and waiting states` | Status and submit hooks, "Build my plan" action, building and reviewing states, waiting route, the quiz pages following the status (R12), draft removal, loading and error states, tests |
 
 Task order: #56, then #55 once task #31 is merged, then #57.
 
@@ -117,14 +118,14 @@ Task order: #56, then #55 once task #31 is merged, then #57.
 | `QuizSubmissionRepositoryImplIT` (#55) | Stored row with and without notes; the database refuses a broken check; a second submission for the same client, as in a race, turns into `quiz.already-submitted` |
 | `QuizControllerTest` (#55) | `201` and body; each field's `validation.failed` code; an unknown code `request.invalid`; `409` `quiz.already-submitted`; `401` without a session; `403` for a trainer |
 | `KinetiqBackendApplicationIT` (#55) | `/api/v1/quiz` refused without a session |
-| `waiting-page.test.tsx` and submit tests (#57) | Building state while sending; reviewing state after success and after a reload; `quiz.already-submitted` shows the waiting state; failure shows the message and "Try again"; draft removed; loading and error of the status read |
+| `waiting-page.test.tsx` and submit tests (#57) | Building state while sending; reviewing state after success and after a reload; `quiz.already-submitted` shows the waiting state; failure shows the message and "Try again"; draft removed; loading and error of the status read; a step and the review send a client who submitted to the waiting state, the waiting page sends one who did not to the quiz |
 
 ## Open items
 
 | Item | Task | How it is settled |
 |---|---|---|
 | Migration number `V12`: the highest on `master` is `V11` (task #32), and no open pull request adds one | #55 | Checked again before opening and before merging the pull request; renumbered if taken (`backend/CLAUDE.md`) |
-| Whether the waiting state is guarded by #57 alone or by the entry check of task #53 | #57 | Settled when #57 starts, with task #53's plan in spec 50 |
+| Whether the waiting state is guarded by #57 alone or by the entry check of task #53 | #57 | Settled when #57 started: #57 checks the quiz pages by status, #53 the client area and the landing after sign-in (research R12; spec 50, T026) |
 
 ## Complexity Tracking
 

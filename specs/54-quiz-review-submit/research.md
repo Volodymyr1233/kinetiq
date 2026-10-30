@@ -77,3 +77,11 @@ Each entry: decision, reason, alternatives. Entries for tasks #55 and #57 are re
 **Decision**: `quiz-draft.ts` gets `clearDraft()`, called in the submit mutation's `onSuccess` before navigating to the waiting state.
 
 **Why**: Spec FR-012 and spec 50's contract ("Task #57 removes it after a successful submit").
+
+## R12 — The quiz pages follow the quiz status (task #57)
+
+**Decision**: The quiz steps, the review and the waiting page sit inside one status check in `features/quiz/`, built on `useQuizStatus()`. A client who submitted is sent from a step or the review to `/app/quiz/waiting`; a client who has not is sent from the waiting page to `/app/quiz`; a published plan sends either to `/app`. While the status loads, a neutral loading state shows; on failure, `t(errorMessageKey(error))` and "Try again". Task #53 checks the client area and the landing after sign-in.
+
+**Why**: Spec FR-016 and User Story 3, scenario 3: a client who submitted gets the waiting state instead of the quiz or the review. With the check in this task, that holds when story #54 closes, not only after task #53 of story #50. The quiz feature owns the three pages, and the check shows a failed status read by its code (FR-016).
+
+**Alternatives**: a route loader in `app/guards.ts`, like the role check (its failure shows the area's error page, which always shows the generic message); leaving every check to task #53 (story #54 would close without User Story 3, scenario 3).

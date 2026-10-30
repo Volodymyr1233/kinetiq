@@ -44,6 +44,7 @@ Request:
 |---|---|---|
 | `/app/quiz/review` | The review, when the draft is complete; otherwise the step that may open (research R2) | #56 |
 | `/app/quiz/<n>` with `state.fromReview` | Step `n`; Continue and Back return to the review (research R3) | #56 |
-| `/app/quiz/waiting` | The waiting states (spec User Story 3) | #57 |
+| `/app/quiz/waiting` | The waiting states (spec User Story 3); a client who has not submitted is sent to `/app/quiz` (research R12) | #57 |
+| `/app/quiz`, `/app/quiz/<n>`, `/app/quiz/review` | For a client who submitted, the waiting state (research R12) | #57 |
 
 Spec 50's contract said `/app/quiz/<anything else>` falls back "until task #56 adds `/app/quiz/review`"; task #56 updates that line and spec 50's research R12.

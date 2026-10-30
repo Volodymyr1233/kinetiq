@@ -28,6 +28,17 @@ Start the backend and the frontend (`npm run dev` in `frontend/`), sign in as th
 9. Open `/app/today`, choose Polski in the settings sheet from the header, and go back to the review with the browser's Back button: every text changes, numbers use a decimal comma, likes are separated by commas. Choose English in the sheet again afterwards.
 10. Repeat 1–3 in dark mode. The console shows no errors.
 
-## Browser check, tasks #55 and #57
+## Browser check, task #57
 
-Task #55 has no screen; its tests cover it (`./gradlew check`). Refined when task #57 starts: sign in as the demo client, submit from the review, see the building state then the reviewing state, reload, open `/app/quiz/1` and `/app/quiz/review` (both show the waiting state), and submit from a second tab (the waiting state, nothing stored twice). `demo.client.waiting@example.com` has a submission in the demo data and shows the waiting state at once. A submit stays in the local database until it is recreated.
+Task #55 has no screen; its tests cover it (`./gradlew check`). Start the backend and the frontend and work at 375 px. A submit of the demo client stays in the local database until the database is recreated.
+
+1. Sign in as the demo client, who has not submitted, and open `/app/quiz/waiting` by address: step 1 shows.
+2. Answer all seven steps. On the review, duplicate the tab; the copy keeps the answers.
+3. Stop the backend and choose "Build my plan" in the first tab: the review stays with a message and "Try again". Start the backend again.
+4. Choose "Try again": "Building your plan from 7 answers…" shows while the answers are sent, then "Your trainer is reviewing your plan" with its text, and focus is on its heading.
+5. Return to the copy: the status is read again on return (spec FR-016), so the copy shows the waiting state before a second submit can be sent, and the database holds one submission. A second submit that still arrives is refused as `quiz.already-submitted` and also ends in the waiting state; the tests cover it.
+6. Reload: the reviewing state shows again. Open `/app/quiz/1` and `/app/quiz/review` by address: both show the waiting state.
+7. Sign in as `demo.client.waiting@example.com` and open `/app/quiz`: the waiting state shows at once. Check it in Polish and in dark mode.
+8. Keyboard only: "Build my plan" and "Try again" are reachable with a visible focus ring. The console shows no errors.
+
+The building state shows only while the answers are sent, so its Polish text and plural forms are covered by the tests.

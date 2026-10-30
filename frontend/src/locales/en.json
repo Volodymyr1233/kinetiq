@@ -482,7 +482,20 @@
       "noNotes": "No notes",
       "build": "Build my plan",
       "later": "You can change them later with your trainer."
-    }
+    },
+    "waiting": {
+      "building": {
+        "title": "Building your plan from 7 answers…",
+        "text_one": "Sessions, exercises and starting weights for {{count}} day a week.",
+        "text_other": "Sessions, exercises and starting weights for {{count}} days a week."
+      },
+      "reviewing": {
+        "title": "Your trainer is reviewing your plan",
+        "text": "Your trainer checks it before you see it. You get a notice here when it's ready."
+      }
+    },
+    "loading": "Loading",
+    "retry": "Try again"
   },
   "invites": {
     "title": "Open invites",

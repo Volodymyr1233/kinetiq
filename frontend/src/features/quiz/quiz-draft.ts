@@ -23,6 +23,15 @@ export function saveDraft(draft: QuizDraft) {
   }
 }
 
+/** Removes the draft once the answers are stored on the server (research R11). */
+export function clearDraft() {
+  try {
+    sessionStorage.removeItem(KEY)
+  } catch {
+    // storage can be unavailable (private mode); then there is no draft to remove
+  }
+}
+
 // a weight typed before the person switched units shows in the new one (spec 42, User Story 4); a draft kept
 // without a unit was typed in the unit it is read in
 function inUnit(draft: QuizDraft, unit: WeightUnit): QuizDraft {

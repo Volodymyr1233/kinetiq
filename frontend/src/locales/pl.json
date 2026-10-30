@@ -493,7 +493,22 @@
       "noNotes": "Brak notatek",
       "build": "Zbuduj mój plan",
       "later": "Później możesz je zmienić razem z trenerem."
-    }
+    },
+    "waiting": {
+      "building": {
+        "title": "Budujemy Twój plan z 7 odpowiedzi…",
+        "text_one": "Sesje, ćwiczenia i ciężary startowe na {{count}} dzień w tygodniu.",
+        "text_few": "Sesje, ćwiczenia i ciężary startowe na {{count}} dni w tygodniu.",
+        "text_many": "Sesje, ćwiczenia i ciężary startowe na {{count}} dni w tygodniu.",
+        "text_other": "Sesje, ćwiczenia i ciężary startowe na {{count}} dnia w tygodniu."
+      },
+      "reviewing": {
+        "title": "Trener sprawdza Twój plan",
+        "text": "Trener sprawdza plan, zanim go zobaczysz. Gdy będzie gotowy, dostaniesz tu powiadomienie."
+      }
+    },
+    "loading": "Wczytywanie",
+    "retry": "Spróbuj ponownie"
   },
   "invites": {
     "title": "Otwarte zaproszenia",
