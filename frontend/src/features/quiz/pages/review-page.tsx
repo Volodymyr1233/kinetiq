@@ -1,10 +1,16 @@
-import { ChevronLeftIcon } from 'lucide-react'
+import { ChevronLeftIcon, CircleAlertIcon } from 'lucide-react'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate, useLocation, useNavigate } from 'react-router'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
+import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { cn } from '@/lib/utils'
 import { parseWeight, useWeightUnit } from '@/lib/weight'
+import { useSubmitQuiz } from '../api/quiz'
+import { QuizStatusCheck } from '../components/quiz-status-check'
 import { loadDraft } from '../quiz-draft'
 import {
   allowedStep,
@@ -15,17 +21,33 @@ import {
 } from '../quiz-schema'
 
 export function ReviewPage() {
+  return (
+    <QuizStatusCheck status="NOT_SUBMITTED">
+      <Review />
+    </QuizStatusCheck>
+  )
+}
+
+function Review() {
   const { t } = useTranslation()
   const unit = useWeightUnit()
   const location = useLocation()
   const navigate = useNavigate()
   const [draft] = useState(() => loadDraft(unit))
+  const submit = useSubmitQuiz()
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   // a screen reader starts at the review's heading, as on every step (spec 50, FR-015)
   useEffect(() => {
     headingRef.current?.focus()
   }, [])
+
+  // stored before, so the status check moves on to the waiting state as after a successful submit
+  const alreadySubmitted =
+    problemCode(submit.error) === 'quiz.already-submitted'
+  if (submit.isPending || submit.isSuccess || alreadySubmitted) {
+    return <Building days={draft.answers.days} />
+  }
 
   if (!isComplete(draft, unit)) {
     return (
@@ -144,18 +166,61 @@ export function ReviewPage() {
         </dl>
       </main>
       <footer className="bg-background sticky bottom-0 flex flex-col gap-2 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))]">
-        {/* task #57 gives it its action; until then it shows the screen's way forward (research R5) */}
+        {submit.isError && (
+          <Alert variant="destructive">
+            <CircleAlertIcon aria-hidden="true" />
+            <AlertDescription>
+              {t(errorMessageKey(submit.error))}
+            </AlertDescription>
+          </Alert>
+        )}
         <Button
           size="touch"
           className="bg-brand text-brand-foreground hover:bg-brand/80 w-full"
-          disabled
+          onClick={() => submit.mutate(draft)}
         >
-          {t('quiz.review.build')}
+          {submit.isError ? t('quiz.retry') : t('quiz.review.build')}
         </Button>
         <p className="text-muted-foreground text-center text-xs">
           {t('quiz.review.later')}
         </p>
       </footer>
     </div>
+  )
+}
+
+// shown while the answers are on their way; nothing drafts a plan yet, so the reviewing state follows at once
+function Building({ days }: { days: number }) {
+  const { t } = useTranslation()
+  const headingRef = useRef<HTMLHeadingElement>(null)
+
+  // a screen reader reads the new state's heading (FR-017)
+  useEffect(() => {
+    headingRef.current?.focus()
+  }, [])
+
+  return (
+    <main className="mx-auto flex min-h-svh max-w-[640px] flex-col gap-6 px-4 py-12">
+      <div className="flex flex-col gap-2">
+        <h1
+          ref={headingRef}
+          tabIndex={-1}
+          className="font-heading text-3xl font-semibold outline-none"
+        >
+          {t('quiz.waiting.building.title')}
+        </h1>
+        <p className="text-muted-foreground">
+          {t('quiz.waiting.building.text', { count: days })}
+        </p>
+      </div>
+      {/* the plan summary's place, in the card's loading state (design system 6.1) */}
+      <Card aria-hidden="true">
+        <CardContent className="flex flex-col gap-3">
+          {Array.from({ length: 3 }, (_, row) => (
+            <Skeleton key={row} className="h-5 w-full" />
+          ))}
+        </CardContent>
+      </Card>
+    </main>
   )
 }

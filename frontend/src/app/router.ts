@@ -135,6 +135,16 @@ export const createRoutes = (): RouteObject[] => [
     },
   },
   {
+    path: '/app/quiz/waiting',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/quiz/pages/waiting-page')).WaitingPage,
+    },
+  },
+  {
     path: '/app/quiz/:step?',
     loader: requireRole('CLIENT'),
     ErrorBoundary: AreaErrorPage,

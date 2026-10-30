@@ -1,12 +1,15 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
+import { json, stubApi } from '@/test/page'
 import type { QuizDraft } from '../quiz-schema'
 import { QuizPage } from './quiz-page'
 import { ReviewPage } from './review-page'
+import { WaitingPage } from './waiting-page'
 
 const ANSWERED: QuizDraft['answers'] = {
   goal: 'BUILD_MUSCLE',
@@ -40,18 +43,26 @@ function openQuiz(...paths: string[]) {
 }
 
 function openQuizIn(unit: WeightUnit, ...paths: string[]) {
+  return openQuizAs('NOT_SUBMITTED', unit, ...paths)
+}
+
+function openQuizAs(status: string, unit: WeightUnit, ...paths: string[]) {
+  stubApi(() => json({ status }))
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [
       { path: '/app/quiz/review', Component: ReviewPage },
+      { path: '/app/quiz/waiting', Component: WaitingPage },
       { path: '/app/quiz/:step?', Component: QuizPage },
     ],
     { initialEntries: paths },
   )
   render(
-    <WeightUnitContext value={unit}>
-      <RouterProvider router={router} />
-    </WeightUnitContext>,
+    <QueryClientProvider client={new QueryClient()}>
+      <WeightUnitContext value={unit}>
+        <RouterProvider router={router} />
+      </WeightUnitContext>
+    </QueryClientProvider>,
   )
   return router
 }
@@ -367,5 +378,14 @@ describe('QuizPage', () => {
       'placeholder',
       'np. 62,5',
     )
+  })
+
+  it('sends a client who submitted from a step to the waiting state', async () => {
+    const router = openQuizAs('WAITING_FOR_PLAN', 'KG', '/app/quiz/3')
+
+    expect(
+      await heading('Your trainer is reviewing your plan'),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/app/quiz/waiting')
   })
 })

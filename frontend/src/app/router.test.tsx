@@ -11,6 +11,12 @@ function zoneOfBrowser(zone: string) {
   })
 }
 
+// the quiz pages read the quiz status; every other call gets an empty answer
+const quizStatus = (status: string) => (request: Request) =>
+  new URL(request.url).pathname === '/api/v1/quiz'
+    ? json({ status })
+    : new Response(null, { status: 204 })
+
 async function signIn(email: string) {
   const user = userEvent.setup()
   await user.type(await screen.findByLabelText('Email'), email)
@@ -26,7 +32,7 @@ describe('routes', () => {
     ['/app', SIGNED_IN.CLIENT, 'Today'],
     ['/app/quiz', SIGNED_IN.CLIENT, 'What do you train for?'],
   ])('loads the area at %s', async (path, account, heading) => {
-    renderAppAt(path, account)
+    renderAppAt(path, account, quizStatus('NOT_SUBMITTED'))
 
     expect(
       await screen.findByRole('heading', { name: heading }),
@@ -69,11 +75,30 @@ describe('routes', () => {
         reached: 7,
       }),
     )
-    renderAppAt('/app/quiz/review', SIGNED_IN.CLIENT)
+    renderAppAt(
+      '/app/quiz/review',
+      SIGNED_IN.CLIENT,
+      quizStatus('NOT_SUBMITTED'),
+    )
 
     expect(
       await screen.findByRole('heading', { name: 'Check your answers' }),
     ).toBeInTheDocument()
+  })
+
+  it('opens the waiting page, not a step, at /app/quiz/waiting', async () => {
+    const { router } = renderAppAt(
+      '/app/quiz/waiting',
+      SIGNED_IN.CLIENT,
+      quizStatus('WAITING_FOR_PLAN'),
+    )
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Your trainer is reviewing your plan',
+      }),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/app/quiz/waiting')
   })
 
   it.each([

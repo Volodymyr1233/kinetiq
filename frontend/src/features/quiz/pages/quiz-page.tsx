@@ -10,6 +10,7 @@ import { useWeightUnit } from '@/lib/weight'
 import { MultipleChoice } from '../components/multiple-choice'
 import { NotesField } from '../components/notes-field'
 import { NumberField } from '../components/number-field'
+import { QuizStatusCheck } from '../components/quiz-status-check'
 import { SingleChoice } from '../components/single-choice'
 import { Stepper } from '../components/stepper'
 import { loadDraft, saveDraft } from '../quiz-draft'
@@ -42,6 +43,14 @@ const STEP_KEYS = [
 type OptionStep = 'goal' | 'experience' | 'level' | 'likes'
 
 export function QuizPage() {
+  return (
+    <QuizStatusCheck status="NOT_SUBMITTED">
+      <QuizSteps />
+    </QuizStatusCheck>
+  )
+}
+
+function QuizSteps() {
   const { t } = useTranslation()
   const unit = useWeightUnit()
   const params = useParams()

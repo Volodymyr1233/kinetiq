@@ -1,12 +1,15 @@
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
+import { json, problem, stubApi, type Reply } from '@/test/page'
 import type { QuizDraft } from '../quiz-schema'
 import { QuizPage } from './quiz-page'
 import { ReviewPage } from './review-page'
+import { WaitingPage } from './waiting-page'
 
 const ANSWERED: QuizDraft['answers'] = {
   goal: 'BUILD_MUSCLE',
@@ -35,25 +38,50 @@ function store(
   )
 }
 
-function openReview(unit: WeightUnit = 'KG') {
+/** A server that keeps one client's status: a submit, or a refusal as already submitted, makes it waiting. */
+function server(submit: () => Response | Promise<Response> = submitted) {
+  let status = 'NOT_SUBMITTED'
+  return async (request: Request) => {
+    if (request.method !== 'POST') return json({ status })
+    const response = await submit()
+    if (response.ok || response.status === 409) status = 'WAITING_FOR_PLAN'
+    return response
+  }
+}
+
+const submitted = () => json({ status: 'WAITING_FOR_PLAN' }, 201)
+
+function openReviewWith(reply: Reply, unit: WeightUnit = 'KG') {
+  const requests = stubApi(reply)
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [
       { path: '/app/quiz/review', Component: ReviewPage },
+      { path: '/app/quiz/waiting', Component: WaitingPage },
       { path: '/app/quiz/:step?', Component: QuizPage },
     ],
     { initialEntries: ['/app/quiz/review'] },
   )
   render(
-    <WeightUnitContext value={unit}>
-      <RouterProvider router={router} />
-    </WeightUnitContext>,
+    <QueryClientProvider client={new QueryClient()}>
+      <WeightUnitContext value={unit}>
+        <RouterProvider router={router} />
+      </WeightUnitContext>
+    </QueryClientProvider>,
   )
-  return router
+  return { router, requests }
 }
+
+const openReview = (unit: WeightUnit = 'KG') =>
+  openReviewWith(server(), unit).router
 
 const reviewHeading = () =>
   screen.findByRole('heading', { name: 'Check your answers' })
+
+const reviewingHeading = () =>
+  screen.findByRole('heading', { name: 'Your trainer is reviewing your plan' })
+
+const buildButton = () => screen.getByRole('button', { name: 'Build my plan' })
 
 describe('ReviewPage', () => {
   beforeEach(() => sessionStorage.clear())
@@ -210,14 +238,139 @@ describe('ReviewPage', () => {
     },
   )
 
-  it('shows Build my plan without an action yet', async () => {
-    store()
-    openReview()
+  it('sends the answers once, the weight in kilograms, and shows the reviewing state', async () => {
+    const user = userEvent.setup()
+    store({ weight: '137.8', notes: '  Left knee ' })
+    const { router, requests } = openReviewWith(server(), 'LB')
     await reviewHeading()
-
-    expect(screen.getByRole('button', { name: 'Build my plan' })).toBeDisabled()
     expect(
       screen.getByText('You can change them later with your trainer.'),
     ).toBeInTheDocument()
+
+    await user.click(buildButton())
+
+    expect(await reviewingHeading()).toHaveFocus()
+    expect(
+      screen.getByText(
+        "Your trainer checks it before you see it. You get a notice here when it's ready.",
+      ),
+    ).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/app/quiz/waiting')
+    const posts = requests.filter((request) => request.method === 'POST')
+    expect(posts).toHaveLength(1)
+    expect(await posts[0]!.json()).toEqual({
+      goal: 'BUILD_MUSCLE',
+      experience: 'YEARS_1_TO_2',
+      level: 'INTERMEDIATE',
+      age: 29,
+      heightCm: 168,
+      weightKg: 62.5,
+      likes: ['WEIGHTS', 'YOGA_PILATES'],
+      daysPerWeek: 3,
+      notes: '  Left knee ',
+    })
+    expect(sessionStorage.getItem('kinetiq.quiz')).toBeNull()
+  })
+
+  it('shows the building state, and no review, while the answers are sent', async () => {
+    const user = userEvent.setup()
+    let answer!: () => void
+    const answered = new Promise<void>((resolve) => (answer = resolve))
+    store({ days: 4 })
+    openReviewWith(
+      server(async () => {
+        await answered
+        return submitted()
+      }),
+    )
+    await reviewHeading()
+
+    await user.click(buildButton())
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Building your plan from 7 answers…',
+      }),
+    ).toHaveFocus()
+    expect(
+      screen.getByText(
+        'Sessions, exercises and starting weights for 4 days a week.',
+      ),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Build my plan' }),
+    ).not.toBeInTheDocument()
+
+    answer()
+
+    expect(await reviewingHeading()).toBeInTheDocument()
+  })
+
+  it('builds in Polish with Polish plural forms', async () => {
+    const user = userEvent.setup()
+    await i18n.changeLanguage('pl')
+    store()
+    openReviewWith(server(() => new Promise<Response>(() => {})))
+    await screen.findByRole('heading', { name: 'Sprawdź swoje odpowiedzi' })
+
+    await user.click(screen.getByRole('button', { name: 'Zbuduj mój plan' }))
+
+    expect(
+      await screen.findByText(
+        'Sesje, ćwiczenia i ciężary startowe na 3 dni w tygodniu.',
+      ),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the waiting state when the answers were stored before', async () => {
+    const user = userEvent.setup()
+    store()
+    const { router } = openReviewWith(
+      server(() =>
+        problem(409, { status: 409, code: 'quiz.already-submitted' }),
+      ),
+    )
+    await reviewHeading()
+
+    await user.click(buildButton())
+
+    expect(await reviewingHeading()).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/app/quiz/waiting')
+    expect(sessionStorage.getItem('kinetiq.quiz')).toBeNull()
+  })
+
+  it('keeps the review with a message and Try again when sending fails', async () => {
+    const user = userEvent.setup()
+    let failures = 1
+    store()
+    openReviewWith(
+      server(() =>
+        failures-- > 0
+          ? problem(500, { status: 500, code: 'internal.error' })
+          : submitted(),
+      ),
+    )
+    await reviewHeading()
+
+    await user.click(buildButton())
+
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      'Something went wrong on our side. Try again in a moment.',
+    )
+    expect(sessionStorage.getItem('kinetiq.quiz')).not.toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+
+    expect(await reviewingHeading()).toBeInTheDocument()
+  })
+
+  it('sends a client who submitted to the waiting state', async () => {
+    store()
+    const { router } = openReviewWith(() =>
+      json({ status: 'WAITING_FOR_PLAN' }),
+    )
+
+    expect(await reviewingHeading()).toBeInTheDocument()
+    expect(router.state.location.pathname).toBe('/app/quiz/waiting')
   })
 })
