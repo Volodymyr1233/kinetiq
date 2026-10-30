@@ -495,6 +495,39 @@
       "later": "Później możesz je zmienić razem z trenerem."
     }
   },
+  "clients": {
+    "title": "Klienci",
+    "loading": "Wczytywanie klientów",
+    "retry": "Spróbuj ponownie",
+    "count_one": "{{shown, number}} z {{count, number}} klienta",
+    "count_few": "{{shown, number}} z {{count, number}} klientów",
+    "count_many": "{{shown, number}} z {{count, number}} klientów",
+    "count_other": "{{shown, number}} z {{count, number}} klienta",
+    "noValue": "Jeszcze brak",
+    "columns": {
+      "name": "Klient",
+      "goal": "Cel",
+      "plan": "Plan",
+      "lastLog": "Ostatni zapis"
+    },
+    "planStates": {
+      "NO_QUIZ": "Quiz jeszcze nie wypełniony",
+      "PLAN_TO_REVIEW": "Plan do przejrzenia"
+    },
+    "search": {
+      "label": "Szukaj klientów po imieniu i nazwisku",
+      "placeholder": "Szukaj klienta"
+    },
+    "empty": {
+      "title": "Nie masz jeszcze klientów",
+      "body": "Zaproś klienta. Pojawi się tutaj po dołączeniu."
+    },
+    "noMatch": {
+      "title": "Żaden klient nie pasuje do tego imienia i nazwiska",
+      "body": "Sprawdź pisownię lub wyczyść wyszukiwanie.",
+      "clear": "Wyczyść wyszukiwanie"
+    }
+  },
   "invites": {
     "title": "Otwarte zaproszenia",
     "description": "Klient, który dołączy, trafia do listy Wszyscy klienci. Linki przestają działać, gdy wygasną lub je unieważnisz.",

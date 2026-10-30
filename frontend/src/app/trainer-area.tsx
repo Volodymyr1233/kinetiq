@@ -8,7 +8,6 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import {
-  Link,
   matchPath,
   NavLink,
   Outlet,
@@ -16,7 +15,6 @@ import {
   useOutletContext,
 } from 'react-router'
 import { PlaceholderPage } from '@/app/placeholder-page'
-import { Button } from '@/components/ui/button'
 import {
   Sidebar,
   SidebarContent,
@@ -110,16 +108,4 @@ export function TrainerArea() {
 // the five sections show this until their features are built
 export function TrainerPlaceholder() {
   return <PlaceholderPage title={useOutletContext<string>()} />
-}
-
-// until task #37 builds the clients table, the invites are reached from here
-export function ClientsPlaceholder() {
-  const { t } = useTranslation()
-  return (
-    <PlaceholderPage title={useOutletContext<string>()}>
-      <Button variant="outline" size="sm" className="self-start" asChild>
-        <Link to="invites">{t('invites.open')}</Link>
-      </Button>
-    </PlaceholderPage>
-  )
 }

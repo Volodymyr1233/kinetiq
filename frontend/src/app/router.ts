@@ -85,9 +85,11 @@ export const createRoutes = (): RouteObject[] => [
         children: [
           {
             index: true,
+            HydrateFallback: BlankWhileLoading,
             lazy: {
               Component: async () =>
-                (await import('@/app/trainer-area')).ClientsPlaceholder,
+                (await import('@/features/client/pages/clients-page'))
+                  .ClientsPage,
             },
           },
           {

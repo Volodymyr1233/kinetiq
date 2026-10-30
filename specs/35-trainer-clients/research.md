@@ -33,3 +33,9 @@
 
 - **Decision**: `order by lower(name), id`; no search parameter.
 - **Rationale**: the table sorts by name without regard to case, and the search is a filter over the list already read (spec Assumptions).
+
+## The invite action on the clients screen (#37)
+
+- **Decision**: the empty state and the header link to `/trainer/clients/invites`, which already holds the invite dialog and the open invites.
+- **Rationale**: the dialog belongs to the `account` feature, and a feature does not import another (`frontend/CLAUDE.md`). A link reuses the whole flow without moving the dialog up for a second use.
+- **Alternatives**: move `InviteDialog` to `components/` (a change to another story's code for a button); a second copy (duplicated behaviour).
