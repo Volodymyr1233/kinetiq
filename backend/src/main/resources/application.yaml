@@ -14,6 +14,10 @@ spring:
   messages:
     # an unsupported language falls back to messages.properties (English), not to the server's locale
     fallback-to-system-locale: false
+  web:
+    resources:
+      # WebConfig registers the only static handler, with the SPA fallback
+      add-mappings: false
   docker:
     compose:
       lifecycle-management: start_only

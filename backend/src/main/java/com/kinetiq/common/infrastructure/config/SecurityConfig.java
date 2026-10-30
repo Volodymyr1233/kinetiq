@@ -63,6 +63,11 @@ public class SecurityConfig {
                         .hasRole("TRAINER")
                         .requestMatchers("/api/v1/quiz/**")
                         .hasRole("CLIENT")
+                        .requestMatchers("/api/**")
+                        .authenticated()
+                        // the SPA: static files and client-side routes are public, anything else needs a sign-in
+                        .requestMatchers(HttpMethod.GET, "/**")
+                        .permitAll()
                         .anyRequest()
                         .authenticated())
                 .securityContext(context -> context.securityContextRepository(contextRepository))
