@@ -77,6 +77,31 @@ class JdbcClientDirectoryIT {
     }
 
     @Test
+    void shouldFindOwnClientWithGoalAndPlanState() {
+        AccountId trainer = insertTrainer();
+        AccountId client = insertClient("Ola", trainer);
+        insertQuiz(client, Goal.LOSE_FAT);
+
+        ClientSummary found = directory.findClient(trainer, client).orElseThrow();
+
+        assertThat(found.getName()).isEqualTo("Ola");
+        assertThat(found.getGoal()).contains(Goal.LOSE_FAT);
+        assertThat(found.getPlanState()).isEqualTo(PlanState.PLAN_TO_REVIEW);
+    }
+
+    // one answer for all three: another trainer's client, an account that is no client, and an unknown id
+    @Test
+    void shouldFindNothing_whenTheClientIsNotTheTrainersOwn() {
+        AccountId marek = insertTrainer();
+        AccountId ola = insertTrainer();
+        AccountId olasClient = insertClient("Basia", ola);
+
+        assertThat(directory.findClient(marek, olasClient)).isEmpty();
+        assertThat(directory.findClient(marek, ola)).isEmpty();
+        assertThat(directory.findClient(marek, AccountId.random())).isEmpty();
+    }
+
+    @Test
     void shouldListNothing_whenTrainerHasNoClients() {
         assertThat(directory.findClientsOf(insertTrainer())).isEmpty();
     }

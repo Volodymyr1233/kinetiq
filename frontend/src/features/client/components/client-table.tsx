@@ -1,5 +1,5 @@
 import { useTranslation } from 'react-i18next'
-import { Badge } from '@/components/ui/badge'
+import { Link } from 'react-router'
 import {
   Table,
   TableBody,
@@ -9,6 +9,7 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import type { Client } from '../api/clients'
+import { PlanStateBadge } from './plan-state-badge'
 
 // a value that is not there yet reads as "None yet", not as a bare dash
 function NoValue() {
@@ -37,7 +38,14 @@ export function ClientTable({ clients }: { clients: Client[] }) {
       <TableBody>
         {clients.map((client) => (
           <TableRow key={client.id}>
-            <TableCell className="font-medium">{client.name}</TableCell>
+            <TableCell className="font-medium">
+              <Link
+                to={client.id}
+                className="focus-visible:ring-ring/50 rounded-sm underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:outline-none"
+              >
+                {client.name}
+              </Link>
+            </TableCell>
             <TableCell className="text-muted-foreground">
               {client.goal ? (
                 t(`quiz.goal.options.${client.goal}.title`)
@@ -46,14 +54,7 @@ export function ClientTable({ clients }: { clients: Client[] }) {
               )}
             </TableCell>
             <TableCell>
-              {/* the text carries the state; amber only backs it up */}
-              <Badge
-                variant={
-                  client.planState === 'PLAN_TO_REVIEW' ? 'warning' : 'outline'
-                }
-              >
-                {t(`clients.planStates.${client.planState}`)}
-              </Badge>
+              <PlanStateBadge state={client.planState} />
             </TableCell>
             {/* logs arrive with their feature */}
             <TableCell className="text-muted-foreground">

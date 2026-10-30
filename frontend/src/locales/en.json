@@ -501,6 +501,24 @@
       "NO_QUIZ": "No quiz yet",
       "PLAN_TO_REVIEW": "Plan to review"
     },
+    "page": {
+      "back": "All clients",
+      "loading": "Loading client",
+      "goal": "Goal: {{goal}}",
+      "tabsLabel": "Client sections",
+      "tabs": {
+        "overview": "Overview",
+        "plan": "Plan",
+        "logs": "Logs",
+        "messages": "Messages"
+      },
+      "tabEmpty": "Nothing here yet. This tab fills in as its feature arrives.",
+      "notFound": {
+        "title": "Client not found",
+        "body": "This client does not exist, or is not one of your clients.",
+        "action": "Back to all clients"
+      }
+    },
     "search": {
       "label": "Search clients by name",
       "placeholder": "Search by name"

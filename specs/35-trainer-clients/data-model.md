@@ -11,7 +11,7 @@ Nothing is stored. The entry is read from existing tables.
 
 `ClientDirectory` (`domain.output`): `List<ClientSummary> findClientsOf(AccountId trainer)`, ordered by name without regard to case, then by id.
 
-`ListClientsUseCase` (`domain.input`): `List<ClientSummary> listClients(AccountId trainer)`.
+`ViewClientsUseCase` (`domain.input`): `List<ClientSummary> listClients(AccountId trainer)`.
 
 ## Read
 

@@ -1,8 +1,8 @@
 package com.kinetiq.client.infrastructure.config;
 
-import com.kinetiq.client.domain.input.ListClientsUseCase;
+import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.output.ClientDirectory;
-import com.kinetiq.client.domain.service.ClientListingService;
+import com.kinetiq.client.domain.service.ClientViewService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Configuration;
 class ClientConfig {
 
     @Bean
-    ListClientsUseCase listClientsUseCase(ClientDirectory clients) {
-        return new ClientListingService(clients);
+    ViewClientsUseCase viewClientsUseCase(ClientDirectory clients) {
+        return new ClientViewService(clients);
     }
 }

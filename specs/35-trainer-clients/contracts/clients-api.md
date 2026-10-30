@@ -20,3 +20,15 @@
 | `planState` | `NO_QUIZ` \| `PLAN_TO_REVIEW` | required; more values with the plan stories |
 
 No query parameters. The frontend types come from the generated OpenAPI document (`npm run gen:api`).
+
+
+## `GET /api/v1/clients/{id}` (#38)
+
+One client of the signed-in trainer, as `ClientResponse`.
+
+| Status | When |
+|---|---|
+| `200` | the client is linked to the signed-in trainer |
+| `404` | an unknown id, another trainer's client, or an account that is no client; the answers are identical, code `client.not-found` |
+| `400` | the id is not a UUID, code `request.invalid` |
+| `401` / `403` | as for the list |

@@ -6,7 +6,7 @@
 
 ## Summary
 
-Task #36 adds `GET /api/v1/clients`: a new backend feature `client` with a `ListClientsUseCase`, a `ClientDirectory` output port and one SQL read model that joins the trainer's clients with their quiz answers. The route is opened to trainers only. #37 and #38 (frontend, and the single-client read) are planned when they start.
+Task #36 adds `GET /api/v1/clients`: a new backend feature `client` with a `ViewClientsUseCase`, a `ClientDirectory` output port and one SQL read model that joins the trainer's clients with their quiz answers. The route is opened to trainers only. #37 and #38 (frontend, and the single-client read) are planned when they start.
 
 ## Technical Context
 
@@ -64,9 +64,9 @@ specs/35-trainer-clients/
 backend/src/main/java/com/kinetiq/client/
 ├── domain/
 │   ├── model/        ClientSummary, PlanState
-│   ├── input/        ListClientsUseCase
+│   ├── input/        ViewClientsUseCase
 │   ├── output/       ClientDirectory
-│   └── service/      ClientListingService
+│   └── service/      ClientViewService
 └── infrastructure/
     ├── config/       ClientConfig
     ├── input/        ClientController, ClientListResponse, ClientResponse, ClientWebMapper

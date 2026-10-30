@@ -31,3 +31,10 @@ With the backend running, in `frontend/`: `npm run gen:api`. `schema.d.ts` gains
 - Type part of a name in the search box: the table narrows, whatever the letter case; the line under the title counts "2 of 3 clients". Text that matches nobody shows "No client matches that name" with "Clear search".
 - A trainer with no clients (the second demo trainer) sees "No clients yet" and "Invite client", which opens the invites page. "Open invites" in the header does the same.
 - Check it at 1280 px in light and dark, switch the language to Polish, and use Tab: the search box, the buttons and the links all show a focus ring.
+
+
+## 5. The client page (#38)
+
+- In the table, choose a client's name: `/trainer/clients/<id>` shows the name, "Goal: ..." and the plan state, with the tabs Overview, Plan, Logs and Messages. Each tab has its own address and says it fills in later; a reload keeps the tab; the arrow keys move between tabs.
+- Open `/trainer/clients/<any other id>`, and the id of a client of the second demo trainer: both show "Client not found" with a way back to all clients.
+- Check it at 1280 px in light and dark, and in Polish.
