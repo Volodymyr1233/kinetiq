@@ -52,13 +52,13 @@ Each entry: decision, reason, alternatives. Entries for tasks #55 and #57 are re
 
 **Why**: The rule "answer 404 for another person's resource" (`CLAUDE.md`) applies to a resource of another person; a trainer asking for "my quiz" asks for an endpoint of another role, which the project answers by role (spec FR-010).
 
-## R8 — "Already submitted" as an invalid request (task #55)
+## R8 — "Already submitted" as a conflict (task #55)
 
-**Decision**: `QuizAlreadySubmittedException` is a `DomainException` of kind `INVALID` with code `quiz.already-submitted`, so it answers `400`. The frontend reacts to the code, not the status.
+**Decision**: `QuizAlreadySubmittedException` is a `DomainException` of kind `CONFLICT` with code `quiz.already-submitted`, so it answers `409`. The frontend reacts to the code, not the status.
 
-**Why**: `DomainException.Kind` (story #18) has no conflict kind. Adding one changes shared code in `common` for no behaviour the client can see; the code is what the contract promises (spec FR-009).
+**Why**: `DomainException.Kind` has `CONFLICT` (`409`), and the refusals of something that already exists use it: `exercise.name-taken` (story #47) and an invite for an existing account (story #26). An existing submission is the same kind of refusal. The code is what the contract promises (spec FR-009).
 
-**Alternatives**: a new `CONFLICT` kind answering `409` (cleaner HTTP, but a change to the shared kernel that this story does not need).
+**Alternatives**: kind `INVALID` answering `400` (chosen when this story was planned, before `common` had a conflict kind).
 
 ## R9 — One submission per client, enforced by the database (task #55)
 

@@ -61,6 +61,8 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/exercises/**", "/api/v1/invites/**")
                         .hasRole("TRAINER")
+                        .requestMatchers("/api/v1/quiz/**")
+                        .hasRole("CLIENT")
                         .anyRequest()
                         .authenticated())
                 .securityContext(context -> context.securityContextRepository(contextRepository))

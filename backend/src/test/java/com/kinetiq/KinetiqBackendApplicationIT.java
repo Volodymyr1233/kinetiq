@@ -109,6 +109,14 @@ class KinetiqBackendApplicationIT {
     }
 
     @Test
+    void shouldRefuseQuiz_whenCallerIsAnonymous() {
+        var result = mvc.get().uri("/api/v1/quiz").exchange();
+
+        assertThat(result).hasStatus(HttpStatus.UNAUTHORIZED);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.unauthenticated");
+    }
+
+    @Test
     @WithMockUser(username = "00000000-0000-4000-8000-0000000000aa", roles = "TRAINER")
     void shouldListStarterExercises_whenCallerIsSignedIn() {
         assertThat(mvc.get().uri("/api/v1/exercises"))

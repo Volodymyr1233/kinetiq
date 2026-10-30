@@ -37,7 +37,7 @@ A review step that lists the seven answers from the draft in the tab, with Chang
 | III. Secure by default | Pass. No public endpoint; `/api/v1/quiz/**` requires the role `CLIENT` (R7). The client is taken from the session, never from the request. Answers are health data: never logged, kept until task #168 decides retention and encryption (spec, Clarifications). |
 | IV. Plan changes | Not affected; drafting the first plan is a later story, and its prompts carry no names or ids. |
 | V. Tests verify behaviour | Pass. The test list below covers rules, the one-submission guarantee, error mapping, role checks and screen behaviour. |
-| VI. Simplicity | Pass. No form on the review (R1), one status enum (R6), no new error kind in `common` (R8), no polling (R10). |
+| VI. Simplicity | Pass. No form on the review (R1), one status enum (R6), no change to `common` (R8), no polling (R10). |
 | VII. One design system | Pass. shadcn components and tokens; EN and PL; browser check at 375 px, light and dark. |
 
 Re-checked after design: unchanged.
@@ -82,13 +82,14 @@ specs/50-client-quiz/research.md, contracts/routes.md   the review route now exi
 
 backend/src/main/java/com/kinetiq/quiz/            (#55)
 ├── domain/model/        QuizSubmission, QuizSubmissionId, Goal, Experience, Level, Like, QuizStatus
-├── domain/input/        SubmitQuizUseCase + SubmitQuizCommand, QuizStatusUseCase
+├── domain/input/        SubmitQuizUseCase (submit and status) + SubmitQuizCommand
 ├── domain/output/       QuizSubmissionRepository
 ├── domain/service/      QuizSubmissionService
 ├── domain/exception/    QuizAlreadySubmittedException
-└── infrastructure/      config, input (QuizController, SubmitQuizRequest, QuizStatusResponse, QuizWebMapper), output (entities, JPA repository, mapper, Impl)
-backend/src/main/resources/db/migration/V<n>__create_quiz_submissions.sql   (#55, number per "Open items")
-backend/src/main/resources/db/dev-data/R__demo_quiz.sql                     (#55)
+└── infrastructure/      config, input (QuizController, SubmitQuizRequest, QuizStatusResponse, QuizWebMapper), output (entity, JPA repository, mapper, Impl)
+backend/src/main/resources/db/migration/V12__create_quiz_submissions.sql   (#55, number per "Open items")
+backend/src/main/resources/db/dev-data/R__demo_quiz.sql, R__demo_accounts.sql   (#55, a second demo client with a submission)
+README.md                                                                   (#55, that client in the demo accounts)
 backend/src/main/java/com/kinetiq/common/infrastructure/config/SecurityConfig.java   /api/v1/quiz/** for CLIENT (#55)
 ```
 
@@ -111,10 +112,10 @@ Task order: #56, then #55 once task #31 is merged, then #57.
 | `quiz-schema.test.ts` (#56) | `isComplete`: true only with `reached` 7 and steps 1–6 valid |
 | `review-page.test.tsx` (#56) | Seven rows in step order with labels and values; "About you" in English and Polish number format; likes as a list in screen order; "No notes" for empty notes; each "Change" link named for its row and leading to its step; Back to step 7; an incomplete draft redirects to the step that may open; "Build my plan" disabled; focus on the heading |
 | `quiz-page.test.tsx` (#56) | A step opened from the review returns to the review with Continue and with Back; Continue stays disabled while that step is invalid |
-| `QuizSubmissionTest` (#55) | Each rule of spec 50 refused at its bound and accepted inside; notes trimmed and empty notes absent; likes distinct |
+| `QuizSubmissionTest` (#55) | Each rule of spec 50 refused at its bound and accepted inside; notes trimmed and empty notes absent; likes 1–5 |
 | `QuizSubmissionServiceTest` (#55, fake repository) | First submit stored with the time; second refused with `quiz.already-submitted`; status for no submission and for a submission |
-| `QuizSubmissionRepositoryImplIT` (#55) | Round trip; the database refuses a second submission for the same client and a broken check; the race turns into `quiz.already-submitted` |
-| `QuizControllerTest` (#55) | `201` and body; each field's `validation.failed` code; `quiz.already-submitted`; `401` without a session; `403` for a trainer |
+| `QuizSubmissionRepositoryImplIT` (#55) | Stored row with and without notes; the database refuses a broken check; a second submission for the same client, as in a race, turns into `quiz.already-submitted` |
+| `QuizControllerTest` (#55) | `201` and body; each field's `validation.failed` code; an unknown code `request.invalid`; `409` `quiz.already-submitted`; `401` without a session; `403` for a trainer |
 | `KinetiqBackendApplicationIT` (#55) | `/api/v1/quiz` refused without a session |
 | `waiting-page.test.tsx` and submit tests (#57) | Building state while sending; reviewing state after success and after a reload; `quiz.already-submitted` shows the waiting state; failure shows the message and "Try again"; draft removed; loading and error of the status read |
 
@@ -122,7 +123,7 @@ Task order: #56, then #55 once task #31 is merged, then #57.
 
 | Item | Task | How it is settled |
 |---|---|---|
-| Migration number: story #18 adds `V5`, task #31 may add another | #55 | Taken from `master` when the task starts |
+| Migration number `V12`: the highest on `master` is `V11` (task #32), and no open pull request adds one | #55 | Checked again before opening and before merging the pull request; renumbered if taken (`backend/CLAUDE.md`) |
 | Whether the waiting state is guarded by #57 alone or by the entry check of task #53 | #57 | Settled when #57 starts, with task #53's plan in spec 50 |
 
 ## Complexity Tracking
