@@ -547,5 +547,14 @@
       "confirm": "Unieważnij zaproszenie",
       "revoked": "Unieważniono zaproszenie"
     }
+  },
+  "charts": {
+    "series": {
+      "completion": "Wykonane sesje",
+      "rpe": "RPE",
+      "load": "Obciążenie",
+      "wearables": "Tętno i kcal",
+      "previous": "Poprzedni okres"
+    }
   }
 }

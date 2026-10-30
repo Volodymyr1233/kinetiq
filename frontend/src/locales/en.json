@@ -534,5 +534,14 @@
       "confirm": "Revoke invite",
       "revoked": "Invite revoked"
     }
+  },
+  "charts": {
+    "series": {
+      "completion": "Sessions done",
+      "rpe": "RPE",
+      "load": "Load",
+      "wearables": "Heart rate and kcal",
+      "previous": "Previous period"
+    }
   }
 }
