@@ -260,6 +260,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listClients"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sign-ins/current": {
         parameters: {
             query?: never;
@@ -455,6 +471,18 @@ export interface components {
             /** Format: int32 */
             total: number;
             exercises: components["schemas"]["ExerciseResponse"][];
+        };
+        ClientListResponse: {
+            clients: components["schemas"]["ClientResponse"][];
+        };
+        ClientResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** @enum {string} */
+            planState: "NO_QUIZ" | "PLAN_TO_REVIEW";
         };
     };
     responses: never;
@@ -911,6 +939,26 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    listClients: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientListResponse"];
+                };
             };
         };
     };
