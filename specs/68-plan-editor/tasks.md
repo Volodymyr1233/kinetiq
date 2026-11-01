@@ -33,11 +33,11 @@
 
 **Purpose**: Every rule of FR-005 to FR-007 in the domain. Commit: `feat(backend): add plan rules to the domain (#70)`.
 
-- [ ] T008 Add `PlanRuleViolationException` carrying its code, and `PlanWeeksBeforeCurrentException` with `currentWeek` as a property, in `backend/src/main/java/com/kinetiq/plan/domain/exception/`
-- [ ] T009 Enforce entry rules in `ExerciseEntry`: 1–20 sets, amount 1–3600, load empty or above 0 up to 999.9 with at most one decimal, RPE 5–10, rest 0–600; in `Session`: name 1–60 after trimming, at most 30 exercises; in `Plan`: 4–16 weeks, at most 6 sessions, distinct days, sessions sorted by day
-- [ ] T010 Add `requireComplete()` (2–6 sessions, each with an exercise), `edit(goal, weeks, sessions, today)` (when published: complete, and refused only when the length gets shorter and falls below the current week) and `currentWeek(today)` (at least 1) to `backend/src/main/java/com/kinetiq/plan/domain/model/Plan.java`; `publish(today)` follows in #72
-- [ ] T011 Write `backend/src/test/java/com/kinetiq/plan/domain/model/PlanTest.java`, one test per rule at its boundaries; `currentWeek` across a year's end and before week 1; a finished plan saves with its length unchanged
-- [ ] T012 Run `./gradlew check`; commit
+- [X] T008 Add `PlanRuleViolationException` carrying its code, and `PlanWeeksBeforeCurrentException` with `currentWeek` as a property, in `backend/src/main/java/com/kinetiq/plan/domain/exception/`
+- [X] T009 Enforce entry rules in `ExerciseEntry`: 1–20 sets, amount 1–3600, load empty or above 0 up to 999.9 with at most one decimal, RPE 5–10, rest 0–600; in `Session`: name 1–60 after trimming, at most 30 exercises; in `Plan`: 4–16 weeks, at most 6 sessions, distinct days, sessions sorted by day
+- [X] T010 Add `requireComplete()` (2–6 sessions, each with an exercise), `edit(goal, weeks, sessions, today)` (when published: complete, and refused only when the length gets shorter and falls below the current week) and `currentWeek(today)` (at least 1) to `backend/src/main/java/com/kinetiq/plan/domain/model/Plan.java`; `publish(today)` follows in #72
+- [X] T011 Write `backend/src/test/java/com/kinetiq/plan/domain/model/PlanTest.java`, one test per rule at its boundaries; `currentWeek` across a year's end and before week 1; a finished plan saves with its length unchanged
+- [X] T012 Run `./gradlew check`; commit
 
 ---
 
