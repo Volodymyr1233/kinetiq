@@ -23,6 +23,7 @@ function renderWith(account?: CurrentAccount) {
       </WeightUnitProvider>
     </QueryClientProvider>,
   )
+  return client
 }
 
 describe('WeightUnitProvider', () => {
@@ -36,5 +37,17 @@ describe('WeightUnitProvider', () => {
     renderWith()
 
     expect(screen.getByText('KG')).toBeInTheDocument()
+  })
+
+  it('gives the next account its own unit after signing out and in, without a reload', async () => {
+    const client = renderWith({ ...SIGNED_IN.TRAINER, units: 'LB' })
+
+    client.clear()
+    client.setQueryData(currentAccountQuery.queryKey, {
+      ...SIGNED_IN.TRAINER,
+      units: 'KG',
+    })
+
+    expect(await screen.findByText('KG')).toBeInTheDocument()
   })
 })

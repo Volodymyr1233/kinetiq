@@ -2,6 +2,7 @@ import { CircleAlertIcon, PlusIcon } from 'lucide-react'
 import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { LeaveGuard } from '@/components/leave-guard'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,6 +31,7 @@ import {
 } from '@/components/ui/select'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { useDialogFocus } from '@/hooks/use-dialog-focus'
 import type { components } from '@/lib/api/schema'
 import { cn } from '@/lib/utils'
 import { useWeightUnit } from '@/lib/weight'
@@ -53,8 +55,6 @@ import {
   type Goal,
   type Problem,
 } from '../plan-draft'
-import { useDialogFocus } from '../use-dialog-focus'
-import { LeaveGuard } from './leave-guard'
 import { SessionPanel } from './session-panel'
 import { ValidationSummary } from './validation-summary'
 
@@ -265,7 +265,7 @@ export function PlanEditor({
   return (
     // the margin keeps whatever takes focus clear of the sticky page header
     <div className="flex flex-col gap-6 pt-4 [&_*]:scroll-mt-16">
-      <LeaveGuard dirty={dirty} />
+      <LeaveGuard dirty={dirty} body={t('leave.planBody')} />
       <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
         <Field className="w-56 max-w-full">
           <FieldLabel htmlFor={`${id}-goal`}>

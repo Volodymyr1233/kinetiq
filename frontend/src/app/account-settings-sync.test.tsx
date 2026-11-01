@@ -69,6 +69,30 @@ describe('AccountSettingsSync', () => {
     expect(isDark()).toBe(true)
   })
 
+  it("shows the next account's language and theme after sign-out, without a reload", async () => {
+    const client = renderSync()
+    act(() => {
+      client.setQueryData(currentAccountQuery.queryKey, {
+        ...SIGNED_IN.CLIENT,
+        language: 'PL',
+        theme: 'DARK',
+      })
+    })
+    await waitFor(() => expect(isDark()).toBe(true))
+
+    act(() => {
+      client.clear()
+      client.setQueryData(currentAccountQuery.queryKey, {
+        ...SIGNED_IN.CLIENT,
+        language: 'EN',
+        theme: 'LIGHT',
+      })
+    })
+
+    await waitFor(() => expect(isDark()).toBe(false))
+    expect(i18n.language).toBe('en')
+  })
+
   it('asks the server nothing while nobody is signed in', () => {
     renderSync()
 

@@ -641,6 +641,13 @@
       "revoked": "Unieważniono zaproszenie"
     }
   },
+  "leave": {
+    "title": "Wyjść bez zapisywania?",
+    "planBody": "Niezapisane zmiany w tym planie przepadną.",
+    "settingsBody": "Niezapisane zmiany w ustawieniach przepadną.",
+    "stay": "Zostań",
+    "leave": "Wyjdź"
+  },
   "plan": {
     "loading": "Wczytywanie planu",
     "retry": "Spróbuj ponownie",
@@ -760,12 +767,6 @@
     "publishDialog": {
       "title": "Opublikować plan? Klient: {{name}}",
       "body": "Klient zobaczy plan po publikacji, a tydzień 1 to bieżący tydzień w jego strefie czasowej. Możesz go później edytować, ale nie cofniesz go do szkicu."
-    },
-    "leave": {
-      "title": "Wyjść bez zapisywania?",
-      "body": "Niezapisane zmiany w tym planie przepadną.",
-      "stay": "Zostań",
-      "leave": "Wyjdź"
     },
     "problems": {
       "saveTitle": "Popraw to, aby zapisać plan.",
