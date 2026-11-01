@@ -16,6 +16,7 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
@@ -271,6 +272,96 @@ class PlanManagementServiceTest {
             assertThatThrownBy(() -> service.save(save(CLIENT, null, 12, sessions(ExerciseId.random()))))
                     .isInstanceOf(PlanExerciseNotInLibraryException.class);
             assertThat(plans.byClient).isEmpty();
+        }
+    }
+
+    @Nested
+    class Publish {
+
+        private PlanManagementService at(String instant, ZoneId zone) {
+            ViewClientsUseCase inZone = new ViewClientsUseCase() {
+                @Override
+                public List<ClientSummary> listClients(AccountId trainer) {
+                    return List.of();
+                }
+
+                @Override
+                public ClientSummary getClient(AccountId trainer, AccountId client) {
+                    return new ClientSummary(CLIENT, "Ola", Goal.LOSE_FAT, PlanState.DRAFT, zone);
+                }
+            };
+            return new PlanManagementService(
+                    inZone, library, plans, Clock.fixed(Instant.parse(instant), ZoneOffset.UTC));
+        }
+
+        @Test
+        void shouldPublishTheDraft_startingWeekOneThisWeek() {
+            Plan draft = storedDraft();
+
+            PlanDetails details = service.publish(TRAINER, CLIENT, draft.getVersion());
+
+            assertThat(details.plan().getFirstWeek()).contains(LocalDate.parse("2026-11-02"));
+            assertThat(details.currentWeek()).isEqualTo(1);
+            assertThat(details.plan().getVersion()).isEqualTo(draft.getVersion() + 1);
+            assertThat(plans.byClient.get(CLIENT).isPublished()).isTrue();
+        }
+
+        @Test
+        void shouldFollowTheClientsTimeZone_whenItIsBehindOrAheadOfUtc() {
+            Plan draft = storedDraft();
+            ZoneId newYork = ZoneId.of("America/New_York");
+
+            // Monday 00:30 in UTC is still Sunday evening in New York
+            PlanDetails behind = at("2026-11-02T00:30:00Z", newYork).publish(TRAINER, CLIENT, draft.getVersion());
+            assertThat(behind.plan().getFirstWeek()).contains(LocalDate.parse("2026-10-26"));
+
+            plans.byClient.clear();
+            Plan again = storedDraft();
+            // Sunday 23:30 in UTC is already Monday in Warsaw
+            PlanDetails ahead = at("2026-11-01T23:30:00Z", WARSAW).publish(TRAINER, CLIENT, again.getVersion());
+            assertThat(ahead.plan().getFirstWeek()).contains(LocalDate.parse("2026-11-02"));
+        }
+
+        @Test
+        void shouldRefuseAsChanged_whenTheVersionIsStale() {
+            Plan draft = storedDraft();
+
+            assertThatThrownBy(() -> service.publish(TRAINER, CLIENT, draft.getVersion() + 1))
+                    .isInstanceOf(PlanChangedException.class);
+            assertThat(plans.byClient.get(CLIENT).isPublished()).isFalse();
+        }
+
+        // the repeated request carries the version of before the first publish, and is told what really happened
+        @Test
+        void shouldRefuseAsAlreadyPublished_evenWithAnOldVersion() {
+            Plan published = storedPublished(16);
+
+            assertThatThrownBy(() -> service.publish(TRAINER, CLIENT, published.getVersion() - 1))
+                    .isInstanceOf(PlanAlreadyPublishedException.class);
+            assertThat(plans.byClient.get(CLIENT)).isSameAs(published);
+        }
+
+        @Test
+        void shouldRefuse_whenTheDraftIsIncomplete() {
+            Plan draft = plans.save(Plan.draft(CLIENT, Goal.LOSE_FAT, 12, List.of()));
+
+            assertThatThrownBy(() -> service.publish(TRAINER, CLIENT, draft.getVersion()))
+                    .isInstanceOf(PlanRuleViolationException.class);
+            assertThat(plans.byClient.get(CLIENT).isPublished()).isFalse();
+        }
+
+        @Test
+        void shouldAnswerNoPlan_whenThereIsNone() {
+            assertThatThrownBy(() -> service.publish(TRAINER, CLIENT, 0)).isInstanceOf(PlanNotFoundException.class);
+        }
+
+        @Test
+        void shouldRefuseAndChangeNothing_whenTheClientIsAnotherTrainers() {
+            Plan draft = storedDraft();
+
+            assertThatThrownBy(() -> service.publish(OTHER_TRAINER, CLIENT, draft.getVersion()))
+                    .isInstanceOf(ClientNotFoundException.class);
+            assertThat(plans.byClient.get(CLIENT)).isSameAs(draft);
         }
     }
 }

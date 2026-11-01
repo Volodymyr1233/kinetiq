@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -51,5 +52,19 @@ class PlanController {
             Authentication authentication) {
         return mapper.toResponse(
                 plans.save(mapper.toCommand(signedIn(authentication), new AccountId(id), request)), locale);
+    }
+
+    /**
+     * Publishes the saved draft; week 1 becomes the current week in the client's time zone. {@code 409} with
+     * {@code plan.already-published} or {@code plan.changed}, {@code 400} when the draft is not complete.
+     */
+    @PostMapping("/publication")
+    PlanResponse publishPlan(
+            @PathVariable UUID id,
+            @Valid @RequestBody PublishPlanRequest request,
+            Locale locale,
+            Authentication authentication) {
+        return mapper.toResponse(
+                plans.publish(signedIn(authentication), new AccountId(id), request.version()), locale);
     }
 }

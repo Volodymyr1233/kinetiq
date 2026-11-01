@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanRuleViolationException;
 import com.kinetiq.plan.domain.exception.PlanWeeksBeforeCurrentException;
 import com.kinetiq.quiz.domain.model.Goal;
@@ -318,6 +319,41 @@ class PlanTest {
 
             assertThatThrownBy(() -> published(8, MONDAY).edit(Goal.LOSE_FAT, 7, COMPLETE, longAfter))
                     .isInstanceOf(PlanWeeksBeforeCurrentException.class);
+        }
+    }
+
+    @Nested
+    class Publish {
+
+        @ParameterizedTest
+        @ValueSource(strings = {"2026-11-02", "2026-11-04", "2026-11-08"})
+        void shouldStartWeekOneOnTheMondayOfThatWeek(LocalDate today) {
+            Plan published = draft(12, COMPLETE).publish(today);
+
+            assertThat(published.isPublished()).isTrue();
+            assertThat(published.getFirstWeek()).contains(LocalDate.parse("2026-11-02"));
+            assertThat(published.currentWeek(today)).contains(1);
+        }
+
+        @Test
+        void shouldRefuse_whenTheDraftIsNotComplete() {
+            Plan draft = draft(12, List.of(session(DayOfWeek.MONDAY)));
+
+            assertRefused(() -> draft.publish(MONDAY), "plan.too-few-sessions");
+        }
+
+        @Test
+        void shouldRefuse_whenASessionHasNoExercises() {
+            Plan draft = draft(12, List.of(session(DayOfWeek.MONDAY), new Session("Empty", DayOfWeek.FRIDAY, List.of())));
+
+            assertRefused(() -> draft.publish(MONDAY), "plan.session-without-exercises");
+        }
+
+        @Test
+        void shouldRefuse_whenPublishedAlready() {
+            Plan published = published(12, MONDAY);
+
+            assertThatThrownBy(() -> published.publish(MONDAY)).isInstanceOf(PlanAlreadyPublishedException.class);
         }
     }
 

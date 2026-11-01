@@ -8,6 +8,9 @@ public interface QuizSubmissionRepository {
     /** Tells whether the client has a stored submission. */
     boolean existsByClient(AccountId client);
 
+    /** Tells whether the client has a published plan. */
+    boolean hasPublishedPlan(AccountId client);
+
     /** Stores a new submission. Throws {@code QuizAlreadySubmittedException} when the client already has one. */
     void save(QuizSubmission submission);
 }
