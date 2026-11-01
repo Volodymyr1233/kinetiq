@@ -638,5 +638,94 @@
       "confirm": "Unieważnij zaproszenie",
       "revoked": "Unieważniono zaproszenie"
     }
+  },
+  "plan": {
+    "loading": "Wczytywanie planu",
+    "retry": "Spróbuj ponownie",
+    "cancel": "Anuluj",
+    "build": "Zbuduj plan",
+    "save": "Zapisz plan",
+    "saving": "Zapisywanie",
+    "unsaved": "Niezapisane zmiany",
+    "nothingToSave": "Brak zmian do zapisania.",
+    "week": "Tydzień {{week, number}} z {{weeks, number}}",
+    "finished": "Zakończony po tygodniu {{weeks, number}}",
+    "empty": {
+      "noQuiz": "{{name}}: quiz jeszcze bez odpowiedzi. Plan zbudujesz, gdy będą gotowe.",
+      "noPlan": "Nie ma jeszcze planu."
+    },
+    "status": {
+      "DRAFT": "Szkic",
+      "PUBLISHED": "Opublikowany"
+    },
+    "toast": {
+      "saved": "Plan zapisany"
+    },
+    "fields": {
+      "goal": "Cel",
+      "weeks": "Długość",
+      "weeksUnit": "tyg."
+    },
+    "units": {
+      "KG": "kg",
+      "LB": "lb"
+    },
+    "sessions": {
+      "label": "Sesje",
+      "add": "Dodaj sesję",
+      "empty": "Nie ma jeszcze sesji. Dodaj pierwszą.",
+      "limit": "Plan może mieć najwyżej {{count, number}} sesji."
+    },
+    "session": {
+      "unnamed": "Nowa sesja",
+      "name": "Nazwa sesji",
+      "namePlaceholder": "np. Dół ciała",
+      "day": "Dzień",
+      "delete": "Usuń sesję",
+      "deleteDialog": {
+        "title": "Usunąć sesję {{session}}?",
+        "body_one": "Znikną też jej ćwiczenia ({{count, number}}).",
+        "body_few": "Znikną też jej ćwiczenia ({{count, number}}).",
+        "body_many": "Znikną też jej ćwiczenia ({{count, number}}).",
+        "body_other": "Znikną też jej ćwiczenia ({{count, number}})."
+      }
+    },
+    "summary": {
+      "exercises": "Ćwiczenia",
+      "sets": "Serie",
+      "time": "Szacowany czas",
+      "minutes": "{{minutes, number}} min"
+    },
+    "entries": {
+      "exercise": "Ćwiczenie",
+      "sets": "Serie",
+      "amount": "Powtórzenia lub czas",
+      "load": "Obciążenie, {{unit}}",
+      "rpe": "RPE",
+      "rest": "Przerwa, s",
+      "measures": {
+        "REPS": "powt.",
+        "SECONDS": "s"
+      },
+      "empty": "W tej sesji nie ma jeszcze ćwiczeń.",
+      "add": "Dodaj ćwiczenie",
+      "fromLibrary": "Z biblioteki ćwiczeń.",
+      "limit": "Sesja może mieć najwyżej {{count, number}} ćwiczeń."
+    },
+    "picker": {
+      "title": "Dodaj ćwiczenie",
+      "description": "Wybierz ćwiczenia ze swojej biblioteki do sesji {{session}}. Okno zostaje otwarte na kolejne.",
+      "search": "Szukaj ćwiczeń",
+      "addOne": "Dodaj: {{exercise}}",
+      "done": "Gotowe",
+      "added_one": "Dodano do sesji {{session}}: {{exercise}}.",
+      "added_few": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
+      "added_many": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
+      "added_other": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
+      "empty": {
+        "title": "Żadne ćwiczenie nie pasuje",
+        "body": "Spróbuj innej nazwy lub kategorii."
+      }
+    }
   }
 }

@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next'
-import type { Exercise } from './api/exercises'
+import type { Exercise } from '@/lib/exercise-library'
 
 export function defaultLabel(t: TFunction, exercise: Exercise) {
   return t(

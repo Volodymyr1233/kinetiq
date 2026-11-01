@@ -100,9 +100,16 @@ export const createRoutes = (): RouteObject[] => [
                 (await import('@/features/client/pages/client-page'))
                   .ClientPage,
             },
-            // the tabs are empty until their features land
-            children: [undefined, 'plan', 'logs', 'messages'].map(
-              (path): RouteObject => ({
+            children: [
+              {
+                path: 'plan',
+                lazy: {
+                  Component: async () =>
+                    (await import('@/features/plan/pages/plan-page')).PlanPage,
+                },
+              },
+              // these tabs are empty until their features land
+              ...[undefined, 'logs', 'messages'].map((path): RouteObject => ({
                 path,
                 index: path === undefined,
                 lazy: {
@@ -110,8 +117,8 @@ export const createRoutes = (): RouteObject[] => [
                     (await import('@/features/client/pages/client-page'))
                       .ClientTabEmpty,
                 },
-              }),
-            ),
+              })),
+            ],
           },
           {
             path: 'invites',

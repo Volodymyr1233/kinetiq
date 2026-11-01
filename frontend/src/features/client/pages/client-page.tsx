@@ -115,7 +115,7 @@ export function ClientPage() {
               ))}
             </TabsList>
             <TabsContent value={active}>
-              <Outlet />
+              <Outlet context={client} />
             </TabsContent>
           </Tabs>
         </>
@@ -124,7 +124,7 @@ export function ClientPage() {
   )
 }
 
-// the four tabs stay empty until their features land
+// these tabs stay empty until their features land
 export function ClientTabEmpty() {
   const { t } = useTranslation()
   return (

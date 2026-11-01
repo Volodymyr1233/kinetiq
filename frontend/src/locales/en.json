@@ -621,5 +621,90 @@
       "confirm": "Revoke invite",
       "revoked": "Invite revoked"
     }
+  },
+  "plan": {
+    "loading": "Loading plan",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "build": "Build plan",
+    "save": "Save plan",
+    "saving": "Saving",
+    "unsaved": "Unsaved changes",
+    "nothingToSave": "No changes to save.",
+    "week": "Week {{week, number}} of {{weeks, number}}",
+    "finished": "Finished after week {{weeks, number}}",
+    "empty": {
+      "noQuiz": "{{name}} hasn't answered the quiz yet. You can build a plan once they have.",
+      "noPlan": "No plan yet."
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published"
+    },
+    "toast": {
+      "saved": "Plan saved"
+    },
+    "fields": {
+      "goal": "Goal",
+      "weeks": "Length",
+      "weeksUnit": "weeks"
+    },
+    "units": {
+      "KG": "kg",
+      "LB": "lb"
+    },
+    "sessions": {
+      "label": "Sessions",
+      "add": "Add session",
+      "empty": "No sessions yet. Add the first one.",
+      "limit": "A plan holds up to {{count, number}} sessions."
+    },
+    "session": {
+      "unnamed": "New session",
+      "name": "Session name",
+      "namePlaceholder": "e.g. Lower body",
+      "day": "Day",
+      "delete": "Delete session",
+      "deleteDialog": {
+        "title": "Delete {{session}}?",
+        "body_one": "Its {{count, number}} exercise goes with it.",
+        "body_other": "Its {{count, number}} exercises go with it."
+      }
+    },
+    "summary": {
+      "exercises": "Exercises",
+      "sets": "Sets",
+      "time": "Estimated time",
+      "minutes": "{{minutes, number}} min"
+    },
+    "entries": {
+      "exercise": "Exercise",
+      "sets": "Sets",
+      "amount": "Reps or time",
+      "load": "Load, {{unit}}",
+      "rpe": "RPE",
+      "rest": "Rest, s",
+      "measures": {
+        "REPS": "reps",
+        "SECONDS": "s"
+      },
+      "empty": "No exercises in this session yet.",
+      "add": "Add exercise",
+      "fromLibrary": "From the exercise library.",
+      "limit": "A session holds up to {{count, number}} exercises."
+    },
+    "picker": {
+      "title": "Add exercise",
+      "description": "Pick from your exercise library for {{session}}. It stays open for the next one.",
+      "search": "Search exercises",
+      "addOne": "Add {{exercise}}",
+      "done": "Done",
+      "added_one": "{{exercise}} added to {{session}}.",
+      "added_other": "{{exercise}} added to {{session}} {{count, number}} times.",
+      "empty": {
+        "title": "No exercises match",
+        "body": "Try another name or category."
+      }
+    }
   }
 }

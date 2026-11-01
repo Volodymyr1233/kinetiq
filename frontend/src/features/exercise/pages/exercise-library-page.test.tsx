@@ -4,7 +4,7 @@ import { Toaster } from 'sonner'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { json, problem, renderPage, stubApi, type Reply } from '@/test/page'
-import type { Exercise } from '../api/exercises'
+import type { Exercise } from '@/lib/exercise-library'
 import { ExerciseLibraryPage } from './exercise-library-page'
 
 function exercise(fields: Partial<Exercise> & Pick<Exercise, 'id' | 'name'>) {
