@@ -4,12 +4,14 @@ import com.kinetiq.common.domain.output.Mail;
 import com.kinetiq.common.domain.output.MailSender;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.MessageSource;
 import org.springframework.stereotype.Component;
 
-/** Logs instead of delivering until real delivery exists. Locally the link can be copied from the log. */
+/** Logs instead of delivering when no mail service is configured. Locally the link can be copied from the log. */
 @Slf4j
 @Component
+@ConditionalOnExpression("'${kinetiq.mail.api-key:}'.isBlank()")
 class LoggingMailSender implements MailSender {
 
     private final MessageSource messages;
