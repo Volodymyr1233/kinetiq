@@ -7,6 +7,7 @@ import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
@@ -51,6 +52,18 @@ public class PlanManagementService implements ManagePlanUseCase {
                 .map(stored -> edit(stored, command, summary))
                 .orElseGet(() -> firstDraft(command, summary));
         return details(plans.save(edited), summary, library);
+    }
+
+    // a second publish is refused as already published, not as stale, so the plan's state is checked first
+    @Override
+    public PlanDetails publish(AccountId trainer, AccountId client, long version) {
+        ClientSummary summary = clients.getClient(trainer, client);
+        Plan stored = plans.findByClientForUpdate(client).orElseThrow(PlanNotFoundException::new);
+        if (stored.isPublished()) {
+            throw new PlanAlreadyPublishedException();
+        }
+        requireSameVersion(stored, version);
+        return details(plans.save(stored.publish(today(summary))), summary, library(trainer));
     }
 
     private Plan edit(Plan stored, SavePlanCommand command, ClientSummary summary) {

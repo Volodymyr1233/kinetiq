@@ -39,9 +39,11 @@ public class QuizSubmissionService implements SubmitQuizUseCase {
         return QuizStatus.WAITING_FOR_PLAN;
     }
 
-    // plans arrive with the plan stories, which add PLAN_PUBLISHED
     @Override
     public QuizStatus status(AccountId client) {
-        return submissions.existsByClient(client) ? QuizStatus.WAITING_FOR_PLAN : QuizStatus.NOT_SUBMITTED;
+        if (!submissions.existsByClient(client)) {
+            return QuizStatus.NOT_SUBMITTED;
+        }
+        return submissions.hasPublishedPlan(client) ? QuizStatus.PLAN_PUBLISHED : QuizStatus.WAITING_FOR_PLAN;
     }
 }

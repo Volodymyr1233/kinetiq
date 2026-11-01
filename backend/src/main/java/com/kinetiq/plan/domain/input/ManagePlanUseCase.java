@@ -16,4 +16,11 @@ public interface ManagePlanUseCase {
      * submitted the quiz.
      */
     PlanDetails save(SavePlanCommand command);
+
+    /**
+     * Publishes the saved draft; week 1 becomes the current week in the client's time zone. Refused unless
+     * {@code version} matches the stored plan's, so a trainer never publishes content they have not seen, and unless
+     * the plan is complete and not published yet.
+     */
+    PlanDetails publish(AccountId trainer, AccountId client, long version);
 }

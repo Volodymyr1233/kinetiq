@@ -96,7 +96,8 @@
       "amount-out-of-range": "Wpisz od 1 do 3600.",
       "load-out-of-range": "Zostaw obciążenie puste lub wpisz liczbę większą od 0.",
       "rpe-out-of-range": "Wpisz RPE od 5 do 10, w pełnych krokach.",
-      "rest-out-of-range": "Wpisz od 0 do 600 sekund."
+      "rest-out-of-range": "Wpisz od 0 do 600 sekund.",
+      "already-published": "Ten plan jest już opublikowany. Odśwież stronę, aby go zobaczyć."
     }
   },
   "account": {

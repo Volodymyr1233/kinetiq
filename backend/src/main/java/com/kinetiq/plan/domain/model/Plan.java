@@ -1,11 +1,14 @@
 package com.kinetiq.plan.domain.model;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanRuleViolationException;
 import com.kinetiq.plan.domain.exception.PlanWeeksBeforeCurrentException;
 import com.kinetiq.quiz.domain.model.Goal;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -104,6 +107,19 @@ public class Plan {
             }
         }
         return edited;
+    }
+
+    /**
+     * Returns this draft published, with plan week 1 starting on the Monday of the week of {@code today}, the date in
+     * the client's time zone. Only a complete draft can be published, and only once.
+     */
+    public Plan publish(LocalDate today) {
+        if (isPublished()) {
+            throw new PlanAlreadyPublishedException();
+        }
+        requireComplete();
+        LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        return new Plan(id, client, goal, weeks, monday, sessions, version);
     }
 
     /**

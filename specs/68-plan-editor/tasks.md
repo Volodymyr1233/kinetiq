@@ -65,11 +65,11 @@
 
 **Independent test**: Publish at both sides of the Sunday-to-Monday boundary with a fixed clock; publish twice.
 
-- [ ] T022 [US3] Add `publish(today)` to `Plan` and `PlanAlreadyPublishedException` (`plan.already-published`); add unit tests to `PlanTest.java`: complete only, first week is the Monday, twice refused
-- [ ] T023 [US3] Add `publish(trainer, client, version)` to `ManagePlanUseCase` and `PlanManagementService`, using the client's time zone and `Clock`; test the time zone boundary in both directions, stale version, no plan, foreign client in `PlanManagementServiceTest.java`
-- [ ] T024 [US3] Add `POST /api/v1/clients/{id}/plan/publication` and `PublishPlanRequest`; test in `PlanControllerTest.java`
-- [ ] T025 [US3] Add `QuizSubmissionRepository.hasPublishedPlan` (native query) and answer `PLAN_PUBLISHED` from `QuizSubmissionService.status`; update `InMemoryQuizSubmissionRepository`, `QuizSubmissionServiceTest` and `QuizSubmissionRepositoryImplIT`
-- [ ] T026 Regenerate `frontend/src/lib/api/schema.d.ts`; run `./gradlew check` and `npm run check`; commit
+- [X] T022 [US3] Add `publish(today)` to `Plan` and `PlanAlreadyPublishedException` (`plan.already-published`); add unit tests to `PlanTest.java`: complete only, first week is the Monday, twice refused
+- [X] T023 [US3] Add `publish(trainer, client, version)` to `ManagePlanUseCase` and `PlanManagementService`, using the client's time zone and `Clock`; test the time zone boundary in both directions, stale version, no plan, foreign client in `PlanManagementServiceTest.java`
+- [X] T024 [US3] Add `POST /api/v1/clients/{id}/plan/publication` and `PublishPlanRequest`; test in `PlanControllerTest.java`
+- [X] T025 [US3] Add `QuizSubmissionRepository.hasPublishedPlan` (native query) and answer `PLAN_PUBLISHED` from `QuizSubmissionService.status`; update `InMemoryQuizSubmissionRepository`, `QuizSubmissionServiceTest` and `QuizSubmissionRepositoryImplIT`
+- [X] T026 Regenerate `frontend/src/lib/api/schema.d.ts`; run `./gradlew check` and `npm run check`; commit
 
 ---
 

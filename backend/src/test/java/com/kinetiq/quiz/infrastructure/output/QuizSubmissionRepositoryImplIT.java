@@ -14,6 +14,7 @@ import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -121,6 +122,31 @@ class QuizSubmissionRepositoryImplIT {
 
         assertThat(repository.existsByClient(submitted)).isTrue();
         assertThat(repository.existsByClient(notSubmitted)).isFalse();
+    }
+
+    // a draft is not visible to the client, so only a plan with a first week counts
+    @Test
+    void shouldTellWhetherAClientHasAPublishedPlan() {
+        AccountId noPlan = insertClient();
+        AccountId draft = insertClient();
+        AccountId published = insertClient();
+        insertPlan(draft, null);
+        insertPlan(published, LocalDate.parse("2026-10-26"));
+
+        assertThat(repository.hasPublishedPlan(noPlan)).isFalse();
+        assertThat(repository.hasPublishedPlan(draft)).isFalse();
+        assertThat(repository.hasPublishedPlan(published)).isTrue();
+    }
+
+    private void insertPlan(AccountId client, LocalDate firstWeek) {
+        jdbc.update(
+                """
+                insert into plans (id, client_id, goal, weeks, first_week, created_at, updated_at, version)
+                values (?, ?, 'LOSE_FAT', 12, ?, now(), now(), 0)
+                """,
+                UUID.randomUUID(),
+                client.value(),
+                firstWeek);
     }
 
     // the service checks first; this is the submit that raced past that check

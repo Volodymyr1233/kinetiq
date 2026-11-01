@@ -18,6 +18,7 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
@@ -385,6 +386,84 @@ class PlanControllerTest {
         assertRefused(result, status, code);
         assertThat(result).bodyJson().doesNotHavePath("$.detail");
         assertThat(result).bodyText().doesNotContain(refusal.getMessage()).doesNotContain("Exception");
+    }
+
+    private MvcTestResult publish(String body) {
+        return mvc.post()
+                .uri(ADDRESS + "/publication")
+                .with(TRAINER)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .exchange();
+    }
+
+    @Test
+    void shouldPublish_passingTheVersionAndAnsweringThePlan() {
+        when(plans.publish(TRAINER_ID, CLIENT_ID, 4)).thenReturn(details(LocalDate.parse("2026-11-02"), 1, null));
+
+        var result = publish("""
+                {"version":4}
+                """);
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.status").isEqualTo("PUBLISHED");
+        assertThat(result).bodyJson().extractingPath("$.firstWeek").isEqualTo("2026-11-02");
+        assertThat(result).bodyJson().extractingPath("$.currentWeek").isEqualTo(1);
+    }
+
+    @Test
+    void shouldRefuseAPublish_whenTheVersionIsMissing() {
+        var result = publish("{}");
+
+        assertRefused(result, HttpStatus.BAD_REQUEST, "validation.failed");
+        assertThat(result).bodyJson().extractingPath("$.errors[0].field").isEqualTo("version");
+        verifyNoInteractions(plans);
+    }
+
+    private static Stream<Arguments> publishRefusals() {
+        return Stream.of(
+                Arguments.of(new ClientNotFoundException(), HttpStatus.NOT_FOUND, "client.not-found"),
+                Arguments.of(new PlanNotFoundException(), HttpStatus.NOT_FOUND, "plan.not-found"),
+                Arguments.of(new PlanAlreadyPublishedException(), HttpStatus.CONFLICT, "plan.already-published"),
+                Arguments.of(new PlanChangedException(), HttpStatus.CONFLICT, "plan.changed"),
+                Arguments.of(
+                        new PlanRuleViolationException("plan.too-few-sessions"),
+                        HttpStatus.BAD_REQUEST,
+                        "plan.too-few-sessions"),
+                Arguments.of(
+                        new PlanRuleViolationException("plan.session-without-exercises"),
+                        HttpStatus.BAD_REQUEST,
+                        "plan.session-without-exercises"));
+    }
+
+    @ParameterizedTest
+    @MethodSource("publishRefusals")
+    void shouldAnswerEachPublishRefusal_withItsStatusAndCode(DomainException refusal, HttpStatus status, String code) {
+        when(plans.publish(TRAINER_ID, CLIENT_ID, 4)).thenThrow(refusal);
+
+        var result = publish("""
+                {"version":4}
+                """);
+
+        assertRefused(result, status, code);
+        assertThat(result).bodyText().doesNotContain(refusal.getMessage());
+    }
+
+    @Test
+    void shouldRefuseAPublish_byRoleAndWithoutASignIn() {
+        String address = ADDRESS + "/publication";
+        String body = "{\"version\":4}";
+
+        assertRefused(
+                mvc.post().uri(address).with(CLIENT).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body).exchange(),
+                HttpStatus.FORBIDDEN,
+                "request.not-allowed");
+        assertRefused(
+                mvc.post().uri(address).with(csrf()).contentType(MediaType.APPLICATION_JSON).content(body).exchange(),
+                HttpStatus.UNAUTHORIZED,
+                "request.unauthenticated");
+        verifyNoInteractions(plans);
     }
 
     @Test
