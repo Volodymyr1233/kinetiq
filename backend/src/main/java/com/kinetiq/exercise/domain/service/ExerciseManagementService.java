@@ -45,7 +45,8 @@ public class ExerciseManagementService implements ManageExercisesUseCase {
                 command.restSeconds(),
                 text(command.cues()));
         exercises.save(exercise);
-        return listed(exercise);
+        // a new exercise is in no plan yet
+        return new ExerciseListing.Entry(exercise, 0);
     }
 
     @Override
@@ -63,7 +64,8 @@ public class ExerciseManagementService implements ManageExercisesUseCase {
                 command.restSeconds(),
                 text(command.cues()));
         exercises.save(edited);
-        return listed(edited);
+        return new ExerciseListing.Entry(
+                edited, exercises.countPlansUsing(command.trainer()).getOrDefault(edited.getId(), 0));
     }
 
     // ponytail: Postgres lower() and Java case folding can differ for rare characters; then only this check, not the
@@ -91,10 +93,5 @@ public class ExerciseManagementService implements ManageExercisesUseCase {
     // also trims no-break and other Unicode spaces, which strip() keeps, as the dialog's trim() does
     private static String trimmed(String text) {
         return EDGE_SPACES.matcher(text).replaceAll("");
-    }
-
-    // plans arrive with story #68, which counts them
-    private static ExerciseListing.Entry listed(Exercise exercise) {
-        return new ExerciseListing.Entry(exercise, 0);
     }
 }

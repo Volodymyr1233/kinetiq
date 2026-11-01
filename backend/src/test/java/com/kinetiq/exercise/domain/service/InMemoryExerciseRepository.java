@@ -14,6 +14,7 @@ import java.util.Optional;
 class InMemoryExerciseRepository implements ExerciseRepository {
 
     final Map<ExerciseId, Exercise> byId = new LinkedHashMap<>();
+    final Map<AccountId, Map<ExerciseId, Integer>> plansUsing = new LinkedHashMap<>();
 
     InMemoryExerciseRepository(Exercise... exercises) {
         for (Exercise exercise : exercises) {
@@ -26,6 +27,11 @@ class InMemoryExerciseRepository implements ExerciseRepository {
         return byId.values().stream()
                 .filter(exercise -> exercise.isStarter() || exercise.isOwnedBy(trainer))
                 .toList();
+    }
+
+    @Override
+    public Map<ExerciseId, Integer> countPlansUsing(AccountId trainer) {
+        return plansUsing.getOrDefault(trainer, Map.of());
     }
 
     @Override

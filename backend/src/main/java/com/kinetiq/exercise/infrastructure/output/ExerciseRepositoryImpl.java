@@ -6,7 +6,9 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.output.ExerciseRepository;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -26,6 +28,13 @@ class ExerciseRepositoryImpl implements ExerciseRepository {
         return jpa.findByOwnerIdIsNullOrOwnerId(trainer.value()).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public Map<ExerciseId, Integer> countPlansUsing(AccountId trainer) {
+        return jpa.countPlansUsing(trainer.value()).stream()
+                .collect(Collectors.toMap(
+                        row -> new ExerciseId(row.getExerciseId()), JpaExerciseRepository.PlansUsing::getPlans));
     }
 
     @Override

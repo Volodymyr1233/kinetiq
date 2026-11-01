@@ -75,6 +75,28 @@
       "name-taken": "An exercise with this name is already in the library.",
       "not-found": "This exercise can't be edited.",
       "limit-reached": "You've reached the limit of 200 own exercises."
+    },
+    "client": {
+      "not-found": "This client does not exist, or is not one of your clients."
+    },
+    "plan": {
+      "not-found": "No plan yet.",
+      "changed": "This plan was changed somewhere else. Reload the page to see it; copy anything you want to keep first.",
+      "quiz-not-submitted": "{{name}} has to answer the quiz before you build a plan.",
+      "weeks-before-current": "This plan is already in week {{currentWeek, number}}. Enter {{currentWeek, number}} or more weeks.",
+      "exercise-not-in-library": "Choose exercises from your exercise library.",
+      "duplicate-day": "Choose a different day for each session.",
+      "too-few-sessions": "Add at least 2 sessions.",
+      "session-without-exercises": "Add at least 1 exercise to every session.",
+      "weeks-out-of-range": "Enter 4 to 16 weeks.",
+      "too-many-sessions": "Keep the plan to 6 sessions.",
+      "session-name-invalid": "Enter a session name of up to 60 characters.",
+      "too-many-exercises": "Keep each session to 30 exercises.",
+      "sets-out-of-range": "Enter 1 to 20 sets.",
+      "amount-out-of-range": "Enter 1 to 3600.",
+      "load-out-of-range": "Leave the load empty or enter a number above 0.",
+      "rpe-out-of-range": "Enter an RPE from 5 to 10, in whole steps.",
+      "rest-out-of-range": "Enter 0 to 600 seconds."
     }
   },
   "account": {
@@ -512,7 +534,9 @@
     },
     "planStates": {
       "NO_QUIZ": "No quiz yet",
-      "PLAN_TO_REVIEW": "Plan to review"
+      "PLAN_TO_REVIEW": "Plan to review",
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published"
     },
     "page": {
       "back": "All clients",

@@ -8,6 +8,7 @@ import com.kinetiq.client.domain.exception.ClientNotFoundException;
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.client.domain.output.ClientDirectory;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -17,7 +18,7 @@ class ClientViewServiceTest {
 
     private static final AccountId MAREK = AccountId.random();
     private static final AccountId OLA_TRAINER = AccountId.random();
-    private final ClientSummary anna = new ClientSummary(AccountId.random(), "Anna", null, PlanState.NO_QUIZ);
+    private final ClientSummary anna = new ClientSummary(AccountId.random(), "Anna", null, PlanState.NO_QUIZ, ZoneId.of("Europe/Warsaw"));
 
     // a directory that knows which trainer each client belongs to
     private final ClientDirectory directory = new ClientDirectory() {
