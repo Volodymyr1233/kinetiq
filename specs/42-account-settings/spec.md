@@ -99,7 +99,7 @@ Whoever chose lb sees and enters every weight in lb; Kinetiq keeps it in kg.
 - Switching the language changes every text and the number format at once, without a reload.
 - Two quick choices in the client sheet: the last one is what stays stored and shown.
 - A trainer who changes only the name while the theme was changed on another device keeps that other device's theme: saving stores only what changed on the screen.
-- A trainer who leaves the settings screen without saving loses the unsaved changes; the stored settings stay as they were.
+- A trainer who leaves the settings screen with unsaved changes is asked first, as in the plan editor; choosing to leave loses them, and the stored settings stay as they were.
 - A name is trimmed before it is checked and stored; "  Marek  " is stored as "Marek".
 - Before sign-in, the pages use the language and theme last used on that device (the browser's language when none was chosen); after sign-in, the account's settings apply and become that device's language and theme, so after signing out the sign-in page keeps them.
 - A weight typed in lb is kept to 0.1 kg, so when it is shown again it can differ from what was typed by 0.1 lb (137.9 lb is kept as 62.6 kg and shows as 138.0 lb).

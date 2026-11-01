@@ -624,6 +624,13 @@
       "revoked": "Invite revoked"
     }
   },
+  "leave": {
+    "title": "Leave without saving?",
+    "planBody": "Your unsaved changes to this plan will be lost.",
+    "settingsBody": "Your unsaved changes to the settings will be lost.",
+    "stay": "Stay",
+    "leave": "Leave"
+  },
   "plan": {
     "loading": "Loading plan",
     "retry": "Try again",
@@ -739,12 +746,6 @@
     "publishDialog": {
       "title": "Publish this plan for {{name}}?",
       "body": "They can see it once it's published, and week 1 is the current week in their time zone. You can edit it later, but you can't take it back to a draft."
-    },
-    "leave": {
-      "title": "Leave without saving?",
-      "body": "Your unsaved changes to this plan will be lost.",
-      "stay": "Stay",
-      "leave": "Leave"
     },
     "problems": {
       "saveTitle": "Fix these to save the plan.",

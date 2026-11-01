@@ -3,6 +3,7 @@ import {
   useMutation,
   useQueryClient,
 } from '@tanstack/react-query'
+import { useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
@@ -58,6 +59,18 @@ export const currentAccountQuery = queryOptions({
   // the guards wait on it, so a failure shows "Try again" at once instead of after several retries
   retry: false,
 })
+
+/**
+ * The account as the cache holds it, for what sits above the routes. It never fetches, because public pages must not
+ * ask, and it follows signing out, which a query observer mounted this high would miss: `clear` does not tell observers.
+ */
+export function useCachedAccount() {
+  const queryClient = useQueryClient()
+  return useSyncExternalStore(
+    (changed) => queryClient.getQueryCache().subscribe(changed),
+    () => queryClient.getQueryData(currentAccountQuery.queryKey),
+  )
+}
 
 /** Stores the browser's zone when it differs, so weeks follow the person; a failure changes nothing they see. */
 export async function refreshTimeZone(account: CurrentAccount) {

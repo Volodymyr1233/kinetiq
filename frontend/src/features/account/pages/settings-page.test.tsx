@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { createMemoryRouter, Link, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { json, problem, SIGNED_IN, stubApi, type Reply } from '@/test/page'
 import { currentAccountQuery } from '../api/account'
@@ -16,9 +17,24 @@ function renderSettings(reply: Reply) {
   })
   // the trainer area's guard has loaded the account before the page renders
   client.setQueryData(currentAccountQuery.queryKey, SIGNED_IN.TRAINER)
+  const router = createMemoryRouter(
+    [
+      {
+        path: '/settings',
+        element: (
+          <>
+            <SettingsPage />
+            <Link to="/elsewhere">Elsewhere</Link>
+          </>
+        ),
+      },
+      { path: '/elsewhere', element: <p>Another page</p> },
+    ],
+    { initialEntries: ['/settings'] },
+  )
   render(
     <QueryClientProvider client={client}>
-      <SettingsPage />
+      <RouterProvider router={router} />
     </QueryClientProvider>,
   )
   return { requests, client, user: userEvent.setup() }
@@ -125,5 +141,63 @@ describe('SettingsPage', () => {
     )
     expect(screen.getByLabelText('Name')).toHaveValue('Marek Kowalski')
     expect(saveButton()).toBeEnabled()
+  })
+
+  describe('leaving', () => {
+    const elsewhere = () => screen.getByRole('link', { name: 'Elsewhere' })
+
+    it('asks first with unsaved changes, starting on Stay, which keeps them', async () => {
+      const { user } = renderSettings(saved())
+      await rename(user, 'Marek Kowalski')
+
+      await user.click(elsewhere())
+
+      const dialog = await screen.findByRole('alertdialog', {
+        name: 'Leave without saving?',
+      })
+      expect(dialog).toHaveTextContent(
+        'Your unsaved changes to the settings will be lost.',
+      )
+      const stay = within(dialog).getByRole('button', { name: 'Stay' })
+      expect(stay).toHaveFocus()
+      await user.click(stay)
+
+      await waitFor(() =>
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+      )
+      expect(screen.getByLabelText('Name')).toHaveValue('Marek Kowalski')
+    })
+
+    it('goes on after "Leave", and sends nothing', async () => {
+      const { requests, user } = renderSettings(saved())
+      await user.click(screen.getByRole('radio', { name: 'lb' }))
+
+      await user.click(elsewhere())
+      await user.click(await screen.findByRole('button', { name: 'Leave' }))
+
+      expect(await screen.findByText('Another page')).toBeInTheDocument()
+      expect(patches(requests)).toHaveLength(0)
+    })
+
+    it('asks nothing once a change is undone', async () => {
+      const { user } = renderSettings(saved())
+      await user.click(screen.getByRole('radio', { name: 'lb' }))
+      await user.click(screen.getByRole('radio', { name: 'kg' }))
+
+      await user.click(elsewhere())
+
+      expect(await screen.findByText('Another page')).toBeInTheDocument()
+    })
+
+    it('asks nothing after saving', async () => {
+      const { user } = renderSettings(saved())
+      await user.click(screen.getByRole('radio', { name: 'lb' }))
+      await user.click(saveButton())
+      await screen.findByText('Settings saved.')
+
+      await user.click(elsewhere())
+
+      expect(await screen.findByText('Another page')).toBeInTheDocument()
+    })
   })
 })

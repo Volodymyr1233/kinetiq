@@ -39,6 +39,7 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import { useDialogFocus } from '@/hooks/use-dialog-focus'
 import { cn } from '@/lib/utils'
 import type { WeightUnit } from '@/lib/weight'
 import {
@@ -50,7 +51,6 @@ import {
   type DraftSession,
   type EntryField,
 } from '../plan-draft'
-import { useDialogFocus } from '../use-dialog-focus'
 import { ExercisePicker } from './exercise-picker'
 
 const ENTRY_FIELDS: EntryField[] = ['sets', 'amount', 'load', 'rpe', 'rest']

@@ -119,7 +119,7 @@
 - [X] T048 Review the editor with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX; the design system stays authoritative
 - [X] T049 Run a security review of the diff: ownership, 404s, leaks in `plansUsing`, error bodies
 - [X] T050 Check `master` and open pull requests for a migration taking `V13`
-- [ ] T051 Run `./gradlew check` and `npm run check`; open the story's pull request with `Closes #68`, `Closes #69` … `Closes #74`
+- [X] T051 Run `./gradlew check` and `npm run check`; open the story's pull request with `Closes #68`, `Closes #69` … `Closes #74`
 
 ---
 

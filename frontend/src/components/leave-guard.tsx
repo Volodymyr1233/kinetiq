@@ -11,11 +11,18 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog'
+import { useDialogFocus } from '@/hooks/use-dialog-focus'
 import { setLeaveGuard } from '@/lib/leave-guard'
-import { useDialogFocus } from '../use-dialog-focus'
 
 /** Asks before unsaved work is lost: on navigation in the app, on signing out, and on reload or close. */
-export function LeaveGuard({ dirty }: { dirty: boolean }) {
+export function LeaveGuard({
+  dirty,
+  body,
+}: {
+  dirty: boolean
+  /** What would be lost. */
+  body: string
+}) {
   const { t } = useTranslation()
   // signing out asks through the guard below, and then lands on the sign-in page
   const blocker = useBlocker(
@@ -64,15 +71,13 @@ export function LeaveGuard({ dirty }: { dirty: boolean }) {
     >
       <AlertDialogContent {...focus.contentProps}>
         <AlertDialogHeader>
-          <AlertDialogTitle>{t('plan.leave.title')}</AlertDialogTitle>
-          <AlertDialogDescription>
-            {t('plan.leave.body')}
-          </AlertDialogDescription>
+          <AlertDialogTitle>{t('leave.title')}</AlertDialogTitle>
+          <AlertDialogDescription>{body}</AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>{t('plan.leave.stay')}</AlertDialogCancel>
+          <AlertDialogCancel>{t('leave.stay')}</AlertDialogCancel>
           <AlertDialogAction variant="outline" onClick={() => decide(true)}>
-            {t('plan.leave.leave')}
+            {t('leave.leave')}
           </AlertDialogAction>
         </AlertDialogFooter>
       </AlertDialogContent>
