@@ -7,6 +7,8 @@ import com.kinetiq.client.domain.output.ClientDirectory;
 import com.kinetiq.quiz.domain.model.Goal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -14,15 +16,16 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-// a read model over the accounts and the quiz answers: one query, and no class of those features
+// a read model over the accounts, the quiz answers and the plans: one query, and no class of those features
 @Repository
 @RequiredArgsConstructor
 class JdbcClientDirectory implements ClientDirectory {
 
     private static final String CLIENTS_OF = """
-            select a.id, a.name, q.goal
+            select a.id, a.name, a.time_zone, q.goal as quiz_goal, p.goal as plan_goal, p.first_week
             from accounts a
             left join quiz_submissions q on q.client_id = a.id
+            left join plans p on p.client_id = a.id
             where a.trainer_id = ?
             """;
 
@@ -41,12 +44,21 @@ class JdbcClientDirectory implements ClientDirectory {
     }
 
     private ClientSummary summary(ResultSet rows, int rowNumber) throws SQLException {
-        String goal = rows.getString("goal");
+        String quizGoal = rows.getString("quiz_goal");
+        String planGoal = rows.getString("plan_goal");
+        String goal = planGoal == null ? quizGoal : planGoal;
         return new ClientSummary(
                 new AccountId(rows.getObject("id", UUID.class)),
                 rows.getString("name"),
                 goal == null ? null : Goal.valueOf(goal),
-                // plans arrive with the plan stories; until then a submitted quiz is the plan to review
-                goal == null ? PlanState.NO_QUIZ : PlanState.PLAN_TO_REVIEW);
+                planState(quizGoal, planGoal, rows.getObject("first_week", LocalDate.class)),
+                ZoneId.of(rows.getString("time_zone")));
+    }
+
+    private static PlanState planState(String quizGoal, String planGoal, LocalDate firstWeek) {
+        if (planGoal != null) {
+            return firstWeek == null ? PlanState.DRAFT : PlanState.PUBLISHED;
+        }
+        return quizGoal == null ? PlanState.NO_QUIZ : PlanState.PLAN_TO_REVIEW;
     }
 }

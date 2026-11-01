@@ -2,6 +2,7 @@ package com.kinetiq.exercise.infrastructure.output;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.entry;
 
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
@@ -11,7 +12,9 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
+import java.time.DayOfWeek;
 import java.time.Instant;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -84,6 +87,72 @@ class ExerciseRepositoryImplIT {
                 10,
                 90,
                 new LocalizedText("", ""));
+    }
+
+    private UUID insertClientOf(UUID trainer) {
+        UUID id = UUID.randomUUID();
+        jdbc.update(
+                """
+                insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone, email_confirmed,
+                                      health_data_consent_at, created_at, updated_at, version)
+                values (?, 'Ola Kowalska', ?, 'hash', 'CLIENT', ?, 'Europe/Warsaw', true, now(), now(), now(), 0)
+                """,
+                id,
+                id + "@example.com",
+                trainer);
+        return id;
+    }
+
+    /** Gives the client a plan with one session per list of exercises, on consecutive days. */
+    @SafeVarargs
+    private void insertPlan(UUID client, List<UUID>... sessions) {
+        UUID plan = UUID.randomUUID();
+        jdbc.update(
+                """
+                insert into plans (id, client_id, goal, weeks, first_week, created_at, updated_at, version)
+                values (?, ?, 'LOSE_FAT', 12, null, now(), now(), 0)
+                """,
+                plan,
+                client);
+        for (int day = 0; day < sessions.length; day++) {
+            UUID session = UUID.randomUUID();
+            jdbc.update(
+                    "insert into plan_sessions (id, plan_id, name, day_of_week) values (?, ?, 'A', ?)",
+                    session,
+                    plan,
+                    DayOfWeek.of(day + 1).name());
+            for (int position = 0; position < sessions[day].size(); position++) {
+                jdbc.update(
+                        """
+                        insert into plan_session_entries (session_id, position, exercise_id, sets, amount, load_kg, rpe,
+                                                          rest_seconds)
+                        values (?, ?, ?, 3, 8, null, 8, 90)
+                        """,
+                        session,
+                        position,
+                        sessions[day].get(position));
+            }
+        }
+    }
+
+    // a starter exercise is shared, so a count of every trainer's plans would reveal another trainer's use of it
+    @Test
+    void shouldCountOnlyTheTrainersOwnPlans_andAPlanOnce() {
+        UUID trainer = insertAccount();
+        UUID otherTrainer = insertAccount();
+        UUID squat = jpa.saveAndFlush(entity("Squat", null)).getId();
+        UUID unused = jpa.saveAndFlush(entity("Unused", null)).getId();
+        // twice in one plan, in two sessions and once more within a session
+        insertPlan(insertClientOf(trainer), List.of(squat, squat), List.of(squat));
+        insertPlan(insertClientOf(trainer), List.of(squat));
+        insertPlan(insertClientOf(otherTrainer), List.of(squat, unused));
+
+        assertThat(repository.countPlansUsing(new AccountId(trainer)))
+                .containsOnly(entry(new ExerciseId(squat), 2));
+        assertThat(repository.countPlansUsing(new AccountId(otherTrainer)))
+                .containsEntry(new ExerciseId(squat), 1)
+                .containsEntry(new ExerciseId(unused), 1);
+        assertThat(repository.countPlansUsing(new AccountId(insertAccount()))).isEmpty();
     }
 
     @Test

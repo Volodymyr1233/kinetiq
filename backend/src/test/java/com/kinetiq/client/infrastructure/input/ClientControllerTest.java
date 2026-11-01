@@ -16,6 +16,7 @@ import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.common.infrastructure.config.SecurityConfig;
 import com.kinetiq.common.infrastructure.config.WebConfig;
 import com.kinetiq.quiz.domain.model.Goal;
+import java.time.ZoneId;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -31,6 +32,7 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 @Import({SecurityConfig.class, WebConfig.class, ClientWebMapperImpl.class})
 class ClientControllerTest {
 
+    private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
     private static final AccountId TRAINER_ID =
             new AccountId(UUID.fromString("00000000-0000-4000-8000-000000000001"));
     private static final RequestPostProcessor TRAINER = user(TRAINER_ID.value().toString()).roles("TRAINER");
@@ -49,8 +51,8 @@ class ClientControllerTest {
         AccountId jan = new AccountId(UUID.fromString("00000000-0000-4000-8000-000000000005"));
         when(clients.listClients(TRAINER_ID))
                 .thenReturn(List.of(
-                        new ClientSummary(ola, "Ola Kowalska", Goal.BUILD_MUSCLE, PlanState.PLAN_TO_REVIEW),
-                        new ClientSummary(jan, "Jan Nowak", null, PlanState.NO_QUIZ)));
+                        new ClientSummary(ola, "Ola Kowalska", Goal.BUILD_MUSCLE, PlanState.PLAN_TO_REVIEW, WARSAW),
+                        new ClientSummary(jan, "Jan Nowak", null, PlanState.NO_QUIZ, WARSAW)));
 
         var result = mvc.get().uri("/api/v1/clients").with(TRAINER).exchange();
 
@@ -96,7 +98,7 @@ class ClientControllerTest {
     void shouldAnswerOneOfTheTrainersClients() {
         AccountId ola = new AccountId(UUID.fromString("00000000-0000-4000-8000-000000000003"));
         when(clients.getClient(TRAINER_ID, ola))
-                .thenReturn(new ClientSummary(ola, "Ola Kowalska", Goal.BUILD_MUSCLE, PlanState.PLAN_TO_REVIEW));
+                .thenReturn(new ClientSummary(ola, "Ola Kowalska", Goal.BUILD_MUSCLE, PlanState.PLAN_TO_REVIEW, WARSAW));
 
         var result = mvc.get().uri("/api/v1/clients/" + ola.value()).with(TRAINER).exchange();
 

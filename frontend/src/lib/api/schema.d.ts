@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{id}/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPlan"];
+        put: operations["savePlan"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/me/time-zone": {
         parameters: {
             query?: never;
@@ -361,6 +377,71 @@ export interface components {
             plansUsing: number;
             starter: boolean;
         };
+        EntryRequest: {
+            /** Format: uuid */
+            exerciseId: string;
+            /** Format: int32 */
+            sets: number;
+            /** Format: int32 */
+            amount: number;
+            loadKg?: number;
+            /** Format: int32 */
+            rpe: number;
+            /** Format: int32 */
+            restSeconds: number;
+        };
+        SavePlanRequest: {
+            /** Format: int64 */
+            version?: number;
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** Format: int32 */
+            weeks: number;
+            sessions: components["schemas"]["SessionRequest"][];
+        };
+        SessionRequest: {
+            name: string;
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            entries: components["schemas"]["EntryRequest"][];
+        };
+        EntryResponse: {
+            /** Format: uuid */
+            exerciseId: string;
+            exerciseName: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            /** Format: int32 */
+            sets: number;
+            /** Format: int32 */
+            amount: number;
+            loadKg?: number;
+            /** Format: int32 */
+            rpe: number;
+            /** Format: int32 */
+            restSeconds: number;
+        };
+        PlanResponse: {
+            /** @enum {string} */
+            status: "DRAFT" | "PUBLISHED";
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** Format: int32 */
+            weeks: number;
+            /** Format: date */
+            firstWeek?: string;
+            /** Format: int32 */
+            currentWeek?: number;
+            /** Format: int64 */
+            version: number;
+            sessions: components["schemas"]["SessionResponse"][];
+        };
+        SessionResponse: {
+            name: string;
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            entries: components["schemas"]["EntryResponse"][];
+        };
         TimeZoneRequest: {
             timeZone: string;
         };
@@ -498,7 +579,7 @@ export interface components {
             /** @enum {string} */
             goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
             /** @enum {string} */
-            planState: "NO_QUIZ" | "PLAN_TO_REVIEW";
+            planState: "NO_QUIZ" | "PLAN_TO_REVIEW" | "DRAFT" | "PUBLISHED";
         };
     };
     responses: never;
@@ -531,6 +612,54 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ExerciseResponse"];
+                };
+            };
+        };
+    };
+    getPlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanResponse"];
+                };
+            };
+        };
+    };
+    savePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SavePlanRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanResponse"];
                 };
             };
         };

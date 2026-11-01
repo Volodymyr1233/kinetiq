@@ -17,6 +17,8 @@ const badgeVariants = cva(
           "border-border text-foreground [a]:hover:bg-muted [a]:hover:text-muted-foreground",
         // design system: amber for caution, such as an invite on its last day
         warning: "bg-warning-muted text-warning",
+        // design system: done, synced, applied
+        success: "bg-success-muted text-success",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",

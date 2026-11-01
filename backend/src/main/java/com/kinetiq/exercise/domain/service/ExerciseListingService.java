@@ -1,13 +1,16 @@
 package com.kinetiq.exercise.domain.service;
 
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.input.ExerciseListing;
 import com.kinetiq.exercise.domain.input.ListExercisesQuery;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.exercise.domain.model.Exercise;
+import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.output.ExerciseRepository;
 import java.text.Collator;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -21,15 +24,20 @@ public class ExerciseListingService implements ListExercisesUseCase {
         List<Exercise> library = exercises.findVisibleTo(query.trainer());
         Collator collator = Collator.getInstance(query.locale());
         collator.setStrength(Collator.PRIMARY);
+        Map<ExerciseId, Integer> plansUsing = exercises.countPlansUsing(query.trainer());
         Comparator<Exercise> byName = Comparator.comparing(
                 (Exercise exercise) -> exercise.getName().in(query.locale()), collator);
         List<ExerciseListing.Entry> entries = library.stream()
                 .filter(exercise -> query.category() == null || exercise.getCategory() == query.category())
                 .filter(exercise -> exercise.matches(query.name()))
                 .sorted(byName.thenComparing(exercise -> exercise.getId().value()))
-                // plans arrive with story #68, which counts them
-                .map(exercise -> new ExerciseListing.Entry(exercise, 0))
+                .map(exercise -> new ExerciseListing.Entry(exercise, plansUsing.getOrDefault(exercise.getId(), 0)))
                 .toList();
         return new ExerciseListing(entries, library.size());
+    }
+
+    @Override
+    public List<Exercise> library(AccountId trainer) {
+        return exercises.findVisibleTo(trainer);
     }
 }

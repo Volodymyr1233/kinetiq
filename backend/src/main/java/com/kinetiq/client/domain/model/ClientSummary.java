@@ -2,12 +2,16 @@ package com.kinetiq.client.domain.model;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.quiz.domain.model.Goal;
+import java.time.ZoneId;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.AccessLevel;
 import lombok.Getter;
 
-/** What the trainer's client list shows of one client. The goal is the quiz's, so it is absent before the quiz. */
+/**
+ * What the trainer sees of one client. The goal is the plan's when a plan exists, otherwise the quiz's, so it is absent
+ * before the quiz.
+ */
 @Getter
 public class ClientSummary {
 
@@ -18,12 +22,14 @@ public class ClientSummary {
     private final Goal goal;
 
     private final PlanState planState;
+    private final ZoneId timeZone;
 
-    public ClientSummary(AccountId id, String name, Goal goal, PlanState planState) {
+    public ClientSummary(AccountId id, String name, Goal goal, PlanState planState, ZoneId timeZone) {
         this.id = Objects.requireNonNull(id);
         this.name = Objects.requireNonNull(name);
         this.goal = goal;
         this.planState = Objects.requireNonNull(planState);
+        this.timeZone = Objects.requireNonNull(timeZone);
     }
 
     public Optional<Goal> getGoal() {

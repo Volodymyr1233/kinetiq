@@ -75,6 +75,28 @@
       "name-taken": "Ćwiczenie o tej nazwie jest już w bibliotece.",
       "not-found": "Tego ćwiczenia nie można edytować.",
       "limit-reached": "Osiągnięto limit 200 własnych ćwiczeń."
+    },
+    "client": {
+      "not-found": "Ten klient nie istnieje albo nie jest Twoim klientem."
+    },
+    "plan": {
+      "not-found": "Nie ma jeszcze planu.",
+      "changed": "Ten plan zmieniono gdzie indziej. Odśwież stronę, aby go zobaczyć; najpierw skopiuj to, co chcesz zachować.",
+      "quiz-not-submitted": "{{name}}: najpierw potrzebne są odpowiedzi z quizu.",
+      "weeks-before-current": "Ten plan jest już w tygodniu {{currentWeek, number}}. Wpisz co najmniej {{currentWeek, number}} tyg.",
+      "exercise-not-in-library": "Wybieraj ćwiczenia ze swojej biblioteki.",
+      "duplicate-day": "Wybierz inny dzień dla każdej sesji.",
+      "too-few-sessions": "Dodaj co najmniej 2 sesje.",
+      "session-without-exercises": "Dodaj co najmniej 1 ćwiczenie do każdej sesji.",
+      "weeks-out-of-range": "Wpisz od 4 do 16 tygodni.",
+      "too-many-sessions": "Plan może mieć najwyżej 6 sesji.",
+      "session-name-invalid": "Wpisz nazwę sesji do 60 znaków.",
+      "too-many-exercises": "Sesja może mieć najwyżej 30 ćwiczeń.",
+      "sets-out-of-range": "Wpisz od 1 do 20 serii.",
+      "amount-out-of-range": "Wpisz od 1 do 3600.",
+      "load-out-of-range": "Zostaw obciążenie puste lub wpisz liczbę większą od 0.",
+      "rpe-out-of-range": "Wpisz RPE od 5 do 10, w pełnych krokach.",
+      "rest-out-of-range": "Wpisz od 0 do 600 sekund."
     }
   },
   "account": {
@@ -527,7 +549,9 @@
     },
     "planStates": {
       "NO_QUIZ": "Quiz jeszcze nie wypełniony",
-      "PLAN_TO_REVIEW": "Plan do przejrzenia"
+      "PLAN_TO_REVIEW": "Plan do przejrzenia",
+      "DRAFT": "Szkic",
+      "PUBLISHED": "Opublikowany"
     },
     "page": {
       "back": "Wszyscy klienci",
