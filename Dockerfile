@@ -3,7 +3,7 @@
 FROM node:24-alpine AS frontend
 WORKDIR /frontend
 COPY frontend/package.json frontend/package-lock.json ./
-RUN --mount=type=cache,target=/root/.npm npm ci
+RUN npm ci
 COPY frontend/ ./
 RUN npm run build
 
@@ -15,8 +15,7 @@ COPY backend/settings.gradle.kts backend/build.gradle.kts ./
 COPY backend/src src
 # the jar serves whatever sits in static/
 COPY --from=frontend /frontend/dist src/main/resources/static
-RUN --mount=type=cache,target=/root/.gradle \
-    ./gradlew bootJar --no-daemon && \
+RUN ./gradlew bootJar --no-daemon && \
     mv build/libs/*.jar application.jar
 RUN java -Djarmode=tools -jar application.jar extract --layers --destination extracted
 
