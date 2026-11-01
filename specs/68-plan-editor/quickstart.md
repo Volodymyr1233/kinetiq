@@ -22,7 +22,7 @@ At 1280 px and 375 px, light and dark, English and Polish. At 375 px and 320 px 
 | 5 | Choose another client tab, then Stay | Question appears, focus on Stay, edits still there |
 | 6 | Reload | The browser's own warning |
 | 7 | Enter RPE 11, leave the field, then Save | Field invalid with a fix; the summary links to the field; session marked by more than colour |
-| 8 | Fix it, move a row up and down with the keyboard | Focus stays on a control; the move is announced |
+| 8 | Fix it, drag a row to another place, then move it from its grip's menu with the keyboard | A line shows where it lands; focus stays on its grip; the move is announced |
 | 9 | Delete a row | Confirmation, focus on Cancel |
 | 10 | Save, reload | Everything as saved; the client list shows Draft |
 | 11 | Empty a session, choose Publish | Summary lists it; no dialog |

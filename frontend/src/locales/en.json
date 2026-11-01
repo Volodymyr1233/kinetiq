@@ -24,7 +24,9 @@
     "settings": "Settings",
     "today": "Today",
     "plan": "Plan",
-    "progress": "Progress"
+    "progress": "Progress",
+    "open": "Open menu",
+    "menu": "Menu"
   },
   "areas": {
     "trainer": "Trainer area",
@@ -642,7 +644,8 @@
       "PUBLISHED": "Published"
     },
     "toast": {
-      "saved": "Plan saved"
+      "saved": "Plan saved",
+      "published": "Plan published"
     },
     "fields": {
       "goal": "Goal",
@@ -657,7 +660,8 @@
       "label": "Sessions",
       "add": "Add session",
       "empty": "No sessions yet. Add the first one.",
-      "limit": "A plan holds up to {{count, number}} sessions."
+      "limit": "A plan holds up to {{count, number}} sessions.",
+      "hasProblem": "This session has something to fix"
     },
     "session": {
       "unnamed": "New session",
@@ -669,7 +673,8 @@
         "title": "Delete {{session}}?",
         "body_one": "Its {{count, number}} exercise goes with it.",
         "body_other": "Its {{count, number}} exercises go with it."
-      }
+      },
+      "withLetter": "{{letter}} · {{name}}"
     },
     "summary": {
       "exercises": "Exercises",
@@ -691,13 +696,35 @@
       "empty": "No exercises in this session yet.",
       "add": "Add exercise",
       "fromLibrary": "From the exercise library.",
-      "limit": "A session holds up to {{count, number}} exercises."
+      "limit": "A session holds up to {{count, number}} exercises.",
+      "order": "Order",
+      "actions": "Actions",
+      "move": "Move {{exercise}}, row {{row, number}}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moved": "{{exercise}} moved to row {{row, number}}.",
+      "remove": "Delete {{exercise}}, row {{row, number}}",
+      "removeDialog": {
+        "title": "Delete \"{{exercise}}\" from {{session}}?",
+        "body": "Logged sets for it stay in the history.",
+        "confirm": "Delete exercise"
+      },
+      "fields": {
+        "sets": "Sets for {{exercise}}, row {{row, number}}",
+        "amount": {
+          "REPS": "Repetitions for {{exercise}}, row {{row, number}}",
+          "SECONDS": "Seconds for {{exercise}}, row {{row, number}}"
+        },
+        "load": "Load in {{unit}} for {{exercise}}, row {{row, number}}",
+        "rpe": "Target RPE for {{exercise}}, row {{row, number}}",
+        "rest": "Rest in seconds for {{exercise}}, row {{row, number}}"
+      }
     },
     "picker": {
       "title": "Add exercise",
       "description": "Pick from your exercise library for {{session}}. It stays open for the next one.",
       "search": "Search exercises",
-      "addOne": "Add {{exercise}}",
+      "addOne": "Add {{exercise}}, {{category}}, {{amounts}}",
       "done": "Done",
       "added_one": "{{exercise}} added to {{session}}.",
       "added_other": "{{exercise}} added to {{session}} {{count, number}} times.",
@@ -705,6 +732,27 @@
         "title": "No exercises match",
         "body": "Try another name or category."
       }
+    },
+    "publish": "Publish plan",
+    "publishing": "Publishing",
+    "publishedNote": "Saving applies the change from today. Logged sets don't change.",
+    "publishDialog": {
+      "title": "Publish this plan for {{name}}?",
+      "body": "They can see it once it's published, and week 1 is the current week in their time zone. You can edit it later, but you can't take it back to a draft."
+    },
+    "leave": {
+      "title": "Leave without saving?",
+      "body": "Your unsaved changes to this plan will be lost.",
+      "stay": "Stay",
+      "leave": "Leave"
+    },
+    "problems": {
+      "saveTitle": "Fix these to save the plan.",
+      "publishTitle": "Fix these to publish the plan.",
+      "inSession": "{{session}}: {{problem}}",
+      "inEntry": "{{session}}, {{exercise}}: {{problem}}",
+      "emptySession": "Add at least 1 exercise to {{session}}.",
+      "load": "Leave the load empty or enter a number above 0, up to {{max, number}} {{unit}}."
     }
   }
 }

@@ -198,7 +198,9 @@ describe('PlanPage', () => {
     expect(tabs[0]).toHaveAttribute('aria-selected', 'true')
     expect(screen.getByLabelText('Session name')).toHaveValue('Lower')
     expect(screen.getByRole('cell', { name: 'Back squat' })).toBeInTheDocument()
-    expect(screen.getByText('5 reps')).toBeInTheDocument()
+    expect(
+      screen.getByLabelText('Repetitions for Back squat, row 1'),
+    ).toHaveValue('5')
   })
 
   it('starts a new plan from the quiz’s goal with 12 weeks, stores nothing and has nothing to save', async () => {
@@ -213,7 +215,10 @@ describe('PlanPage', () => {
       screen.getByText('No sessions yet. Add the first one.'),
     ).toBeVisible()
     expect(screen.getByText('No changes to save.')).toBeVisible()
-    expect(screen.getByRole('button', { name: 'Save plan' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Save plan' })).toHaveAttribute(
+      'aria-disabled',
+      'true',
+    )
     expect(requests.map((request) => request.method)).not.toContain('PUT')
   })
 
@@ -250,28 +255,28 @@ describe('PlanPage', () => {
     await user.click(screen.getByRole('button', { name: 'Add exercise' }))
     const dialog = within(await screen.findByRole('dialog'))
     expect(
-      await dialog.findByRole('button', { name: 'Add Back squat' }),
+      await dialog.findByRole('button', { name: /^Add Back squat, / }),
     ).toBeInTheDocument()
 
     await user.type(dialog.getByLabelText('Search exercises'), 'pla')
     await waitFor(() =>
       expect(
-        dialog.queryByRole('button', { name: 'Add Back squat' }),
+        dialog.queryByRole('button', { name: /^Add Back squat, / }),
       ).not.toBeInTheDocument(),
     )
     expect(
-      dialog.getByRole('button', { name: 'Add Plank' }),
+      dialog.getByRole('button', { name: /^Add Plank, / }),
     ).toBeInTheDocument()
 
     await user.clear(dialog.getByLabelText('Search exercises'))
     await user.click(dialog.getByRole('radio', { name: 'Chest' }))
     await waitFor(() =>
       expect(
-        dialog.queryByRole('button', { name: 'Add Plank' }),
+        dialog.queryByRole('button', { name: /^Add Plank, / }),
       ).not.toBeInTheDocument(),
     )
     expect(
-      dialog.getByRole('button', { name: 'Add Bench press' }),
+      dialog.getByRole('button', { name: /^Add Bench press, / }),
     ).toBeInTheDocument()
 
     await user.type(dialog.getByLabelText('Search exercises'), 'nothing')
@@ -296,7 +301,7 @@ describe('PlanPage', () => {
     await user.click(dialog.getByRole('button', { name: 'Try again' }))
 
     expect(
-      await dialog.findByRole('button', { name: 'Add Plank' }),
+      await dialog.findByRole('button', { name: /^Add Plank, / }),
     ).toBeInTheDocument()
   })
 
@@ -308,12 +313,14 @@ describe('PlanPage', () => {
     const trigger = screen.getByRole('button', { name: 'Add exercise' })
     await user.click(trigger)
     const dialog = within(await screen.findByRole('dialog'))
-    await user.click(await dialog.findByRole('button', { name: 'Add Plank' }))
+    await user.click(
+      await dialog.findByRole('button', { name: /^Add Plank, / }),
+    )
 
     expect(dialog.getByRole('status')).toHaveTextContent(
       'Plank added to New session.',
     )
-    await user.click(dialog.getByRole('button', { name: 'Add Back squat' }))
+    await user.click(dialog.getByRole('button', { name: /^Add Back squat, / }))
     await user.click(dialog.getByRole('button', { name: 'Done' }))
 
     await waitFor(() =>
@@ -322,11 +329,56 @@ describe('PlanPage', () => {
     expect(trigger).toHaveFocus()
     const rows = screen.getAllByRole('row')
     // a timed exercise shows seconds, and every row starts at RPE 8 with no load
-    expect(within(rows[1]).getByText('45 s')).toBeInTheDocument()
-    expect(within(rows[2]).getByText('10 reps')).toBeInTheDocument()
-    expect(within(rows[1]).getAllByRole('cell')[4]).toHaveTextContent('8')
-    expect(within(rows[1]).getAllByRole('cell')[3]).toHaveTextContent('')
+    expect(
+      within(rows[1]).getByLabelText('Seconds for Plank, row 1'),
+    ).toHaveValue('45')
+    expect(within(rows[1]).getByText('s')).toBeInTheDocument()
+    expect(
+      within(rows[2]).getByLabelText('Repetitions for Back squat, row 2'),
+    ).toHaveValue('10')
+    expect(within(rows[2]).getByText('reps')).toBeInTheDocument()
+    expect(screen.getByLabelText('Target RPE for Plank, row 1')).toHaveValue(
+      '8',
+    )
+    expect(screen.getByLabelText('Load in kg for Plank, row 1')).toHaveValue('')
     expect(screen.getByText('Unsaved changes')).toBeVisible()
+  })
+
+  it('stops the picker at the limit of a session, saying why, and still returns focus', async () => {
+    const user = userEvent.setup()
+    const entry = DRAFT.sessions[0].entries[0]
+    open(
+      WAITING,
+      backend(WAITING, {
+        ...DRAFT,
+        sessions: [
+          {
+            name: 'Long',
+            day: 'MONDAY',
+            entries: Array.from({ length: 29 }, () => entry),
+          },
+        ],
+      }),
+    )
+    const trigger = await screen.findByRole('button', { name: 'Add exercise' })
+    await user.click(trigger)
+    const dialog = within(await screen.findByRole('dialog'))
+
+    await user.click(
+      await dialog.findByRole('button', { name: /^Add Plank, / }),
+    )
+    await user.click(dialog.getByRole('button', { name: /^Add Plank, / }))
+
+    expect(dialog.getByRole('status')).toHaveTextContent(
+      'A session holds up to 30 exercises.',
+    )
+    await user.click(dialog.getByRole('button', { name: 'Done' }))
+    await waitFor(() => expect(trigger).toHaveFocus())
+    // the rows and their one header
+    expect(screen.getAllByRole('row')).toHaveLength(31)
+
+    await user.click(trigger)
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
   })
 
   it('sends the whole plan on a first save, without a version, and confirms it', async () => {
@@ -338,7 +390,9 @@ describe('PlanPage', () => {
     await user.type(screen.getByLabelText('Session name'), '  Lower  ')
     await user.click(screen.getByRole('button', { name: 'Add exercise' }))
     const dialog = within(await screen.findByRole('dialog'))
-    await user.click(await dialog.findByRole('button', { name: 'Add Plank' }))
+    await user.click(
+      await dialog.findByRole('button', { name: /^Add Plank, / }),
+    )
     await user.click(dialog.getByRole('button', { name: 'Done' }))
 
     await user.click(screen.getByRole('button', { name: 'Save plan' }))

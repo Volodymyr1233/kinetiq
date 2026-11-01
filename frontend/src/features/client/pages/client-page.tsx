@@ -107,9 +107,13 @@ export function ClientPage() {
               void navigate(tab === 'overview' ? '.' : tab)
             }
           >
-            <TabsList variant="line" aria-label={t('clients.page.tabsLabel')}>
+            <TabsList
+              variant="line"
+              aria-label={t('clients.page.tabsLabel')}
+              className="h-auto! max-w-full flex-wrap justify-start"
+            >
               {TABS.map((tab) => (
-                <TabsTrigger key={tab} value={tab}>
+                <TabsTrigger key={tab} value={tab} className="flex-none">
                   {t(`clients.page.tabs.${tab}`)}
                 </TabsTrigger>
               ))}

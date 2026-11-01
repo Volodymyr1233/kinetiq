@@ -176,7 +176,8 @@ function AlertDialogCancel({
     <Button variant={variant} size={size} asChild>
       <AlertDialogPrimitive.Cancel
         data-slot="alert-dialog-cancel"
-        className={cn(className)}
+        // it takes focus on opening, and focus-visible shows no ring for a dialog opened by mouse
+        className={cn("focus:border-ring focus:ring-3 focus:ring-ring/50", className)}
         {...props}
       />
     </Button>

@@ -51,7 +51,7 @@ Each exercise row is edited in place: sets, repetitions or seconds, optional loa
 1. **Given** a row of an exercise measured in repetitions, **When** it is shown, **Then** its amount is in repetitions; **given** an exercise measured in seconds, **then** its amount shows a seconds unit, so a plank reads 45 s and not 45 reps.
 2. **Given** a row with an empty load, **When** it is shown or saved, **Then** the load stays empty and means no added weight.
 3. **Given** a trainer whose unit is pounds, **When** they see or type a load, **Then** it is in pounds; **and** a load they did not touch is stored unchanged by a save.
-4. **Given** a row, **When** the trainer chooses "Move up" or "Move down" by pointer or keyboard, **Then** the row moves one place, focus stays on the moved row's control, and the move is announced to assistive technology. "Move up" is unavailable on the first row and "Move down" on the last; when a move makes the focused control unavailable, focus goes to the other arrow of that row.
+4. **Given** a row, **When** the trainer drags its grip to another place, or presses the grip and chooses "Move up" or "Move down" by pointer, touch or keyboard, **Then** the row moves there, focus stays on the moved row's grip, and the move is announced to assistive technology. "Move up" is unavailable on the first row and "Move down" on the last; a line shows where a dragged row will land, and a drag that ends off the rows changes nothing.
 5. **Given** a row, **When** the trainer chooses delete, **Then** a confirmation asks whether to delete that exercise from that session, focus starts on the safe option, and the row goes only after confirming.
 6. **Given** a target outside its limits, or empty where a value is required, **When** the trainer leaves the field or chooses Save, **Then** the field is marked invalid with a message saying how to fix it; the message goes as soon as the value is valid.
 
@@ -200,8 +200,8 @@ A plan is private to the client and their trainer.
 
 - **FR-019**: The editor MUST live on the Plan tab of the client's page, at its own address. It shows the goal, the length, the plan's state and, for a published plan, "week N of M".
 - **FR-020**: The editor MUST show one selectable item per session with its letter (A, B, C in week order), name and day, and for the selected session a name field, a day field, a delete action and the exercise table. The first session is selected on opening. With no sessions it shows one line and "Add session"; a session with no exercises shows one line and "Add exercise".
-- **FR-021**: The table MUST allow editing sets, amount, load, RPE and rest in place, with a visible label for each column and the weight unit of the trainer on the load. Each field, "Move up", "Move down" and delete has an accessible name that includes the exercise and its row number, because the same exercise can appear twice.
-- **FR-022**: Reordering MUST work by pointer and keyboard with "Move up" and "Move down" controls on each row, with the focus behaviour of User Story 2, scenario 4. Dragging is not offered.
+- **FR-021**: The table MUST allow editing sets, amount, load, RPE and rest in place, with a visible label for each column and the weight unit of the trainer on the load. Each field, the grip and delete has an accessible name that includes the exercise and its row number, because the same exercise can appear twice.
+- **FR-022**: Reordering MUST work by dragging a grip on each row, and without dragging through "Move up" and "Move down" in a menu on that grip, with the behaviour of User Story 2, scenario 4.
 - **FR-023**: The picker MUST search by name and filter by category over the trainer's library, in the UI's language. It shows a skeleton while loading, a translated message and "Try again" on failure, and an empty state when nothing matches. It stays open after a pick, announces each addition, and closes with "Done" or Esc.
 - **FR-024**: The selected session MUST show its number of exercises, its total sets and an estimated time in whole minutes: the sum over its entries of sets × (rest + work), where work is the amount in seconds, or 4 seconds per repetition. A value that is not a valid number counts as 0.
 - **FR-025**: Changes MUST stay in the editor until Save and survive switching sessions. The editor shows "Unsaved changes" while the editor's content differs from the last saved plan, so undoing an edit clears it. A new plan counts as the empty starting point: it has unsaved changes only after a first edit.
@@ -259,7 +259,7 @@ None. Every plan operation needs a signed-in trainer (FR-018).
 | Story | "1 rep or second" lower bound only | Upper limits added | Same limits as the exercise library; a boundary needs them. |
 | Board | Week pills (13–16) | Removed; "week N of M" shown | A plan's sessions repeat every week, so the pills would show the same content. Weeks that differ arrive with story #143. |
 | Board | Draft has Publish only | Draft has Save and Publish | The story keeps changes until Save, and part-way work needs saving. |
-| Board | Drag rows, grip hidden from assistive technology | Move up and Move down | WCAG 2.2 criterion 2.5.7 needs a non-dragging way; this one needs no new dependency. |
+| Board | Drag rows, grip hidden from assistive technology | Drag rows; the grip is a control with a Move up and Move down menu | WCAG 2.2 criterion 2.5.7 needs a non-dragging way, and the keyboard needs one too. |
 | Board | "Reps" column shows a plank as 45 | Unit follows the exercise's measure | 45 repetitions of a plank is wrong. |
 | Board | Load 0 for a plank | Empty load | The story says load is optional; 0 and empty would mean the same. |
 | Board | No controls for goal, length, adding, renaming or moving sessions | Added | The story needs them. |
@@ -309,4 +309,4 @@ The main English and Polish texts. Names are the client's as stored; Polish cann
 - New plans start at 12 weeks, in the middle of the allowed range, and target RPE starts at 8, the usual target in `CONTEXT.md`.
 - Limits on sets, amount and rest are the exercise library's. The limits on session names, exercises per session and load are chosen here so that a request stays bounded.
 - The client page keeps its frame with tabs (task #38), so the board's own breadcrumb and page heading are not repeated inside the tab.
-- The trainer's area is designed at 1280 px; a phone layout for trainers is story #179, so at 375 px the editor must stay usable but is not redesigned.
+- The trainer's area is designed at 1280 px; a phone layout for trainers is story #179, so at 375 px the editor must stay usable but is not redesigned. Its fixed sidebar made FR-035 impossible, so below 768 px the sidebar is a sheet behind a menu button until #179 brings the bottom tab bar.
