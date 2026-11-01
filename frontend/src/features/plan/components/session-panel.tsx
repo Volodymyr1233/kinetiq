@@ -1,19 +1,9 @@
 import { Trash2Icon } from 'lucide-react'
-import { useEffect, useId, useRef, useState } from 'react'
+import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Field, FieldLabel } from '@/components/ui/field'
+import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
 import {
   Select,
@@ -27,8 +17,8 @@ import type { WeightUnit } from '@/lib/weight'
 import {
   dayName,
   DAYS,
-  NAME_MAX_LENGTH,
   sessionTotals,
+  target,
   type Day,
   type DraftSession,
 } from '../plan-draft'
@@ -39,14 +29,16 @@ export function SessionPanel({
   session,
   sessions,
   unit,
-  autoFocusName,
+  errorOf,
+  onLeaveField,
   onChange,
   onDelete,
 }: {
   session: DraftSession
   sessions: DraftSession[]
   unit: WeightUnit
-  autoFocusName: boolean
+  errorOf: (id: string) => string | undefined
+  onLeaveField: (id: string) => void
   onChange: (
     change: Partial<Pick<DraftSession, 'name' | 'day' | 'entries'>>,
   ) => void
@@ -54,32 +46,30 @@ export function SessionPanel({
 }) {
   const { t, i18n } = useTranslation()
   const id = useId()
-  const nameRef = useRef<HTMLInputElement>(null)
-  const [confirming, setConfirming] = useState(false)
   const totals = sessionTotals(session)
   const label = session.name.trim() || t('plan.session.unnamed')
-
-  useEffect(() => {
-    if (autoFocusName) nameRef.current?.focus()
-  }, [autoFocusName])
+  const nameId = target.name(session.key)
+  const nameError = errorOf(nameId)
 
   return (
     <TabsContent value={session.key} className="pt-4">
       <div className="flex flex-col gap-4">
-        <div className="flex flex-wrap items-end gap-x-4 gap-y-3">
-          <Field className="w-72 max-w-full">
-            <FieldLabel htmlFor={`${id}-name`}>
-              {t('plan.session.name')}
-            </FieldLabel>
+        <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+          <Field className="w-72 max-w-full" data-invalid={!!nameError}>
+            <FieldLabel htmlFor={nameId}>{t('plan.session.name')}</FieldLabel>
             <Input
-              ref={nameRef}
-              id={`${id}-name`}
+              id={nameId}
               autoComplete="off"
-              maxLength={NAME_MAX_LENGTH}
               placeholder={t('plan.session.namePlaceholder')}
+              aria-invalid={!!nameError}
+              aria-describedby={nameError ? `${nameId}-error` : undefined}
               value={session.name}
               onChange={(event) => onChange({ name: event.target.value })}
+              onBlur={() => onLeaveField(nameId)}
             />
+            {nameError && (
+              <FieldError id={`${nameId}-error`}>{nameError}</FieldError>
+            )}
           </Field>
           <Field className="w-44">
             <FieldLabel htmlFor={`${id}-day`}>
@@ -107,13 +97,7 @@ export function SessionPanel({
               </SelectContent>
             </Select>
           </Field>
-          <Button
-            variant="ghost"
-            className="ml-auto"
-            onClick={() =>
-              session.entries.length > 0 ? setConfirming(true) : onDelete()
-            }
-          >
+          <Button variant="ghost" className="ml-auto" onClick={onDelete}>
             <Trash2Icon data-icon="inline-start" aria-hidden="true" />
             {t('plan.session.delete')}
           </Button>
@@ -124,6 +108,8 @@ export function SessionPanel({
               session={session}
               sessionLabel={label}
               unit={unit}
+              errorOf={errorOf}
+              onLeaveField={onLeaveField}
               onChange={(entries) => onChange({ entries })}
             />
           </div>
@@ -132,7 +118,7 @@ export function SessionPanel({
             className="max-w-full flex-[1_1_280px] gap-3"
           >
             <CardHeader>
-              <CardTitle>{label}</CardTitle>
+              <CardTitle className="wrap-anywhere">{label}</CardTitle>
             </CardHeader>
             <CardContent>
               <dl className="flex flex-col gap-2 text-sm">
@@ -161,26 +147,6 @@ export function SessionPanel({
           </Card>
         </div>
       </div>
-      <AlertDialog open={confirming} onOpenChange={setConfirming}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>
-              {t('plan.session.deleteDialog.title', { session: label })}
-            </AlertDialogTitle>
-            <AlertDialogDescription>
-              {t('plan.session.deleteDialog.body', {
-                count: session.entries.length,
-              })}
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>{t('plan.cancel')}</AlertDialogCancel>
-            <AlertDialogAction variant="destructive" onClick={onDelete}>
-              {t('plan.session.delete')}
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </TabsContent>
   )
 }

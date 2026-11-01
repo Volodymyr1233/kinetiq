@@ -24,7 +24,9 @@
     "settings": "Ustawienia",
     "today": "Dzisiaj",
     "plan": "Plan",
-    "progress": "Postępy"
+    "progress": "Postępy",
+    "open": "Otwórz menu",
+    "menu": "Menu"
   },
   "areas": {
     "trainer": "Panel trenera",
@@ -659,7 +661,8 @@
       "PUBLISHED": "Opublikowany"
     },
     "toast": {
-      "saved": "Plan zapisany"
+      "saved": "Plan zapisany",
+      "published": "Plan opublikowany"
     },
     "fields": {
       "goal": "Cel",
@@ -674,7 +677,8 @@
       "label": "Sesje",
       "add": "Dodaj sesję",
       "empty": "Nie ma jeszcze sesji. Dodaj pierwszą.",
-      "limit": "Plan może mieć najwyżej {{count, number}} sesji."
+      "limit": "Plan może mieć najwyżej {{count, number}} sesji.",
+      "hasProblem": "W tej sesji jest coś do poprawienia"
     },
     "session": {
       "unnamed": "Nowa sesja",
@@ -688,7 +692,8 @@
         "body_few": "Znikną też jej ćwiczenia ({{count, number}}).",
         "body_many": "Znikną też jej ćwiczenia ({{count, number}}).",
         "body_other": "Znikną też jej ćwiczenia ({{count, number}})."
-      }
+      },
+      "withLetter": "{{letter}} · {{name}}"
     },
     "summary": {
       "exercises": "Ćwiczenia",
@@ -710,13 +715,35 @@
       "empty": "W tej sesji nie ma jeszcze ćwiczeń.",
       "add": "Dodaj ćwiczenie",
       "fromLibrary": "Z biblioteki ćwiczeń.",
-      "limit": "Sesja może mieć najwyżej {{count, number}} ćwiczeń."
+      "limit": "Sesja może mieć najwyżej {{count, number}} ćwiczeń.",
+      "order": "Kolejność",
+      "actions": "Działania",
+      "move": "Przenieś: {{exercise}}, wiersz {{row, number}}",
+      "moveUp": "Przenieś wyżej",
+      "moveDown": "Przenieś niżej",
+      "moved": "{{exercise}}: teraz wiersz {{row, number}}.",
+      "remove": "Usuń: {{exercise}}, wiersz {{row, number}}",
+      "removeDialog": {
+        "title": "Usunąć „{{exercise}}” z sesji {{session}}?",
+        "body": "Zalogowane serie zostają w historii.",
+        "confirm": "Usuń ćwiczenie"
+      },
+      "fields": {
+        "sets": "Serie: {{exercise}}, wiersz {{row, number}}",
+        "amount": {
+          "REPS": "Powtórzenia: {{exercise}}, wiersz {{row, number}}",
+          "SECONDS": "Sekundy: {{exercise}}, wiersz {{row, number}}"
+        },
+        "load": "Obciążenie w {{unit}}: {{exercise}}, wiersz {{row, number}}",
+        "rpe": "Docelowe RPE: {{exercise}}, wiersz {{row, number}}",
+        "rest": "Przerwa w sekundach: {{exercise}}, wiersz {{row, number}}"
+      }
     },
     "picker": {
       "title": "Dodaj ćwiczenie",
       "description": "Wybierz ćwiczenia ze swojej biblioteki do sesji {{session}}. Okno zostaje otwarte na kolejne.",
       "search": "Szukaj ćwiczeń",
-      "addOne": "Dodaj: {{exercise}}",
+      "addOne": "Dodaj: {{exercise}}, {{category}}, {{amounts}}",
       "done": "Gotowe",
       "added_one": "Dodano do sesji {{session}}: {{exercise}}.",
       "added_few": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
@@ -726,6 +753,27 @@
         "title": "Żadne ćwiczenie nie pasuje",
         "body": "Spróbuj innej nazwy lub kategorii."
       }
+    },
+    "publish": "Opublikuj plan",
+    "publishing": "Publikowanie",
+    "publishedNote": "Zapis obowiązuje od dziś. Zalogowane serie się nie zmieniają.",
+    "publishDialog": {
+      "title": "Opublikować plan? Klient: {{name}}",
+      "body": "Klient zobaczy plan po publikacji, a tydzień 1 to bieżący tydzień w jego strefie czasowej. Możesz go później edytować, ale nie cofniesz go do szkicu."
+    },
+    "leave": {
+      "title": "Wyjść bez zapisywania?",
+      "body": "Niezapisane zmiany w tym planie przepadną.",
+      "stay": "Zostań",
+      "leave": "Wyjdź"
+    },
+    "problems": {
+      "saveTitle": "Popraw to, aby zapisać plan.",
+      "publishTitle": "Popraw to, aby opublikować plan.",
+      "inSession": "{{session}}: {{problem}}",
+      "inEntry": "{{session}}, {{exercise}}: {{problem}}",
+      "emptySession": "Dodaj co najmniej 1 ćwiczenie do sesji {{session}}.",
+      "load": "Zostaw obciążenie puste lub wpisz liczbę większą od 0, do {{max, number}} {{unit}}."
     }
   }
 }

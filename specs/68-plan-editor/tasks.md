@@ -98,16 +98,16 @@
 
 **Independent test**: `plan-editor.test.tsx`: edit, switch session, reload the query; guard; publish confirmation.
 
-- [ ] T037 [US2] Make the targets editable in `entries-table.tsx` with text kept as typed, a load in the trainer's unit that is sent unchanged when untouched and limited after conversion, accessible names per field with exercise and row number, field errors on leaving and on Save
-- [ ] T038 [US2] Add Move up and Move down, unavailable at the ends, with focus moving to the other arrow when needed and a live region; add delete with confirmation and focus after it (FR-037), in `entries-table.tsx`
-- [ ] T039 [US2] Add validation to `plan-draft.ts` at both levels, with a problem per field, and its tests; add `validation-summary.tsx`, focused on a failed attempt, updating as problems are fixed, with links to fields, "Add session" and "Add exercise" (FR-029); mark sessions with problems by icon and accessible text
-- [ ] T040 [US5] Add `leave-guard.tsx`: `useBlocker` letting `/sign-in` through, `AlertDialog`, focus on Stay, `beforeunload`; add `frontend/src/lib/leave-guard.ts` and await it in `frontend/src/features/account/components/sign-out-button.tsx` (research R13)
-- [ ] T041 [US3] Add `usePublishPlan` in `api/plans.ts`; add Save plan and Publish plan in `plan-editor.tsx`: validate, confirm, save if dirty, publish; a failed publish after a good save leaves a saved draft and shows the failure; stale publish keeps edits; loading labels; server refusals translated into the summary; focus on Save plan after publishing
-- [ ] T042 [US4] Show for a published plan only Save plan, the note that saving applies from today, "week N of M", and "Finished after week M"
-- [ ] T043 [US5] Show `plan.changed`, keeping the edits on screen; a failed save keeps edits and allows retrying
-- [ ] T044 [US2] Add the remaining `plan.*` texts to `frontend/src/locales/{en,pl}.json`
-- [ ] T045 [US5] Write `frontend/src/features/plan/components/plan-editor.test.tsx`: edits survive switching sessions; guard on another tab, Stay and Leave; sign out asks first and does not sign out on Stay; an untouched new plan leaves without a question; delete asks first and focus lands as FR-037 says; reorder is sent; invalid RPE blocks saving, focus goes to the summary, its link focuses the field; publish asks, then sends; publish with unsaved changes saves first; save succeeding and publish failing leaves a saved draft; incomplete draft saves but does not publish, showing the summary without a dialog; published plan has no Publish; `plan.changed` keeps edits
-- [ ] T046 Run `npm run check`; commit
+- [X] T037 [US2] Make the targets editable in `entries-table.tsx` with text kept as typed, a load in the trainer's unit that is sent unchanged when untouched and limited after conversion, accessible names per field with exercise and row number, field errors on leaving and on Save
+- [X] T038 [US2] Add Move up and Move down, unavailable at the ends, with focus moving to the other arrow when needed and a live region; add delete with confirmation and focus after it (FR-037), in `entries-table.tsx`
+- [X] T039 [US2] Add validation to `plan-draft.ts` at both levels, with a problem per field, and its tests; add `validation-summary.tsx`, focused on a failed attempt, updating as problems are fixed, with links to fields, "Add session" and "Add exercise" (FR-029); mark sessions with problems by icon and accessible text
+- [X] T040 [US5] Add `leave-guard.tsx`: `useBlocker` letting `/sign-in` through, `AlertDialog`, focus on Stay, `beforeunload`; add `frontend/src/lib/leave-guard.ts` and await it in `frontend/src/features/account/components/sign-out-button.tsx` (research R13)
+- [X] T041 [US3] Add `usePublishPlan` in `api/plans.ts`; add Save plan and Publish plan in `plan-editor.tsx`: validate, confirm, save if dirty, publish; a failed publish after a good save leaves a saved draft and shows the failure; stale publish keeps edits; loading labels; server refusals translated into the summary; focus on Save plan after publishing
+- [X] T042 [US4] Show for a published plan only Save plan, the note that saving applies from today, "week N of M", and "Finished after week M"
+- [X] T043 [US5] Show `plan.changed`, keeping the edits on screen; a failed save keeps edits and allows retrying
+- [X] T044 [US2] Add the remaining `plan.*` texts to `frontend/src/locales/{en,pl}.json`
+- [X] T045 [US5] Write `frontend/src/features/plan/components/plan-editor.test.tsx`: edits survive switching sessions; guard on another tab, Stay and Leave; sign out asks first and does not sign out on Stay; an untouched new plan leaves without a question; delete asks first and focus lands as FR-037 says; reorder is sent; invalid RPE blocks saving, focus goes to the summary, its link focuses the field; publish asks, then sends; publish with unsaved changes saves first; save succeeding and publish failing leaves a saved draft; incomplete draft saves but does not publish, showing the summary without a dialog; published plan has no Publish; `plan.changed` keeps edits
+- [X] T046 Run `npm run check`; commit
 
 ---
 
@@ -115,10 +115,10 @@
 
 **Purpose**: The whole story, checked for real.
 
-- [ ] T047 Run `quickstart.md` in the built-in browser at 1280 px, 375 px and 320 px, light and dark, English and Polish; fix what it finds
-- [ ] T048 Review the editor with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX; the design system stays authoritative
-- [ ] T049 Run a security review of the diff: ownership, 404s, leaks in `plansUsing`, error bodies
-- [ ] T050 Check `master` and open pull requests for a migration taking `V13`
+- [X] T047 Run `quickstart.md` in the built-in browser at 1280 px, 375 px and 320 px, light and dark, English and Polish; fix what it finds
+- [X] T048 Review the editor with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX; the design system stays authoritative
+- [X] T049 Run a security review of the diff: ownership, 404s, leaks in `plansUsing`, error bodies
+- [X] T050 Check `master` and open pull requests for a migration taking `V13`
 - [ ] T051 Run `./gradlew check` and `npm run check`; open the story's pull request with `Closes #68`, `Closes #69` … `Closes #74`
 
 ---
@@ -148,3 +148,14 @@ Phases 1 to 3 and 5 are the MVP: a trainer can build and save a draft. Phases 4 
 | FR-033 | T014 |
 | FR-034–035 | T020, T034, T044, T047 |
 | FR-036 | T006 |
+
+## Phase 8: Convergence
+
+- [X] T052 Stop the picker at 30 exercises, saying why, while focus can still return to "Add exercise" per FR-005 (partial)
+- [X] T053 Mark a session holding a field the server refused, as for one found in the editor, per FR-029 (partial)
+
+## Phase 9: Review
+
+- [X] T054 Show the focus ring on the safe option of every alert dialog, also when it was opened by mouse
+- [X] T055 Style scrollbars to the design system's tokens, in `index.css`
+- [X] T056 Replace the arrows with a dragged grip and a Move up and Move down menu per FR-022, in `entries-table.tsx`

@@ -61,11 +61,12 @@ No open questions were left in the technical context. These are the design decis
 - **Rationale**: no form library field arrays for a nested, reorderable table with rules across sessions; plain functions in `plan-draft.ts` are testable without rendering. The query's data seeds the draft once and is not read again until a save.
 - **Rejected**: `react-hook-form` field arrays, which fit flat forms better; storing the draft in the query cache.
 
-## R11. Reordering without drag
+## R11. Reordering
 
-- **Decision**: Move up and Move down icon buttons per row. Focus stays on the control; at the first or last place, it moves to the other arrow. A polite live region announces the new position.
-- **Rationale**: WCAG 2.2 criterion 2.5.7, no new dependency (constitution VI).
-- **Rejected**: drag and drop with `dnd-kit`, a dependency for what two buttons do.
+- **Decision**: a grip per row, dragged with the browser's own drag and drop, showing a line where the row will land. Pressing the grip opens a menu with Move up and Move down. Focus stays on the grip. A polite live region announces the new position.
+- **Rationale**: dragging is what trainers expect of an ordered list and what the board drew. WCAG 2.2 criterion 2.5.7 and the keyboard need a way without dragging, which the menu gives in one column. No new dependency (constitution VI).
+- **Rejected**: Move up and Move down buttons alone, which take two controls per row and many clicks for a long move; `dnd-kit`, a dependency for what the browser does, and whose keyboard mode would not meet 2.5.7 anyway.
+- **Limit**: native drag and drop does not start from touch in every mobile browser, where the menu does the job.
 
 ## R12. Cross-feature code on the frontend
 

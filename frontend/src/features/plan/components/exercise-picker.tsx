@@ -34,16 +34,19 @@ import {
   type Category,
   type Exercise,
 } from '@/lib/exercise-library'
+import { MAX_EXERCISES } from '../plan-draft'
 
 const ALL = 'ALL'
 const SEARCH_PAUSE_MS = 300
 
 /** "Add exercise" and its picker over the trainer's library. It stays open for the next pick and says what it added. */
 export function ExercisePicker({
+  id,
   disabled,
   sessionLabel,
   onPick,
 }: {
+  id: string
   disabled: boolean
   sessionLabel: string
   onPick: (exercise: Exercise) => void
@@ -52,22 +55,42 @@ export function ExercisePicker({
   const [open, setOpen] = useState(false)
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(next) => {
+        if (!next || !disabled) setOpen(next)
+      }}
+    >
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled}>
+        {/* never disabled for real: focus returns here on closing, also when the last pick filled the session */}
+        <Button
+          id={id}
+          variant="outline"
+          size="sm"
+          aria-disabled={disabled}
+          className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+        >
           <PlusIcon data-icon="inline-start" aria-hidden="true" />
           {t('plan.entries.add')}
         </Button>
       </DialogTrigger>
-      {open && <PickerContent sessionLabel={sessionLabel} onPick={onPick} />}
+      {open && (
+        <PickerContent
+          full={disabled}
+          sessionLabel={sessionLabel}
+          onPick={onPick}
+        />
+      )}
     </Dialog>
   )
 }
 
 function PickerContent({
+  full,
   sessionLabel,
   onPick,
 }: {
+  full: boolean
   sessionLabel: string
   onPick: (exercise: Exercise) => void
 }) {
@@ -84,6 +107,7 @@ function PickerContent({
   const exercises = query.data?.exercises ?? []
 
   function pick(exercise: Exercise) {
+    if (full) return
     onPick(exercise)
     // the count changes the text, so the same exercise picked twice is announced twice
     setAdded((last) => ({
@@ -172,44 +196,54 @@ function PickerContent({
           </Empty>
         ) : (
           <ul className="divide-y">
-            {exercises.map((exercise) => (
-              <li key={exercise.id}>
-                <button
-                  type="button"
-                  aria-label={t('plan.picker.addOne', {
-                    exercise: exercise.name,
-                  })}
-                  onClick={() => pick(exercise)}
-                  className="hover:bg-muted focus-visible:ring-ring/50 flex w-full items-center justify-between gap-4 px-3 py-2 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-inset"
-                >
-                  <span className="min-w-0">
-                    <span className="block font-medium">{exercise.name}</span>
-                    <span className="text-muted-foreground block text-xs">
-                      {t(`exercises.categories.${exercise.category}`)}
+            {exercises.map((exercise) => {
+              const category = t(`exercises.categories.${exercise.category}`)
+              const amounts = t(
+                exercise.measure === 'SECONDS'
+                  ? 'exercises.default.seconds'
+                  : 'exercises.default.reps',
+                { sets: exercise.sets, amount: exercise.amount },
+              )
+              return (
+                <li key={exercise.id}>
+                  <button
+                    type="button"
+                    aria-disabled={full}
+                    // says all that is visible, so voice control can use any of it
+                    aria-label={t('plan.picker.addOne', {
+                      exercise: exercise.name,
+                      category,
+                      amounts,
+                    })}
+                    onClick={() => pick(exercise)}
+                    className="hover:bg-muted focus-visible:ring-ring/50 flex w-full items-center justify-between gap-4 px-3 py-2 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-inset aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
+                  >
+                    <span className="min-w-0">
+                      <span className="block font-medium">{exercise.name}</span>
+                      <span className="text-muted-foreground block text-xs">
+                        {category}
+                      </span>
                     </span>
-                  </span>
-                  <span className="num text-muted-foreground shrink-0">
-                    {t(
-                      exercise.measure === 'SECONDS'
-                        ? 'exercises.default.seconds'
-                        : 'exercises.default.reps',
-                      { sets: exercise.sets, amount: exercise.amount },
-                    )}
-                  </span>
-                </button>
-              </li>
-            ))}
+                    <span className="num text-muted-foreground shrink-0">
+                      {amounts}
+                    </span>
+                  </button>
+                </li>
+              )
+            })}
           </ul>
         )}
       </div>
       <DialogFooter className="items-center sm:justify-between">
         <p role="status" className="text-muted-foreground text-sm">
-          {added &&
-            t('plan.picker.added', {
-              exercise: added.name,
-              session: sessionLabel,
-              count: added.times,
-            })}
+          {full
+            ? t('plan.entries.limit', { count: MAX_EXERCISES })
+            : added &&
+              t('plan.picker.added', {
+                exercise: added.name,
+                session: sessionLabel,
+                count: added.times,
+              })}
         </p>
         <DialogClose asChild>
           <Button>{t('plan.picker.done')}</Button>

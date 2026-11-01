@@ -1,6 +1,6 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 import { problem, renderAppAt, SIGNED_IN } from '@/test/page'
 
 async function renderTrainerAt(path: string) {
@@ -9,6 +9,21 @@ async function renderTrainerAt(path: string) {
 }
 
 describe('TrainerArea', () => {
+  it('keeps the sections behind a button on a narrow screen', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal('innerWidth', 375)
+    renderAppAt('/trainer/clients', SIGNED_IN.TRAINER)
+
+    await user.click(await screen.findByRole('button', { name: 'Open menu' }))
+
+    const menu = within(await screen.findByRole('dialog', { name: 'Menu' }))
+    expect(menu.getByRole('link', { name: 'Clients' })).toBeInTheDocument()
+    await user.click(menu.getByRole('link', { name: 'Settings' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+  })
+
   it('links every section from the sidebar', async () => {
     const nav = await renderTrainerAt('/trainer/clients')
 

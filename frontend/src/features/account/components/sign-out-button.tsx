@@ -5,6 +5,7 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
+import { confirmLeaving } from '@/lib/leave-guard'
 import { useSignOut } from '../api/account'
 
 type SignOutButtonProps = Pick<
@@ -30,7 +31,10 @@ export function SignOutButton(props: SignOutButtonProps) {
         {...props}
         disabled={signOut.isPending}
         aria-busy={signOut.isPending}
-        onClick={() => signOut.mutate()}
+        onClick={() => {
+          // whoever has unsaved work asks first, since signing out cannot wait for a question afterwards
+          void confirmLeaving().then((leave) => leave && signOut.mutate())
+        }}
       >
         {signOut.isPending ? (
           <Spinner data-icon="inline-start" aria-hidden="true" />

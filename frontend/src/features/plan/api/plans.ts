@@ -38,6 +38,21 @@ function useRefreshAfterSaving(client: string) {
   }
 }
 
+export function usePublishPlan(client: string) {
+  const refresh = useRefreshAfterSaving(client)
+  return useMutation({
+    mutationFn: async (version: number) => {
+      const { data, error } = await api.POST(
+        '/api/v1/clients/{id}/plan/publication',
+        { params: { path: { id: client } }, body: { version } },
+      )
+      if (error !== undefined) throw error
+      return data
+    },
+    onSuccess: refresh,
+  })
+}
+
 export function useSavePlan(client: string) {
   const refresh = useRefreshAfterSaving(client)
   return useMutation({

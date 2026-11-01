@@ -1,5 +1,6 @@
-import { fromKg, parseWeight, toKg, type WeightUnit } from '@/lib/weight'
+import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import type { Exercise } from '@/lib/exercise-library'
+import { fromKg, parseWeight, toKg, type WeightUnit } from '@/lib/weight'
 import type { Plan, SavePlanBody } from './api/plans'
 
 export type Goal = Plan['goal']
@@ -31,6 +32,7 @@ export const DAYS = Object.keys(DAY_ORDER) as Day[]
 export const MAX_SESSIONS = 6
 export const MAX_EXERCISES = 30
 export const NAME_MAX_LENGTH = 60
+const MAX_LOAD_KG = 999.9
 
 const NEW_PLAN_WEEKS = 12
 const DEFAULT_RPE = 8
@@ -64,6 +66,21 @@ export type Draft = { goal: Goal; weeks: string; sessions: DraftSession[] }
 // the API has no ids for sessions and rows, so React and the selection use these
 let lastKey = 0
 const nextKey = () => `draft-${++lastKey}`
+
+/** The elements a problem can send the trainer to; the keys make them unique, and the page has one editor. */
+export const target = {
+  weeks: 'plan-weeks',
+  addSession: 'plan-add-session',
+  summary: 'plan-summary',
+  save: 'plan-save',
+  name: (session: string) => `plan-name-${session}`,
+  addExercise: (session: string) => `plan-add-exercise-${session}`,
+  field: (entry: string, field: EntryField) => `plan-${field}-${entry}`,
+  move: (entry: string) => `plan-move-${entry}`,
+  remove: (entry: string) => `plan-remove-${entry}`,
+}
+
+export type EntryField = 'sets' | 'amount' | 'load' | 'rpe' | 'rest'
 
 const byDay = (sessions: DraftSession[]) =>
   [...sessions].sort((a, b) => DAYS.indexOf(a.day) - DAYS.indexOf(b.day))
@@ -176,6 +193,17 @@ export function entryFromExercise(exercise: Exercise): DraftEntry {
   }
 }
 
+/** Moves the row one place up (-1) or down (+1); a move past either end changes nothing. */
+export function moveEntry(
+  entries: DraftEntry[],
+  from: number,
+  to: number,
+): DraftEntry[] {
+  const moved = [...entries]
+  moved.splice(to, 0, ...moved.splice(from, 1))
+  return moved
+}
+
 const wholeNumber = (text: string) =>
   /^\d+$/.test(text.trim()) ? Number(text.trim()) : 0
 
@@ -219,6 +247,177 @@ function content(draft: Draft) {
 /** Tells whether the draft differs from what was last saved, so undoing an edit clears it. */
 export function isDirty(draft: Draft, saved: Draft) {
   return content(draft) !== content(saved)
+}
+
+/** One thing to fix: its text and values, where it is, and the element that fixes it. */
+export type Problem = {
+  message: string
+  values?: Record<string, string | number>
+  session?: string
+  entry?: string
+  target?: string
+}
+
+const inRange = (text: string, min: number, max: number) => {
+  const trimmed = text.trim()
+  return (
+    /^\d+$/.test(trimmed) && Number(trimmed) >= min && Number(trimmed) <= max
+  )
+}
+
+// the limit holds in kilograms, as loads are stored, so in pounds it is 2204.4 and 0.1 lb rounds to nothing
+function validLoad(entry: DraftEntry, unit: WeightUnit) {
+  const text = entry.load.trim()
+  if (!text || entry.stored?.text === entry.load) return true
+  const value = parseWeight(text)
+  if (value === undefined) return false
+  const kg = toKg(value, unit)
+  return kg > 0 && kg <= MAX_LOAD_KG
+}
+
+function entryProblems(
+  session: DraftSession,
+  entry: DraftEntry,
+  unit: WeightUnit,
+): Problem[] {
+  const checks: [EntryField, boolean, string, Problem['values']?][] = [
+    ['sets', inRange(entry.sets, 1, 20), 'errors.plan.sets-out-of-range'],
+    [
+      'amount',
+      inRange(entry.amount, 1, 3600),
+      'errors.plan.amount-out-of-range',
+    ],
+    [
+      'load',
+      validLoad(entry, unit),
+      'plan.problems.load',
+      { max: fromKg(MAX_LOAD_KG, unit), unit: unit.toLowerCase() },
+    ],
+    ['rpe', inRange(entry.rpe, 5, 10), 'errors.plan.rpe-out-of-range'],
+    ['rest', inRange(entry.rest, 0, 600), 'errors.plan.rest-out-of-range'],
+  ]
+  return checks
+    .filter(([, valid]) => !valid)
+    .map(([field, , message, values]) => ({
+      message,
+      values,
+      session: session.key,
+      entry: entry.key,
+      target: target.field(entry.key, field),
+    }))
+}
+
+/**
+ * What stops this draft from being saved, or with `complete` from being published or saved as a published plan. The
+ * rules are the backend's, repeated so that a trainer sees all problems at once and next to their fields.
+ */
+export function validateDraft(
+  draft: Draft,
+  level: 'draft' | 'complete',
+  unit: WeightUnit,
+): Problem[] {
+  const problems: Problem[] = []
+  if (!inRange(draft.weeks, 4, 16)) {
+    problems.push({
+      message: 'errors.plan.weeks-out-of-range',
+      target: target.weeks,
+    })
+  }
+  if (level === 'complete' && draft.sessions.length < 2) {
+    problems.push({
+      message: 'errors.plan.too-few-sessions',
+      target: target.addSession,
+    })
+  }
+  for (const session of draft.sessions) {
+    if (!session.name.trim() || session.name.trim().length > NAME_MAX_LENGTH) {
+      problems.push({
+        message: 'errors.plan.session-name-invalid',
+        session: session.key,
+        target: target.name(session.key),
+      })
+    }
+    if (level === 'complete' && session.entries.length === 0) {
+      problems.push({
+        message: 'plan.problems.emptySession',
+        session: session.key,
+        target: target.addExercise(session.key),
+      })
+    }
+    for (const entry of session.entries) {
+      problems.push(...entryProblems(session, entry, unit))
+    }
+  }
+  return problems
+}
+
+const SERVER_ENTRY_FIELDS: Record<string, [EntryField, string]> = {
+  sets: ['sets', 'errors.plan.sets-out-of-range'],
+  amount: ['amount', 'errors.plan.amount-out-of-range'],
+  loadKg: ['load', 'errors.plan.load-out-of-range'],
+  rpe: ['rpe', 'errors.plan.rpe-out-of-range'],
+  restSeconds: ['rest', 'errors.plan.rest-out-of-range'],
+}
+
+// the backend names a field by its place in the request, which follows the draft's order
+function problemFromField(field: string, draft: Draft): Problem | undefined {
+  if (field === 'weeks') {
+    return {
+      message: 'errors.plan.weeks-out-of-range',
+      target: target.weeks,
+    }
+  }
+  const place = field.match(
+    /^sessions\[(\d+)]\.(?:name|entries\[(\d+)]\.(\w+))$/,
+  )
+  const session = place && draft.sessions[Number(place[1])]
+  if (!session) return undefined
+  if (place[2] === undefined) {
+    return {
+      message: 'errors.plan.session-name-invalid',
+      session: session.key,
+      target: target.name(session.key),
+    }
+  }
+  const entry = session.entries[Number(place[2])]
+  const known = SERVER_ENTRY_FIELDS[place[3]]
+  return entry && known
+    ? {
+        message: known[1],
+        session: session.key,
+        entry: entry.key,
+        target: target.field(entry.key, known[0]),
+      }
+    : undefined
+}
+
+/** A refusal from the server as problems, translated by its code; server text is never shown. */
+export function problemsFromServer(
+  error: unknown,
+  draft: Draft,
+  values: Record<string, string | number>,
+): Problem[] {
+  const code = problemCode(error)
+  const detail =
+    typeof error === 'object' && error !== null
+      ? (error as { errors?: { field: string }[]; currentWeek?: number })
+      : {}
+  if (code === 'validation.failed' && Array.isArray(detail.errors)) {
+    const found = detail.errors.map((fieldError) =>
+      problemFromField(fieldError.field, draft),
+    )
+    if (found.length > 0 && found.every(Boolean)) return found as Problem[]
+  }
+  if (code === 'plan.weeks-before-current') {
+    return [
+      {
+        message: errorMessageKey(error),
+        values: { currentWeek: detail.currentWeek ?? 0 },
+        target: target.weeks,
+      },
+    ]
+  }
+  return [{ message: errorMessageKey(error), values }]
 }
 
 function loadKg(entry: DraftEntry, unit: WeightUnit) {
