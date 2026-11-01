@@ -7,8 +7,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
+import type { Exercise } from '@/lib/exercise-library'
 import { cn } from '@/lib/utils'
-import type { Exercise } from '../api/exercises'
 import { defaultLabel, plansLabel } from '../format'
 
 export function ExerciseTable({

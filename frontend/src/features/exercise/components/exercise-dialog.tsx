@@ -41,12 +41,8 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { Textarea } from '@/components/ui/textarea'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
-import {
-  CATEGORIES,
-  useCreateExercise,
-  useUpdateExercise,
-  type Exercise,
-} from '../api/exercises'
+import { CATEGORIES, type Exercise } from '@/lib/exercise-library'
+import { useCreateExercise, useUpdateExercise } from '../api/exercises'
 import {
   exerciseDefaults,
   exerciseSchema,

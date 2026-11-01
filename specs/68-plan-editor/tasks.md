@@ -79,16 +79,16 @@
 
 **Independent test**: `plan-page.test.tsx`: all Plan tab states; add a session and an exercise through the picker.
 
-- [ ] T027 [US1] Move `useExercises`, `CATEGORIES`, `Exercise` and `Category` to `frontend/src/lib/exercise-library.ts`; update `frontend/src/features/exercise/`
-- [ ] T028 [US1] Pass the client through `<Outlet context={client}>` in `frontend/src/features/client/pages/client-page.tsx`; route the `plan` child to `features/plan/pages/plan-page` in `frontend/src/app/router.ts`; give `PlanStateBadge` the new states
-- [ ] T029 [US1] Add `usePlan`, `useSavePlan` in `frontend/src/features/plan/api/plans.ts`, invalidating `clients` and `exercises` after a save
-- [ ] T030 [US1] Add `frontend/src/features/plan/plan-draft.ts` and its test: draft from a plan, new draft, add and remove session, first free day, entry defaults from an exercise with RPE 8 and empty load, request from a draft, `dirty` (untouched new plan is clean, undoing an edit clears it), totals, estimated time (FR-024)
-- [ ] T031 [US1] Add `frontend/src/features/plan/pages/plan-page.tsx`: skeleton, error with "Try again", no quiz, no plan with "Build plan", editor
-- [ ] T032 [US1] Add `plan-editor.tsx` (goal, length, state, week N of M or finished, session tabs with letter, name and day, first session selected, Add session with limit and focus on the new name, empty line) and `session-panel.tsx` (name, day with taken days unavailable, delete with confirmation when it holds exercises and selection and focus after it, summary, empty line) in `frontend/src/features/plan/components/`
-- [ ] T033 [US1] Add `entries-table.tsx` showing rows with the unit of the exercise's measure, and `exercise-picker.tsx` (`Dialog`, search, category chips, skeleton, failure with "Try again", empty state, stays open after a pick, announces each addition, "Done", focus back on "Add exercise") in `frontend/src/features/plan/components/`
-- [ ] T034 [US1] Add `plan.*` texts to `frontend/src/locales/en.json` and `pl.json` from the spec's Texts section, with Polish plural forms
-- [ ] T035 [US1] Write `frontend/src/features/plan/pages/plan-page.test.tsx`: each state; picker search and filter; an added exercise's defaults; timed exercise shows seconds; first save sends the request; a seventh session cannot be added
-- [ ] T036 Run `npm run check`; commit
+- [X] T027 [US1] Move `useExercises`, `CATEGORIES`, `Exercise` and `Category` to `frontend/src/lib/exercise-library.ts`; update `frontend/src/features/exercise/`
+- [X] T028 [US1] Pass the client through `<Outlet context={client}>` in `frontend/src/features/client/pages/client-page.tsx`; route the `plan` child to `features/plan/pages/plan-page` in `frontend/src/app/router.ts`; give `PlanStateBadge` the new states
+- [X] T029 [US1] Add `usePlan`, `useSavePlan` in `frontend/src/features/plan/api/plans.ts`, invalidating `clients` and `exercises` after a save
+- [X] T030 [US1] Add `frontend/src/features/plan/plan-draft.ts` and its test: draft from a plan, new draft, add and remove session, first free day, entry defaults from an exercise with RPE 8 and empty load, request from a draft, `dirty` (untouched new plan is clean, undoing an edit clears it), totals, estimated time (FR-024)
+- [X] T031 [US1] Add `frontend/src/features/plan/pages/plan-page.tsx`: skeleton, error with "Try again", no quiz, no plan with "Build plan", editor
+- [X] T032 [US1] Add `plan-editor.tsx` (goal, length, state, week N of M or finished, session tabs with letter, name and day, first session selected, Add session with limit and focus on the new name, empty line) and `session-panel.tsx` (name, day with taken days unavailable, delete with confirmation when it holds exercises and selection and focus after it, summary, empty line) in `frontend/src/features/plan/components/`
+- [X] T033 [US1] Add `entries-table.tsx` showing rows with the unit of the exercise's measure, and `exercise-picker.tsx` (`Dialog`, search, category chips, skeleton, failure with "Try again", empty state, stays open after a pick, announces each addition, "Done", focus back on "Add exercise") in `frontend/src/features/plan/components/`
+- [X] T034 [US1] Add `plan.*` texts to `frontend/src/locales/en.json` and `pl.json` from the spec's Texts section, with Polish plural forms
+- [X] T035 [US1] Write `frontend/src/features/plan/pages/plan-page.test.tsx`: each state; picker search and filter; an added exercise's defaults; timed exercise shows seconds; first save sends the request; a seventh session cannot be added
+- [X] T036 Run `npm run check`; commit
 
 ---
 

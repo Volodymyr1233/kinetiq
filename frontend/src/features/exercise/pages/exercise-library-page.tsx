@@ -25,7 +25,7 @@ import {
   useExercises,
   type Category,
   type Exercise,
-} from '../api/exercises'
+} from '@/lib/exercise-library'
 import { ExerciseDetail } from '../components/exercise-detail'
 import { ExerciseDialog } from '../components/exercise-dialog'
 import { ExerciseTable } from '../components/exercise-table'
