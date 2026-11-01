@@ -52,6 +52,10 @@ _Avoid_: Workout, training
 **Exercise**:
 A movement that can be prescribed, such as a back squat.
 
+**Exercise entry**:
+One exercise in its place within a session, with its targets. The same exercise can appear twice in a session.
+_Avoid_: Row, item
+
 **Exercise library**:
 The catalogue of exercises a trainer picks from when building a plan: the starter exercises plus the trainer's own.
 
