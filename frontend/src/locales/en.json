@@ -645,6 +645,22 @@
     "leave": "Leave"
   },
   "plan": {
+    "client": {
+      "none": "You don't have a plan yet.",
+      "previous": "Previous week",
+      "next": "Next week",
+      "currentWeek": "Back to current week",
+      "restDay": "Rest day",
+      "exercises_one": "{{count, number}} exercise",
+      "exercises_other": "{{count, number}} exercises",
+      "entry": {
+        "target": "{{sets, number}} × {{amount, number}} {{unit}}",
+        "load": "{{load, number}} {{unit}}",
+        "noLoad": "No load",
+        "rpe": "RPE {{rpe, number}}",
+        "rest": "Rest {{seconds, number}} s"
+      }
+    },
     "loading": "Loading plan",
     "retry": "Try again",
     "cancel": "Cancel",
