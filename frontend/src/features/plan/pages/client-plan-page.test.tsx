@@ -87,6 +87,13 @@ function openPlan(
   return { requests, router }
 }
 
+const acknowledgements = (requests: Request[]) =>
+  requests.filter(
+    (request) =>
+      request.method === 'POST' &&
+      new URL(request.url).pathname === '/api/v1/plan/acknowledgement',
+  )
+
 const asked = (requests: Request[]) =>
   requests.map((request) => new URL(request.url).searchParams.get('week'))
 
@@ -238,5 +245,53 @@ describe('ClientPlanPage', () => {
     // the old week stays on screen until the refusal arrives, so the address is what shows the move
     await waitFor(() => expect(router.state.location.search).toBe(''))
     expect(await screen.findByText('Week 6 of 12')).toBeInTheDocument()
+  })
+  it('says the plan has finished, without a week strip, once it is past its last week', async () => {
+    openPlan(() =>
+      json({
+        goal: 'LOSE_FAT',
+        weeks: 12,
+        currentWeek: 14,
+        finished: true,
+        seen: true,
+        sessions: SESSIONS,
+      }),
+    )
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Your trainer is preparing your next plan.',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByText('Your 12-week plan has finished.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Next week' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Rest day')).not.toBeInTheDocument()
+  })
+
+  it('marks an unseen plan as seen once, when the tab opens', async () => {
+    let seen = false
+    const { requests } = openPlan((request) => {
+      if (request.method === 'POST') {
+        seen = true
+        return new Response(null, { status: 204 })
+      }
+      return json({ ...planAt(6), seen })
+    })
+
+    expect(await screen.findByText('Week 6 of 12')).toBeInTheDocument()
+    await waitFor(() => expect(acknowledgements(requests)).toHaveLength(1))
+    await screen.findByText('Week 6 of 12')
+    expect(acknowledgements(requests)).toHaveLength(1)
+  })
+
+  it('does not mark a plan that was already seen', async () => {
+    const { requests } = openPlan(servePlan)
+
+    expect(await screen.findByText('Week 6 of 12')).toBeInTheDocument()
+    expect(acknowledgements(requests)).toHaveLength(0)
   })
 })

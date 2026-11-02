@@ -190,6 +190,15 @@ export const createRoutes = (): RouteObject[] => [
     },
   },
   {
+    path: '/app/plan-ready',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () => (await import('@/app/client-area')).PlanReadyRoute,
+    },
+  },
+  {
     path: '/app',
     loader: requireRole('CLIENT'),
     ErrorBoundary: AreaErrorPage,

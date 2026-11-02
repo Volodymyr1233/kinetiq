@@ -37,6 +37,11 @@ export function useAcknowledgePlan() {
       const { error } = await api.POST('/api/v1/plan/acknowledgement')
       if (error !== undefined) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['own-plan'] }),
+    // what is cached says seen at once, so the next screen does not send the client back to the plan-ready screen
+    onSuccess: () =>
+      queryClient.setQueriesData<OwnPlan>(
+        { queryKey: ['own-plan'] },
+        (plan) => plan && { ...plan, seen: true },
+      ),
   })
 }

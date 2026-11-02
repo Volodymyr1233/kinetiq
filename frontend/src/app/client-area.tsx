@@ -4,11 +4,14 @@ import {
   HouseIcon,
   MessageCircleIcon,
 } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { matchPath, NavLink, Outlet, useLocation } from 'react-router'
+import { matchPath, Navigate, NavLink, Outlet, useLocation } from 'react-router'
 import { ConfirmEmailBanner } from '@/features/account/components/confirm-email-banner'
 import { useUnreadCount } from '@/features/messaging/api/messaging'
 import { UnreadCount } from '@/features/messaging/components/unread-count'
+import { useOwnPlan } from '@/features/plan/api/client-plan'
+import { PlanReadyPage } from '@/features/plan/pages/plan-ready-page'
 import { QuizStatusCheck } from '@/features/quiz/components/quiz-status-check'
 import { cn } from '@/lib/utils'
 import { SettingsSheet } from './settings-sheet'
@@ -19,6 +22,24 @@ const TABS = [
   { path: 'progress', labelKey: 'nav.progress', Icon: ChartLineIcon },
   { path: 'messages', labelKey: 'nav.messages', Icon: MessageCircleIcon },
 ] as const
+
+// a published plan the client has not seen comes first: every tab but the Plan tab, which marks it seen, sends them to
+// the plan-ready screen. A client without a published plan, or a plan that cannot be read, gets the tab as it is.
+function PlanReadyGate({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation()
+  const query = useOwnPlan()
+
+  // nothing while the first answer is on its way, so a tab does not flash before the redirect; a failing request
+  // must not hold the client area back
+  if (query.isPending && query.failureCount === 0) return null
+  if (
+    query.data?.seen === false &&
+    !matchPath({ path: '/app/plan', end: false }, pathname)
+  ) {
+    return <Navigate replace to="/app/plan-ready" />
+  }
+  return children
+}
 
 // until a plan is published, the quiz or the waiting state stands in for every tab (spec 50, User Story 3)
 export function ClientArea() {
@@ -64,7 +85,9 @@ function ClientTabs() {
             : 'pb-20',
         )}
       >
-        <Outlet />
+        <PlanReadyGate>
+          <Outlet />
+        </PlanReadyGate>
       </main>
       <nav
         aria-label={t('areas.client')}
@@ -104,6 +127,11 @@ function ClientTabs() {
       </nav>
     </div>
   )
+}
+
+// the plan-ready screen has no tab bar, so it sits beside the client area and shows the Settings button itself
+export function PlanReadyRoute() {
+  return <PlanReadyPage settings={<SettingsSheet />} />
 }
 
 // the four tabs show this until their features are built

@@ -678,6 +678,23 @@
         "noLoad": "Bez obciążenia",
         "rpe": "RPE {{rpe, number}}",
         "rest": "Przerwa {{seconds, number}} s"
+      },
+      "ready": {
+        "title": "Twój plan jest gotowy",
+        "text": "{{goal}} · {{weeks}} · {{sessions}}",
+        "weeks_one": "{{count, number}} tydzień",
+        "weeks_few": "{{count, number}} tygodnie",
+        "weeks_many": "{{count, number}} tygodni",
+        "weeks_other": "{{count, number}} tygodnia",
+        "sessionsPerWeek_one": "{{count, number}} sesja w tygodniu",
+        "sessionsPerWeek_few": "{{count, number}} sesje w tygodniu",
+        "sessionsPerWeek_many": "{{count, number}} sesji w tygodniu",
+        "sessionsPerWeek_other": "{{count, number}} sesji w tygodniu",
+        "view": "Zobacz mój plan"
+      },
+      "finished": {
+        "title": "Trener przygotowuje Twój kolejny plan.",
+        "text": "Twój plan na {{weeks, number}} tyg. dobiegł końca."
       }
     },
     "loading": "Wczytywanie planu",

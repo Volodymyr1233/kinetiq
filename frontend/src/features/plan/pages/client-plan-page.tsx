@@ -4,12 +4,13 @@ import {
   CircleAlertIcon,
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useEffect, useRef } from 'react'
 import { Navigate, useSearchParams } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
-import { useOwnPlan } from '../api/client-plan'
+import { useAcknowledgePlan, useOwnPlan } from '../api/client-plan'
 import { WeekStrip } from '../components/week-strip'
 
 // a plan week is a whole number from 1; anything else in the address means the current week
@@ -22,6 +23,16 @@ export function ClientPlanPage() {
   const [params, setParams] = useSearchParams()
   const query = useOwnPlan(parseWeek(params.get('week')))
   const plan = query.data
+  const acknowledge = useAcknowledgePlan()
+  const acknowledged = useRef(false)
+
+  // opening the tab is seeing the plan, whether the client came from the plan-ready screen or by its address
+  useEffect(() => {
+    if (plan?.seen === false && !acknowledged.current) {
+      acknowledged.current = true
+      acknowledge.mutate()
+    }
+  }, [plan?.seen, acknowledge])
 
   // the week is kept in the address, so a refresh and the back button stay on it; the current week has no parameter
   const goTo = (number: number) =>
@@ -76,6 +87,16 @@ export function ClientPlanPage() {
 
   return (
     <div className="flex flex-col gap-4 px-4">
+      {plan.finished && (
+        <div className="flex flex-col gap-1">
+          <h2 className="font-heading text-xl font-semibold">
+            {t('plan.client.finished.title')}
+          </h2>
+          <p className="text-muted-foreground">
+            {t('plan.client.finished.text', { weeks: plan.weeks })}
+          </p>
+        </div>
+      )}
       {week && (
         <>
           <div className="flex items-center justify-between gap-2">

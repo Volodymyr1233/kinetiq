@@ -338,3 +338,66 @@ describe('ClientArea', () => {
     ).toBeInTheDocument()
   })
 })
+
+describe('ClientArea plan-ready gate', () => {
+  const plan = (seen: boolean) => ({
+    goal: 'LOSE_FAT',
+    weeks: 12,
+    currentWeek: 1,
+    finished: false,
+    seen,
+    week: { number: 1, startsOn: '2026-11-02' },
+    sessions: [{ name: 'Upper body', day: 'MONDAY', entries: [] }],
+  })
+  // the area first checks the client's quiz status, which says a plan is published
+  const otherReply = (request: Request) =>
+    new URL(request.url).pathname === '/api/v1/quiz'
+      ? json({ status: 'PLAN_PUBLISHED' })
+      : new Response(null, { status: 204 })
+  const planReply =
+    (seen: boolean): Reply =>
+    (request) =>
+      new URL(request.url).pathname === '/api/v1/plan'
+        ? json(plan(seen))
+        : otherReply(request)
+
+  it('sends a client with an unseen plan to the plan-ready screen from every other tab', async () => {
+    renderAppAt('/app/today', SIGNED_IN.CLIENT, planReply(false))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Your plan is ready' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('navigation', { name: 'Client area' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('lets the Plan tab open for an unseen plan, since opening it is seeing it', async () => {
+    renderAppAt('/app/plan', SIGNED_IN.CLIENT, planReply(false))
+
+    expect(await screen.findByText('Week 1 of 12')).toBeInTheDocument()
+    expect(
+      screen.queryByRole('heading', { name: 'Your plan is ready' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('opens the tab as asked once the plan was seen', async () => {
+    renderAppAt('/app/today', SIGNED_IN.CLIENT, planReply(true))
+
+    expect(
+      await screen.findByRole('heading', { name: 'Today' }),
+    ).toBeInTheDocument()
+  })
+
+  it('leaves the area as it is for a client without a published plan', async () => {
+    renderAppAt('/app/today', SIGNED_IN.CLIENT, (request) =>
+      new URL(request.url).pathname === '/api/v1/plan'
+        ? problem(404, { status: 404, code: 'plan.not-found' })
+        : otherReply(request),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'Today' }),
+    ).toBeInTheDocument()
+  })
+})
