@@ -1,4 +1,4 @@
-import { ArrowLeftIcon } from 'lucide-react'
+import { ArrowLeftIcon, UserPlusIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { AccountAvatar } from '@/components/account-avatar'
@@ -82,6 +82,30 @@ export function TrainerMessagesPage() {
   const rows = conversations.data?.conversations
   const open = rows?.find((row) => row.clientId === clientId)
 
+  if (rows?.length === 0) {
+    return (
+      <div className="flex flex-col gap-6 px-6 py-8">
+        <h1 className="sr-only">{t('nav.messages')}</h1>
+        <Empty className="bg-muted border border-dashed">
+          <EmptyHeader>
+            <EmptyTitle>{t('messaging.trainer.noClients.title')}</EmptyTitle>
+            <EmptyDescription>
+              {t('messaging.trainer.noClients.body')}
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <Button asChild>
+              <Link to="/trainer/clients/invites">
+                <UserPlusIcon data-icon="inline-start" aria-hidden="true" />
+                {t('messaging.trainer.noClients.action')}
+              </Link>
+            </Button>
+          </EmptyContent>
+        </Empty>
+      </div>
+    )
+  }
+
   const loadError = rows === undefined && conversations.isError && (
     <div className="p-4">
       <LoadError
@@ -132,13 +156,11 @@ export function TrainerMessagesPage() {
         )}
       >
         {clientId === undefined ? (
-          rows?.length !== 0 && (
-            <Empty className="flex-1">
-              <EmptyHeader>
-                <EmptyTitle>{t('messaging.trainer.choose')}</EmptyTitle>
-              </EmptyHeader>
-            </Empty>
-          )
+          <Empty className="flex-1">
+            <EmptyHeader>
+              <EmptyTitle>{t('messaging.trainer.choose')}</EmptyTitle>
+            </EmptyHeader>
+          </Empty>
         ) : open ? (
           <>
             <ConversationHeader conversation={open} />

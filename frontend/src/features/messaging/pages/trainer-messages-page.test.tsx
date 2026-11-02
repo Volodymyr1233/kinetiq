@@ -296,6 +296,7 @@ describe('TrainerMessagesPage', () => {
     expect(
       await screen.findByRole('link', { name: 'Invite a client' }),
     ).toHaveAttribute('href', '/trainer/clients/invites')
+    expect(screen.getByText('No conversations yet')).toBeInTheDocument()
     expect(screen.queryByText('Choose a conversation')).toBeNull()
   })
 

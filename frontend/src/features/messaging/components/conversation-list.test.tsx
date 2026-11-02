@@ -108,15 +108,6 @@ describe('ConversationList', () => {
     expect(screen.queryByRole('status')).toBeNull()
   })
 
-  it('offers an invite when the trainer has no clients', () => {
-    renderList([])
-
-    expect(screen.getByText('No conversations yet')).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: 'Invite a client' }),
-    ).toHaveAttribute('href', '/trainer/clients/invites')
-  })
-
   it('marks the open conversation', () => {
     renderList([ANNA, PIOTR], 'piotr')
 

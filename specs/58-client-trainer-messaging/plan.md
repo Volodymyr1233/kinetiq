@@ -152,8 +152,8 @@ Order: #59, #60, #61, #62 (each needs the one before). After #62: a whole-story 
 | `unread-count.test.tsx` | Hidden at 0; "99+" above 99; announced as part of the name |
 | `client-messages-page.test.tsx` | Opens in the conversation with the trainer's name; empty invitation; send, fail, retry; marks read when visible and unread; stays unread in a hidden tab and is marked when shown; load error with "Try again" |
 | `conversation-filter.test.ts` | "zielinski" finds "Zieliński", "lukasz" finds "Łukasz"; first name or surname; case ignored; nothing matches message text |
-| `conversation-list.test.tsx` | Rows with name, preview, "You: ", time and count; "No messages yet"; search and no-match message; no clients state with invite link |
-| `trainer-messages-page.test.tsx` | Nothing selected and nothing marked read on open; choosing a conversation opens it by its address and marks it read; reload keeps it; unknown id shows the not-found state; search hiding the open row keeps it open; Enter sends; a narrow window shows the list or the conversation, with a way back |
+| `conversation-list.test.tsx` | Rows with name, preview, "You: ", time and count; "No messages yet"; search and no-match message |
+| `trainer-messages-page.test.tsx` | No clients state with invite link; nothing selected and nothing marked read on open; choosing a conversation opens it by its address and marks it read; reload keeps it; unknown id shows the not-found state; search hiding the open row keeps it open; Enter sends; a narrow window shows the list or the conversation, with a way back |
 | `client-area.test.tsx`, `trainer-area.test.tsx` (extended) | Navigation shows the total and drops it after reading; a failing unread-count request hides the count and leaves the page working |
 
 ## Open items

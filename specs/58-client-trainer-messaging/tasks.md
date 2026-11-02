@@ -130,6 +130,7 @@ description: "Tasks for story #58, Client and trainer exchange messages"
 - [X] T056 Replace `use-mark-read-while-visible.ts` with `M/use-first-unread.ts`: on opening and on the tab coming back, refetch the list and the messages, load earlier pages until the first unread is there, keep its id, then mark read. Give the list its own query options, so this observer adds no second refresh interval (US3, FR-034)
 - [X] T057 Show the separator in `M/components/message-list.tsx` and open there instead of at the newest message; it ends the run before it; strings EN and PL; tests (US3, FR-034)
 - [X] T058 Check in the browser with a real conversation of more unread messages than fit a screen and of more than one page, both screens, light and dark
+- [X] T059 Show the no-clients state of `M/pages/trainer-messages-page.tsx` over the whole page, without the list and the conversation area, in the style of the empty clients page; move it out of `M/components/conversation-list.tsx`, with its test (US2, requested by the user)
 
 ---
 
