@@ -1,7 +1,14 @@
 import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { json, problem, renderAppAt, SIGNED_IN, type Reply } from '@/test/page'
+import {
+  json,
+  pathsOf,
+  problem,
+  renderAppAt,
+  SIGNED_IN,
+  type Reply,
+} from '@/test/page'
 
 const CLIENT = SIGNED_IN.CLIENT.id
 const MESSAGES = `/api/v1/conversations/${CLIENT}/messages`
@@ -24,15 +31,22 @@ function server({
   onSend?: Reply
   onMessages?: Reply
 } = {}): Reply {
+  let unread = unreadCount
   return async (request) => {
     const { pathname } = new URL(request.url)
+    if (pathname === READ) {
+      unread = 0
+      return new Response(null, { status: 204 })
+    }
     if (pathname === '/api/v1/conversations') {
       return json({
-        conversations: [{ clientId: CLIENT, name: 'Marek Nowak', unreadCount }],
+        conversations: [
+          { clientId: CLIENT, name: 'Marek Nowak', unreadCount: unread },
+        ],
       })
     }
     if (pathname === '/api/v1/conversations/unread-count') {
-      return json({ count: unreadCount })
+      return json({ count: unread })
     }
     if (pathname === MESSAGES && request.method === 'GET') {
       return onMessages?.(request) ?? json({ messages, hasMore: false })
@@ -162,6 +176,25 @@ describe('ClientMessagesPage', () => {
     )
 
     await waitFor(() => expect(reads(requests)).toHaveLength(1))
+  })
+
+  it('marks nothing read while the messages have not loaded', async () => {
+    const { requests } = renderAppAt(
+      '/app/messages',
+      SIGNED_IN.CLIENT,
+      server({
+        unreadCount: 2,
+        onMessages: () => problem(500, { status: 500, code: 'internal.error' }),
+      }),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'Marek Nowak' }),
+    ).toBeInTheDocument()
+    await waitFor(() =>
+      expect(pathsOf(requests)).toContain('/api/v1/conversations'),
+    )
+    expect(reads(requests)).toHaveLength(0)
   })
 
   it('marks nothing read when nothing is unread', async () => {

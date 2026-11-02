@@ -133,6 +133,24 @@ describe('TrainerMessagesPage', () => {
     ).toHaveAttribute('aria-current', 'true')
   })
 
+  it('drops the total in the sidebar after opening a conversation', async () => {
+    renderAppAt('/trainer/messages', SIGNED_IN.TRAINER, server())
+    const sidebar = within(
+      await screen.findByRole('navigation', { name: 'Trainer area' }),
+    )
+    expect(
+      await sidebar.findByRole('link', { name: 'Messages, 2 unread' }),
+    ).toBeInTheDocument()
+
+    await userEvent.click(
+      await within(await list()).findByRole('link', { name: /^Anna/ }),
+    )
+
+    expect(
+      await sidebar.findByRole('link', { name: 'Messages' }),
+    ).toBeInTheDocument()
+  })
+
   it('opens the same conversation from its address', async () => {
     renderAppAt(`/trainer/messages/${ANNA}`, SIGNED_IN.TRAINER, server())
 

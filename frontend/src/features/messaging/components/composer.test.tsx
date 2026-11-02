@@ -71,6 +71,15 @@ describe('Composer', () => {
     expect(field).toHaveValue('にほん')
   })
 
+  it('sends nothing on the Enter that Safari reports after a composition', () => {
+    const { field, onSend } = renderComposer()
+    fireEvent.change(field, { target: { value: 'にほん' } })
+
+    fireEvent.keyDown(field, { key: 'Enter', keyCode: 229 })
+
+    expect(onSend).not.toHaveBeenCalled()
+  })
+
   it('stops pasting and typing at 2000 characters', async () => {
     const { field } = renderComposer()
     await userEvent.click(field)

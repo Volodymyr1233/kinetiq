@@ -42,11 +42,13 @@ No `NEEDS CLARIFICATION` was left in the spec. These are the design decisions th
 
 **Rationale**: A single statement makes "never moves back" and "two people marking read at once" correct without a version check, which would turn a harmless race into a `500`. A counter would have to be kept in step with every send.
 
+**Ceiling**: The time of a message is taken before its transaction commits, so a read mark committed in those milliseconds can cover it. Whoever marks read has the conversation open and sees the message at the next refresh, so this is accepted.
+
 **Alternatives**: Two columns on the conversation updated through the entity (the optimistic lock fails when both people mark read together); stored unread counters (state to keep consistent).
 
 ## R6 The list is a read model
 
-**Decision**: One JDBC query over `accounts`, `conversations`, `messages`, `quiz_submissions` and `plans` gives the rows of the list for either role: for a trainer, every client linked to them; for a client, their own row, with the trainer's name. Each row has the other person's name, the client's goal (the plan's when a plan exists, else the quiz's, null before the quiz), the current plan week of a published plan, the last message (text cut to 140 units, whether it is mine, when) and the unread count. Order: last message newest first, then clients without messages by name. No feature class is imported (the pattern of `JdbcClientDirectory`).
+**Decision**: One JDBC query over `accounts`, `conversations`, `messages`, `quiz_submissions` and `plans` gives the rows of the list for either role: for a trainer, every client linked to them; for a client, their own row, with the trainer's name. Each row has the other person's name; a trainer's rows also have the client's goal (the plan's when a plan exists, else the quiz's, null before the quiz) and the current plan week of a published plan, which a client's own row leaves out because their plan can still be a draft; each row has the last message (text cut to 140 units, whether it is mine, when) and the unread count. Order: last message newest first, then clients without messages by name. No feature class is imported (the pattern of `JdbcClientDirectory`).
 
 **Rationale**: It is a read across four tables with a lateral join; mapping it through entities of other features would break the hexagonal rules or load far more than needed. One round trip per refresh keeps the 5-second polling cheap.
 

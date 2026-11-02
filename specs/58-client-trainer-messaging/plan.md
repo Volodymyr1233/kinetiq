@@ -99,16 +99,20 @@ frontend/src/
 ├── app/router.ts                                                 messages routes (#61, #62)
 ├── app/client-area.tsx                                           unread count on the tab (#61)
 ├── app/trainer-area.tsx                                          unread count in the sidebar (#62)
+├── components/account-avatar.tsx                                 moved from the account feature, now used by two (#61)
 ├── features/messaging/
 │   ├── api/messaging.ts                                          queries and mutations (#61)
 │   ├── message-time.ts (+ .test.ts)                              times, day separators (#61)
 │   ├── conversation-filter.ts (+ .test.ts)                       search by name, ignoring case and diacritics (#62)
 │   ├── use-outbox.ts (+ .test.tsx)                               Sending / Not sent / Retry state (#61)
 │   ├── use-page-visible.ts                                       visible tab (#61)
+│   ├── use-mark-read-while-visible.ts                            marks an open conversation read (#61)
 │   ├── components/
 │   │   ├── unread-count.tsx (+ .test.tsx)                        "99+", announced name (#61)
 │   │   ├── message-list.tsx (+ .test.tsx)                        bubbles, days, states, load earlier (#61)
 │   │   ├── composer.tsx (+ .test.tsx)                            Enter / Shift+Enter, limit, Send (#61)
+│   │   ├── conversation.tsx                                      messages and composer, shared by both pages (#61)
+│   │   ├── load-error.tsx                                        translated message with "Try again" (#61)
 │   │   └── conversation-list.tsx (+ .test.tsx)                   rows, search, empty (#62)
 │   └── pages/
 │       ├── client-messages-page.tsx (+ .test.tsx)                (#61)
@@ -138,12 +142,12 @@ Order: #59, #60, #61, #62 (each needs the one before). After #62: a whole-story 
 | `MessageTextTest` | Trimmed, Unicode edge spaces removed; empty and whitespace-only refused (`message.empty`); 2000 units accepted, 2001 refused (`message.too-long`); inner line breaks kept |
 | `MessagingServiceTest` | A client reaches only their own pair; a trainer only their client; a third person, another trainer, an unknown client and an unlinked client all get `ConversationNotFoundException`; send creates the conversation once; sending the same id and text again returns the stored message; the same id with other text or from another conversation gives `MessageIdInUseException`; mark read of a pair without a conversation does nothing; `before` of a message of another conversation gives `MessageNotFoundException`; page has at most 50 and `hasMore` |
 | `ConversationControllerTest` | Status codes (200/201/204), response shape carries no email, no sender id, only `mine`; `400` empty, too long and missing fields with codes; `404` codes; unauthenticated gives `401`; a write without the CSRF token gives `403` |
-| `MessageRepositoryImplIT` | Unread = other's messages after my last-read time, never mine, all when never read; read mark never moves back and does not touch the other person's; two people marking read in parallel both succeed; paging by `(received_at, id)` gives a stable order with equal times; duplicate id is refused by the database; constraint on text length |
-| `ConversationDirectoryIT` | Trainer: every linked client and no row for the trainer's own account, ordered by last message then name, none from another trainer; client: one row with the trainer's name; unread totals; last message preview cut to 140 units; re-linked client does not show the old trainer's history |
+| `MessageRepositoryImplIT` | Read mark never moves back and does not touch the other person's; two people marking read in parallel both succeed; paging by `(received_at, id)` gives a stable order with equal times; a repeated id stores nothing and two parallel attempts store one row; two parallel first sends make one conversation; constraint on text length |
+| `ConversationDirectoryIT` | Unread = other's messages after my last-read time, never mine, all when never read; trainer: every linked client and no row for the trainer's own account, ordered by last message then name, none from another trainer; client: one row with the trainer's name, without goal or week; unread totals; goal and plan week; last message preview cut to 140 units; re-linked client does not show the old trainer's history |
 | `message-time.test.ts` | Today / Yesterday / date separators and list times in EN and PL, in the viewer's time zone |
-| `use-outbox.test.tsx` | Sending → confirmed removes the pending entry; failure keeps text as Not sent; Retry sends the same id and text; success after a lost response shows once |
+| `use-outbox.test.tsx` | Sending → confirmed removes the pending entry; failure keeps text as Not sent; Retry sends the same id and text |
 | `composer.test.tsx` | Send disabled when empty or spaces; Enter sends; Shift+Enter adds a line; Enter during text composition does not send; typing and pasting stop at 2000; cleared after send |
-| `message-list.test.tsx` | Messages in order with the newest last; own messages marked Sent with the time on the last of a run; Sending…; Not sent with Retry; no read ticks; "Load earlier" only when more exist; plain text (markup shown as typed); new message announced |
+| `message-list.test.tsx` | Messages in order with the newest last; own messages marked Sent with the time on the last of a run; Sending…; Not sent with Retry; no read ticks; "Load earlier" only when more exist; plain text (markup shown as typed); a message whose first attempt did arrive shows once |
 | `unread-count.test.tsx` | Hidden at 0; "99+" above 99; announced as part of the name |
 | `client-messages-page.test.tsx` | Opens in the conversation with the trainer's name; empty invitation; send, fail, retry; marks read when visible and unread; stays unread in a hidden tab and is marked when shown; load error with "Try again" |
 | `conversation-filter.test.ts` | "zielinski" finds "Zieliński", "lukasz" finds "Łukasz"; first name or surname; case ignored; nothing matches message text |

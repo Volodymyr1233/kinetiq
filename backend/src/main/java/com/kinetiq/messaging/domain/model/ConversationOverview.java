@@ -8,8 +8,8 @@ import lombok.AccessLevel;
 import lombok.Getter;
 
 /**
- * One row of a person's conversation list. {@code name} is the other person's. The goal and the plan week are the
- * client's, each absent until it exists; the last message is absent while nobody has written.
+ * One row of a person's conversation list. {@code name} is the other person's. The goal and the plan week are
+ * for a trainer's row, each absent until it exists; the last message is absent while nobody has written.
  */
 @Getter
 public class ConversationOverview {

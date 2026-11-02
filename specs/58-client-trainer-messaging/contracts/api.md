@@ -26,7 +26,7 @@ The signed-in person's conversations. For a trainer, one row per linked client; 
 }
 ```
 
-`lastMessage` is `null` for a conversation without messages. Order: newest last message first, then those without messages by name (case-insensitive), then id. `goal`, `currentWeek` and `planWeeks` are only meaningful to a trainer; the two week fields are left out until the plan is published, and `currentWeek` is above `planWeeks` once it has finished.
+`lastMessage` is `null` for a conversation without messages. Order: newest last message first, then those without messages by name (case-insensitive), then id. `goal`, `currentWeek` and `planWeeks` are for a trainer's rows and are left out of a client's own row, whose plan can still be a draft; the two week fields are left out until the plan is published, and `currentWeek` is above `planWeeks` once it has finished.
 
 ## `GET /conversations/{clientId}/messages?before={messageId}`
 

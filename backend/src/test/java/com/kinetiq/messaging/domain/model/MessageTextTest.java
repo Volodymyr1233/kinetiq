@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.kinetiq.messaging.domain.exception.MessageEmptyException;
 import com.kinetiq.messaging.domain.exception.MessageTooLongException;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class MessageTextTest {
 
@@ -50,6 +51,14 @@ class MessageTextTest {
     @Test
     void shouldCountTheLimitAfterTrimming() {
         assertThat(new MessageText("  " + "a".repeat(2000) + "  ").value()).hasSize(2000);
+    }
+
+    @Test
+    @Timeout(5)
+    void shouldRefuseQuickly_whenAHugeTextHoldsALongRunOfSpaces() {
+        String huge = " ".repeat(1_000_000) + "a" + " ".repeat(1_000_000) + "b";
+
+        assertThatThrownBy(() -> new MessageText(huge)).isInstanceOf(MessageTooLongException.class);
     }
 
     @Test

@@ -101,6 +101,10 @@ export function useSendMessage() {
         key,
         (data) => data && withMessage(data, message),
       )
+      // nothing loaded to put it in: the load failed, and asking again brings the message
+      if (queryClient.getQueryData(key) === undefined) {
+        void queryClient.invalidateQueries({ queryKey: key })
+      }
       void queryClient.invalidateQueries({ queryKey: CONVERSATIONS })
     },
   })

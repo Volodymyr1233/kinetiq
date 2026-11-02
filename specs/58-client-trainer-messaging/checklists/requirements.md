@@ -31,6 +31,6 @@
 
 ## Notes
 
-- No clarification markers. Five questions were answered on 2026-11-02 (see Clarifications). Defaults still open but low impact: message length 2000, page size 50, refresh instead of push.
-- The spec deliberately differs from the boards in six small ways, all listed under Assumptions.
+- No clarification markers. Seven questions were answered on 2026-11-02 (see Clarifications). Defaults still open but low impact: message length 2000, page size 50, refresh instead of push.
+- The spec deliberately differs from the boards in small ways, all listed under Assumptions.
 - Vocabulary follows `CONTEXT.md`; **Unread** and **Delivery state** are new terms added there.

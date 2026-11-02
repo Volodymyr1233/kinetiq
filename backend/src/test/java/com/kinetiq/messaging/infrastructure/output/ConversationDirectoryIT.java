@@ -220,6 +220,17 @@ class ConversationDirectoryIT {
     }
 
     @Test
+    void shouldShowNoGoalOrWeek_onTheClientsOwnRow() {
+        AccountId anna = fixture.client("Anna", marek);
+        LocalDate monday =
+                LocalDate.now(ZoneId.of("Europe/Warsaw")).with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
+        insertPlan(anna, Goal.GET_STRONGER, monday);
+
+        assertThat(only(anna).getGoal()).isEmpty();
+        assertThat(only(anna).getPlanWeek()).isEmpty();
+    }
+
+    @Test
     void shouldShowNoWeek_whenThePlanIsADraft() {
         AccountId anna = fixture.client("Anna", marek);
         insertPlan(anna, Goal.GET_STRONGER, null);
