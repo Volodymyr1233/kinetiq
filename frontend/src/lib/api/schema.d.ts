@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations/{clientId}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["markRead"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients/{id}/plan": {
         parameters: {
             query?: never;
@@ -212,6 +228,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/conversations/{clientId}/messages": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["messages"];
+        put?: never;
+        post: operations["send"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/confirmation-links": {
         parameters: {
             query?: never;
@@ -284,6 +316,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["csrf"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["listConversations"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/conversations/unread-count": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["unreadCount"];
         put?: never;
         post?: never;
         delete?: never;
@@ -561,6 +625,19 @@ export interface components {
         ConfirmEmailRequest: {
             token: string;
         };
+        SendMessageRequest: {
+            /** Format: uuid */
+            id: string;
+            text: string;
+        };
+        MessageResponse: {
+            /** Format: uuid */
+            id: string;
+            text: string;
+            mine: boolean;
+            /** Format: date-time */
+            sentAt: string;
+        };
         ConfirmationLinkRequest: {
             email: string;
         };
@@ -588,6 +665,37 @@ export interface components {
             /** Format: int32 */
             total: number;
             exercises: components["schemas"]["ExerciseResponse"][];
+        };
+        ConversationListResponse: {
+            conversations: components["schemas"]["ConversationResponse"][];
+        };
+        ConversationResponse: {
+            /** Format: uuid */
+            clientId: string;
+            name: string;
+            /** @enum {string} */
+            goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** Format: int32 */
+            currentWeek?: number;
+            /** Format: int32 */
+            planWeeks?: number;
+            /** Format: int32 */
+            unreadCount: number;
+            lastMessage?: components["schemas"]["LastMessageResponse"];
+        };
+        LastMessageResponse: {
+            preview: string;
+            sentByMe: boolean;
+            /** Format: date-time */
+            sentAt: string;
+        };
+        MessagePageResponse: {
+            messages: components["schemas"]["MessageResponse"][];
+            hasMore: boolean;
+        };
+        UnreadCountResponse: {
+            /** Format: int32 */
+            count: number;
         };
         ClientListResponse: {
             clients: components["schemas"]["ClientResponse"][];
@@ -633,6 +741,26 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["ExerciseResponse"];
                 };
+            };
+        };
+    };
+    markRead: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1001,6 +1129,56 @@ export interface operations {
             };
         };
     };
+    messages: {
+        parameters: {
+            query?: {
+                before?: string;
+            };
+            header?: never;
+            path: {
+                clientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MessagePageResponse"];
+                };
+            };
+        };
+    };
+    send: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                clientId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SendMessageRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["MessageResponse"];
+                };
+            };
+        };
+    };
     sendConfirmationLink: {
         parameters: {
             query?: never;
@@ -1130,6 +1308,46 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    listConversations: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ConversationListResponse"];
+                };
+            };
+        };
+    };
+    unreadCount: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["UnreadCountResponse"];
+                };
             };
         };
     };
