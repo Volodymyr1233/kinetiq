@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plan/acknowledgement": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["acknowledgePlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/password-resets": {
         parameters: {
             query?: never;
@@ -306,6 +322,22 @@ export interface paths {
         options?: never;
         head?: never;
         patch: operations["update"];
+        trace?: never;
+    };
+    "/api/v1/plan": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOwnPlan"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
         trace?: never;
     };
     "/api/v1/csrf": {
@@ -658,6 +690,24 @@ export interface components {
             language?: string;
             theme?: string;
         };
+        ClientPlanResponse: {
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** Format: int32 */
+            weeks: number;
+            /** Format: int32 */
+            currentWeek: number;
+            finished: boolean;
+            seen: boolean;
+            week?: components["schemas"]["WeekResponse"];
+            sessions: components["schemas"]["SessionResponse"][];
+        };
+        WeekResponse: {
+            /** Format: int32 */
+            number: number;
+            /** Format: date */
+            startsOn: string;
+        };
         InviteListResponse: {
             invites: components["schemas"]["InviteResponse"][];
         };
@@ -899,6 +949,24 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["QuizStatusResponse"];
                 };
+            };
+        };
+    };
+    acknowledgePlan: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };
@@ -1289,6 +1357,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CurrentAccountResponse"];
+                };
+            };
+        };
+    };
+    getOwnPlan: {
+        parameters: {
+            query?: {
+                week?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientPlanResponse"];
                 };
             };
         };
