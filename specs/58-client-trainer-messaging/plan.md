@@ -106,7 +106,8 @@ frontend/src/
 │   ├── conversation-filter.ts (+ .test.ts)                       search by name, ignoring case and diacritics (#62)
 │   ├── use-outbox.ts (+ .test.tsx)                               Sending / Not sent / Retry state (#61)
 │   ├── use-page-visible.ts                                       visible tab (#61)
-│   ├── use-mark-read-while-visible.ts                            marks an open conversation read (#61)
+│   ├── first-unread.ts (+ .test.ts)                              the first unread message of those loaded
+│   ├── use-first-unread.ts                                       where an open conversation starts, then marks it read
 │   ├── components/
 │   │   ├── unread-count.tsx (+ .test.tsx)                        "99+", announced name (#61)
 │   │   ├── message-list.tsx (+ .test.tsx)                        bubbles, days, states, load earlier (#61)

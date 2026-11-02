@@ -6,8 +6,8 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useMessages } from '../api/messaging'
-import { useMarkReadWhileVisible } from '../use-mark-read-while-visible'
+import { messagesOf, useMessages } from '../api/messaging'
+import { useFirstUnread } from '../use-first-unread'
 import type { OutboxEntry } from '../use-outbox'
 import { Composer } from './composer'
 import { LoadError } from './load-error'
@@ -35,11 +35,8 @@ export function Conversation({
   const { t } = useTranslation()
   const query = useMessages(clientId)
   const peerName = firstName(name)
-  useMarkReadWhileVisible(clientId, query.data !== undefined)
-  // the newest page comes first in the cache and last on screen
-  const messages = [...(query.data?.pages ?? [])]
-    .reverse()
-    .flatMap((page) => page.messages)
+  const { firstUnreadId, positioning } = useFirstUnread(clientId, query)
+  const messages = messagesOf(query.data)
 
   return (
     <>
@@ -47,7 +44,7 @@ export function Conversation({
         <div className="min-h-0 flex-1 p-4">
           <LoadError error={query.error} onRetry={() => void query.refetch()} />
         </div>
-      ) : query.data === undefined ? (
+      ) : query.data === undefined || positioning ? (
         <div className="flex min-h-0 flex-1 flex-col gap-2 p-4">
           <span role="status" className="sr-only">
             {t('messaging.loading')}
@@ -68,6 +65,7 @@ export function Conversation({
       ) : (
         <MessageList
           messages={messages}
+          firstUnreadId={firstUnreadId}
           outbox={outbox}
           hasMore={query.hasNextPage}
           loadingEarlier={query.isFetchingNextPage}

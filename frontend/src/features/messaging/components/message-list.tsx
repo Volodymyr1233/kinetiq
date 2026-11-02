@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
+import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
 import type { Message } from '../api/messaging'
 import { dayLabel, sameDay, timeOfDay } from '../message-time'
@@ -43,6 +44,7 @@ function linesOf(messages: Message[], outbox: OutboxEntry[], now: Date) {
 /** The messages of a conversation, oldest to newest, with their days and delivery states. It scrolls by itself. */
 export function MessageList({
   messages,
+  firstUnreadId,
   outbox,
   hasMore,
   loadingEarlier = false,
@@ -53,6 +55,7 @@ export function MessageList({
   now,
 }: {
   messages: Message[]
+  firstUnreadId?: string
   outbox: OutboxEntry[]
   hasMore: boolean
   loadingEarlier?: boolean
@@ -65,6 +68,7 @@ export function MessageList({
   const { t, i18n } = useTranslation()
   const list = useRef<HTMLDivElement>(null)
   const content = useRef<HTMLDivElement>(null)
+  const unreadSeparator = useRef<HTMLDivElement>(null)
   const followsNewest = useRef(true)
   const lastScrollTop = useRef(0)
   const heightBeforeEarlier = useRef<number | null>(null)
@@ -96,6 +100,18 @@ export function MessageList({
     // the state too: "Not sent" with its Retry is taller than "Sending…"
   }, [lastId, lastState, outbox.length])
 
+  // after the effect above, so reading starts at the first unread message and not at the newest
+  useLayoutEffect(() => {
+    const element = list.current
+    const separator = unreadSeparator.current
+    if (!element || !separator) return
+    element.scrollTop = separator.offsetTop
+    // when everything fits on screen the reader is at the newest message, and no scroll event will say so
+    followsNewest.current =
+      element.scrollHeight - element.scrollTop - element.clientHeight <
+      NEAR_BOTTOM
+  }, [firstUnreadId])
+
   // a growing composer or an on-screen keyboard shrinks the list, and a late web font makes its content taller
   useEffect(() => {
     const element = list.current
@@ -117,7 +133,8 @@ export function MessageList({
       aria-label={t('messaging.logLabel', { name: peerName })}
       // scrollable content must be reachable by keyboard
       tabIndex={0}
-      // relative, because hidden speaker labels would otherwise escape the overflow and scroll the whole page
+      // relative, because hidden speaker labels would otherwise escape the overflow and scroll the whole page,
+      // and because the unread separator's position is measured from here
       onScroll={({ currentTarget: element }) => {
         const distance =
           element.scrollHeight - element.scrollTop - element.clientHeight
@@ -160,10 +177,23 @@ export function MessageList({
             next === undefined ||
             next.mine !== line.mine ||
             next.state !== line.state ||
-            !sameDay(next.at, line.at)
+            !sameDay(next.at, line.at) ||
+            next.id === firstUnreadId
           const time = timeOfDay(line.at, i18n.language)
           return (
             <div key={line.id} className="flex shrink-0 flex-col gap-1.5">
+              {line.id === firstUnreadId && (
+                <div
+                  ref={unreadSeparator}
+                  className="my-2 flex items-center gap-3"
+                >
+                  <Separator decorative className="flex-1" />
+                  <p className="text-xs font-medium">
+                    {t('messaging.unreadSeparator')}
+                  </p>
+                  <Separator decorative className="flex-1" />
+                </div>
+              )}
               {(previous === undefined || !sameDay(previous.at, line.at)) && (
                 <p className="text-muted-foreground my-2 text-center text-xs">
                   {dayLabel(line.at, now, i18n.language, t)}

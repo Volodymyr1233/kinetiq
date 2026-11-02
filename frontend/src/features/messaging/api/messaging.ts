@@ -1,4 +1,5 @@
 import {
+  queryOptions,
   useInfiniteQuery,
   useMutation,
   useQuery,
@@ -23,17 +24,26 @@ const NAVIGATION_REFRESH_MS = 10_000
 const CONVERSATIONS = ['conversations']
 const messagesKey = (clientId: string) => ['messages', clientId]
 
+export const conversationsQuery = queryOptions({
+  queryKey: [...CONVERSATIONS, 'list'],
+  queryFn: async () => {
+    const { data, error } = await api.GET('/api/v1/conversations')
+    // openapi-fetch returns errors instead of throwing; throw the problem detail so the query fails with its code
+    if (error !== undefined) throw error
+    return data
+  },
+})
+
 export function useConversations() {
   return useQuery({
-    queryKey: [...CONVERSATIONS, 'list'],
-    queryFn: async () => {
-      const { data, error } = await api.GET('/api/v1/conversations')
-      // openapi-fetch returns errors instead of throwing; throw the problem detail so the query fails with its code
-      if (error !== undefined) throw error
-      return data
-    },
+    ...conversationsQuery,
     refetchInterval: OPEN_SCREEN_REFRESH_MS,
   })
+}
+
+/** Returns the messages of the loaded pages, oldest to newest: the newest page comes first in the cache. */
+export function messagesOf(data: { pages: MessagePage[] } | undefined) {
+  return [...(data?.pages ?? [])].reverse().flatMap((page) => page.messages)
 }
 
 export function useMessages(clientId: string) {
