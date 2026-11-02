@@ -197,6 +197,58 @@ describe('ClientMessagesPage', () => {
     expect(reads(requests)).toHaveLength(0)
   })
 
+  it('puts the separator above the first unread message and keeps it after reading', async () => {
+    const { requests } = renderAppAt(
+      '/app/messages',
+      SIGNED_IN.CLIENT,
+      server({
+        unreadCount: 2,
+        messages: [
+          { ...FROM_TRAINER, id: 'a', text: 'read before' },
+          { ...FROM_TRAINER, id: 'b', text: 'first unread' },
+          { ...FROM_TRAINER, id: 'c', text: 'second unread', mine: false },
+        ],
+      }),
+    )
+
+    const log = await screen.findByRole('log')
+    expect(log.textContent).toMatch(
+      /read before.*Unread messages.*first unread.*second unread/,
+    )
+    await waitFor(() => expect(reads(requests)).toHaveLength(1))
+    expect(screen.getByText('Unread messages')).toBeInTheDocument()
+  })
+
+  it('loads earlier pages until the first unread message is there', async () => {
+    const page = (id: string) => ({ ...FROM_TRAINER, id, text: `text ${id}` })
+    const { requests } = renderAppAt(
+      '/app/messages',
+      SIGNED_IN.CLIENT,
+      server({
+        unreadCount: 2,
+        onMessages: (request) =>
+          new URL(request.url).searchParams.get('before') === 'newest'
+            ? json({ messages: [page('older')], hasMore: false })
+            : json({ messages: [page('newest')], hasMore: true }),
+      }),
+    )
+
+    const log = await screen.findByRole('log')
+    expect(log.textContent).toMatch(/Unread messages.*text older.*text newest/)
+    expect(
+      requests.some((request) =>
+        new URL(request.url).search.includes('before=newest'),
+      ),
+    ).toBe(true)
+  })
+
+  it('shows no separator when nothing is unread', async () => {
+    renderAppAt('/app/messages', SIGNED_IN.CLIENT, server())
+
+    await screen.findByText(FROM_TRAINER.text)
+    expect(screen.queryByText('Unread messages')).not.toBeInTheDocument()
+  })
+
   it('marks nothing read when nothing is unread', async () => {
     const { requests } = renderAppAt(
       '/app/messages',

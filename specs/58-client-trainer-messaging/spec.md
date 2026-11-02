@@ -85,6 +85,7 @@ Both people see how many messages from the other person they have not seen. The 
 6. **Given** a count above 99, **When** it is shown, **Then** it reads "99+".
 7. **Given** unread messages, **When** a screen reader reaches the navigation entry or a list row, **Then** the count is part of its announced name ("Messages, 2 unread").
 8. **Given** the unread count changes because the other person wrote, **When** a short time passes, **Then** the navigation shows the new count without a reload.
+9. **Given** a conversation with unread messages, **When** I open it, **Then** it starts at the first unread message, with a separator above it, and not at the newest message. The separator stays while the conversation is open. **Given** I come back to a hidden tab with new unread messages, **Then** the same happens for them. **Given** a message arrives while I have the conversation open and visible, **Then** no separator appears.
 
 ---
 
@@ -133,6 +134,7 @@ A conversation belongs to one client and the trainer they train under. Nobody el
 - **FR-004**: Each person in a conversation MUST have a last-read time: the moment they last opened it. A new conversation starts with none, so every message from the other person is unread.
 - **FR-005**: The unread count of a conversation for one person MUST be the number of messages from the other person received after that person's last-read time. A person's own messages never count.
 - **FR-006**: The total unread count of a person MUST be the sum of the unread counts of all their conversations. For a client it is the count of their one conversation.
+- **FR-034**: An opened conversation with unread messages MUST start at the first unread message, with a separator saying "Unread messages" above it, loading earlier pages if that message is not on the newest one. Opening still marks the conversation read (FR-021, FR-026), so the separator stays until the person leaves the conversation.
 - **FR-007**: Marking a conversation as read MUST set the person's last-read time to now. It MUST NOT move the time backwards, and it MUST NOT touch the other person's last-read time.
 - **FR-008**: Whether the other person has read a message MUST NOT be exposed to the sender anywhere.
 

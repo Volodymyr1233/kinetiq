@@ -766,6 +766,7 @@
     }
   },
   "messaging": {
+    "unreadSeparator": "Unread messages",
     "trainer": {
       "listLabel": "Conversations",
       "searchLabel": "Search clients",

@@ -18,7 +18,9 @@ function renderList(
     hasMore = false,
     onRetry = () => {},
     onLoadEarlier = () => {},
+    firstUnreadId,
   }: {
+    firstUnreadId?: string
     outbox?: OutboxEntry[]
     hasMore?: boolean
     onRetry?: (id: string) => void
@@ -28,6 +30,7 @@ function renderList(
   render(
     <MessageList
       messages={messages}
+      firstUnreadId={firstUnreadId}
       outbox={outbox}
       hasMore={hasMore}
       onLoadEarlier={onLoadEarlier}
@@ -121,6 +124,36 @@ describe('MessageList', () => {
 
     expect(list).not.toHaveTextContent(/read|seen|delivered/i)
     expect(list.querySelector('svg')).toBeNull()
+  })
+
+  it('separates unread messages from the ones before them', () => {
+    const list = renderList(
+      [
+        message('1', 'read', false, '2026-11-02T09:00:00'),
+        message('2', 'unread', false, '2026-11-02T09:01:00'),
+      ],
+      { firstUnreadId: '2' },
+    )
+
+    expect(list.textContent).toMatch(/read.*Unread messages.*unread/)
+  })
+
+  it('shows the time of the message before the separator, ending its run', () => {
+    renderList(
+      [
+        message('1', 'read', false, '2026-11-02T09:00:00'),
+        message('2', 'unread', false, '2026-11-02T09:01:00'),
+      ],
+      { firstUnreadId: '2' },
+    )
+
+    expect(screen.getByText('Marek · 09:00')).toBeInTheDocument()
+  })
+
+  it('shows no separator without unread messages', () => {
+    renderList([message('1', 'read', false, '2026-11-02T09:00:00')])
+
+    expect(screen.queryByText('Unread messages')).not.toBeInTheDocument()
   })
 
   it('offers earlier messages only when more exist', async () => {

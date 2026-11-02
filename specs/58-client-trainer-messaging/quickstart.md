@@ -43,6 +43,15 @@ Sign in as Demo Trainer in the other session, open Messages.
 6. Narrow the window below about 800 px: only the list or only the conversation shows, with a way back. WCAG 2.2 AA as in section 2 step 8, at 1280 px.
 7. Open `/trainer/messages/<id of a Demo Trainer Two client>` and `/trainer/messages/not-an-id`: both show the not-found state, nothing leaks.
 
+## 3a. Unread separator
+
+Have the other person send more messages than fit one screen, then open the conversation.
+
+1. It opens at the first unread message, with "Unread messages" above it, and the count clears. Scrolling down reaches the newest.
+2. Scrolling to the bottom and receiving another message follows it; no second separator appears.
+3. With more unread messages than one page (over 50), earlier pages load by themselves and it still opens at the first unread.
+4. Hide the tab, send several messages, show the tab: it moves to the first of those.
+
 ## 4. Security checks on the backend
 
 With a signed-in session and the CSRF header (the browser's network tab shows the cookie), call the API:
