@@ -659,6 +659,19 @@
         "noLoad": "No load",
         "rpe": "RPE {{rpe, number}}",
         "rest": "Rest {{seconds, number}} s"
+      },
+      "ready": {
+        "title": "Your plan is ready",
+        "text": "{{goal}} · {{weeks}} · {{sessions}}",
+        "weeks_one": "{{count, number}} week",
+        "weeks_other": "{{count, number}} weeks",
+        "sessionsPerWeek_one": "{{count, number}} session a week",
+        "sessionsPerWeek_other": "{{count, number}} sessions a week",
+        "view": "View my plan"
+      },
+      "finished": {
+        "title": "Your trainer is preparing your next plan.",
+        "text": "Your {{weeks, number}}-week plan has finished."
       }
     },
     "loading": "Loading plan",

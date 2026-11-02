@@ -49,13 +49,13 @@ description: "Tasks for story #75, Client sees their plan (tasks #76, #77, #78)"
 
 **Goal**: a client sees "your plan is ready" once and a finished plan says the next one is being prepared (spec FR-014 to FR-018).
 
-- [ ] T021 [US2] `F/features/plan/pages/plan-ready-page.tsx`: goal, number of weeks and sessions per week from `useOwnPlan`, and "View my plan" as a link to `/app/plan`; a client without a published plan is sent to `/app` (task #53's routing decides the rest); no tab bar, 48 px touch targets
-- [ ] T022 [US2] The Plan tab acknowledges the plan once when the answer says `seen` is false (`useAcknowledgePlan`), and refreshes the cached plan on success
-- [ ] T023 [US2] Gate in `F/app/client-area.tsx`: when the client's plan is published and unseen, any tab except Plan redirects to `/app/plan-ready`; `plan.not-found` renders the area unchanged; the gate shows nothing while the plan loads. Route `/app/plan-ready` beside the client area in `F/app/router.ts`, behind `requireRole('CLIENT')`
-- [ ] T024 [US3] `ClientPlanPage` shows "Your trainer is preparing your next plan." and the plan's number of weeks in place of the strip when `finished`
-- [ ] T025 [US2] Strings for the plan-ready page and the finished state in `en.json` and `pl.json`
-- [ ] T026 [US2] Tests: `plan-ready-page.test.tsx` (the summary and the link; redirect without a published plan), the finished state in `client-plan-page.test.tsx`, and a gate test in `F/app/client-area.test.tsx` (unseen redirects Today to plan-ready; seen does not; the Plan tab itself is not redirected; no plan renders the tab as before)
-- [ ] T027 [US2] `npm run check` passes; check in the browser: unseen client sees plan-ready once and then never again, also after sign-out and in a private window; finished client sees the finished state; 375 px, light and dark; commit `feat(frontend): add plan-ready screen and finished state (#78)`
+- [X] T021 [US2] `F/features/plan/pages/plan-ready-page.tsx`: goal, number of weeks and sessions per week from `useOwnPlan`, and "View my plan" as a link to `/app/plan`; a client without a published plan is sent to `/app` (task #53's routing decides the rest); no tab bar, 48 px touch targets
+- [X] T022 [US2] The Plan tab acknowledges the plan once when the answer says `seen` is false (`useAcknowledgePlan`), and refreshes the cached plan on success
+- [X] T023 [US2] Gate in `F/app/client-area.tsx`: when the client's plan is published and unseen, any tab except Plan redirects to `/app/plan-ready`; `plan.not-found` renders the area unchanged; the gate shows nothing while the plan loads. Route `/app/plan-ready` beside the client area in `F/app/router.ts`, behind `requireRole('CLIENT')`
+- [X] T024 [US3] `ClientPlanPage` shows "Your trainer is preparing your next plan." and the plan's number of weeks in place of the strip when `finished`
+- [X] T025 [US2] Strings for the plan-ready page and the finished state in `en.json` and `pl.json`
+- [X] T026 [US2] Tests: `plan-ready-page.test.tsx` (the summary and the link; redirect without a published plan), the finished state in `client-plan-page.test.tsx`, and a gate test in `F/app/client-area.test.tsx` (unseen redirects Today to plan-ready; seen does not; the Plan tab itself is not redirected; no plan renders the tab as before)
+- [ ] T027 [US2] `npm run check` passes (done); the browser check is still to do: unseen client sees plan-ready once and then never again, also after sign-out and in a private window; finished client sees the finished state; 375 px, light and dark; commit `feat(frontend): add plan-ready screen and finished state (#78)`
 
 ## Phase 5: Close the story
 
