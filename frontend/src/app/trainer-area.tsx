@@ -29,7 +29,7 @@ import {
   useSidebar,
 } from '@/components/ui/sidebar'
 import { currentAccountQuery } from '@/features/account/api/account'
-import { AccountAvatar } from '@/features/account/components/account-avatar'
+import { AccountAvatar } from '@/components/account-avatar'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
 
 const NAV_ITEMS = [

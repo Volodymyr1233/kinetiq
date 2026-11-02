@@ -44,6 +44,15 @@
     "action": "Przejdź na stronę główną"
   },
   "errors": {
+    "message": {
+      "empty": "Napisz coś przed wysłaniem.",
+      "too-long": "Wiadomość może mieć do 2000 znaków. Skróć ją i wyślij ponownie.",
+      "id-in-use": "Nie udało się wysłać tej wiadomości. Napisz ją ponownie.",
+      "not-found": "Tych wcześniejszych wiadomości już nie ma. Odśwież stronę."
+    },
+    "conversation": {
+      "not-found": "Ta rozmowa nie istnieje albo nie jest Twoja."
+    },
     "generic": "Coś poszło nie tak. Spróbuj ponownie.",
     "validation": {
       "failed": "Niektóre dane są nieprawidłowe. Sprawdź je i spróbuj ponownie."
@@ -775,6 +784,36 @@
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Dodaj co najmniej 1 ćwiczenie do sesji {{session}}.",
       "load": "Zostaw obciążenie puste lub wpisz liczbę większą od 0, do {{max, number}} {{unit}}."
+    }
+  },
+  "messaging": {
+    "yourTrainer": "Twój trener",
+    "empty": {
+      "title": "Brak wiadomości",
+      "body": "{{name}} czeka na pierwszą wiadomość."
+    },
+    "composerLabel": "Wiadomość do: {{name}}",
+    "composerPlaceholder": "Napisz wiadomość",
+    "send": "Wyślij wiadomość",
+    "sending": "Wysyłanie…",
+    "sent": "Wysłano · {{time}}",
+    "from": "{{name}} · {{time}}",
+    "notSent": "Nie wysłano",
+    "retry": "Ponów",
+    "speaker": "{{name}}:",
+    "speakerMe": "Ty:",
+    "logLabel": "Wiadomości: {{name}}",
+    "loadEarlier": "Wczytaj wcześniejsze wiadomości",
+    "loading": "Wczytywanie wiadomości",
+    "unread_one": ", {{count, number}} nieprzeczytana",
+    "unread_few": ", {{count, number}} nieprzeczytane",
+    "unread_many": ", {{count, number}} nieprzeczytanych",
+    "unread_other": ", {{count, number}} nieprzeczytanej",
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "errors": {
+      "retry": "Spróbuj ponownie",
+      "loadEarlier": "Nie udało się wczytać wcześniejszych wiadomości. Spróbuj ponownie."
     }
   }
 }

@@ -194,7 +194,15 @@ export const createRoutes = (): RouteObject[] => [
       clientPlaceholder('today'),
       clientPlaceholder('plan'),
       clientPlaceholder('progress'),
-      clientPlaceholder('messages'),
+      {
+        path: 'messages',
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/messaging/pages/client-messages-page'))
+              .ClientMessagesPage,
+        },
+      },
     ],
   },
   { path: '*', Component: NotFoundPage },

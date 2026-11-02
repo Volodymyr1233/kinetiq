@@ -7,6 +7,8 @@ import {
 import { useTranslation } from 'react-i18next'
 import { matchPath, NavLink, Outlet, useLocation } from 'react-router'
 import { ConfirmEmailBanner } from '@/features/account/components/confirm-email-banner'
+import { useUnreadCount } from '@/features/messaging/api/messaging'
+import { UnreadCount } from '@/features/messaging/components/unread-count'
 import { cn } from '@/lib/utils'
 import { SettingsSheet } from './settings-sheet'
 
@@ -24,8 +26,17 @@ export function ClientArea() {
     matchPath({ path: `/app/${tab.path}`, end: false }, pathname),
   )
 
+  const { data: unread } = useUnreadCount()
+  // a conversation scrolls inside the screen, with its composer in reach above the tab bar
+  const fillsScreen = active?.path === 'messages'
+
   return (
-    <div className="mx-auto flex min-h-svh max-w-[640px] flex-col">
+    <div
+      className={cn(
+        'mx-auto flex max-w-[640px] flex-col',
+        fillsScreen ? 'h-dvh' : 'min-h-svh',
+      )}
+    >
       <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-3">
         <h1 className="text-xl font-semibold">
           {active ? t(active.labelKey) : ''}
@@ -34,7 +45,14 @@ export function ClientArea() {
       </header>
       <ConfirmEmailBanner />
       {/* bottom padding keeps the last content above the fixed tab bar */}
-      <main className="flex-1 pb-20">
+      <main
+        className={cn(
+          'flex-1',
+          fillsScreen
+            ? 'flex min-h-0 flex-col pb-[calc(3.5rem+1px+env(safe-area-inset-bottom))]'
+            : 'pb-20',
+        )}
+      >
         <Outlet />
       </main>
       <nav
@@ -47,7 +65,7 @@ export function ClientArea() {
               <NavLink
                 to={path}
                 className={cn(
-                  'focus-visible:ring-ring/50 flex min-h-14 flex-col items-center justify-center gap-1 rounded-md text-xs outline-none focus-visible:ring-3',
+                  'focus-visible:ring-ring/50 relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-md text-xs outline-none focus-visible:ring-3',
                   active?.path === path
                     ? 'text-foreground font-medium'
                     : 'text-muted-foreground',
@@ -62,6 +80,12 @@ export function ClientArea() {
                   <Icon aria-hidden className="size-5" />
                 </span>
                 {t(labelKey)}
+                {path === 'messages' && (
+                  <UnreadCount
+                    count={unread?.count ?? 0}
+                    className="absolute top-1 left-[calc(50%+6px)]"
+                  />
+                )}
               </NavLink>
             </li>
           ))}
