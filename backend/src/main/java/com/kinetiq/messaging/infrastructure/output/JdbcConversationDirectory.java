@@ -20,12 +20,13 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 class JdbcConversationDirectory implements ConversationDirectory {
 
-    // the conversation is the one with the client's current trainer, so a new trainer never sees earlier history
+    // the conversation is the one with the client's current trainer, so a new trainer never sees earlier history;
+    // goal and week are for the trainer's rows only: a client's own plan can still be a draft they may not see
     private static final String ROWS = """
             select a.id as client_id,
                    case when a.id = me.id then t.name else a.name end as name,
-                   coalesce(p.goal, q.goal) as goal,
-                   case when p.first_week is not null
+                   case when a.id <> me.id then coalesce(p.goal, q.goal) end as goal,
+                   case when a.id <> me.id and p.first_week is not null
                         then greatest(1, ((now() at time zone a.time_zone)::date - p.first_week) / 7 + 1)
                    end as current_week,
                    p.weeks as plan_weeks,

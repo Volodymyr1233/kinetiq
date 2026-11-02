@@ -134,7 +134,7 @@ export function MessageList({
           <Button
             variant="outline"
             size="sm"
-            className="min-h-11 shrink-0 self-center"
+            className="min-h-12 shrink-0 self-center"
             disabled={loadingEarlier}
             onClick={() => {
               const element = list.current
@@ -199,7 +199,7 @@ export function MessageList({
                   <Button
                     variant="link"
                     size="sm"
-                    className="text-destructive min-h-11 px-1 text-xs underline"
+                    className="text-destructive min-h-12 px-1 text-xs underline"
                     onClick={() => {
                       onRetry(line.id)
                       // the button goes away, and keyboard focus must not fall out of the page

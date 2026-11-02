@@ -1,8 +1,7 @@
-import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react'
+import { ArrowLeftIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { AccountAvatar } from '@/components/account-avatar'
-import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -12,7 +11,6 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
-import { errorMessageKey } from '@/lib/api/problem'
 import { cn } from '@/lib/utils'
 import {
   useConversations,
@@ -21,6 +19,7 @@ import {
 } from '../api/messaging'
 import { Conversation } from '../components/conversation'
 import { ConversationList } from '../components/conversation-list'
+import { LoadError } from '../components/load-error'
 import { useOutbox } from '../use-outbox'
 
 function BackToList() {
@@ -84,21 +83,12 @@ export function TrainerMessagesPage() {
   const open = rows?.find((row) => row.clientId === clientId)
 
   const loadError = rows === undefined && conversations.isError && (
-    <Alert variant="destructive" className="m-4 w-auto">
-      <CircleAlertIcon aria-hidden />
-      <AlertDescription>
-        {t(errorMessageKey(conversations.error))}
-      </AlertDescription>
-      <AlertAction>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => void conversations.refetch()}
-        >
-          {t('messaging.errors.retry')}
-        </Button>
-      </AlertAction>
-    </Alert>
+    <div className="p-4">
+      <LoadError
+        error={conversations.error}
+        onRetry={() => void conversations.refetch()}
+      />
+    </div>
   )
   const loading = rows === undefined && !conversations.isError && (
     <div className="flex flex-col gap-3 p-4">
@@ -157,7 +147,6 @@ export function TrainerMessagesPage() {
               key={open.clientId}
               clientId={open.clientId}
               name={open.name}
-              unread={open.unreadCount}
               outbox={outbox.entries.filter(
                 ({ conversation }) => conversation === open.clientId,
               )}

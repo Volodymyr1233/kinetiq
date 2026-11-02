@@ -52,9 +52,9 @@ Primary key `(conversation_id, account_id)`. No row means the person has never o
 | `Conversation` | entity | `id`, `pair` |
 | `Message` | entity | `id`, `conversation`, `sender`, `text`, `receivedAt`; never changes |
 | `MessagePage` | value object | up to 50 messages oldest to newest, and `hasMore` |
-| `LastMessage` | value object | `preview` (up to 140 units), `sentByViewer`, `receivedAt` |
+| `LastMessage` | value object | `preview` (up to 140 characters), `sentByViewer`, `receivedAt` |
 | `PlanWeek` | value object | `current`, `total`; `current` is at least 1, and above `total` once the plan has finished |
-| `ConversationOverview` | read model | `clientId`, `name` of the other person, `goal` (optional, the plan's when a plan exists, else the quiz's), `planWeek` (optional, only for a published plan), `unread`, `lastMessage` (optional) |
+| `ConversationOverview` | read model | `clientId`, `name` of the other person, `goal` (optional, a trainer's rows only, the plan's when a plan exists, else the quiz's), `planWeek` (optional, a trainer's rows only, for a published plan), `unread`, `lastMessage` (optional) |
 
 ## Rules
 

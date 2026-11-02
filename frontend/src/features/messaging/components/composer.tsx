@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { MESSAGE_MAX_LENGTH } from '../api/messaging'
 
+const IME_KEY_CODE = 229
+
 /** The field a message is written in. Enter sends and Shift+Enter adds a line, except while an input method composes. */
 export function Composer({
   name,
@@ -49,7 +51,9 @@ export function Composer({
             if (
               event.key === 'Enter' &&
               !event.shiftKey &&
-              !event.nativeEvent.isComposing
+              !event.nativeEvent.isComposing &&
+              // Safari ends the composition first, so only this code gives that Enter away
+              event.keyCode !== IME_KEY_CODE
             ) {
               event.preventDefault()
               send()

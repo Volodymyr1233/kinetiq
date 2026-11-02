@@ -1,12 +1,9 @@
-import { CircleAlertIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { AccountAvatar } from '@/components/account-avatar'
-import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
-import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { errorMessageKey } from '@/lib/api/problem'
 import { useConversations, useSendMessage } from '../api/messaging'
 import { Conversation } from '../components/conversation'
+import { LoadError } from '../components/load-error'
 import { useOutbox } from '../use-outbox'
 
 export function ClientMessagesPage() {
@@ -24,21 +21,10 @@ export function ClientMessagesPage() {
   ) {
     return (
       <div className="p-4">
-        <Alert variant="destructive">
-          <CircleAlertIcon aria-hidden />
-          <AlertDescription>
-            {t(errorMessageKey(conversations.error))}
-          </AlertDescription>
-          <AlertAction>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => void conversations.refetch()}
-            >
-              {t('messaging.errors.retry')}
-            </Button>
-          </AlertAction>
-        </Alert>
+        <LoadError
+          error={conversations.error}
+          onRetry={() => void conversations.refetch()}
+        />
       </div>
     )
   }
@@ -70,7 +56,6 @@ export function ClientMessagesPage() {
       <Conversation
         clientId={conversation.clientId}
         name={conversation.name}
-        unread={conversation.unreadCount}
         outbox={outbox.entries}
         onSend={(text) => outbox.submit(conversation.clientId, text)}
         onRetry={outbox.retry}
