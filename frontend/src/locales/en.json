@@ -766,6 +766,29 @@
     }
   },
   "messaging": {
+    "trainer": {
+      "listLabel": "Conversations",
+      "searchLabel": "Search clients",
+      "searchPlaceholder": "Search clients",
+      "noMatch": "No client matches that name.",
+      "noMessages": "No messages yet",
+      "you": "You: {{text}}",
+      "choose": "Choose a conversation",
+      "noClients": {
+        "title": "No conversations yet",
+        "body": "Invite a client to start one.",
+        "action": "Invite a client"
+      },
+      "openProfile": "Open profile",
+      "shortcutHint": "Enter sends. Shift+Enter adds a line.",
+      "notFound": {
+        "title": "Conversation not found",
+        "body": "This client does not exist, or is not one of your clients."
+      },
+      "backToList": "All conversations",
+      "conversationWith": "Conversation with {{name}}",
+      "loading": "Loading conversations"
+    },
     "yourTrainer": "Your trainer",
     "empty": {
       "title": "No messages yet",

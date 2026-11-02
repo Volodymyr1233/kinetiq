@@ -787,6 +787,29 @@
     }
   },
   "messaging": {
+    "trainer": {
+      "listLabel": "Rozmowy",
+      "searchLabel": "Szukaj klientów",
+      "searchPlaceholder": "Szukaj klientów",
+      "noMatch": "Żaden klient nie pasuje do tej nazwy.",
+      "noMessages": "Brak wiadomości",
+      "you": "Ty: {{text}}",
+      "choose": "Wybierz rozmowę",
+      "noClients": {
+        "title": "Nie ma jeszcze rozmów",
+        "body": "Zaproś klienta, aby zacząć rozmowę.",
+        "action": "Zaproś klienta"
+      },
+      "openProfile": "Otwórz profil",
+      "shortcutHint": "Enter wysyła. Shift+Enter dodaje wiersz.",
+      "notFound": {
+        "title": "Nie znaleziono rozmowy",
+        "body": "Ten klient nie istnieje albo nie jest Twoim klientem."
+      },
+      "backToList": "Wszystkie rozmowy",
+      "conversationWith": "Rozmowa: {{name}}",
+      "loading": "Wczytywanie rozmów"
+    },
     "yourTrainer": "Twój trener",
     "empty": {
       "title": "Brak wiadomości",

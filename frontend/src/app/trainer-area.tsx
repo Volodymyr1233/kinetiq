@@ -31,6 +31,8 @@ import {
 import { currentAccountQuery } from '@/features/account/api/account'
 import { AccountAvatar } from '@/components/account-avatar'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
+import { useUnreadCount } from '@/features/messaging/api/messaging'
+import { UnreadCount } from '@/features/messaging/components/unread-count'
 
 const NAV_ITEMS = [
   { path: 'clients', labelKey: 'nav.clients', Icon: UsersIcon },
@@ -46,6 +48,7 @@ function TrainerSidebar({ activePath }: { activePath?: string }) {
   const { t } = useTranslation()
   const { isMobile, setOpenMobile } = useSidebar()
   const { data: account } = useQuery(currentAccountQuery)
+  const { data: unread } = useUnreadCount()
 
   return (
     <Sidebar
@@ -70,6 +73,12 @@ function TrainerSidebar({ activePath }: { activePath?: string }) {
                     <NavLink to={path} onClick={() => setOpenMobile(false)}>
                       <Icon aria-hidden />
                       <span>{t(labelKey)}</span>
+                      {path === 'messages' && (
+                        <UnreadCount
+                          count={unread?.count ?? 0}
+                          className="ml-auto"
+                        />
+                      )}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
