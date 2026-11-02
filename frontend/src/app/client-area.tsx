@@ -9,6 +9,7 @@ import { matchPath, NavLink, Outlet, useLocation } from 'react-router'
 import { ConfirmEmailBanner } from '@/features/account/components/confirm-email-banner'
 import { useUnreadCount } from '@/features/messaging/api/messaging'
 import { UnreadCount } from '@/features/messaging/components/unread-count'
+import { QuizStatusCheck } from '@/features/quiz/components/quiz-status-check'
 import { cn } from '@/lib/utils'
 import { SettingsSheet } from './settings-sheet'
 
@@ -19,7 +20,17 @@ const TABS = [
   { path: 'messages', labelKey: 'nav.messages', Icon: MessageCircleIcon },
 ] as const
 
+// until a plan is published, the quiz or the waiting state stands in for every tab (spec 50, User Story 3)
 export function ClientArea() {
+  return (
+    <QuizStatusCheck status="PLAN_PUBLISHED">
+      <ClientTabs />
+    </QuizStatusCheck>
+  )
+}
+
+// inside the check, so the area's queries, such as the unread count, run only for a client let in
+function ClientTabs() {
   const { t } = useTranslation()
   const { pathname } = useLocation()
   const active = TABS.find((tab) =>

@@ -5,6 +5,7 @@ import {
   json,
   pathsOf,
   problem,
+  quizStatus,
   renderAppAt,
   SIGNED_IN,
   type Reply,
@@ -32,7 +33,7 @@ function server({
   onMessages?: Reply
 } = {}): Reply {
   let unread = unreadCount
-  return async (request) => {
+  return quizStatus('PLAN_PUBLISHED', async (request) => {
     const { pathname } = new URL(request.url)
     if (pathname === READ) {
       unread = 0
@@ -60,7 +61,7 @@ function server({
       )
     }
     return new Response(null, { status: 204 })
-  }
+  })
 }
 
 const reads = (requests: Request[]) =>
@@ -303,10 +304,14 @@ describe('ClientMessagesPage', () => {
   })
 
   it('offers Try again when the trainer cannot be loaded', async () => {
-    renderAppAt('/app/messages', SIGNED_IN.CLIENT, (request) =>
-      new URL(request.url).pathname === '/api/v1/conversations'
-        ? problem(404, { status: 404, code: 'request.not-found' })
-        : new Response(null, { status: 204 }),
+    renderAppAt(
+      '/app/messages',
+      SIGNED_IN.CLIENT,
+      quizStatus('PLAN_PUBLISHED', (request) =>
+        new URL(request.url).pathname === '/api/v1/conversations'
+          ? problem(404, { status: 404, code: 'request.not-found' })
+          : new Response(null, { status: 204 }),
+      ),
     )
 
     expect(

@@ -15,7 +15,10 @@ const PAGE_FOR: Record<QuizStatus, string> = {
   PLAN_PUBLISHED: '/app',
 }
 
-/** Shows a quiz page only for the status it belongs to and sends the client to the page of their status (research R12). */
+/**
+ * Shows a page only for the quiz status it belongs to, a quiz page or the client area, and sends the client to the
+ * page of their status (research R12).
+ */
 export function QuizStatusCheck({
   status,
   children,
