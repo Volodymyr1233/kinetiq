@@ -3,14 +3,6 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { AccountAvatar } from '@/components/account-avatar'
-import { Button } from '@/components/ui/button'
-import {
-  Empty,
-  EmptyContent,
-  EmptyDescription,
-  EmptyHeader,
-  EmptyTitle,
-} from '@/components/ui/empty'
 import {
   InputGroup,
   InputGroupAddon,
@@ -35,26 +27,6 @@ export function ConversationList({
   const { t, i18n } = useTranslation()
   const [query, setQuery] = useState('')
   const shown = filterConversations(conversations, query)
-
-  if (conversations.length === 0) {
-    return (
-      <Empty className="m-4 border border-dashed">
-        <EmptyHeader>
-          <EmptyTitle>{t('messaging.trainer.noClients.title')}</EmptyTitle>
-          <EmptyDescription>
-            {t('messaging.trainer.noClients.body')}
-          </EmptyDescription>
-        </EmptyHeader>
-        <EmptyContent>
-          <Button variant="outline" size="sm" asChild>
-            <Link to="/trainer/clients/invites">
-              {t('messaging.trainer.noClients.action')}
-            </Link>
-          </Button>
-        </EmptyContent>
-      </Empty>
-    )
-  }
 
   return (
     <nav
