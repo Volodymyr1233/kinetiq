@@ -10,7 +10,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { currentAccountQuery } from '@/features/account/api/account'
-import { AccountAvatar } from '@/features/account/components/account-avatar'
+import { AccountAvatar } from '@/components/account-avatar'
 import { DisplaySettings } from '@/features/account/components/display-settings'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
 

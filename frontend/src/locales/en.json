@@ -44,6 +44,15 @@
     "action": "Go to the start page"
   },
   "errors": {
+    "message": {
+      "empty": "Write something before sending.",
+      "too-long": "A message can have up to 2000 characters. Shorten it and send again.",
+      "id-in-use": "This message could not be sent. Write it again.",
+      "not-found": "These earlier messages are gone. Reload the page."
+    },
+    "conversation": {
+      "not-found": "This conversation does not exist, or is not yours."
+    },
     "generic": "Something went wrong. Try again.",
     "validation": {
       "failed": "Some details are not valid. Check them and try again."
@@ -754,6 +763,34 @@
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Add at least 1 exercise to {{session}}.",
       "load": "Leave the load empty or enter a number above 0, up to {{max, number}} {{unit}}."
+    }
+  },
+  "messaging": {
+    "yourTrainer": "Your trainer",
+    "empty": {
+      "title": "No messages yet",
+      "body": "Say hello to {{name}}."
+    },
+    "composerLabel": "Message {{name}}",
+    "composerPlaceholder": "Write a message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "sent": "Sent · {{time}}",
+    "from": "{{name}} · {{time}}",
+    "notSent": "Not sent",
+    "retry": "Retry",
+    "speaker": "{{name}}:",
+    "speakerMe": "You:",
+    "logLabel": "Messages with {{name}}",
+    "loadEarlier": "Load earlier messages",
+    "loading": "Loading messages",
+    "unread_one": ", {{count, number}} unread",
+    "unread_other": ", {{count, number}} unread",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "errors": {
+      "retry": "Try again",
+      "loadEarlier": "Earlier messages did not load. Try again."
     }
   }
 }
