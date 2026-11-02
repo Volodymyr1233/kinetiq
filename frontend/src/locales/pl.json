@@ -662,6 +662,24 @@
     "leave": "Wyjdź"
   },
   "plan": {
+    "client": {
+      "none": "Nie masz jeszcze planu.",
+      "previous": "Poprzedni tydzień",
+      "next": "Następny tydzień",
+      "currentWeek": "Wróć do bieżącego tygodnia",
+      "restDay": "Dzień odpoczynku",
+      "exercises_one": "{{count, number}} ćwiczenie",
+      "exercises_few": "{{count, number}} ćwiczenia",
+      "exercises_many": "{{count, number}} ćwiczeń",
+      "exercises_other": "{{count, number}} ćwiczenia",
+      "entry": {
+        "target": "{{sets, number}} × {{amount, number}} {{unit}}",
+        "load": "{{load, number}} {{unit}}",
+        "noLoad": "Bez obciążenia",
+        "rpe": "RPE {{rpe, number}}",
+        "rest": "Przerwa {{seconds, number}} s"
+      }
+    },
     "loading": "Wczytywanie planu",
     "retry": "Spróbuj ponownie",
     "cancel": "Anuluj",

@@ -200,7 +200,14 @@ export const createRoutes = (): RouteObject[] => [
     children: [
       { index: true, loader: () => redirect('/app/today') },
       clientPlaceholder('today'),
-      clientPlaceholder('plan'),
+      {
+        path: 'plan',
+        lazy: {
+          Component: async () =>
+            (await import('@/features/plan/pages/client-plan-page'))
+              .ClientPlanPage,
+        },
+      },
       clientPlaceholder('progress'),
       {
         path: 'messages',
