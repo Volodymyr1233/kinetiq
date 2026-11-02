@@ -61,7 +61,7 @@ public class SecurityConfig {
                         .permitAll()
                         .requestMatchers("/api/v1/exercises/**", "/api/v1/invites/**", "/api/v1/clients/**")
                         .hasRole("TRAINER")
-                        .requestMatchers("/api/v1/quiz/**")
+                        .requestMatchers("/api/v1/quiz/**", "/api/v1/plan/**")
                         .hasRole("CLIENT")
                         .requestMatchers("/api/**")
                         .authenticated()

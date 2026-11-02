@@ -3,6 +3,7 @@ package com.kinetiq.plan.infrastructure.input;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.PlanDetails;
 import com.kinetiq.plan.domain.input.SavePlanCommand;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
@@ -27,6 +28,23 @@ interface PlanWebMapper {
                 plan.getVersion(),
                 plan.getSessions().stream()
                         .map(session -> toResponse(session, details.library(), locale))
+                        .toList());
+    }
+
+    default ClientPlanResponse toResponse(OwnPlanView view, Locale locale) {
+        Plan plan = view.plan();
+        return new ClientPlanResponse(
+                plan.getGoal(),
+                plan.getWeeks(),
+                view.currentWeek(),
+                view.finished(),
+                view.seen(),
+                view.week() == null
+                        ? null
+                        : new ClientPlanResponse.WeekResponse(
+                                view.week().number(), view.week().startsOn()),
+                plan.getSessions().stream()
+                        .map(session -> toResponse(session, view.library(), locale))
                         .toList());
     }
 

@@ -15,6 +15,7 @@ import com.kinetiq.quiz.domain.model.Goal;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
@@ -205,6 +206,88 @@ class PlanRepositoryImplIT {
 
         assertThatThrownBy(() -> jdbc.update(
                         "update plans set first_week = date '2026-10-27' where id = ?", saved.getId().value()))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    private Plan savePublished(AccountId client) {
+        return repository.save(new Plan(
+                PlanId.random(),
+                client,
+                Goal.LOSE_FAT,
+                8,
+                LocalDate.parse("2026-10-26"),
+                List.of(new Session("A", DayOfWeek.MONDAY, List.of())),
+                0));
+    }
+
+    @Test
+    void shouldMarkAPublishedPlanSeenOnce_andKeepTheFirstTime() {
+        AccountId client = insertClient();
+        savePublished(client);
+        flushAndClear();
+        assertThat(repository.isSeenByClient(client)).isFalse();
+
+        repository.markSeenByClient(client, Instant.parse("2026-11-02T10:00:00Z"));
+        repository.markSeenByClient(client, Instant.parse("2026-11-03T10:00:00Z"));
+        flushAndClear();
+
+        assertThat(repository.isSeenByClient(client)).isTrue();
+        assertThat(jdbc.queryForObject(
+                        "select client_seen_at from plans where client_id = ?", Instant.class, client.value()))
+                .isEqualTo(Instant.parse("2026-11-02T10:00:00Z"));
+    }
+
+    @Test
+    void shouldNotMarkADraft() {
+        AccountId client = insertClient();
+        repository.save(draft(client, List.of()));
+        flushAndClear();
+
+        repository.markSeenByClient(client, Instant.parse("2026-11-02T10:00:00Z"));
+        flushAndClear();
+
+        assertThat(repository.isSeenByClient(client)).isFalse();
+    }
+
+    // the trainer's open editor holds this version, so looking at the plan must not make its next save stale
+    @Test
+    void shouldNotRaiseTheVersion_whenThePlanIsMarkedSeen() {
+        AccountId client = insertClient();
+        Plan saved = savePublished(client);
+        flushAndClear();
+
+        repository.markSeenByClient(client, Instant.parse("2026-11-02T10:00:00Z"));
+        flushAndClear();
+
+        assertThat(repository.findByClient(client).orElseThrow().getVersion()).isEqualTo(saved.getVersion());
+    }
+
+    @Test
+    void shouldKeepTheMark_whenTheTrainerSavesThePlanAgain() {
+        AccountId client = insertClient();
+        ExerciseId squat = insertExercise();
+        Plan saved = savePublished(client);
+        flushAndClear();
+        repository.markSeenByClient(client, Instant.parse("2026-11-02T10:00:00Z"));
+        flushAndClear();
+
+        Plan stored = repository.findByClientForUpdate(client).orElseThrow();
+        repository.save(withSessions(
+                stored, List.of(new Session("A", DayOfWeek.MONDAY, List.of(entry(squat, 5))))));
+        flushAndClear();
+
+        assertThat(repository.isSeenByClient(client)).isTrue();
+        assertThat(repository.findByClient(client).orElseThrow().getVersion()).isGreaterThan(saved.getVersion());
+    }
+
+    @Test
+    void shouldBeRefusedByTheDatabase_whenADraftIsMarkedSeen() {
+        AccountId client = insertClient();
+        Plan saved = repository.save(draft(client, List.of()));
+        flushAndClear();
+
+        assertThatThrownBy(() -> jdbc.update(
+                        "update plans set client_seen_at = now() where id = ?", saved.getId().value()))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 

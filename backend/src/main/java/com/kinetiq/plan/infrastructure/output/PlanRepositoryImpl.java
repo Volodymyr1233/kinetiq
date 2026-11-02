@@ -6,6 +6,7 @@ import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
+import java.time.Instant;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
@@ -30,6 +31,16 @@ class PlanRepositoryImpl implements PlanRepository {
     @Override
     public Optional<Plan> findByClientForUpdate(AccountId client) {
         return jpa.findByClientIdForUpdate(client.value()).map(mapper::toDomain);
+    }
+
+    @Override
+    public boolean isSeenByClient(AccountId client) {
+        return jpa.existsByClientIdAndClientSeenAtIsNotNull(client.value());
+    }
+
+    @Override
+    public void markSeenByClient(AccountId client, Instant at) {
+        jpa.markSeen(client.value(), at);
     }
 
     @Override
