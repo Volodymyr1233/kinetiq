@@ -107,15 +107,19 @@ export function ClientPage() {
               void navigate(tab === 'overview' ? '.' : tab)
             }
           >
-            <TabsList variant="line" aria-label={t('clients.page.tabsLabel')}>
+            <TabsList
+              variant="line"
+              aria-label={t('clients.page.tabsLabel')}
+              className="h-auto! max-w-full flex-wrap justify-start"
+            >
               {TABS.map((tab) => (
-                <TabsTrigger key={tab} value={tab}>
+                <TabsTrigger key={tab} value={tab} className="flex-none">
                   {t(`clients.page.tabs.${tab}`)}
                 </TabsTrigger>
               ))}
             </TabsList>
             <TabsContent value={active}>
-              <Outlet />
+              <Outlet context={client} />
             </TabsContent>
           </Tabs>
         </>
@@ -124,7 +128,7 @@ export function ClientPage() {
   )
 }
 
-// the four tabs stay empty until their features land
+// these tabs stay empty until their features land
 export function ClientTabEmpty() {
   const { t } = useTranslation()
   return (

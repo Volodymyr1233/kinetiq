@@ -52,6 +52,10 @@ _Avoid_: Workout, training
 **Exercise**:
 A movement that can be prescribed, such as a back squat.
 
+**Exercise entry**:
+One exercise in its place within a session, with its targets. The same exercise can appear twice in a session.
+_Avoid_: Row, item
+
 **Exercise library**:
 The catalogue of exercises a trainer picks from when building a plan: the starter exercises plus the trainer's own.
 
@@ -144,3 +148,11 @@ A piece of text sent between a client and their trainer.
 **Conversation**:
 All messages between one client and their trainer.
 _Avoid_: Chat, thread
+
+**Unread**:
+A message from the other person received after the reader last opened the conversation.
+_Avoid_: New, unseen
+
+**Delivery state**:
+What the sender sees on their own message: Sending, Sent or Not sent. There are no read receipts.
+_Avoid_: Status, read ticks

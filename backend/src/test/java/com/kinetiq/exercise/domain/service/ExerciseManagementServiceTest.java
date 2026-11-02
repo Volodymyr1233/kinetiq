@@ -145,6 +145,14 @@ class ExerciseManagementServiceTest {
     class Update {
 
         @Test
+        void shouldAnswerTheRealPlanCount() {
+            Exercise exercise = stored(own("Goblet squat", TRAINER));
+            repository.plansUsing.put(TRAINER, Map.of(exercise.getId(), 3));
+
+            assertThat(service.update(update(TRAINER, exercise.getId(), "Goblet squat")).plansUsing()).isEqualTo(3);
+        }
+
+        @Test
         void shouldReplaceValuesAndKeepMeasure_whenExerciseIsOwn() {
             Exercise exercise = stored(own("Goblet squat", TRAINER));
 

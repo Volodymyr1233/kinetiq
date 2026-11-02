@@ -1,5 +1,5 @@
 import { z } from 'zod'
-import { CATEGORIES, type Exercise } from './api/exercises'
+import { CATEGORIES, type Exercise } from '@/lib/exercise-library'
 
 export const MEASURES = [
   'REPS',

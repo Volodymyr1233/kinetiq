@@ -201,6 +201,50 @@ describe('ClientArea', () => {
     )
   })
 
+  describe('unread count on the Messages tab', () => {
+    const counting = (count: number): Reply =>
+      published((request) =>
+        new URL(request.url).pathname === '/api/v1/conversations/unread-count'
+          ? json({ count })
+          : new Response(null, { status: 204 }),
+      )
+
+    it('shows the count and announces it as part of the name', async () => {
+      renderAppAt('/app/today', SIGNED_IN.CLIENT, counting(2))
+
+      expect(
+        await screen.findByRole('link', { name: 'Messages, 2 unread' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('2')).toBeInTheDocument()
+    })
+
+    it('shows nothing at 0', async () => {
+      renderAppAt('/app/today', SIGNED_IN.CLIENT, counting(0))
+
+      expect(
+        await screen.findByRole('link', { name: 'Messages' }),
+      ).toBeInTheDocument()
+      expect(screen.queryByText('0')).not.toBeInTheDocument()
+    })
+
+    it('hides the count and keeps the page working when the request fails', async () => {
+      renderAppAt(
+        '/app/today',
+        SIGNED_IN.CLIENT,
+        published((request) =>
+          new URL(request.url).pathname === '/api/v1/conversations/unread-count'
+            ? problem(500, { status: 500, code: 'internal.error' })
+            : new Response(null, { status: 204 }),
+        ),
+      )
+
+      expect(
+        await screen.findByRole('link', { name: 'Messages' }),
+      ).toBeInTheDocument()
+      expect(screen.getByRole('heading', { name: 'Today' })).toBeInTheDocument()
+    })
+  })
+
   it('asks an unconfirmed client to confirm the email on a tab page', async () => {
     renderAppAt(
       '/app/plan',

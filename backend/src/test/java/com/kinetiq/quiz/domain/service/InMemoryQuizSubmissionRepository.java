@@ -4,16 +4,25 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.quiz.domain.exception.QuizAlreadySubmittedException;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.output.QuizSubmissionRepository;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Set;
 
 class InMemoryQuizSubmissionRepository implements QuizSubmissionRepository {
 
     final Map<AccountId, QuizSubmission> byClient = new LinkedHashMap<>();
 
+    final Set<AccountId> withPublishedPlan = new HashSet<>();
+
     @Override
     public boolean existsByClient(AccountId client) {
         return byClient.containsKey(client);
+    }
+
+    @Override
+    public boolean hasPublishedPlan(AccountId client) {
+        return withPublishedPlan.contains(client);
     }
 
     // honours the unique constraint on the client, as the database does

@@ -1,7 +1,7 @@
-import { screen, within } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
-import { problem, renderAppAt, SIGNED_IN } from '@/test/page'
+import { describe, expect, it, vi } from 'vitest'
+import { json, problem, renderAppAt, SIGNED_IN, type Reply } from '@/test/page'
 
 async function renderTrainerAt(path: string) {
   renderAppAt(path, SIGNED_IN.TRAINER)
@@ -9,6 +9,57 @@ async function renderTrainerAt(path: string) {
 }
 
 describe('TrainerArea', () => {
+  describe('unread count on the Messages item', () => {
+    const counting =
+      (count: number): Reply =>
+      (request) =>
+        new URL(request.url).pathname === '/api/v1/conversations/unread-count'
+          ? json({ count })
+          : new Response(null, { status: 204 })
+
+    it('shows the total and announces it as part of the name', async () => {
+      renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, counting(120))
+
+      expect(
+        await screen.findByRole('link', { name: 'Messages, 120 unread' }),
+      ).toBeInTheDocument()
+      expect(screen.getByText('99+')).toBeInTheDocument()
+    })
+
+    it('shows nothing at 0', async () => {
+      const nav = await renderTrainerAt('/trainer/clients')
+
+      expect(nav.getByRole('link', { name: 'Messages' })).toBeInTheDocument()
+    })
+
+    it('hides the count when the request fails', async () => {
+      renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, (request) =>
+        new URL(request.url).pathname === '/api/v1/conversations/unread-count'
+          ? problem(500, { status: 500, code: 'internal.error' })
+          : new Response(null, { status: 204 }),
+      )
+
+      expect(
+        await screen.findByRole('link', { name: 'Messages' }),
+      ).toBeInTheDocument()
+    })
+  })
+
+  it('keeps the sections behind a button on a narrow screen', async () => {
+    const user = userEvent.setup()
+    vi.stubGlobal('innerWidth', 375)
+    renderAppAt('/trainer/clients', SIGNED_IN.TRAINER)
+
+    await user.click(await screen.findByRole('button', { name: 'Open menu' }))
+
+    const menu = within(await screen.findByRole('dialog', { name: 'Menu' }))
+    expect(menu.getByRole('link', { name: 'Clients' })).toBeInTheDocument()
+    await user.click(menu.getByRole('link', { name: 'Settings' }))
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+  })
+
   it('links every section from the sidebar', async () => {
     const nav = await renderTrainerAt('/trainer/clients')
 

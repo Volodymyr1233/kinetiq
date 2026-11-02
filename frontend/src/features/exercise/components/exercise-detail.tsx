@@ -4,7 +4,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
-import type { Exercise } from '../api/exercises'
+import type { Exercise } from '@/lib/exercise-library'
 import { defaultLabel, plansLabel } from '../format'
 import { ExerciseDialog } from './exercise-dialog'
 

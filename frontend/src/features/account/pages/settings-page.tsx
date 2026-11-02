@@ -4,6 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { z } from 'zod'
+import { LeaveGuard } from '@/components/leave-guard'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -161,6 +162,7 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
       <h1 className="font-heading text-2xl font-semibold">
         {t('nav.settings')}
       </h1>
+      <LeaveGuard dirty={isDirty} body={t('leave.settingsBody')} />
       <form
         noValidate
         onSubmit={onSubmit}

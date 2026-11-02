@@ -81,5 +81,13 @@ class QuizSubmissionServiceTest {
 
             assertThat(service.status(CLIENT)).isEqualTo(QuizStatus.WAITING_FOR_PLAN);
         }
+
+        @Test
+        void shouldSayThePlanIsPublished_whenTheClientHasAPublishedPlan() {
+            service.submit(command(Goal.BUILD_MUSCLE));
+            submissions.withPublishedPlan.add(CLIENT);
+
+            assertThat(service.status(CLIENT)).isEqualTo(QuizStatus.PLAN_PUBLISHED);
+        }
     }
 }

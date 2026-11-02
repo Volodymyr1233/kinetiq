@@ -16,6 +16,13 @@ values ('00000000-0000-4000-8000-000000000001', 'Demo Trainer', 'demo.trainer@ex
        -- has submitted the quiz (R__demo_quiz.sql), while the first demo client can still answer it
        ('00000000-0000-4000-8000-000000000005', 'Demo Client Waiting', 'demo.client.waiting@example.com',
         '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0),
+       -- their plans are in R__demo_plans.sql: a draft, and a published plan past week 4
+       ('00000000-0000-4000-8000-000000000006', 'Demo Client Draft', 'demo.client.draft@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0),
+       ('00000000-0000-4000-8000-000000000007', 'Demo Client Published', 'demo.client.published@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
         'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
 on conflict do nothing;
 

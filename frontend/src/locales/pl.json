@@ -24,7 +24,9 @@
     "settings": "Ustawienia",
     "today": "Dzisiaj",
     "plan": "Plan",
-    "progress": "Postępy"
+    "progress": "Postępy",
+    "open": "Otwórz menu",
+    "menu": "Menu"
   },
   "areas": {
     "trainer": "Panel trenera",
@@ -42,6 +44,15 @@
     "action": "Przejdź na stronę główną"
   },
   "errors": {
+    "message": {
+      "empty": "Napisz coś przed wysłaniem.",
+      "too-long": "Wiadomość może mieć do 2000 znaków. Skróć ją i wyślij ponownie.",
+      "id-in-use": "Nie udało się wysłać tej wiadomości. Napisz ją ponownie.",
+      "not-found": "Tych wcześniejszych wiadomości już nie ma. Odśwież stronę."
+    },
+    "conversation": {
+      "not-found": "Ta rozmowa nie istnieje albo nie jest Twoja."
+    },
     "generic": "Coś poszło nie tak. Spróbuj ponownie.",
     "validation": {
       "failed": "Niektóre dane są nieprawidłowe. Sprawdź je i spróbuj ponownie."
@@ -75,6 +86,29 @@
       "name-taken": "Ćwiczenie o tej nazwie jest już w bibliotece.",
       "not-found": "Tego ćwiczenia nie można edytować.",
       "limit-reached": "Osiągnięto limit 200 własnych ćwiczeń."
+    },
+    "client": {
+      "not-found": "Ten klient nie istnieje albo nie jest Twoim klientem."
+    },
+    "plan": {
+      "not-found": "Nie ma jeszcze planu.",
+      "changed": "Ten plan zmieniono gdzie indziej. Odśwież stronę, aby go zobaczyć; najpierw skopiuj to, co chcesz zachować.",
+      "quiz-not-submitted": "{{name}}: najpierw potrzebne są odpowiedzi z quizu.",
+      "weeks-before-current": "Ten plan jest już w tygodniu {{currentWeek, number}}. Wpisz co najmniej {{currentWeek, number}} tyg.",
+      "exercise-not-in-library": "Wybieraj ćwiczenia ze swojej biblioteki.",
+      "duplicate-day": "Wybierz inny dzień dla każdej sesji.",
+      "too-few-sessions": "Dodaj co najmniej 2 sesje.",
+      "session-without-exercises": "Dodaj co najmniej 1 ćwiczenie do każdej sesji.",
+      "weeks-out-of-range": "Wpisz od 4 do 16 tygodni.",
+      "too-many-sessions": "Plan może mieć najwyżej 6 sesji.",
+      "session-name-invalid": "Wpisz nazwę sesji do 60 znaków.",
+      "too-many-exercises": "Sesja może mieć najwyżej 30 ćwiczeń.",
+      "sets-out-of-range": "Wpisz od 1 do 20 serii.",
+      "amount-out-of-range": "Wpisz od 1 do 3600.",
+      "load-out-of-range": "Zostaw obciążenie puste lub wpisz liczbę większą od 0.",
+      "rpe-out-of-range": "Wpisz RPE od 5 do 10, w pełnych krokach.",
+      "rest-out-of-range": "Wpisz od 0 do 600 sekund.",
+      "already-published": "Ten plan jest już opublikowany. Odśwież stronę, aby go zobaczyć."
     }
   },
   "account": {
@@ -527,7 +561,9 @@
     },
     "planStates": {
       "NO_QUIZ": "Quiz jeszcze nie wypełniony",
-      "PLAN_TO_REVIEW": "Plan do przejrzenia"
+      "PLAN_TO_REVIEW": "Plan do przejrzenia",
+      "DRAFT": "Szkic",
+      "PUBLISHED": "Opublikowany"
     },
     "page": {
       "back": "Wszyscy klienci",
@@ -612,6 +648,196 @@
       "cancel": "Anuluj",
       "confirm": "Unieważnij zaproszenie",
       "revoked": "Unieważniono zaproszenie"
+    }
+  },
+  "leave": {
+    "title": "Wyjść bez zapisywania?",
+    "planBody": "Niezapisane zmiany w tym planie przepadną.",
+    "settingsBody": "Niezapisane zmiany w ustawieniach przepadną.",
+    "stay": "Zostań",
+    "leave": "Wyjdź"
+  },
+  "plan": {
+    "loading": "Wczytywanie planu",
+    "retry": "Spróbuj ponownie",
+    "cancel": "Anuluj",
+    "build": "Zbuduj plan",
+    "save": "Zapisz plan",
+    "saving": "Zapisywanie",
+    "unsaved": "Niezapisane zmiany",
+    "nothingToSave": "Brak zmian do zapisania.",
+    "week": "Tydzień {{week, number}} z {{weeks, number}}",
+    "finished": "Zakończony po tygodniu {{weeks, number}}",
+    "empty": {
+      "noQuiz": "{{name}}: quiz jeszcze bez odpowiedzi. Plan zbudujesz, gdy będą gotowe.",
+      "noPlan": "Nie ma jeszcze planu."
+    },
+    "status": {
+      "DRAFT": "Szkic",
+      "PUBLISHED": "Opublikowany"
+    },
+    "toast": {
+      "saved": "Plan zapisany",
+      "published": "Plan opublikowany"
+    },
+    "fields": {
+      "goal": "Cel",
+      "weeks": "Długość",
+      "weeksUnit": "tyg."
+    },
+    "units": {
+      "KG": "kg",
+      "LB": "lb"
+    },
+    "sessions": {
+      "label": "Sesje",
+      "add": "Dodaj sesję",
+      "empty": "Nie ma jeszcze sesji. Dodaj pierwszą.",
+      "limit": "Plan może mieć najwyżej {{count, number}} sesji.",
+      "hasProblem": "W tej sesji jest coś do poprawienia"
+    },
+    "session": {
+      "unnamed": "Nowa sesja",
+      "name": "Nazwa sesji",
+      "namePlaceholder": "np. Dół ciała",
+      "day": "Dzień",
+      "delete": "Usuń sesję",
+      "deleteDialog": {
+        "title": "Usunąć sesję {{session}}?",
+        "body_one": "Znikną też jej ćwiczenia ({{count, number}}).",
+        "body_few": "Znikną też jej ćwiczenia ({{count, number}}).",
+        "body_many": "Znikną też jej ćwiczenia ({{count, number}}).",
+        "body_other": "Znikną też jej ćwiczenia ({{count, number}})."
+      },
+      "withLetter": "{{letter}} · {{name}}"
+    },
+    "summary": {
+      "exercises": "Ćwiczenia",
+      "sets": "Serie",
+      "time": "Szacowany czas",
+      "minutes": "{{minutes, number}} min"
+    },
+    "entries": {
+      "exercise": "Ćwiczenie",
+      "sets": "Serie",
+      "amount": "Powtórzenia lub czas",
+      "load": "Obciążenie, {{unit}}",
+      "rpe": "RPE",
+      "rest": "Przerwa, s",
+      "measures": {
+        "REPS": "powt.",
+        "SECONDS": "s"
+      },
+      "empty": "W tej sesji nie ma jeszcze ćwiczeń.",
+      "add": "Dodaj ćwiczenie",
+      "fromLibrary": "Z biblioteki ćwiczeń.",
+      "limit": "Sesja może mieć najwyżej {{count, number}} ćwiczeń.",
+      "order": "Kolejność",
+      "actions": "Działania",
+      "move": "Przenieś: {{exercise}}, wiersz {{row, number}}",
+      "moveUp": "Przenieś wyżej",
+      "moveDown": "Przenieś niżej",
+      "moved": "{{exercise}}: teraz wiersz {{row, number}}.",
+      "remove": "Usuń: {{exercise}}, wiersz {{row, number}}",
+      "removeDialog": {
+        "title": "Usunąć „{{exercise}}” z sesji {{session}}?",
+        "body": "Zalogowane serie zostają w historii.",
+        "confirm": "Usuń ćwiczenie"
+      },
+      "fields": {
+        "sets": "Serie: {{exercise}}, wiersz {{row, number}}",
+        "amount": {
+          "REPS": "Powtórzenia: {{exercise}}, wiersz {{row, number}}",
+          "SECONDS": "Sekundy: {{exercise}}, wiersz {{row, number}}"
+        },
+        "load": "Obciążenie w {{unit}}: {{exercise}}, wiersz {{row, number}}",
+        "rpe": "Docelowe RPE: {{exercise}}, wiersz {{row, number}}",
+        "rest": "Przerwa w sekundach: {{exercise}}, wiersz {{row, number}}"
+      }
+    },
+    "picker": {
+      "title": "Dodaj ćwiczenie",
+      "description": "Wybierz ćwiczenia ze swojej biblioteki do sesji {{session}}. Okno zostaje otwarte na kolejne.",
+      "search": "Szukaj ćwiczeń",
+      "addOne": "Dodaj: {{exercise}}, {{category}}, {{amounts}}",
+      "done": "Gotowe",
+      "added_one": "Dodano do sesji {{session}}: {{exercise}}.",
+      "added_few": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
+      "added_many": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
+      "added_other": "Dodano do sesji {{session}}: {{exercise}}, {{count, number}} razy.",
+      "empty": {
+        "title": "Żadne ćwiczenie nie pasuje",
+        "body": "Spróbuj innej nazwy lub kategorii."
+      }
+    },
+    "publish": "Opublikuj plan",
+    "publishing": "Publikowanie",
+    "publishedNote": "Zapis obowiązuje od dziś. Zalogowane serie się nie zmieniają.",
+    "publishDialog": {
+      "title": "Opublikować plan? Klient: {{name}}",
+      "body": "Klient zobaczy plan po publikacji, a tydzień 1 to bieżący tydzień w jego strefie czasowej. Możesz go później edytować, ale nie cofniesz go do szkicu."
+    },
+    "problems": {
+      "saveTitle": "Popraw to, aby zapisać plan.",
+      "publishTitle": "Popraw to, aby opublikować plan.",
+      "inSession": "{{session}}: {{problem}}",
+      "inEntry": "{{session}}, {{exercise}}: {{problem}}",
+      "emptySession": "Dodaj co najmniej 1 ćwiczenie do sesji {{session}}.",
+      "load": "Zostaw obciążenie puste lub wpisz liczbę większą od 0, do {{max, number}} {{unit}}."
+    }
+  },
+  "messaging": {
+    "unreadSeparator": "Nieprzeczytane wiadomości",
+    "trainer": {
+      "listLabel": "Rozmowy",
+      "searchLabel": "Szukaj klientów",
+      "searchPlaceholder": "Szukaj klientów",
+      "noMatch": "Żaden klient nie pasuje do tej nazwy.",
+      "noMessages": "Brak wiadomości",
+      "you": "Ty: {{text}}",
+      "choose": "Wybierz rozmowę",
+      "noClients": {
+        "title": "Nie ma jeszcze rozmów",
+        "body": "Zaproś klienta, aby zacząć rozmowę.",
+        "action": "Zaproś klienta"
+      },
+      "openProfile": "Otwórz profil",
+      "shortcutHint": "Enter wysyła. Shift+Enter dodaje wiersz.",
+      "notFound": {
+        "title": "Nie znaleziono rozmowy",
+        "body": "Ten klient nie istnieje albo nie jest Twoim klientem."
+      },
+      "backToList": "Wszystkie rozmowy",
+      "conversationWith": "Rozmowa: {{name}}",
+      "loading": "Wczytywanie rozmów"
+    },
+    "yourTrainer": "Twój trener",
+    "empty": {
+      "title": "Brak wiadomości",
+      "body": "{{name}} czeka na pierwszą wiadomość."
+    },
+    "composerLabel": "Wiadomość do: {{name}}",
+    "composerPlaceholder": "Napisz wiadomość",
+    "send": "Wyślij wiadomość",
+    "sending": "Wysyłanie…",
+    "sent": "Wysłano · {{time}}",
+    "from": "{{name}} · {{time}}",
+    "notSent": "Nie wysłano",
+    "retry": "Ponów",
+    "speaker": "{{name}}:",
+    "speakerMe": "Ty:",
+    "logLabel": "Wiadomości: {{name}}",
+    "loadEarlier": "Wczytaj wcześniejsze wiadomości",
+    "loading": "Wczytywanie wiadomości",
+    "unread_one": ", {{count, number}} nieprzeczytana",
+    "unread_few": ", {{count, number}} nieprzeczytane",
+    "unread_many": ", {{count, number}} nieprzeczytanych",
+    "unread_other": ", {{count, number}} nieprzeczytanej",
+    "today": "Dzisiaj",
+    "yesterday": "Wczoraj",
+    "errors": {
+      "retry": "Spróbuj ponownie",
+      "loadEarlier": "Nie udało się wczytać wcześniejszych wiadomości. Spróbuj ponownie."
     }
   }
 }

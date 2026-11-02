@@ -42,6 +42,10 @@ server:
 kinetiq:
   # where links in emails point to
   app-url: ${KINETIQ_APP_URL:http://localhost:5173}
+  mail:
+    # an empty key keeps the logging adapter; both are set only where real mail must go out
+    api-key: ${MAIL_API_KEY:}
+    from: ${MAIL_FROM:}
 
 management:
   endpoints:

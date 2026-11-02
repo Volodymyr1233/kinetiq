@@ -7,6 +7,8 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.quiz.domain.model.Goal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,6 +65,18 @@ class JdbcClientDirectoryIT {
                 UUID.randomUUID(),
                 client.value(),
                 goal.name());
+    }
+
+    private void insertPlan(AccountId client, Goal goal, LocalDate firstWeek) {
+        jdbc.update(
+                """
+                insert into plans (id, client_id, goal, weeks, first_week, created_at, updated_at, version)
+                values (?, ?, ?, 12, ?, now(), now(), 0)
+                """,
+                UUID.randomUUID(),
+                client.value(),
+                goal.name(),
+                firstWeek);
     }
 
     @Test
@@ -142,6 +156,38 @@ class JdbcClientDirectoryIT {
 
         assertThat(summary.getGoal()).contains(Goal.LOSE_FAT);
         assertThat(summary.getPlanState()).isEqualTo(PlanState.PLAN_TO_REVIEW);
+    }
+
+    @Test
+    void shouldShowDraftAndThePlansGoal_whenClientHasADraft() {
+        AccountId trainer = insertTrainer();
+        AccountId client = insertClient("Ola", trainer);
+        insertQuiz(client, Goal.LOSE_FAT);
+        insertPlan(client, Goal.GET_STRONGER, null);
+
+        ClientSummary summary = directory.findClient(trainer, client).orElseThrow();
+
+        assertThat(summary.getGoal()).contains(Goal.GET_STRONGER);
+        assertThat(summary.getPlanState()).isEqualTo(PlanState.DRAFT);
+    }
+
+    @Test
+    void shouldShowPublished_whenThePlanHasAFirstWeek() {
+        AccountId trainer = insertTrainer();
+        AccountId client = insertClient("Ola", trainer);
+        insertQuiz(client, Goal.LOSE_FAT);
+        insertPlan(client, Goal.LOSE_FAT, LocalDate.parse("2026-10-26"));
+
+        assertThat(directory.findClientsOf(trainer).getFirst().getPlanState()).isEqualTo(PlanState.PUBLISHED);
+    }
+
+    @Test
+    void shouldReadTheClientsTimeZone() {
+        AccountId trainer = insertTrainer();
+        AccountId client = insertClient("Ola", trainer);
+
+        assertThat(directory.findClient(trainer, client).orElseThrow().getTimeZone())
+                .isEqualTo(ZoneId.of("Europe/Warsaw"));
     }
 
     @Test

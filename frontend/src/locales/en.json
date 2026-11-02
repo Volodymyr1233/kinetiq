@@ -24,7 +24,9 @@
     "settings": "Settings",
     "today": "Today",
     "plan": "Plan",
-    "progress": "Progress"
+    "progress": "Progress",
+    "open": "Open menu",
+    "menu": "Menu"
   },
   "areas": {
     "trainer": "Trainer area",
@@ -42,6 +44,15 @@
     "action": "Go to the start page"
   },
   "errors": {
+    "message": {
+      "empty": "Write something before sending.",
+      "too-long": "A message can have up to 2000 characters. Shorten it and send again.",
+      "id-in-use": "This message could not be sent. Write it again.",
+      "not-found": "These earlier messages are gone. Reload the page."
+    },
+    "conversation": {
+      "not-found": "This conversation does not exist, or is not yours."
+    },
     "generic": "Something went wrong. Try again.",
     "validation": {
       "failed": "Some details are not valid. Check them and try again."
@@ -75,6 +86,29 @@
       "name-taken": "An exercise with this name is already in the library.",
       "not-found": "This exercise can't be edited.",
       "limit-reached": "You've reached the limit of 200 own exercises."
+    },
+    "client": {
+      "not-found": "This client does not exist, or is not one of your clients."
+    },
+    "plan": {
+      "not-found": "No plan yet.",
+      "changed": "This plan was changed somewhere else. Reload the page to see it; copy anything you want to keep first.",
+      "quiz-not-submitted": "{{name}} has to answer the quiz before you build a plan.",
+      "weeks-before-current": "This plan is already in week {{currentWeek, number}}. Enter {{currentWeek, number}} or more weeks.",
+      "exercise-not-in-library": "Choose exercises from your exercise library.",
+      "duplicate-day": "Choose a different day for each session.",
+      "too-few-sessions": "Add at least 2 sessions.",
+      "session-without-exercises": "Add at least 1 exercise to every session.",
+      "weeks-out-of-range": "Enter 4 to 16 weeks.",
+      "too-many-sessions": "Keep the plan to 6 sessions.",
+      "session-name-invalid": "Enter a session name of up to 60 characters.",
+      "too-many-exercises": "Keep each session to 30 exercises.",
+      "sets-out-of-range": "Enter 1 to 20 sets.",
+      "amount-out-of-range": "Enter 1 to 3600.",
+      "load-out-of-range": "Leave the load empty or enter a number above 0.",
+      "rpe-out-of-range": "Enter an RPE from 5 to 10, in whole steps.",
+      "rest-out-of-range": "Enter 0 to 600 seconds.",
+      "already-published": "This plan is already published. Reload the page to see it."
     }
   },
   "account": {
@@ -512,7 +546,9 @@
     },
     "planStates": {
       "NO_QUIZ": "No quiz yet",
-      "PLAN_TO_REVIEW": "Plan to review"
+      "PLAN_TO_REVIEW": "Plan to review",
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published"
     },
     "page": {
       "back": "All clients",
@@ -595,6 +631,190 @@
       "cancel": "Cancel",
       "confirm": "Revoke invite",
       "revoked": "Invite revoked"
+    }
+  },
+  "leave": {
+    "title": "Leave without saving?",
+    "planBody": "Your unsaved changes to this plan will be lost.",
+    "settingsBody": "Your unsaved changes to the settings will be lost.",
+    "stay": "Stay",
+    "leave": "Leave"
+  },
+  "plan": {
+    "loading": "Loading plan",
+    "retry": "Try again",
+    "cancel": "Cancel",
+    "build": "Build plan",
+    "save": "Save plan",
+    "saving": "Saving",
+    "unsaved": "Unsaved changes",
+    "nothingToSave": "No changes to save.",
+    "week": "Week {{week, number}} of {{weeks, number}}",
+    "finished": "Finished after week {{weeks, number}}",
+    "empty": {
+      "noQuiz": "{{name}} hasn't answered the quiz yet. You can build a plan once they have.",
+      "noPlan": "No plan yet."
+    },
+    "status": {
+      "DRAFT": "Draft",
+      "PUBLISHED": "Published"
+    },
+    "toast": {
+      "saved": "Plan saved",
+      "published": "Plan published"
+    },
+    "fields": {
+      "goal": "Goal",
+      "weeks": "Length",
+      "weeksUnit": "weeks"
+    },
+    "units": {
+      "KG": "kg",
+      "LB": "lb"
+    },
+    "sessions": {
+      "label": "Sessions",
+      "add": "Add session",
+      "empty": "No sessions yet. Add the first one.",
+      "limit": "A plan holds up to {{count, number}} sessions.",
+      "hasProblem": "This session has something to fix"
+    },
+    "session": {
+      "unnamed": "New session",
+      "name": "Session name",
+      "namePlaceholder": "e.g. Lower body",
+      "day": "Day",
+      "delete": "Delete session",
+      "deleteDialog": {
+        "title": "Delete {{session}}?",
+        "body_one": "Its {{count, number}} exercise goes with it.",
+        "body_other": "Its {{count, number}} exercises go with it."
+      },
+      "withLetter": "{{letter}} · {{name}}"
+    },
+    "summary": {
+      "exercises": "Exercises",
+      "sets": "Sets",
+      "time": "Estimated time",
+      "minutes": "{{minutes, number}} min"
+    },
+    "entries": {
+      "exercise": "Exercise",
+      "sets": "Sets",
+      "amount": "Reps or time",
+      "load": "Load, {{unit}}",
+      "rpe": "RPE",
+      "rest": "Rest, s",
+      "measures": {
+        "REPS": "reps",
+        "SECONDS": "s"
+      },
+      "empty": "No exercises in this session yet.",
+      "add": "Add exercise",
+      "fromLibrary": "From the exercise library.",
+      "limit": "A session holds up to {{count, number}} exercises.",
+      "order": "Order",
+      "actions": "Actions",
+      "move": "Move {{exercise}}, row {{row, number}}",
+      "moveUp": "Move up",
+      "moveDown": "Move down",
+      "moved": "{{exercise}} moved to row {{row, number}}.",
+      "remove": "Delete {{exercise}}, row {{row, number}}",
+      "removeDialog": {
+        "title": "Delete \"{{exercise}}\" from {{session}}?",
+        "body": "Logged sets for it stay in the history.",
+        "confirm": "Delete exercise"
+      },
+      "fields": {
+        "sets": "Sets for {{exercise}}, row {{row, number}}",
+        "amount": {
+          "REPS": "Repetitions for {{exercise}}, row {{row, number}}",
+          "SECONDS": "Seconds for {{exercise}}, row {{row, number}}"
+        },
+        "load": "Load in {{unit}} for {{exercise}}, row {{row, number}}",
+        "rpe": "Target RPE for {{exercise}}, row {{row, number}}",
+        "rest": "Rest in seconds for {{exercise}}, row {{row, number}}"
+      }
+    },
+    "picker": {
+      "title": "Add exercise",
+      "description": "Pick from your exercise library for {{session}}. It stays open for the next one.",
+      "search": "Search exercises",
+      "addOne": "Add {{exercise}}, {{category}}, {{amounts}}",
+      "done": "Done",
+      "added_one": "{{exercise}} added to {{session}}.",
+      "added_other": "{{exercise}} added to {{session}} {{count, number}} times.",
+      "empty": {
+        "title": "No exercises match",
+        "body": "Try another name or category."
+      }
+    },
+    "publish": "Publish plan",
+    "publishing": "Publishing",
+    "publishedNote": "Saving applies the change from today. Logged sets don't change.",
+    "publishDialog": {
+      "title": "Publish this plan for {{name}}?",
+      "body": "They can see it once it's published, and week 1 is the current week in their time zone. You can edit it later, but you can't take it back to a draft."
+    },
+    "problems": {
+      "saveTitle": "Fix these to save the plan.",
+      "publishTitle": "Fix these to publish the plan.",
+      "inSession": "{{session}}: {{problem}}",
+      "inEntry": "{{session}}, {{exercise}}: {{problem}}",
+      "emptySession": "Add at least 1 exercise to {{session}}.",
+      "load": "Leave the load empty or enter a number above 0, up to {{max, number}} {{unit}}."
+    }
+  },
+  "messaging": {
+    "unreadSeparator": "Unread messages",
+    "trainer": {
+      "listLabel": "Conversations",
+      "searchLabel": "Search clients",
+      "searchPlaceholder": "Search clients",
+      "noMatch": "No client matches that name.",
+      "noMessages": "No messages yet",
+      "you": "You: {{text}}",
+      "choose": "Choose a conversation",
+      "noClients": {
+        "title": "No conversations yet",
+        "body": "Invite a client to start one.",
+        "action": "Invite a client"
+      },
+      "openProfile": "Open profile",
+      "shortcutHint": "Enter sends. Shift+Enter adds a line.",
+      "notFound": {
+        "title": "Conversation not found",
+        "body": "This client does not exist, or is not one of your clients."
+      },
+      "backToList": "All conversations",
+      "conversationWith": "Conversation with {{name}}",
+      "loading": "Loading conversations"
+    },
+    "yourTrainer": "Your trainer",
+    "empty": {
+      "title": "No messages yet",
+      "body": "Say hello to {{name}}."
+    },
+    "composerLabel": "Message {{name}}",
+    "composerPlaceholder": "Write a message",
+    "send": "Send message",
+    "sending": "Sending…",
+    "sent": "Sent · {{time}}",
+    "from": "{{name}} · {{time}}",
+    "notSent": "Not sent",
+    "retry": "Retry",
+    "speaker": "{{name}}:",
+    "speakerMe": "You:",
+    "logLabel": "Messages with {{name}}",
+    "loadEarlier": "Load earlier messages",
+    "loading": "Loading messages",
+    "unread_one": ", {{count, number}} unread",
+    "unread_other": ", {{count, number}} unread",
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "errors": {
+      "retry": "Try again",
+      "loadEarlier": "Earlier messages did not load. Try again."
     }
   }
 }

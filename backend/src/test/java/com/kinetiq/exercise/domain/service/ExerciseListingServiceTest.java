@@ -1,6 +1,7 @@
 package com.kinetiq.exercise.domain.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.input.ExerciseListing;
@@ -12,6 +13,7 @@ import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
@@ -120,8 +122,25 @@ class ExerciseListingServiceTest {
     }
 
     @Test
-    void shouldReportNoPlans_whenPlansDoNotExistYet() {
-        assertThat(list(null, "").entries()).extracting(ExerciseListing.Entry::plansUsing).containsOnly(0);
+    void shouldReportTheTrainersOwnPlans_andZeroForAnExerciseInNone() {
+        InMemoryExerciseRepository repository = new InMemoryExerciseRepository(SQUAT, PLANK);
+        repository.plansUsing.put(TRAINER, Map.of(SQUAT.getId(), 2));
+
+        ExerciseListing listing = new ExerciseListingService(repository)
+                .list(new ListExercisesQuery(TRAINER, null, "", Locale.ENGLISH));
+
+        assertThat(listing.entries())
+                .extracting(entry -> entry.exercise().getId(), ExerciseListing.Entry::plansUsing)
+                .containsExactly(tuple(SQUAT.getId(), 2), tuple(PLANK.getId(), 0));
+    }
+
+    @Test
+    void shouldGiveTheWholeLibrary_withoutOthersOwnExercises() {
+        Exercise mine = own("01", "Goblet squat", TRAINER);
+        Exercise theirs = own("02", "Sled push", AccountId.random());
+
+        assertThat(new ExerciseListingService(new InMemoryExerciseRepository(SQUAT, mine, theirs)).library(TRAINER))
+                .containsExactlyInAnyOrder(SQUAT, mine);
     }
 
     private static Exercise own(String id, String name, AccountId owner) {
