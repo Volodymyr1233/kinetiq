@@ -132,7 +132,15 @@ export const createRoutes = (): RouteObject[] => [
         ],
       },
       trainerPlaceholder('approvals'),
-      trainerPlaceholder('messages'),
+      {
+        path: 'messages/:clientId?',
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/messaging/pages/trainer-messages-page'))
+              .TrainerMessagesPage,
+        },
+      },
       {
         path: 'exercises',
         HydrateFallback: BlankWhileLoading,
