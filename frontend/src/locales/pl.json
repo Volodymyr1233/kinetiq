@@ -16,6 +16,9 @@
     "en": "English",
     "pl": "Polski"
   },
+  "dialog": {
+    "close": "Zamknij"
+  },
   "nav": {
     "clients": "Klienci",
     "approvals": "Akceptacje",
