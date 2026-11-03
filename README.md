@@ -27,6 +27,8 @@ The `local` profile adds demo data. Every account uses the password `Kinetiq-dem
 | `demo.unconfirmed@example.com` | Trainer, email not confirmed |
 | `demo.client@example.com` | Client, email confirmed, quiz not submitted |
 | `demo.client.waiting@example.com` | Client, email confirmed, quiz submitted (waiting for a plan) |
+| `demo.client.draft@example.com` | Client, email confirmed, quiz submitted, plan in draft (waiting for a plan) |
+| `demo.client.published@example.com` | Client, email confirmed, quiz submitted, plan published |
 | `demo.trainer2@example.com` | Trainer, email confirmed, second trainer for isolation checks |
 
 ```bash

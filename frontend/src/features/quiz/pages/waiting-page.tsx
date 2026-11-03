@@ -2,18 +2,22 @@ import { useEffect, useRef, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { QuizStatusCheck } from '../components/quiz-status-check'
 
-/** The waiting state after submitting; `settings` is shown in a header above the heading, given by the app. */
-export function WaitingPage({ settings }: { settings?: ReactNode }) {
+type Slots = { settings?: ReactNode; message?: ReactNode }
+
+/**
+ * The waiting state after submitting. The app gives `settings`, shown in a header above the heading, and `message`,
+ * shown below the text.
+ */
+export function WaitingPage({ settings, message }: Slots) {
   return (
     <QuizStatusCheck status="WAITING_FOR_PLAN">
-      <Reviewing settings={settings} />
+      <Reviewing settings={settings} message={message} />
     </QuizStatusCheck>
   )
 }
 
-// the board's trainer avatar, draft summary and message button wait for the trainer's name, plans and messaging
-// (spec 54, Clarifications)
-function Reviewing({ settings }: { settings?: ReactNode }) {
+// the board's trainer avatar and draft summary are not shown yet (spec 54, Clarifications)
+function Reviewing({ settings, message }: Slots) {
   const { t } = useTranslation()
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -36,6 +40,7 @@ function Reviewing({ settings }: { settings?: ReactNode }) {
         <p className="text-muted-foreground">
           {t('quiz.waiting.reviewing.text')}
         </p>
+        {message}
       </main>
     </div>
   )

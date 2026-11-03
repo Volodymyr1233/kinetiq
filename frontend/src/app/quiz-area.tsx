@@ -2,6 +2,7 @@ import { QuizPage } from '@/features/quiz/pages/quiz-page'
 import { ReviewPage } from '@/features/quiz/pages/review-page'
 import { WaitingPage } from '@/features/quiz/pages/waiting-page'
 import { useWeightUnit } from '@/lib/weight'
+import { MessageTrainerSheet } from './message-trainer-sheet'
 import { SettingsSheet } from './settings-sheet'
 
 // the quiz has no client header, so each quiz page shows the Settings button in its own (spec 50, FR-031); a unit
@@ -19,5 +20,10 @@ export function QuizReviewRoute() {
 }
 
 export function QuizWaitingRoute() {
-  return <WaitingPage settings={<SettingsSheet />} />
+  return (
+    <WaitingPage
+      settings={<SettingsSheet />}
+      message={<MessageTrainerSheet />}
+    />
+  )
 }
