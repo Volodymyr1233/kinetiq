@@ -668,6 +668,12 @@
       "built": "Zbudowano automatycznie z odpowiedzi w quizie. Sprawdź ćwiczenia i obciążenia. {{name}}: plan będzie widoczny dopiero po publikacji.",
       "failed": "Nie udało się zbudować tego planu automatycznie. Możesz zbudować go tutaj."
     },
+    "today": {
+      "restDay": "Dzień odpoczynku",
+      "restText": "Na dziś nic nie zaplanowano.",
+      "start": "Rozpocznij sesję",
+      "startSoon": "Rozpoczynanie sesji pojawi się razem z logowaniem."
+    },
     "client": {
       "none": "Nie masz jeszcze planu.",
       "previous": "Poprzedni tydzień",
