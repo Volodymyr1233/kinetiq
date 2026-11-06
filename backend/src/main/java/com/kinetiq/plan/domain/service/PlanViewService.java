@@ -9,6 +9,7 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanWeekOutOfRangeException;
 import com.kinetiq.plan.domain.input.OwnPlanView;
+import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.output.PlanRepository;
@@ -31,9 +32,7 @@ public class PlanViewService implements ViewOwnPlanUseCase {
     public OwnPlanView view(AccountId client, Integer week) {
         Plan plan = publishedPlan(client);
         Account account = accounts.find(client);
-        // weeks are Monday to Sunday in the client's time zone
-        LocalDate today = clock.instant().atZone(account.getTimeZone()).toLocalDate();
-        int currentWeek = plan.currentWeek(today).orElseThrow();
+        int currentWeek = plan.currentWeek(localDate(account)).orElseThrow();
         boolean finished = currentWeek > plan.getWeeks();
         return new OwnPlanView(
                 plan,
@@ -45,9 +44,30 @@ public class PlanViewService implements ViewOwnPlanUseCase {
     }
 
     @Override
+    public TodayView today(AccountId client) {
+        Plan plan = publishedPlan(client);
+        Account account = accounts.find(client);
+        LocalDate today = localDate(account);
+        if (plan.currentWeek(today).orElseThrow() > plan.getWeeks()) {
+            return new TodayView(today, TodayView.State.FINISHED, null, Map.of());
+        }
+        // a plan has at most one session a day
+        return plan.getSessions().stream()
+                .filter(session -> session.day() == today.getDayOfWeek())
+                .findFirst()
+                .map(session -> new TodayView(today, TodayView.State.SESSION, session, library(account)))
+                .orElseGet(() -> new TodayView(today, TodayView.State.REST, null, Map.of()));
+    }
+
+    @Override
     public void acknowledge(AccountId client) {
         publishedPlan(client);
         plans.markSeenByClient(client, clock.instant());
+    }
+
+    // weeks are Monday to Sunday in the client's time zone
+    private LocalDate localDate(Account account) {
+        return clock.instant().atZone(account.getTimeZone()).toLocalDate();
     }
 
     // a draft answers like no plan, before anything of it is read
