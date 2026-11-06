@@ -58,6 +58,38 @@ cd frontend && npm run check
 
 Open the repository root, not `backend/`. Then open `backend/build.gradle.kts` and choose **Load Gradle Project**. Set the project SDK and the Gradle JVM to JDK 25. In the run configuration of `KinetiqBackendApplication`, set **Active profiles** to `local`, the working directory to the repository root, and clear **Enable launch optimization** (its C1-only JIT makes sign-up take several seconds).
 
+## Deploy
+
+Production runs as one Docker image on [Railway](https://railway.com): the backend serves the built SPA, so `/` and `/api` share one origin ([ADR 0001](docs/adr/0001-spa-served-by-backend.md)). The `Dockerfile` in the repository root builds both sides, and Railway needs no build or start command.
+
+1. Create a Railway project with **Deploy from GitHub repo** and pick this repository. Railway finds the `Dockerfile`. Under **Settings > Source**, set the branch to `master`.
+2. In the same project, add a **PostgreSQL** database and keep its default name, `Postgres`. The references in the next step use that name. Flyway creates the schema on the first start.
+3. Open the app service and add the variables below under **Variables > Raw Editor**.
+
+   ```
+   PORT=8080
+   SPRING_DATASOURCE_URL=jdbc:postgresql://${{Postgres.PGHOST}}:${{Postgres.PGPORT}}/${{Postgres.PGDATABASE}}
+   SPRING_DATASOURCE_USERNAME=${{Postgres.PGUSER}}
+   SPRING_DATASOURCE_PASSWORD=${{Postgres.PGPASSWORD}}
+   SERVER_FORWARD_HEADERS_STRATEGY=framework
+   ```
+
+   `PORT` sends Railway's traffic to the port Spring listens on. Railway's own `DATABASE_URL` is not a JDBC URL, hence the three `SPRING_DATASOURCE_*` references. Railway ends TLS before the request reaches the app; without `SERVER_FORWARD_HEADERS_STRATEGY` the app takes the request for plain HTTP and sends the `XSRF-TOKEN` cookie without the `Secure` flag.
+
+   Add the application's own variables from [`.env.example`](.env.example) too, each with its comment. Set `KINETIQ_APP_URL` after step 4, and `MAIL_FROM` to an address on a domain you verified in Resend: Resend delivers from its test address only to the account owner. Never set the `local` profile; it turns on demo accounts and non-Secure cookies.
+4. Under **Settings > Networking**, choose **Generate Domain** with port `8080`. Put the resulting `https://` address into `KINETIQ_APP_URL` so links in emails point to it, then redeploy.
+5. Under **Settings > Deploy**, set the healthcheck path to `/actuator/health`.
+
+Check the result, with `URL` set to your address:
+
+```bash
+curl -s $URL/actuator/health
+curl -si $URL/api/v1/csrf | grep -i set-cookie
+curl -sI $URL/swagger-ui.html | head -1
+```
+
+The first returns `{"status":"UP"}`. The second shows `XSRF-TOKEN` with `Secure`; after signing in, `JSESSIONID` has it too. The third returns `404`, because the API documentation is not in the production jar. Then sign up in the browser and check that the confirmation email arrives and its link opens on your address.
+
 ## Where things are written down
 
 | File | What |
