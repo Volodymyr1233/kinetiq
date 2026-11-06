@@ -10,6 +10,12 @@ public interface ViewOwnPlanUseCase {
      */
     OwnPlanView view(AccountId client, Integer week);
 
+    /**
+     * What the client trains today in their time zone: the session on this weekday, a rest day, or the end of the plan.
+     * A draft and a missing plan are both {@code PlanNotFoundException}.
+     */
+    TodayView today(AccountId client);
+
     /** Marks the client's published plan as seen; repeating it changes nothing. */
     void acknowledge(AccountId client);
 }

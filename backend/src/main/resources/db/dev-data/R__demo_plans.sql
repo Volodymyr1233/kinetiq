@@ -61,3 +61,34 @@ from (values ('00000000-0000-4000-9400-000000000001', 0, '00000000-0000-4000-910
 ) as entry (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
 join plan_sessions session on session.id = entry.session_id::uuid
 on conflict do nothing;
+
+-- Demo Client Daily has opened a plan with a session on Monday to Saturday, in week 3 of 8
+insert into plans (id, client_id, goal, weeks, first_week, client_seen_at, automatic_draft, created_at, updated_at,
+                   version)
+values ('00000000-0000-4000-9300-000000000007', '00000000-0000-4000-8000-000000000012', 'GET_STRONGER', 8,
+        (date_trunc('week', current_date) - interval '2 weeks')::date, now(), null, now(), now(), 0)
+on conflict do nothing;
+
+insert into plan_sessions (id, plan_id, name, day_of_week)
+values
+       ('00000000-0000-4000-9400-000000000011', '00000000-0000-4000-9300-000000000007', 'Squat day', 'MONDAY'),
+       ('00000000-0000-4000-9400-000000000012', '00000000-0000-4000-9300-000000000007', 'Press day', 'TUESDAY'),
+       ('00000000-0000-4000-9400-000000000013', '00000000-0000-4000-9300-000000000007', 'Pull day', 'WEDNESDAY'),
+       ('00000000-0000-4000-9400-000000000014', '00000000-0000-4000-9300-000000000007', 'Hinge day', 'THURSDAY'),
+       ('00000000-0000-4000-9400-000000000015', '00000000-0000-4000-9300-000000000007', 'Push day', 'FRIDAY'),
+       ('00000000-0000-4000-9400-000000000016', '00000000-0000-4000-9300-000000000007', 'Full body', 'SATURDAY')
+on conflict do nothing;
+
+insert into plan_session_entries (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
+select entry.session_id::uuid, entry.position, entry.exercise_id::uuid, entry.sets, entry.amount,
+       entry.load_kg::numeric, entry.rpe, entry.rest_seconds
+from (values
+       ('00000000-0000-4000-9400-000000000011', 0, '00000000-0000-4000-9100-000000000011', 3, 8, 40.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000012', 0, '00000000-0000-4000-9100-000000000001', 3, 8, 40.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000013', 0, '00000000-0000-4000-9100-000000000006', 3, 8, 40.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000014', 0, '00000000-0000-4000-9100-000000000012', 3, 8, 40.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000015', 0, '00000000-0000-4000-9100-000000000017', 3, 8, 40.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000016', 0, '00000000-0000-4000-9100-000000000026', 3, 45, null, 7, 90)
+) as entry (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
+join plan_sessions session on session.id = entry.session_id::uuid
+on conflict do nothing;
