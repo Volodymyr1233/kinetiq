@@ -115,6 +115,39 @@ class QuizSubmissionRepositoryImplIT {
     }
 
     @Test
+    void shouldReadEveryAnswerBack_whenFound() {
+        QuizSubmission submission = submission(insertClient(), "Left knee");
+        repository.save(submission);
+
+        QuizSubmission found = repository.findByClient(submission.getClient()).orElseThrow();
+
+        assertThat(found.getId()).isEqualTo(submission.getId());
+        assertThat(found.getGoal()).isEqualTo(Goal.BUILD_MUSCLE);
+        assertThat(found.getExperience()).isEqualTo(Experience.YEARS_1_TO_2);
+        assertThat(found.getLevel()).isEqualTo(Level.INTERMEDIATE);
+        assertThat(found.getAge()).isEqualTo(29);
+        assertThat(found.getHeightCm()).isEqualTo(168);
+        assertThat(found.getWeightKg()).isEqualTo(new BigDecimal("62.5"));
+        assertThat(found.getLikes()).containsExactlyInAnyOrder(Like.WEIGHTS, Like.YOGA_PILATES);
+        assertThat(found.getDaysPerWeek()).isEqualTo(3);
+        assertThat(found.getNotes()).contains("Left knee");
+        assertThat(found.getSubmittedAt()).isEqualTo(SUBMITTED_AT);
+    }
+
+    @Test
+    void shouldKeepNotesEmpty_whenReadBackWithoutNotes() {
+        QuizSubmission submission = submission(insertClient(), null);
+        repository.save(submission);
+
+        assertThat(repository.findByClient(submission.getClient()).orElseThrow().getNotes()).isEmpty();
+    }
+
+    @Test
+    void shouldFindNothing_whenClientHasNotSubmitted() {
+        assertThat(repository.findByClient(insertClient())).isEmpty();
+    }
+
+    @Test
     void shouldTellWhetherAClientHasSubmitted() {
         AccountId submitted = insertClient();
         AccountId notSubmitted = insertClient();

@@ -7,6 +7,7 @@ import com.kinetiq.quiz.domain.output.QuizSubmissionRepository;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 class InMemoryQuizSubmissionRepository implements QuizSubmissionRepository {
@@ -18,6 +19,11 @@ class InMemoryQuizSubmissionRepository implements QuizSubmissionRepository {
     @Override
     public boolean existsByClient(AccountId client) {
         return byClient.containsKey(client);
+    }
+
+    @Override
+    public Optional<QuizSubmission> findByClient(AccountId client) {
+        return Optional.ofNullable(byClient.get(client));
     }
 
     @Override
