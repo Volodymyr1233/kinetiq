@@ -22,6 +22,7 @@ import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanWeekOutOfRangeException;
 import com.kinetiq.plan.domain.input.OwnPlanView;
+import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.PlanId;
@@ -254,6 +255,85 @@ class PlanViewServiceTest {
             storeDraft();
 
             assertThatThrownBy(() -> service.view(CLIENT, 99)).isExactlyInstanceOf(PlanNotFoundException.class);
+        }
+    }
+
+    @Nested
+    class Today {
+
+        // Thursday of plan week 6
+        private static final Instant THURSDAY_NOON = Instant.parse("2026-11-05T11:00:00Z");
+
+        @Test
+        void shouldGiveTheSessionOnThisWeekday_withTheNamesOfTheTrainersLibrary() {
+            storePublished(12, FIRST_WEEK);
+
+            TodayView today = serviceAt(THURSDAY_NOON).today(CLIENT);
+
+            assertThat(today.state()).isEqualTo(TodayView.State.SESSION);
+            assertThat(today.date()).isEqualTo(LocalDate.parse("2026-11-05"));
+            assertThat(today.session().name()).isEqualTo("Lower");
+            assertThat(libraryOwner).isEqualTo(TRAINER);
+            assertThat(today.library()).containsKey(OWN_EXERCISE.getId());
+        }
+
+        @Test
+        void shouldAnswerRest_whenThereIsNoSessionOnThisWeekday() {
+            storePublished(12, FIRST_WEEK);
+
+            TodayView today = service.today(CLIENT);
+
+            assertThat(today.state()).isEqualTo(TodayView.State.REST);
+            assertThat(today.session()).isNull();
+        }
+
+        @Test
+        void shouldAnswerFinished_whenThePlanIsPastItsLastWeek() {
+            storePublished(4, FIRST_WEEK);
+
+            // a Thursday, which would be a session day while the plan ran
+            TodayView today = serviceAt(THURSDAY_NOON).today(CLIENT);
+
+            assertThat(today.state()).isEqualTo(TodayView.State.FINISHED);
+            assertThat(today.session()).isNull();
+        }
+
+        @Test
+        void shouldEndThePlanAfterItsLastSunday() {
+            storePublished(5, FIRST_WEEK);
+            // Sunday 1 November closes plan week 5; Thursday of week 5 is 29 October
+            assertThat(serviceAt(Instant.parse("2026-10-29T11:00:00Z")).today(CLIENT).state())
+                    .isEqualTo(TodayView.State.SESSION);
+            assertThat(serviceAt(Instant.parse("2026-11-01T11:00:00Z")).today(CLIENT).state())
+                    .isEqualTo(TodayView.State.REST);
+            assertThat(serviceAt(Instant.parse("2026-11-02T11:00:00Z")).today(CLIENT).state())
+                    .isEqualTo(TodayView.State.FINISHED);
+        }
+
+        @Test
+        void shouldUseTheClientsLocalDate_whenMidnightHasPassedElsewhere() {
+            storePublished(12, FIRST_WEEK);
+            // Wednesday 15:30 in Los Angeles is already Thursday 00:30 in Warsaw
+            Instant crossing = Instant.parse("2026-11-04T23:30:00Z");
+
+            clientZone = LOS_ANGELES;
+            TodayView losAngeles = serviceAt(crossing).today(CLIENT);
+            assertThat(losAngeles.date()).isEqualTo(LocalDate.parse("2026-11-04"));
+            assertThat(losAngeles.state()).isEqualTo(TodayView.State.REST);
+
+            clientZone = WARSAW;
+            TodayView warsaw = serviceAt(crossing).today(CLIENT);
+            assertThat(warsaw.date()).isEqualTo(LocalDate.parse("2026-11-05"));
+            assertThat(warsaw.state()).isEqualTo(TodayView.State.SESSION);
+            assertThat(warsaw.session().name()).isEqualTo("Lower");
+        }
+
+        @Test
+        void shouldAnswerNotFoundAlike_whenThePlanIsADraftOrThereIsNone() {
+            storeDraft();
+
+            assertThatThrownBy(() -> service.today(CLIENT)).isExactlyInstanceOf(PlanNotFoundException.class);
+            assertThatThrownBy(() -> service.today(OTHER_CLIENT)).isExactlyInstanceOf(PlanNotFoundException.class);
         }
     }
 

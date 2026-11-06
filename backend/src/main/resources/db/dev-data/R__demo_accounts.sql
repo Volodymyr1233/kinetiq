@@ -45,3 +45,11 @@ update accounts
 set trainer_id = coalesce(trainer_id, '00000000-0000-4000-8000-000000000001'),
     health_data_consent_at = coalesce(health_data_consent_at, now())
 where id = '00000000-0000-4000-8000-000000000003' and (trainer_id is null or health_data_consent_at is null);
+
+-- a plan with a session on Monday to Saturday, so the Today screen shows a session on almost every day
+insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone, email_confirmed,
+                      health_data_consent_at, created_at, updated_at, version)
+values ('00000000-0000-4000-8000-000000000012', 'Demo Client Daily', 'demo.client.daily@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
+on conflict do nothing;

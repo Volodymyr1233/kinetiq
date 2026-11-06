@@ -324,6 +324,22 @@ export interface paths {
         patch: operations["update"];
         trace?: never;
     };
+    "/api/v1/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getToday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plan": {
         parameters: {
             query?: never;
@@ -691,6 +707,13 @@ export interface components {
             units?: string;
             language?: string;
             theme?: string;
+        };
+        TodayResponse: {
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            state: "SESSION" | "REST" | "FINISHED";
+            session?: components["schemas"]["SessionResponse"];
         };
         ClientPlanResponse: {
             /** @enum {string} */
@@ -1359,6 +1382,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CurrentAccountResponse"];
+                };
+            };
+        };
+    };
+    getToday: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TodayResponse"];
                 };
             };
         };
