@@ -6,6 +6,7 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.PlanDetails;
 import com.kinetiq.plan.domain.input.SavePlanCommand;
+import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.Session;
@@ -47,6 +48,13 @@ interface PlanWebMapper {
                 plan.getSessions().stream()
                         .map(session -> toResponse(session, view.library(), locale))
                         .toList());
+    }
+
+    default TodayResponse toResponse(TodayView view, Locale locale) {
+        return new TodayResponse(
+                view.date(),
+                view.state(),
+                view.session() == null ? null : toResponse(view.session(), view.library(), locale));
     }
 
     private PlanResponse.SessionResponse toResponse(
