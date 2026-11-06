@@ -24,6 +24,48 @@ class PlanConfig {
 
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1";
 
+    private static final String ANSWER_SCHEMA =
+            """
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["sessions"],
+              "properties": {
+                "sessions": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "required": ["name", "day", "entries"],
+                    "properties": {
+                      "name": { "type": "string" },
+                      "day": {
+                        "type": "string",
+                        "enum": ["MONDAY", "TUESDAY", "WEDNESDAY", "THURSDAY", "FRIDAY", "SATURDAY", "SUNDAY"]
+                      },
+                      "entries": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "required": ["exercise", "sets", "amount", "loadKg", "rpe", "restSeconds"],
+                          "properties": {
+                            "exercise": { "type": "string" },
+                            "sets": { "type": "integer" },
+                            "amount": { "type": "integer" },
+                            "loadKg": { "type": ["number", "null"] },
+                            "rpe": { "type": "integer" },
+                            "restSeconds": { "type": "integer" }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+            """;
+
     @Bean
     ManagePlanUseCase managePlanUseCase(
             ViewClientsUseCase clients, ListExercisesUseCase exercises, PlanRepository plans) {
@@ -66,6 +108,7 @@ class PlanConfig {
                         .extraBody(Map.of(
                                 "provider", Map.of("require_parameters", true),
                                 "reasoning", Map.of("effort", settings.reasoningEffort(), "exclude", true)))
+                        .outputSchema(ANSWER_SCHEMA)
                         .build())
                 .build();
     }
