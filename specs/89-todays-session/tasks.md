@@ -33,19 +33,19 @@ description: "Tasks for story #89, Client sees today's session (tasks #90, #91)"
 
 **Goal**: the Today tab shows the session, a rest day or the finished-plan message (spec FR-009 to FR-014).
 
-- [ ] T010 [US1] `F/features/plan/api/today.ts`: `useToday()` for `GET /api/v1/today`, the language part of the query key (names follow it), a `plan.not-found` failure not retried, typed by the generated schema
-- [ ] T011 [US1] Extract the entry row (exercise name and the targets line: sets × amount in repetitions or seconds, load in the person's unit or "No load", RPE, rest) from `F/features/plan/components/session-card.tsx` into `F/features/plan/components/entry-row.tsx`, and use it in both; the week view's tests must stay green
-- [ ] T012 [US1] `F/features/plan/pages/today-page.tsx`: the date in the UI language; for `SESSION` the session's name and every exercise in order, fully shown; for `REST` "Rest day"; for `FINISHED` "Your trainer is preparing your next plan."; skeleton while loading; translated error with "Try again"; `plan.not-found` shows "You don't have a plan yet." without an error; long names wrap, no sideways scroll at 375 px and 320 px
-- [ ] T013 [US3] "Start session" in the page, only for `SESSION`, once, `Button` size `touch` as the one lime action, `disabled`, with a visible line under it saying starting arrives with logging; it is absent for `REST` and `FINISHED`
-- [ ] T014 [US1] Route: `/app/today` renders `TodayPage` instead of the placeholder in `F/app/router.ts`
-- [ ] T015 [US1] Strings `plan.today.*` in `F/locales/en.json` and `pl.json` (title line, rest day, start, why disabled), Polish plural forms where a number appears
-- [ ] T016 [US1] Page test `F/features/plan/pages/today-page.test.tsx`: a session with its exercises and targets; seconds for an exercise measured in seconds and "No load" without one; a load in pounds for a person whose unit is pounds; a rest day with no "Start session"; a finished plan with no session and no "Start session"; "Start session" present and disabled on a session day; loading, error with retry, and no plan without an error; Polish
-- [ ] T017 [US2] Update `F/app/client-area.test.tsx` where it expects the Today placeholder, so it expects the page's own answer
-- [ ] T018 [US1] `npm run check` passes; check the tab in the browser as `demo.client.daily`, `demo.client.seen` and `demo.client.finished` at 375 px and 320 px, light and dark, in Polish and pounds, with the keyboard; commit `feat(frontend): add today screen (#91)`
+- [X] T010 [US1] `F/features/plan/api/today.ts`: `useToday()` for `GET /api/v1/today`, the language part of the query key (names follow it), a `plan.not-found` failure not retried, typed by the generated schema
+- [X] T011 [US1] Extract the entry row (exercise name and the targets line: sets × amount in repetitions or seconds, load in the person's unit or "No load", RPE, rest) from `F/features/plan/components/session-card.tsx` into `F/features/plan/components/entry-row.tsx`, and use it in both; the week view's tests must stay green
+- [X] T012 [US1] `F/features/plan/pages/today-page.tsx`: the date in the UI language; for `SESSION` the session's name and every exercise in order, fully shown; for `REST` "Rest day"; for `FINISHED` "Your trainer is preparing your next plan."; skeleton while loading; translated error with "Try again"; `plan.not-found` shows "You don't have a plan yet." without an error; long names wrap, no sideways scroll at 375 px and 320 px
+- [X] T013 [US3] "Start session" in the page, only for `SESSION`, once, `Button` size `touch` as the one lime action, `disabled`, with a visible line under it saying starting arrives with logging; it is absent for `REST` and `FINISHED`
+- [X] T014 [US1] Route: `/app/today` renders `TodayPage` instead of the placeholder in `F/app/router.ts`
+- [X] T015 [US1] Strings `plan.today.*` in `F/locales/en.json` and `pl.json` (title line, rest day, start, why disabled), Polish plural forms where a number appears
+- [X] T016 [US1] Page test `F/features/plan/pages/today-page.test.tsx`: a session with its exercises and targets; seconds for an exercise measured in seconds and "No load" without one; a load in pounds for a person whose unit is pounds; a rest day with no "Start session"; a finished plan with no session and no "Start session"; "Start session" present and disabled on a session day; loading, error with retry, and no plan without an error; Polish
+- [X] T017 [US2] Update `F/app/client-area.test.tsx` where it expects the Today placeholder, so it expects the page's own answer
+- [X] T018 [US1] `npm run check` passes; the tab was checked in a browser as `demo.client.daily`, `demo.client.seen` and `demo.client.finished` at 375 px and 320 px, light and dark, in Polish and pounds, with the keyboard; commit `feat(frontend): add today screen (#91)`
 
 ## Phase 4: Close the story
 
-- [ ] T019 Both gates pass (`./gradlew check`, `npm run check`), the quickstart was followed end to end. Open the pull request (title `feat: let the client see today's session (#89)`, `Closes #89`, `Closes #90`, `Closes #91`); merge with rebase so each task keeps its commit
+- [X] T019 Both gates pass (`./gradlew check`, `npm run check`), the quickstart was followed end to end. Open the pull request (title `feat: let the client see today's session (#89)`, `Closes #89`, `Closes #90`, `Closes #91`); merge with rebase so each task keeps its commit
 
 ## Dependencies
 
