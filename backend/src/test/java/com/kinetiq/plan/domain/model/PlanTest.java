@@ -45,6 +45,54 @@ class PlanTest {
         return new Plan(PlanId.random(), CLIENT, Goal.BUILD_MUSCLE, weeks, firstWeek, COMPLETE, 3);
     }
 
+    @Nested
+    class Marks {
+
+        private final Plan built = Plan.built(CLIENT, Goal.BUILD_MUSCLE, 12, COMPLETE);
+        private final Plan failed = Plan.failed(CLIENT, Goal.BUILD_MUSCLE, 12);
+
+        @Test
+        void shouldMarkABuiltDraft() {
+            assertThat(built.getAutomaticDraft()).contains(AutomaticDraft.BUILT);
+            assertThat(built.isPublished()).isFalse();
+        }
+
+        @Test
+        void shouldMarkAFailedDraftAndLeaveItEmpty() {
+            assertThat(failed.getAutomaticDraft()).contains(AutomaticDraft.FAILED);
+            assertThat(failed.getSessions()).isEmpty();
+            assertThat(failed.isPublished()).isFalse();
+        }
+
+        @Test
+        void shouldHaveNoMark_whenBuiltByHand() {
+            assertThat(draft(12, COMPLETE).getAutomaticDraft()).isEmpty();
+        }
+
+        @Test
+        void shouldRefuseABuiltDraft_whenIncomplete() {
+            assertRefused(
+                    () -> Plan.built(CLIENT, Goal.BUILD_MUSCLE, 12, List.of(session(DayOfWeek.MONDAY))),
+                    "plan.too-few-sessions");
+        }
+
+        @Test
+        void shouldClearTheMark_whenEdited() {
+            assertThat(built.edit(Goal.BUILD_MUSCLE, 12, COMPLETE, MONDAY).getAutomaticDraft()).isEmpty();
+            assertThat(failed.edit(Goal.BUILD_MUSCLE, 12, List.of(), MONDAY).getAutomaticDraft()).isEmpty();
+        }
+
+        @Test
+        void shouldClearTheMark_whenPublished() {
+            assertThat(built.publish(MONDAY).getAutomaticDraft()).isEmpty();
+        }
+
+        @Test
+        void shouldRefusePublishing_whenAFailedDraftIsStillEmpty() {
+            assertRefused(() -> failed.publish(MONDAY), "plan.too-few-sessions");
+        }
+    }
+
     private static void assertRefused(Runnable action, String code) {
         assertThatThrownBy(action::run)
                 .isInstanceOf(PlanRuleViolationException.class)

@@ -2,6 +2,7 @@ package com.kinetiq.plan.infrastructure.input;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.plan.domain.model.AutomaticDraft;
 import com.kinetiq.quiz.domain.model.Goal;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigDecimal;
@@ -13,7 +14,8 @@ import java.util.UUID;
 // @NotNull marks the fields required in the OpenAPI document; responses are never validated
 /**
  * A client's plan, sessions in week order. {@code firstWeek} and {@code currentWeek} are left out for a draft;
- * {@code currentWeek} is at least 1, and above {@code weeks} once the plan has finished.
+ * {@code currentWeek} is at least 1, and above {@code weeks} once the plan has finished. {@code automaticDraft} is left
+ * out unless the system built this draft, or failed to, and the trainer has not saved it yet.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record PlanResponse(
@@ -23,6 +25,7 @@ record PlanResponse(
         LocalDate firstWeek,
         Integer currentWeek,
         @NotNull long version,
+        AutomaticDraft automaticDraft,
         @NotNull List<SessionResponse> sessions) {
 
     enum Status {

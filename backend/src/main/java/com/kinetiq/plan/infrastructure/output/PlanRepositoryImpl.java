@@ -85,6 +85,7 @@ class PlanRepositoryImpl implements PlanRepository {
         entity.setGoal(plan.getGoal());
         entity.setWeeks(plan.getWeeks());
         entity.setFirstWeek(plan.getFirstWeek().orElse(null));
+        entity.setAutomaticDraft(plan.getAutomaticDraft().orElse(null));
     }
 
     private void addSessions(Plan plan, PlanEntity entity) {

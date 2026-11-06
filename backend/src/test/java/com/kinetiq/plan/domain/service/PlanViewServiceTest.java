@@ -133,6 +133,22 @@ class PlanViewServiceTest {
     class View {
 
         @Test
+        void shouldAnswerLikeNoPlan_whenTheDraftWasBuiltAutomatically() {
+            plans.byClient.put(CLIENT, Plan.built(CLIENT, Goal.GET_STRONGER, 12, sessions()));
+
+            assertThatThrownBy(() -> service.view(CLIENT, null)).isInstanceOf(PlanNotFoundException.class);
+            assertThatThrownBy(() -> service.acknowledge(CLIENT)).isInstanceOf(PlanNotFoundException.class);
+        }
+
+        @Test
+        void shouldAnswerLikeNoPlan_whenTheDraftFailed() {
+            plans.byClient.put(CLIENT, Plan.failed(CLIENT, Goal.GET_STRONGER, 12));
+
+            assertThatThrownBy(() -> service.view(CLIENT, null)).isInstanceOf(PlanNotFoundException.class);
+            assertThatThrownBy(() -> service.acknowledge(CLIENT)).isInstanceOf(PlanNotFoundException.class);
+        }
+
+        @Test
         void shouldShowTheCurrentWeekWithItsMonday_whenNoWeekIsAsked() {
             storePublished(12, FIRST_WEEK);
 

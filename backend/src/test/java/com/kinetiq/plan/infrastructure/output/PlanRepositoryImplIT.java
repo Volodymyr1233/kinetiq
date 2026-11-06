@@ -7,6 +7,7 @@ import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
+import com.kinetiq.plan.domain.model.AutomaticDraft;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.PlanId;
@@ -94,6 +95,46 @@ class PlanRepositoryImplIT {
     private void flushAndClear() {
         entityManager.flush();
         entityManager.clear();
+    }
+
+    @Test
+    void shouldKeepTheMark_whenADraftIsReadBack() {
+        AccountId failed = insertClient();
+        repository.save(Plan.failed(failed, Goal.LOSE_FAT, 12));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(repository.findByClient(failed).orElseThrow().getAutomaticDraft()).contains(AutomaticDraft.FAILED);
+        assertThat(jdbc.queryForObject(
+                        "select automatic_draft from plans where client_id = ?", String.class, failed.value()))
+                .isEqualTo("FAILED");
+    }
+
+    @Test
+    void shouldClearTheMarkInStorage_whenAnEditedPlanIsSaved() {
+        AccountId client = insertClient();
+        Plan stored = repository.save(Plan.failed(client, Goal.LOSE_FAT, 12));
+        entityManager.flush();
+
+        repository.save(stored.edit(Goal.LOSE_FAT, 12, List.of(), LocalDate.parse("2026-11-05")));
+        entityManager.flush();
+        entityManager.clear();
+
+        assertThat(jdbc.queryForObject(
+                        "select automatic_draft from plans where client_id = ?", String.class, client.value()))
+                .isNull();
+        assertThat(repository.findByClient(client).orElseThrow().getAutomaticDraft()).isEmpty();
+    }
+
+    @Test
+    void shouldBeRefusedByTheDatabase_whenAPublishedPlanCarriesAMark() {
+        AccountId client = insertClient();
+        repository.save(Plan.failed(client, Goal.LOSE_FAT, 12));
+        entityManager.flush();
+
+        assertThatThrownBy(() -> jdbc.update(
+                        "update plans set first_week = '2026-10-26' where client_id = ?", client.value()))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

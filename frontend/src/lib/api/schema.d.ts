@@ -546,6 +546,8 @@ export interface components {
             currentWeek?: number;
             /** Format: int64 */
             version: number;
+            /** @enum {string} */
+            automaticDraft?: "BUILT" | "FAILED";
             sessions: components["schemas"]["SessionResponse"][];
         };
         SessionResponse: {
@@ -757,7 +759,7 @@ export interface components {
             /** @enum {string} */
             goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
             /** @enum {string} */
-            planState: "NO_QUIZ" | "PLAN_TO_REVIEW" | "DRAFT" | "PUBLISHED";
+            planState: "NO_QUIZ" | "PLAN_TO_REVIEW" | "DRAFT" | "DRAFT_FAILED" | "PUBLISHED";
         };
     };
     responses: never;

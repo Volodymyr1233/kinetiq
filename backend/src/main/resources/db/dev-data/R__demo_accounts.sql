@@ -30,6 +30,13 @@ values ('00000000-0000-4000-8000-000000000001', 'Demo Trainer', 'demo.trainer@ex
         'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0),
        ('00000000-0000-4000-8000-000000000009', 'Demo Client Finished', 'demo.client.finished@example.com',
         '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0),
+       -- their drafts are in R__demo_plans.sql: one built automatically, one that failed to be
+       ('00000000-0000-4000-8000-000000000010', 'Demo Client Built', 'demo.client.built@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0),
+       ('00000000-0000-4000-8000-000000000011', 'Demo Client Failed', 'demo.client.failed@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
         'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
 on conflict do nothing;
 

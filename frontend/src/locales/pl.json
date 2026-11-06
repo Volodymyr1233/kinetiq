@@ -567,6 +567,7 @@
       "NO_QUIZ": "Quiz jeszcze nie wypełniony",
       "PLAN_TO_REVIEW": "Plan do przejrzenia",
       "DRAFT": "Szkic",
+      "DRAFT_FAILED": "Szkic nieudany",
       "PUBLISHED": "Opublikowany"
     },
     "page": {
@@ -662,6 +663,10 @@
     "leave": "Wyjdź"
   },
   "plan": {
+    "note": {
+      "built": "Zbudowano automatycznie z odpowiedzi w quizie. Sprawdź ćwiczenia i obciążenia. {{name}}: plan będzie widoczny dopiero po publikacji.",
+      "failed": "Nie udało się zbudować tego planu automatycznie. Możesz zbudować go tutaj."
+    },
     "client": {
       "none": "Nie masz jeszcze planu.",
       "previous": "Poprzedni tydzień",

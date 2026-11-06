@@ -5,5 +5,6 @@ public enum PlanState {
     NO_QUIZ,
     PLAN_TO_REVIEW,
     DRAFT,
+    DRAFT_FAILED,
     PUBLISHED
 }

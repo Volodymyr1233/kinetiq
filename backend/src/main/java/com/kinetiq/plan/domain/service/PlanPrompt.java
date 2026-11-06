@@ -8,6 +8,7 @@ import com.kinetiq.plan.domain.model.PlanPromptMessages;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import java.time.DayOfWeek;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -94,9 +95,12 @@ final class PlanPrompt {
         return exerciseKeys;
     }
 
-    /** The messages of a first attempt. */
-    PlanPromptMessages messages() {
-        return new PlanPromptMessages(SYSTEM, user, List.of());
+    /** The messages of an attempt; {@code rejectionCodes} are the reasons the previous answer was refused, if any. */
+    PlanPromptMessages messages(Collection<String> rejectionCodes) {
+        return new PlanPromptMessages(
+                SYSTEM,
+                user,
+                rejectionCodes.stream().distinct().map(PlanPrompt::sentence).toList());
     }
 
     private static String userMessage(DraftInput input, PersonalDataCleaner cleaner, String catalogue) {
@@ -175,5 +179,25 @@ final class PlanPrompt {
     // a trainer's own exercise must stay one catalogue line
     private static String oneLine(String text) {
         return LINE_BREAKS.matcher(text).replaceAll(" ").strip();
+    }
+
+    private static String sentence(String code) {
+        return switch (code) {
+            case GeneratedPlanChecks.SESSION_COUNT -> "There must be exactly DAYS PER WEEK sessions.";
+            case GeneratedPlanChecks.SESSION_DAY -> "Every session needs a different day, MONDAY to SUNDAY.";
+            case GeneratedPlanChecks.ENTRY_COUNT -> "Each session must have 4 to 10 entries.";
+            case GeneratedPlanChecks.UNKNOWN_EXERCISE -> "Every exercise must be a key from the CATALOGUE.";
+            case GeneratedPlanChecks.REPEATED_EXERCISE -> "No exercise may appear twice in one session.";
+            case GeneratedPlanChecks.SESSION_NAME ->
+                "Session names must be different from each other, not blank, at most 40 characters, and hold no link or email address.";
+            case GeneratedPlanChecks.SETS -> "sets must be 1 to 8.";
+            case GeneratedPlanChecks.AMOUNT -> "amount must be 1 to 50 for REPS and 5 to 3600 for SECONDS.";
+            case GeneratedPlanChecks.RPE -> "rpe must be a whole number within the range rule 4 gives for this AGE.";
+            case GeneratedPlanChecks.REST -> "restSeconds must be 0 to 300.";
+            case GeneratedPlanChecks.LOAD ->
+                "loadKg must be null, or above 0 with at most one decimal, and at most twice the client's body weight.";
+            case GeneratedPlanChecks.MISSING_VALUE -> "Every entry must hold exercise, sets, amount, rpe and restSeconds.";
+            default -> "The plan must follow the HARD RULES.";
+        };
     }
 }

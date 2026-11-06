@@ -42,7 +42,10 @@ public class Plan {
     private final List<Session> sessions;
     private final long version;
 
-    /** Rebuilds a stored plan; {@code firstWeek} is {@code null} for a draft. */
+    @Getter(AccessLevel.NONE)
+    private final AutomaticDraft automaticDraft;
+
+    /** Rebuilds a stored plan without a mark; {@code firstWeek} is {@code null} for a draft. */
     public Plan(
             PlanId id,
             AccountId client,
@@ -51,6 +54,19 @@ public class Plan {
             LocalDate firstWeek,
             List<Session> sessions,
             long version) {
+        this(id, client, goal, weeks, firstWeek, sessions, version, null);
+    }
+
+    /** Rebuilds a stored plan; {@code firstWeek} and {@code automaticDraft} may be {@code null}. */
+    public Plan(
+            PlanId id,
+            AccountId client,
+            Goal goal,
+            int weeks,
+            LocalDate firstWeek,
+            List<Session> sessions,
+            long version,
+            AutomaticDraft automaticDraft) {
         if (weeks < MIN_WEEKS || weeks > MAX_WEEKS) {
             throw new PlanRuleViolationException("plan.weeks-out-of-range");
         }
@@ -67,11 +83,29 @@ public class Plan {
         this.firstWeek = firstWeek;
         this.sessions = sessions.stream().sorted(Comparator.comparing(Session::day)).toList();
         this.version = version;
+        this.automaticDraft = automaticDraft;
     }
 
     /** Starts a new draft, which has no version until it is stored. */
     public static Plan draft(AccountId client, Goal goal, int weeks, List<Session> sessions) {
         return new Plan(PlanId.random(), client, goal, weeks, null, sessions, 0);
+    }
+
+    /** Starts a draft built automatically, which must be complete. */
+    public static Plan built(AccountId client, Goal goal, int weeks, List<Session> sessions) {
+        Plan plan = new Plan(PlanId.random(), client, goal, weeks, null, sessions, 0, AutomaticDraft.BUILT);
+        plan.requireComplete();
+        return plan;
+    }
+
+    /** Starts the empty draft that stands for a drafting that failed. */
+    public static Plan failed(AccountId client, Goal goal, int weeks) {
+        return new Plan(PlanId.random(), client, goal, weeks, null, List.of(), 0, AutomaticDraft.FAILED);
+    }
+
+    /** What the system did with this draft; empty once the trainer has saved it, and for any published plan. */
+    public Optional<AutomaticDraft> getAutomaticDraft() {
+        return Optional.ofNullable(automaticDraft);
     }
 
     public Optional<LocalDate> getFirstWeek() {
@@ -93,7 +127,8 @@ public class Plan {
     }
 
     /**
-     * Returns this plan with new values and the same first week. A published plan must stay complete, and is refused
+     * Returns this plan with new values, the same first week and no mark, because it is now the trainer's. A published
+     * plan must stay complete, and is refused
      * only when its length gets shorter and falls below the current plan week, so a finished plan can still be saved.
      * {@code today} is the date in the client's time zone.
      */
@@ -110,7 +145,7 @@ public class Plan {
     }
 
     /**
-     * Returns this draft published, with plan week 1 starting on the Monday of the week of {@code today}, the date in
+     * Returns this draft published and without a mark, with plan week 1 starting on the Monday of the week of {@code today}, the date in
      * the client's time zone. Only a complete draft can be published, and only once.
      */
     public Plan publish(LocalDate today) {

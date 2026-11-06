@@ -1,6 +1,7 @@
 package com.kinetiq.plan.infrastructure.output;
 
 import com.kinetiq.common.infrastructure.output.BaseEntity;
+import com.kinetiq.plan.domain.model.AutomaticDraft;
 import com.kinetiq.quiz.domain.model.Goal;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -34,6 +35,9 @@ class PlanEntity extends BaseEntity {
     private int weeks;
     private LocalDate firstWeek;
     private Instant clientSeenAt;
+
+    @Enumerated(EnumType.STRING)
+    private AutomaticDraft automaticDraft;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanSessionEntity> sessions = new ArrayList<>();

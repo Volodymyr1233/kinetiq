@@ -22,7 +22,7 @@ import org.springframework.stereotype.Repository;
 class JdbcClientDirectory implements ClientDirectory {
 
     private static final String CLIENTS_OF = """
-            select a.id, a.name, a.time_zone, q.goal as quiz_goal, p.goal as plan_goal, p.first_week
+            select a.id, a.name, a.time_zone, q.goal as quiz_goal, p.goal as plan_goal, p.first_week, p.automatic_draft
             from accounts a
             left join quiz_submissions q on q.client_id = a.id
             left join plans p on p.client_id = a.id
@@ -51,13 +51,25 @@ class JdbcClientDirectory implements ClientDirectory {
                 new AccountId(rows.getObject("id", UUID.class)),
                 rows.getString("name"),
                 goal == null ? null : Goal.valueOf(goal),
-                planState(quizGoal, planGoal, rows.getObject("first_week", LocalDate.class)),
+                planState(
+                        quizGoal,
+                        planGoal,
+                        rows.getObject("first_week", LocalDate.class),
+                        rows.getString("automatic_draft")),
                 ZoneId.of(rows.getString("time_zone")));
     }
 
-    private static PlanState planState(String quizGoal, String planGoal, LocalDate firstWeek) {
+    // a generated draft waits for the same review as answers with no plan yet; the mark goes with the first save
+    private static PlanState planState(String quizGoal, String planGoal, LocalDate firstWeek, String automaticDraft) {
         if (planGoal != null) {
-            return firstWeek == null ? PlanState.DRAFT : PlanState.PUBLISHED;
+            if (firstWeek != null) {
+                return PlanState.PUBLISHED;
+            }
+            return switch (automaticDraft) {
+                case "FAILED" -> PlanState.DRAFT_FAILED;
+                case "BUILT" -> PlanState.PLAN_TO_REVIEW;
+                case null, default -> PlanState.DRAFT;
+            };
         }
         return quizGoal == null ? PlanState.NO_QUIZ : PlanState.PLAN_TO_REVIEW;
     }

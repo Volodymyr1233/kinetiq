@@ -3,11 +3,17 @@ package com.kinetiq.plan.infrastructure.config;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
+import com.kinetiq.plan.domain.input.DraftPlanUseCase;
 import com.kinetiq.plan.domain.input.ManagePlanUseCase;
+import com.kinetiq.plan.domain.input.PlanDrafting;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
+import com.kinetiq.plan.domain.output.PlanGenerator;
 import com.kinetiq.plan.domain.output.PlanRepository;
+import com.kinetiq.plan.domain.service.PlanDraftingJob;
+import com.kinetiq.plan.domain.service.PlanDraftingService;
 import com.kinetiq.plan.domain.service.PlanManagementService;
 import com.kinetiq.plan.domain.service.PlanViewService;
+import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
 import java.time.Clock;
 import java.time.Duration;
 import java.util.Map;
@@ -23,6 +29,7 @@ import org.springframework.context.annotation.Configuration;
 class PlanConfig {
 
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1";
+    private static final Duration PAUSE_BETWEEN_ATTEMPTS = Duration.ofSeconds(5);
 
     private static final String ANSWER_SCHEMA =
             """
@@ -76,6 +83,20 @@ class PlanConfig {
     ViewOwnPlanUseCase viewOwnPlanUseCase(
             CurrentAccountUseCase accounts, ListExercisesUseCase exercises, PlanRepository plans) {
         return new PlanViewService(accounts, exercises, plans, Clock.systemUTC());
+    }
+
+    @Bean
+    DraftPlanUseCase draftPlanUseCase(
+            ViewQuizAnswersUseCase quiz,
+            CurrentAccountUseCase accounts,
+            ListExercisesUseCase exercises,
+            PlanRepository plans) {
+        return new PlanDraftingService(quiz, accounts, exercises, plans);
+    }
+
+    @Bean
+    PlanDrafting planDrafting(DraftPlanUseCase drafting, PlanGenerator generator) {
+        return new PlanDraftingJob(drafting, generator, PAUSE_BETWEEN_ATTEMPTS);
     }
 
     @Bean
