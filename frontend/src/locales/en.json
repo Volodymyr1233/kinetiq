@@ -552,6 +552,7 @@
       "NO_QUIZ": "No quiz yet",
       "PLAN_TO_REVIEW": "Plan to review",
       "DRAFT": "Draft",
+      "DRAFT_FAILED": "Draft failed",
       "PUBLISHED": "Published"
     },
     "page": {
@@ -645,6 +646,10 @@
     "leave": "Leave"
   },
   "plan": {
+    "note": {
+      "built": "Built automatically from the quiz answers. Check the exercises and loads. {{name}} sees the plan only after you publish it.",
+      "failed": "Couldn't build this plan automatically. You can build it here."
+    },
     "client": {
       "none": "You don't have a plan yet.",
       "previous": "Previous week",

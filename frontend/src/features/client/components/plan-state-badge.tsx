@@ -10,6 +10,7 @@ const VARIANTS: Record<
   NO_QUIZ: 'outline',
   PLAN_TO_REVIEW: 'warning',
   DRAFT: 'outline',
+  DRAFT_FAILED: 'warning',
   PUBLISHED: 'success',
 }
 

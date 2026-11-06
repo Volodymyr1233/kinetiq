@@ -42,6 +42,9 @@ _Avoid_: Program, routine
 **Draft**:
 A plan the client cannot see yet; the first one is built automatically from the quiz.
 
+**Failed draft**:
+A draft the system could not build automatically: empty, and marked so for the trainer.
+
 **Week**:
 Monday to Sunday in the client's time zone. Plan weeks are numbered from the week the plan was published.
 

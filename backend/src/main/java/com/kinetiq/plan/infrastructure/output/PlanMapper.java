@@ -23,7 +23,8 @@ interface PlanMapper {
                 entity.getWeeks(),
                 entity.getFirstWeek(),
                 entity.getSessions().stream().map(this::toDomain).toList(),
-                entity.getVersion());
+                entity.getVersion(),
+                entity.getAutomaticDraft());
     }
 
     private Session toDomain(PlanSessionEntity entity) {

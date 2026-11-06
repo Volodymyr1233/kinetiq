@@ -40,7 +40,8 @@ class InMemoryPlanRepository implements PlanRepository {
                 plan.getWeeks(),
                 plan.getFirstWeek().orElse(null),
                 plan.getSessions(),
-                stored == null ? 0 : stored.getVersion() + 1);
+                stored == null ? 0 : stored.getVersion() + 1,
+                plan.getAutomaticDraft().orElse(null));
         byClient.put(plan.getClient(), saved);
         return saved;
     }

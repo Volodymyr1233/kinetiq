@@ -55,6 +55,7 @@ import {
   type Goal,
   type Problem,
 } from '../plan-draft'
+import { AutomaticDraftNote } from './automatic-draft-note'
 import { SessionPanel } from './session-panel'
 import { ValidationSummary } from './validation-summary'
 
@@ -266,6 +267,12 @@ export function PlanEditor({
     // the margin keeps whatever takes focus clear of the sticky page header
     <div className="flex flex-col gap-6 pt-4 [&_*]:scroll-mt-16">
       <LeaveGuard dirty={dirty} body={t('leave.planBody')} />
+      {saved.plan?.automaticDraft && (
+        <AutomaticDraftNote
+          mark={saved.plan.automaticDraft}
+          clientName={client.name}
+        />
+      )}
       <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
         <Field className="w-56 max-w-full">
           <FieldLabel htmlFor={`${id}-goal`}>

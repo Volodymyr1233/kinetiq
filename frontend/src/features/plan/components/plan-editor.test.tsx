@@ -85,6 +85,8 @@ function backend(
       calls.saves.push(body)
       stored = {
         ...stored,
+        // the first save makes the plan the trainer's
+        automaticDraft: undefined,
         status: stored?.status ?? 'DRAFT',
         goal: body.goal,
         weeks: body.weeks,
@@ -697,6 +699,75 @@ describe('PlanEditor', () => {
       expect(screen.getByRole('tab', { name: /Lower/ })).toHaveTextContent(
         'This session has something to fix',
       )
+    })
+  })
+
+  describe('a draft the system built or failed to build', () => {
+    const BUILT_NOTE =
+      'Built automatically from the quiz answers. Check the exercises and loads. Ola Kowalska sees the plan only after you publish it.'
+    const FAILED_NOTE =
+      "Couldn't build this plan automatically. You can build it here."
+    const FAILED: Plan = {
+      ...DRAFT,
+      automaticDraft: 'FAILED',
+      sessions: [],
+    }
+
+    it('says a draft was built automatically, and the note goes for good on saving', async () => {
+      const user = userEvent.setup()
+      const { reply } = backend({ ...DRAFT, automaticDraft: 'BUILT' })
+      open(reply)
+      await screen.findByRole('tab', { name: /Lower/ })
+      expect(screen.getByRole('note')).toHaveTextContent(BUILT_NOTE)
+
+      await retype(user, setsOf('Back squat', 1), '4')
+      expect(screen.getByRole('note')).toBeVisible()
+      await user.click(screen.getByRole('button', { name: 'Save plan' }))
+
+      await waitFor(() =>
+        expect(screen.queryByRole('note')).not.toBeInTheDocument(),
+      )
+    })
+
+    it('keeps the note when the save fails', async () => {
+      const user = userEvent.setup()
+      const { reply } = backend(
+        { ...DRAFT, automaticDraft: 'BUILT' },
+        (call) =>
+          call.startsWith('PUT')
+            ? problem(409, { status: 409, code: 'plan.changed' })
+            : undefined,
+      )
+      open(reply)
+      await screen.findByRole('tab', { name: /Lower/ })
+      await retype(user, setsOf('Back squat', 1), '4')
+
+      await user.click(screen.getByRole('button', { name: 'Save plan' }))
+
+      await screen.findByText(/This plan was changed somewhere else/)
+      expect(screen.getByRole('note')).toHaveTextContent(BUILT_NOTE)
+    })
+
+    it('says drafting failed and offers "Add session", and publishing lists what is missing', async () => {
+      const user = userEvent.setup()
+      const { reply, calls } = backend(FAILED)
+      open(reply)
+
+      expect(await screen.findByRole('note')).toHaveTextContent(FAILED_NOTE)
+      expect(screen.getByRole('button', { name: 'Add session' })).toBeVisible()
+
+      await user.click(screen.getByRole('button', { name: 'Publish plan' }))
+
+      await screen.findByText(/at least 2 sessions/i)
+      expect(calls.publishes).toHaveLength(0)
+    })
+
+    it('shows no note on a plan with no mark', async () => {
+      const { reply } = backend(DRAFT)
+      open(reply)
+      await screen.findByRole('tab', { name: /Lower/ })
+
+      expect(screen.queryByRole('note')).not.toBeInTheDocument()
     })
   })
 

@@ -53,6 +53,13 @@ describe('ClientsPage', () => {
     expect(screen.getByRole('status')).toHaveTextContent('2 of 2 clients')
   })
 
+  it('tells a failed draft by its words', async () => {
+    show([{ ...OLA, planState: 'DRAFT_FAILED' }])
+
+    const ola = (await screen.findByText('Ola Kowalska')).closest('tr')!
+    expect(within(ola).getByText('Draft failed')).toBeInTheDocument()
+  })
+
   it('says "None yet" for a goal and a last log that are not there, not a bare dash', async () => {
     show([JAN])
 

@@ -126,6 +126,27 @@ class PlanManagementServiceTest {
                 new Plan(PlanId.random(), CLIENT, Goal.LOSE_FAT, weeks, FIRST_WEEK, sessions(SQUAT.getId()), 0));
     }
 
+    @Test
+    void shouldClearTheMark_whenTheTrainerSavesAMarkedDraft() {
+        Plan marked = plans.save(Plan.failed(CLIENT, Goal.LOSE_FAT, 12));
+
+        PlanDetails saved =
+                service.save(save(CLIENT, marked.getVersion(), 12, sessions(SQUAT.getId())));
+
+        assertThat(saved.plan().getAutomaticDraft()).isEmpty();
+        assertThat(plans.byClient.get(CLIENT).getAutomaticDraft()).isEmpty();
+    }
+
+    @Test
+    void shouldClearTheMark_whenTheTrainerPublishesABuiltDraft() {
+        Plan marked = plans.save(Plan.built(CLIENT, Goal.LOSE_FAT, 12, sessions(SQUAT.getId())));
+
+        PlanDetails published = service.publish(TRAINER, CLIENT, marked.getVersion());
+
+        assertThat(published.plan().isPublished()).isTrue();
+        assertThat(published.plan().getAutomaticDraft()).isEmpty();
+    }
+
     @Nested
     class Get {
 

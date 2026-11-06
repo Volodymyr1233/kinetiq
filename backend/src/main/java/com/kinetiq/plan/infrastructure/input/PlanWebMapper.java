@@ -26,6 +26,7 @@ interface PlanWebMapper {
                 plan.getFirstWeek().orElse(null),
                 details.currentWeek(),
                 plan.getVersion(),
+                plan.getAutomaticDraft().orElse(null),
                 plan.getSessions().stream()
                         .map(session -> toResponse(session, details.library(), locale))
                         .toList());

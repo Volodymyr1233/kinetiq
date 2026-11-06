@@ -122,6 +122,24 @@ class PlanControllerTest {
     }
 
     @Test
+    void shouldAnswerTheMark_whenTheDraftCarriesOne() {
+        Plan failed = Plan.failed(CLIENT_ID, Goal.BUILD_MUSCLE, 12);
+        when(plans.get(TRAINER_ID, CLIENT_ID)).thenReturn(new PlanDetails(failed, null, Map.of()));
+
+        assertThat(mvc.get().uri(ADDRESS).with(TRAINER))
+                .bodyJson()
+                .extractingPath("$.automaticDraft")
+                .isEqualTo("FAILED");
+    }
+
+    @Test
+    void shouldLeaveTheMarkOut_whenThePlanCarriesNone() {
+        when(plans.get(TRAINER_ID, CLIENT_ID)).thenReturn(details(null, null, null));
+
+        assertThat(mvc.get().uri(ADDRESS).with(TRAINER)).bodyJson().doesNotHavePath("$.automaticDraft");
+    }
+
+    @Test
     void shouldAnswerEveryField_whenPublished() {
         when(plans.get(TRAINER_ID, CLIENT_ID))
                 .thenReturn(details(LocalDate.parse("2026-10-26"), 2, new BigDecimal("100.0")));

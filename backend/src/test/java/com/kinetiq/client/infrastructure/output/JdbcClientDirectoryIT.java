@@ -79,6 +79,39 @@ class JdbcClientDirectoryIT {
                 firstWeek);
     }
 
+    private void insertMarkedDraft(AccountId client, String mark) {
+        jdbc.update(
+                """
+                insert into plans (id, client_id, goal, weeks, first_week, automatic_draft, created_at, updated_at, version)
+                values (?, ?, 'LOSE_FAT', 12, null, ?, now(), now(), 0)
+                """,
+                UUID.randomUUID(),
+                client.value(),
+                mark);
+    }
+
+    private PlanState stateOf(AccountId trainer, AccountId client) {
+        return directory.findClient(trainer, client).orElseThrow().getPlanState();
+    }
+
+    @Test
+    void shouldFollowThePlansMark_whenThereIsADraft() {
+        AccountId trainer = insertTrainer();
+        AccountId failed = insertClient("Failed", trainer);
+        AccountId built = insertClient("Built", trainer);
+        AccountId saved = insertClient("Saved", trainer);
+        for (AccountId client : new AccountId[] {failed, built, saved}) {
+            insertQuiz(client, Goal.LOSE_FAT);
+        }
+        insertMarkedDraft(failed, "FAILED");
+        insertMarkedDraft(built, "BUILT");
+        insertMarkedDraft(saved, null);
+
+        assertThat(stateOf(trainer, failed)).isEqualTo(PlanState.DRAFT_FAILED);
+        assertThat(stateOf(trainer, built)).isEqualTo(PlanState.PLAN_TO_REVIEW);
+        assertThat(stateOf(trainer, saved)).isEqualTo(PlanState.DRAFT);
+    }
+
     @Test
     void shouldListOnlyTheTrainersOwnClients() {
         AccountId marek = insertTrainer();
