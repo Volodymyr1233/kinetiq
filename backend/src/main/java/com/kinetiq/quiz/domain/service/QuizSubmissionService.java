@@ -8,6 +8,8 @@ import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
 import com.kinetiq.quiz.domain.model.QuizStatus;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
+import com.kinetiq.quiz.domain.model.QuizSubmitted;
+import com.kinetiq.quiz.domain.output.QuizEventPublisher;
 import com.kinetiq.quiz.domain.output.QuizSubmissionRepository;
 import java.time.Clock;
 import java.util.Optional;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 public class QuizSubmissionService implements SubmitQuizUseCase, ViewQuizAnswersUseCase {
 
     private final QuizSubmissionRepository submissions;
+    private final QuizEventPublisher events;
     private final Clock clock;
 
     // the repository refuses a submit that raced past this check
@@ -38,7 +41,8 @@ public class QuizSubmissionService implements SubmitQuizUseCase, ViewQuizAnswers
                 command.daysPerWeek(),
                 command.notes(),
                 clock.instant()));
-        return QuizStatus.WAITING_FOR_PLAN;
+        events.submitted(new QuizSubmitted(command.client()));
+        return QuizStatus.DRAFTING_PLAN;
     }
 
     @Override
@@ -46,7 +50,10 @@ public class QuizSubmissionService implements SubmitQuizUseCase, ViewQuizAnswers
         if (!submissions.existsByClient(client)) {
             return QuizStatus.NOT_SUBMITTED;
         }
-        return submissions.hasPublishedPlan(client) ? QuizStatus.PLAN_PUBLISHED : QuizStatus.WAITING_FOR_PLAN;
+        if (submissions.hasPublishedPlan(client)) {
+            return QuizStatus.PLAN_PUBLISHED;
+        }
+        return submissions.isPlanDrafting(client) ? QuizStatus.DRAFTING_PLAN : QuizStatus.WAITING_FOR_PLAN;
     }
 
     @Override

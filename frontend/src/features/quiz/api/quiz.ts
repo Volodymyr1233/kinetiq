@@ -33,6 +33,15 @@ export function useQuizStatus() {
   return useQuery(quizStatusQuery)
 }
 
+/** The status, asked again every 5 seconds while a plan is being drafted and not after. */
+export function useQuizStatusWhileDrafting() {
+  return useQuery({
+    ...quizStatusQuery,
+    refetchInterval: (query) =>
+      query.state.data === 'DRAFTING_PLAN' ? 5000 : false,
+  })
+}
+
 /** Sends the draft's answers once; afterwards the status is the waiting one and the draft is gone. */
 export function useSubmitQuiz() {
   const queryClient = useQueryClient()

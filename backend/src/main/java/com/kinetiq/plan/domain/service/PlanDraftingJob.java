@@ -24,7 +24,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PlanDraftingJob implements PlanDrafting {
 
-    private static final int MAX_ATTEMPTS = 2;
+    public static final int MAX_ATTEMPTS = 2;
 
     private final DraftPlanUseCase drafting;
     private final PlanGenerator generator;

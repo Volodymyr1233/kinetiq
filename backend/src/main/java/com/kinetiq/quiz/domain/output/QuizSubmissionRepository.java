@@ -15,6 +15,9 @@ public interface QuizSubmissionRepository {
     /** Tells whether the client has a published plan. */
     boolean hasPublishedPlan(AccountId client);
 
+    /** Tells whether the client's first plan is being drafted. */
+    boolean isPlanDrafting(AccountId client);
+
     /** Stores a new submission. Throws {@code QuizAlreadySubmittedException} when the client already has one. */
     void save(QuizSubmission submission);
 }

@@ -49,7 +49,7 @@ function server(submit: () => Response | Promise<Response> = submitted) {
   }
 }
 
-const submitted = () => json({ status: 'WAITING_FOR_PLAN' }, 201)
+const submitted = () => json({ status: 'DRAFTING_PLAN' }, 201)
 
 function openReviewWith(reply: Reply, unit: WeightUnit = 'KG') {
   const requests = stubApi(reply)
@@ -86,6 +86,32 @@ const buildButton = () => screen.getByRole('button', { name: 'Build my plan' })
 describe('ReviewPage', () => {
   beforeEach(() => sessionStorage.clear())
   afterEach(() => i18n.changeLanguage('en'))
+
+  it('says where the answers go before they are sent', async () => {
+    store()
+    openReview()
+
+    await reviewHeading()
+    const notice = screen.getByText(
+      "To draft your plan we send your answers to an external AI service. Please don't write names or contact details in your notes.",
+    )
+    expect(
+      notice.compareDocumentPosition(buildButton()) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+  })
+
+  it('says where the answers go in Polish', async () => {
+    await i18n.changeLanguage('pl')
+    store()
+    openReviewWith(server())
+
+    expect(
+      await screen.findByText(
+        'Aby przygotować szkic planu, wysyłamy Twoje odpowiedzi do zewnętrznej usługi AI. Nie wpisuj w uwagach imion ani danych kontaktowych.',
+      ),
+    ).toBeInTheDocument()
+  })
 
   it('lists the seven answers in step order', async () => {
     store()
@@ -276,7 +302,7 @@ describe('ReviewPage', () => {
     const user = userEvent.setup()
     let answer!: () => void
     const answered = new Promise<void>((resolve) => (answer = resolve))
-    store({ days: 4 })
+    store()
     openReviewWith(
       server(async () => {
         await answered
@@ -289,12 +315,12 @@ describe('ReviewPage', () => {
 
     expect(
       await screen.findByRole('heading', {
-        name: 'Building your plan from 7 answers…',
+        name: 'Building your plan',
       }),
     ).toHaveFocus()
     expect(
       screen.getByText(
-        'Sessions, exercises and starting weights for 4 days a week.',
+        'Sessions, exercises and starting weights from your answers. This can take a few minutes, and you can close the app.',
       ),
     ).toBeInTheDocument()
     expect(
@@ -306,7 +332,7 @@ describe('ReviewPage', () => {
     expect(await reviewingHeading()).toBeInTheDocument()
   })
 
-  it('builds in Polish with Polish plural forms', async () => {
+  it('builds in Polish', async () => {
     const user = userEvent.setup()
     await i18n.changeLanguage('pl')
     store()
@@ -317,7 +343,7 @@ describe('ReviewPage', () => {
 
     expect(
       await screen.findByText(
-        'Sesje, ćwiczenia i ciężary startowe na 3 dni w tygodniu.',
+        'Sesje, ćwiczenia i obciążenia startowe na podstawie Twoich odpowiedzi. To może potrwać kilka minut, a aplikację możesz zamknąć.',
       ),
     ).toBeInTheDocument()
   })

@@ -102,35 +102,35 @@ Paths below use `plan/`, `quiz/` and `client/` for those features under `backend
 
 ### Starting and ending
 
-- [ ] T044 Add record `QuizSubmitted(AccountId client)` in `quiz/domain/model/`, port `QuizEventPublisher` in `quiz/domain/output/`, and `SpringQuizEventPublisher` in `quiz/infrastructure/output/` using `ApplicationEventPublisher`. `QuizSubmissionService.submit` publishes after saving; wire it in `QuizConfig.java`, with a recording fake in `quiz/domain/service/QuizSubmissionServiceTest.java`, proving a refused second submit publishes nothing
-- [ ] T045 Add port `PlanDraftingRepository` in `plan/domain/output/` (`start(client, at)`, `boolean remove(client)` reporting whether a row was there, `List<AccountId> startedBefore(instant)`), `PlanDraftingRepositoryImpl` with `JdbcTemplate` in `plan/infrastructure/output/`, an `IT` next to it, and a fake in test sources
-- [ ] T046 [US1] Extend `DraftPlanUseCase` and `PlanDraftingService`: `request(client)` writes the row; `storeBuilt` and `storeFailed` begin with `remove` and store nothing when no row was there, so the job and the sweep cannot both store and a late result is dropped (FR-005). Add `List<AccountId> overdue()`: rows older than 5 minutes 30 seconds by the `Clock`. Extend `PlanDraftingServiceTest.java`, with a fixed clock at both sides of the limit, and with a plan already there the row goes and nothing is stored
-- [ ] T047 [US1] Add `QuizSubmittedListener` in `plan/infrastructure/input/`: `@EventListener` calls `DraftPlanUseCase.request` inside the submit's transaction; `@TransactionalEventListener(phase = AFTER_COMMIT)` hands `PlanDrafting.run` to a `newVirtualThreadPerTaskExecutor`, closed on shutdown (FR-001, FR-002)
-- [ ] T048 [US2] Add `PlanDraftingSweep` in `plan/infrastructure/input/` with `@Scheduled(fixedDelay = 30, timeUnit = SECONDS)` calling `overdue` and then `storeFailed` for each row in its own transaction, logging a failure by class name and carrying on with the next, and `@EnableScheduling` on `PlanConfig` (FR-005). Test in `plan/infrastructure/input/PlanDraftingSweepTest.java` that one failing row does not stop the others
-- [ ] T049 [US1] Extend `backend/src/test/java/com/kinetiq/KinetiqBackendApplicationIT.java` with `@MockitoBean PlanGenerator`: a real submit answers `DRAFTING_PLAN` while the generator blocks, then the plan is stored and the status is `WAITING_FOR_PLAN`; a failing submit starts nothing. Use a latch and Awaitility or a bounded loop, not a sleep
+- [X] T044 Add record `QuizSubmitted(AccountId client)` in `quiz/domain/model/`, port `QuizEventPublisher` in `quiz/domain/output/`, and `SpringQuizEventPublisher` in `quiz/infrastructure/output/` using `ApplicationEventPublisher`. `QuizSubmissionService.submit` publishes after saving; wire it in `QuizConfig.java`, with a recording fake in `quiz/domain/service/QuizSubmissionServiceTest.java`, proving a refused second submit publishes nothing
+- [X] T045 Add port `PlanDraftingRepository` in `plan/domain/output/` (`start(client, at)`, `boolean remove(client)` reporting whether a row was there, `List<AccountId> startedBefore(instant)`), `PlanDraftingRepositoryImpl` with `JdbcTemplate` in `plan/infrastructure/output/`, an `IT` next to it, and a fake in test sources
+- [X] T046 [US1] Extend `DraftPlanUseCase` and `PlanDraftingService`: `request(client)` writes the row; `storeBuilt` and `storeFailed` begin with `remove` and store nothing when no row was there, so the job and the sweep cannot both store and a late result is dropped (FR-005). Add `List<AccountId> overdue()`: rows older than 5 minutes 30 seconds by the `Clock`. Extend `PlanDraftingServiceTest.java`, with a fixed clock at both sides of the limit, and with a plan already there the row goes and nothing is stored
+- [X] T047 [US1] Add `QuizSubmittedListener` in `plan/infrastructure/input/`: `@EventListener` calls `DraftPlanUseCase.request` inside the submit's transaction; `@TransactionalEventListener(phase = AFTER_COMMIT)` hands `PlanDrafting.run` to a `newVirtualThreadPerTaskExecutor`, closed on shutdown (FR-001, FR-002)
+- [X] T048 [US2] Add `PlanDraftingSweep` in `plan/infrastructure/input/` with `@Scheduled(fixedDelay = 30, timeUnit = SECONDS)` calling `overdue` and then `storeFailed` for each row in its own transaction, logging a failure by class name and carrying on with the next, and `@EnableScheduling` on `PlanConfig` (FR-005). Test in `plan/infrastructure/input/PlanDraftingSweepTest.java` that one failing row does not stop the others
+- [X] T049 [US1] Extend `backend/src/test/java/com/kinetiq/KinetiqBackendApplicationIT.java` with `@MockitoBean PlanGenerator`: a real submit answers `DRAFTING_PLAN` while the generator blocks, then the plan is stored and the status is `WAITING_FOR_PLAN`; a failing submit starts nothing. Use a latch and Awaitility or a bounded loop, not a sleep
 
 ### Statuses
 
-- [ ] T050 [US3] Add `DRAFTING_PLAN` to `quiz/domain/model/QuizStatus.java`, and `isPlanDrafting` to `QuizSubmissionRepository` with a native exists query on `plan_draftings` in `JpaQuizSubmissionRepository.java`, as `hasPublishedPlan` does. `status` follows data-model.md's order, and `submit` returns `DRAFTING_PLAN`. Update `QuizSubmissionServiceTest.java`, `QuizSubmissionRepositoryImplIT.java` and `quiz/infrastructure/input/QuizControllerTest.java`
-- [ ] T051 [US4] Add `PLAN_DRAFTING` to `PlanState.java`; left-join `plan_draftings` in `JdbcClientDirectory.java`, the row winning over every other state. Extend `JdbcClientDirectoryIT.java`
-- [ ] T052 [US4] Add `PlanDraftingInProgressException` (code `plan.drafting`, kind `CONFLICT`) in `plan/domain/exception/`; `PlanManagementService.firstDraft` throws it when the state is `PLAN_DRAFTING`. Extend `PlanManagementServiceTest.java` and `PlanControllerTest.java` for `409` `plan.drafting` with nothing stored, and for a foreign client still answering `404` during drafting (FR-029)
-- [ ] T053 Start the backend and run `npm run gen:api`, committing `schema.d.ts`
+- [X] T050 [US3] Add `DRAFTING_PLAN` to `quiz/domain/model/QuizStatus.java`, and `isPlanDrafting` to `QuizSubmissionRepository` with a native exists query on `plan_draftings` in `JpaQuizSubmissionRepository.java`, as `hasPublishedPlan` does. `status` follows data-model.md's order, and `submit` returns `DRAFTING_PLAN`. Update `QuizSubmissionServiceTest.java`, `QuizSubmissionRepositoryImplIT.java` and `quiz/infrastructure/input/QuizControllerTest.java`
+- [X] T051 [US4] Add `PLAN_DRAFTING` to `PlanState.java`; left-join `plan_draftings` in `JdbcClientDirectory.java`, the row winning over every other state. Extend `JdbcClientDirectoryIT.java`
+- [X] T052 [US4] Add `PlanDraftingInProgressException` (code `plan.drafting`, kind `CONFLICT`) in `plan/domain/exception/`; `PlanManagementService.firstDraft` throws it when the state is `PLAN_DRAFTING`. Extend `PlanManagementServiceTest.java` and `PlanControllerTest.java` for `409` `plan.drafting` with nothing stored, and for a foreign client still answering `404` during drafting (FR-029)
+- [X] T053 Start the backend and run `npm run gen:api`, committing `schema.d.ts`
 
 ### Client screens
 
-- [ ] T054 [US3] In `frontend/src/features/quiz/components/quiz-status-check.tsx` accept several statuses for one page, and add `DRAFTING_PLAN: '/app/quiz/waiting'` to `PAGE_FOR`
-- [ ] T055 [US3] Rework `frontend/src/features/quiz/pages/waiting-page.tsx`: both statuses render one page. While `DRAFTING_PLAN` it polls with `refetchInterval` of 5 seconds, stopping on any other status, and shows the title and text of spec Texts, a `Spinner` and an `aria-hidden` `Skeleton` card as on the building board. The heading takes focus only on first mount; the change of state is announced through a `role="status"` region and moves no focus. `settings` and `message` stay in both states and are not unmounted. Motion respects reduced motion
-- [ ] T056 [US3] Replace `quiz.waiting.building.*` in `frontend/src/locales/en.json` and `pl.json` with spec Texts, dropping the count of answers and days
-- [ ] T057 [US3] Extend `frontend/src/features/quiz/pages/waiting-page.test.tsx`: building state shows with a skeleton; it moves to reviewing by itself, with focus unchanged and the change announced; a failed check keeps the state and checking goes on; Polish; a published status leaves
-- [ ] T058 [US5] Show the notice of spec Texts above the submit button in `frontend/src/features/quiz/pages/review-page.tsx`, and test it in `review-page.test.tsx`
-- [ ] T059 [US5] Change `account.join.consent` in both locales to the sentence of spec Texts; update `frontend/src/features/account/pages/join-page.test.tsx` if it quotes the old text (FR-028)
+- [X] T054 [US3] In `frontend/src/features/quiz/components/quiz-status-check.tsx` accept several statuses for one page, and add `DRAFTING_PLAN: '/app/quiz/waiting'` to `PAGE_FOR`
+- [X] T055 [US3] Rework `frontend/src/features/quiz/pages/waiting-page.tsx`: both statuses render one page. While `DRAFTING_PLAN` it polls with `refetchInterval` of 5 seconds, stopping on any other status, and shows the title and text of spec Texts, a `Spinner` and an `aria-hidden` `Skeleton` card as on the building board. The heading takes focus only on first mount; the change of state is announced through a `role="status"` region and moves no focus. `settings` and `message` stay in both states and are not unmounted. Motion respects reduced motion
+- [X] T056 [US3] Replace `quiz.waiting.building.*` in `frontend/src/locales/en.json` and `pl.json` with spec Texts, dropping the count of answers and days
+- [X] T057 [US3] Extend `frontend/src/features/quiz/pages/waiting-page.test.tsx`: building state shows with a skeleton; it moves to reviewing by itself, with focus unchanged and the change announced; a failed check keeps the state and checking goes on; Polish; a published status leaves
+- [X] T058 [US5] Show the notice of spec Texts above the submit button in `frontend/src/features/quiz/pages/review-page.tsx`, and test it in `review-page.test.tsx`
+- [X] T059 [US5] Change `account.join.consent` in both locales to the sentence of spec Texts; update `frontend/src/features/account/pages/join-page.test.tsx` if it quotes the old text (FR-028)
 
 ### Trainer screens
 
-- [ ] T060 [US4] In `frontend/src/features/plan/pages/plan-page.tsx` treat `client.planState === 'PLAN_DRAFTING'` before everything else: `usePlan` stays off, and a new `DraftingState` shows the line of spec Texts with `role="status"` and `PlanSkeleton`, with no "Build plan". While mounted it invalidates `['clients', client.id]` every 5 seconds unless `document.hidden`, so the tab and its badge move on by themselves (research R8)
-- [ ] T061 [US4] Add `PLAN_DRAFTING: 'outline'` to `plan-state-badge.tsx`, `clients.planStates.PLAN_DRAFTING` and `errors.plan.drafting` to both locales
-- [ ] T062 [US4] Extend `frontend/src/features/plan/pages/plan-page.test.tsx`: drafting shows the line and no "Build plan"; it moves to the editor when the state changes; `plan.drafting` from a save shows its message and keeps the edits
-- [ ] T063 Run `./gradlew check` and `npm run check`; commit
+- [X] T060 [US4] In `frontend/src/features/plan/pages/plan-page.tsx` treat `client.planState === 'PLAN_DRAFTING'` before everything else: `usePlan` stays off, and a new `DraftingState` shows the line of spec Texts with `role="status"` and `PlanSkeleton`, with no "Build plan". While mounted it invalidates `['clients', client.id]` every 5 seconds unless `document.hidden`, so the tab and its badge move on by themselves (research R8)
+- [X] T061 [US4] Add `PLAN_DRAFTING: 'outline'` to `plan-state-badge.tsx`, `clients.planStates.PLAN_DRAFTING` and `errors.plan.drafting` to both locales
+- [X] T062 [US4] Extend `frontend/src/features/plan/pages/plan-page.test.tsx`: drafting shows the line and no "Build plan"; it moves to the editor when the state changes; `plan.drafting` from a save shows its message and keeps the edits
+- [X] T063 Run `./gradlew check` and `npm run check`; commit
 
 ---
 
@@ -138,13 +138,13 @@ Paths below use `plan/`, `quiz/` and `client/` for those features under `backend
 
 **Purpose**: Everything `CLAUDE.md` asks for before the pull request. Fixes join the commit of the task they belong to, or a commit of their own when they cross tasks.
 
-- [ ] T064 [US1] Run quickstart scenarios 1–5 end to end in the running app, with the real service where the scenario says so, and search the backend log for the client's name and notes; fix what they find
-- [ ] T065 [US1] Run the evaluation matrix of contracts/prompt.md against the real service, all 8 cases with cases 2 and 3 repeated, and report each draft's split and exercises against SC-005; refine the prompt and the contract together if fewer than 8 of the 10 runs pass
-- [ ] T066 Check every changed screen in the built-in browser: waiting (building and reviewing), review notice, Plan tab states, both notes and badges, each at 375 px and 1280 px; light and dark; English and Polish; keyboard focus; console errors. Take screenshots where they help
-- [ ] T067 Review the changed screens with the ui-ux-pro-max skill for WCAG 2.2 AA and UX issues, keeping the design system authoritative; fix what it finds
-- [ ] T068 Run the `security-review` skill over the branch, checking personal data in prompts and logs, service text in responses, and access to drafts
-- [ ] T069 Check `gh pr list --json number,files` for migration numbers and renumber V16 if needed; run `./gradlew check` and `npm run check` a last time and report the real result
-- [ ] T070 Open one pull request with `Closes #79`, `Closes #80`, `Closes #81`, `Closes #82`, `Closes #83` and `Closes #84`, stating that it should be merged with rebase or a merge commit, and listing the spec's departures from #79 and #81: no fixed-template generator, and "Try again" left to #88
+- [X] T064 [US1] Run quickstart scenarios 1–5 end to end in the running app, with the real service where the scenario says so, and search the backend log for the client's name and notes; fix what they find
+- [X] T065 [US1] Run the evaluation matrix of contracts/prompt.md against the real service, all 8 cases with cases 2 and 3 repeated, and report each draft's split and exercises against SC-005; refine the prompt and the contract together if fewer than 8 of the 10 runs pass
+- [X] T066 Check every changed screen in the built-in browser: waiting (building and reviewing), review notice, Plan tab states, both notes and badges, each at 375 px and 1280 px; light and dark; English and Polish; keyboard focus; console errors. Take screenshots where they help
+- [X] T067 Review the changed screens with the ui-ux-pro-max skill for WCAG 2.2 AA and UX issues, keeping the design system authoritative; fix what it finds
+- [X] T068 Run the `security-review` skill over the branch, checking personal data in prompts and logs, service text in responses, and access to drafts
+- [X] T069 Check `gh pr list --json number,files` for migration numbers and renumber V16 if needed; run `./gradlew check` and `npm run check` a last time and report the real result
+- [X] T070 Open one pull request with `Closes #79`, `Closes #80`, `Closes #81`, `Closes #82`, `Closes #83` and `Closes #84`, stating that it should be merged with rebase or a merge commit, and listing the spec's departures from #79 and #81: no fixed-template generator, and "Try again" left to #88
 
 ---
 
@@ -184,7 +184,7 @@ Phases 1 to 5 are one story and ship together: a generated draft is only useful 
 | FR-006 | T004, T005, T011, T032 |
 | FR-007 | T002, T003 |
 | FR-008, FR-008a, FR-009–012 | T018–T022 |
-| FR-013, FR-014 | T020, T027, T019 |
+| FR-013, FR-014 | T020, T027, T019, T073 |
 | FR-015–018 | T027, T028, T030 |
 | FR-019–022 | T004, T013, T029, T030–T033 |
 | FR-023 | T025, T026, T035 |
@@ -199,3 +199,22 @@ Phases 1 to 5 are one story and ship together: a generated draft is only useful 
 | FR-033 | T041 |
 | FR-034 | T012, T049, T065 |
 
+---
+
+## Phase 7: Convergence
+
+- [X] T071 Run the edge cases missing from the evaluation matrix against the real service, body weight of 30 and 250 kg and a library of 240 exercises, and report each draft per FR-034 (partial)
+- [X] T072 Add a test that an answer breaking only a plan rule gives `draft.plan-rule` in `plan/domain/service/GeneratedPlanChecksTest.java` per T028 (partial)
+
+## Phase 8: Review follow-ups
+
+- [X] T073 [US1] Let the service pick each session's day per FR-012, FR-013 and FR-017: `day` in the answer schema of `PlanConfig` and in `GeneratedSession`, DAYS PER WEEK and USUAL DAYS (from `SessionDays`) in `PlanPrompt`, and `draft.session-day` for a missing, unknown or shared day in `GeneratedPlanChecks`, with tests; update contracts/prompt.md, data-model.md and research.md
+- [X] T074 Move the model's timeout, maximum tokens, temperature and reasoning effort to `kinetiq.plan-drafting` in `application.yaml`, read by `PlanConfig`; the sweep's limit follows from the timeout, two attempts, the pause and 25 seconds
+- [X] T075 [P] List every environment variable the backend reads in `.env.example`, each with a comment and a safe value, and say in `CLAUDE.md` that a new variable goes there
+- [X] T076 [P] Replace `DisposableBean` with `@PreDestroy` in `QuizSubmittedListener` and `ResendMailSender`
+- [X] T077 [P] Add the "All clients" link to the invites page, with a test, checked at 1280px in light and dark, English and Polish
+- [X] T078 Run the evaluation matrix of contracts/prompt.md on the final prompt, all 9 cases with case 2 repeated, and report each draft against SC-005
+
+## Phase 9: Convergence
+
+- [X] T079 Pin the sweep limit that the default timeout gives, 5 minutes 30 seconds, with a test of how `PlanConfig` computes it per SC-002 (partial)

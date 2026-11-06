@@ -94,6 +94,7 @@
       "not-found": "This client does not exist, or is not one of your clients."
     },
     "plan": {
+      "drafting": "This plan is still being drafted. Try again in a few minutes.",
       "not-found": "No plan yet.",
       "changed": "This plan was changed somewhere else. Reload the page to see it; copy anything you want to keep first.",
       "quiz-not-submitted": "{{name}} has to answer the quiz before you build a plan.",
@@ -224,7 +225,7 @@
       "emailHelp": "From your invite. You sign in with it.",
       "namePlaceholder": "e.g. Anna Kowalska",
       "atLeastSixteen": "I am 16 or older",
-      "consent": "I agree that Kinetiq processes my health data (sleep, soreness, stress, body weight and training logs) so {{trainerFirst}} can plan my training.",
+      "consent": "I agree that Kinetiq processes my health data (sleep, soreness, stress, body weight and training logs) so {{trainerFirst}} can plan my training, and sends my quiz answers to an external AI service to draft my first plan.",
       "privacyNotice": "Privacy notice",
       "opensInNewTab": "(opens in a new tab)",
       "submit": "Create account",
@@ -498,6 +499,7 @@
       "placeholder": "e.g. Left knee gets stiff on deep squats"
     },
     "review": {
+      "notice": "To draft your plan we send your answers to an external AI service. Please don't write names or contact details in your notes.",
       "label": "Review",
       "title": "Check your answers",
       "hint": "Your first plan is built from these 7 answers. Your trainer checks it before you see it.",
@@ -522,9 +524,8 @@
     },
     "waiting": {
       "building": {
-        "title": "Building your plan from 7 answers…",
-        "text_one": "Sessions, exercises and starting weights for {{count}} day a week.",
-        "text_other": "Sessions, exercises and starting weights for {{count}} days a week."
+        "title": "Building your plan",
+        "text": "Sessions, exercises and starting weights from your answers. This can take a few minutes, and you can close the app."
       },
       "reviewing": {
         "title": "Your trainer is reviewing your plan",
@@ -550,6 +551,7 @@
     },
     "planStates": {
       "NO_QUIZ": "No quiz yet",
+      "PLAN_DRAFTING": "Plan being drafted",
       "PLAN_TO_REVIEW": "Plan to review",
       "DRAFT": "Draft",
       "DRAFT_FAILED": "Draft failed",
@@ -646,6 +648,7 @@
     "leave": "Leave"
   },
   "plan": {
+    "drafting": "Drafting a plan from {{name}}'s quiz answers. This can take a few minutes.",
     "note": {
       "built": "Built automatically from the quiz answers. Check the exercises and loads. {{name}} sees the plan only after you publish it.",
       "failed": "Couldn't build this plan automatically. You can build it here."

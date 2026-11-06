@@ -598,7 +598,7 @@ export interface components {
         };
         QuizStatusResponse: {
             /** @enum {string} */
-            status: "NOT_SUBMITTED" | "WAITING_FOR_PLAN" | "PLAN_PUBLISHED";
+            status: "NOT_SUBMITTED" | "DRAFTING_PLAN" | "WAITING_FOR_PLAN" | "PLAN_PUBLISHED";
         };
         SetPasswordRequest: {
             token: string;
@@ -759,7 +759,7 @@ export interface components {
             /** @enum {string} */
             goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
             /** @enum {string} */
-            planState: "NO_QUIZ" | "PLAN_TO_REVIEW" | "DRAFT" | "DRAFT_FAILED" | "PUBLISHED";
+            planState: "NO_QUIZ" | "PLAN_DRAFTING" | "PLAN_TO_REVIEW" | "DRAFT" | "DRAFT_FAILED" | "PUBLISHED";
         };
     };
     responses: never;

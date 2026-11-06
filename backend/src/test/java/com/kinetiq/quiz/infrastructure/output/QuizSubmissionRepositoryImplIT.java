@@ -171,6 +171,16 @@ class QuizSubmissionRepositoryImplIT {
         assertThat(repository.hasPublishedPlan(published)).isTrue();
     }
 
+    @Test
+    void shouldTellWhetherAClientsPlanIsBeingDrafted() {
+        AccountId drafting = insertClient();
+        AccountId notDrafting = insertClient();
+        jdbc.update("insert into plan_draftings (client_id, started_at) values (?, now())", drafting.value());
+
+        assertThat(repository.isPlanDrafting(drafting)).isTrue();
+        assertThat(repository.isPlanDrafting(notDrafting)).isFalse();
+    }
+
     private void insertPlan(AccountId client, LocalDate firstWeek) {
         jdbc.update(
                 """

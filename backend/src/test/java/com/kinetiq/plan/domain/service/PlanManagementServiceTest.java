@@ -20,6 +20,7 @@ import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
+import com.kinetiq.plan.domain.exception.PlanDraftingInProgressException;
 import com.kinetiq.plan.domain.exception.PlanQuizNotSubmittedException;
 import com.kinetiq.plan.domain.exception.PlanRuleViolationException;
 import com.kinetiq.plan.domain.exception.PlanWeeksBeforeCurrentException;
@@ -47,6 +48,7 @@ class PlanManagementServiceTest {
     private static final AccountId OTHER_TRAINER = AccountId.random();
     private static final AccountId CLIENT = AccountId.random();
     private static final AccountId NO_QUIZ_CLIENT = AccountId.random();
+    private static final AccountId DRAFTING_CLIENT = AccountId.random();
     private static final ZoneId WARSAW = ZoneId.of("Europe/Warsaw");
     // Wednesday, in week 6 of a plan whose first week is Monday 28 September
     private static final Instant NOW = Instant.parse("2026-11-04T10:00:00Z");
@@ -75,7 +77,8 @@ class PlanManagementServiceTest {
     private final ViewClientsUseCase clients = new ViewClientsUseCase() {
         private final Map<AccountId, ClientSummary> own = Map.of(
                 CLIENT, new ClientSummary(CLIENT, "Ola", Goal.LOSE_FAT, PlanState.PLAN_TO_REVIEW, WARSAW),
-                NO_QUIZ_CLIENT, new ClientSummary(NO_QUIZ_CLIENT, "Jan", null, PlanState.NO_QUIZ, WARSAW));
+                NO_QUIZ_CLIENT, new ClientSummary(NO_QUIZ_CLIENT, "Jan", null, PlanState.NO_QUIZ, WARSAW),
+                DRAFTING_CLIENT, new ClientSummary(DRAFTING_CLIENT, "Ewa", Goal.LOSE_FAT, PlanState.PLAN_DRAFTING, WARSAW));
 
         @Override
         public List<ClientSummary> listClients(AccountId trainer) {
@@ -124,6 +127,22 @@ class PlanManagementServiceTest {
     private Plan storedPublished(int weeks) {
         return plans.save(
                 new Plan(PlanId.random(), CLIENT, Goal.LOSE_FAT, weeks, FIRST_WEEK, sessions(SQUAT.getId()), 0));
+    }
+
+    @Test
+    void shouldRefuseAFirstSaveAndStoreNothing_whileAPlanIsBeingDrafted() {
+        assertThatThrownBy(() -> service.save(save(DRAFTING_CLIENT, null, 12, sessions(SQUAT.getId()))))
+                .isInstanceOf(PlanDraftingInProgressException.class);
+
+        assertThat(plans.byClient).doesNotContainKey(DRAFTING_CLIENT);
+    }
+
+    @Test
+    void shouldAnswerNotFound_whenAnotherTrainerSavesForAClientBeingDrafted() {
+        SavePlanCommand foreign =
+                new SavePlanCommand(OTHER_TRAINER, DRAFTING_CLIENT, null, Goal.LOSE_FAT, 12, sessions(SQUAT.getId()));
+
+        assertThatThrownBy(() -> service.save(foreign)).isInstanceOf(ClientNotFoundException.class);
     }
 
     @Test

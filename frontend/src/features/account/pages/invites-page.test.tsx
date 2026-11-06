@@ -77,6 +77,14 @@ beforeEach(() => {
 afterEach(() => vi.useRealTimers())
 
 describe('InvitesPage', () => {
+  it('links back to all clients', async () => {
+    renderInvites(api([]))
+
+    expect(
+      await screen.findByRole('link', { name: 'All clients' }),
+    ).toHaveAttribute('href', '/trainer/clients')
+  })
+
   describe('list', () => {
     it('shows each open invite with when it was sent and when it expires', async () => {
       renderInvites(api([JULIA, ADAM]))

@@ -95,6 +95,22 @@ class JdbcClientDirectoryIT {
     }
 
     @Test
+    void shouldSayAPlanIsBeingDrafted_whateverElseIsThere() {
+        AccountId trainer = insertTrainer();
+        AccountId client = insertClient("Drafting", trainer);
+        AccountId withDraft = insertClient("With draft", trainer);
+        insertQuiz(client, Goal.LOSE_FAT);
+        insertQuiz(withDraft, Goal.LOSE_FAT);
+        insertMarkedDraft(withDraft, "BUILT");
+        for (AccountId drafting : new AccountId[] {client, withDraft}) {
+            jdbc.update("insert into plan_draftings (client_id, started_at) values (?, now())", drafting.value());
+        }
+
+        assertThat(stateOf(trainer, client)).isEqualTo(PlanState.PLAN_DRAFTING);
+        assertThat(stateOf(trainer, withDraft)).isEqualTo(PlanState.PLAN_DRAFTING);
+    }
+
+    @Test
     void shouldFollowThePlansMark_whenThereIsADraft() {
         AccountId trainer = insertTrainer();
         AccountId failed = insertClient("Failed", trainer);

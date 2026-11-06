@@ -34,6 +34,11 @@ class QuizSubmissionRepositoryImpl implements QuizSubmissionRepository {
         return jpa.hasPublishedPlan(client.value());
     }
 
+    @Override
+    public boolean isPlanDrafting(AccountId client) {
+        return jpa.isPlanDrafting(client.value());
+    }
+
     // flushed at once, so a submit that lost a race on the client's unique constraint fails here, where it can be told
     // apart from other failures
     @Override

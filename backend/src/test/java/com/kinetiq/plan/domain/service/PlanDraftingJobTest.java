@@ -7,8 +7,10 @@ import com.kinetiq.plan.domain.exception.PlanGeneratorUnavailableException;
 import com.kinetiq.plan.domain.model.AutomaticDraft;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.quiz.domain.model.Goal;
+import java.time.Clock;
 import java.time.Duration;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.system.CapturedOutput;
@@ -18,9 +20,14 @@ class PlanDraftingJobTest {
 
     private final DraftingFixture fixture = new DraftingFixture();
     private final StubPlanGenerator generator = new StubPlanGenerator();
-    private final PlanDraftingService service =
-            new PlanDraftingService(fixture.quiz, fixture.accounts, fixture.exercises, fixture.plans);
+    private final PlanDraftingService service = new PlanDraftingService(
+            fixture.quiz, fixture.accounts, fixture.exercises, fixture.plans, fixture.draftings, Clock.systemUTC(), Duration.ofMinutes(5));
     private final PlanDraftingJob job = new PlanDraftingJob(service, generator, Duration.ZERO);
+
+    @BeforeEach
+    void requestDrafting() {
+        service.request(fixture.client);
+    }
 
     private Plan stored() {
         return fixture.plans.byClient.get(fixture.client);
@@ -113,6 +120,17 @@ class PlanDraftingJobTest {
         assertThat(stored().getId()).isEqualTo(trainers.getId());
         assertThat(stored().getAutomaticDraft()).isEmpty();
         assertThat(stored().getGoal()).isEqualTo(Goal.GET_STRONGER);
+        assertThat(fixture.draftings.rows).isEmpty();
+    }
+
+    @Test
+    void shouldDropTheResult_whenTheSweepEndedTheDraftingFirst() {
+        service.storeFailed(fixture.client);
+        generator.answering(DraftingFixture.validAnswer());
+
+        job.run(fixture.client);
+
+        assertEmptyFailedDraft();
     }
 
     @Test
@@ -123,6 +141,7 @@ class PlanDraftingJobTest {
 
         assertThat(generator.received).isEmpty();
         assertThat(stored()).isNull();
+        assertThat(fixture.draftings.rows).isEmpty();
     }
 
     @Test

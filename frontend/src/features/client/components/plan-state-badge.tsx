@@ -8,6 +8,7 @@ const VARIANTS: Record<
   ComponentProps<typeof Badge>['variant']
 > = {
   NO_QUIZ: 'outline',
+  PLAN_DRAFTING: 'outline',
   PLAN_TO_REVIEW: 'warning',
   DRAFT: 'outline',
   DRAFT_FAILED: 'warning',

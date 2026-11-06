@@ -2,6 +2,7 @@ package com.kinetiq.common.infrastructure.output;
 
 import com.kinetiq.common.domain.output.Mail;
 import com.kinetiq.common.domain.output.MailSender;
+import jakarta.annotation.PreDestroy;
 import java.net.http.HttpClient;
 import java.time.Duration;
 import java.util.List;
@@ -9,7 +10,6 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
@@ -29,7 +29,7 @@ import org.springframework.web.client.RestClientResponseException;
 @Slf4j
 @Component
 @ConditionalOnExpression("!'${kinetiq.mail.api-key:}'.isBlank()")
-class ResendMailSender implements MailSender, DisposableBean {
+class ResendMailSender implements MailSender {
 
     private static final String ENDPOINT = "https://api.resend.com/emails";
 
@@ -102,8 +102,8 @@ class ResendMailSender implements MailSender, DisposableBean {
     }
 
     /** Waits for the mails still in flight, so a shutdown does not drop them. */
-    @Override
-    public void destroy() {
+    @PreDestroy
+    void destroy() {
         executor.close();
     }
 }

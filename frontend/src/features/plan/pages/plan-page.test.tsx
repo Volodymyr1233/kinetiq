@@ -1,7 +1,8 @@
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { focusManager } from '@tanstack/react-query'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { Toaster } from 'sonner'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import type { components } from '@/lib/api/schema'
 import type { Exercise } from '@/lib/exercise-library'
 import { json, problem, renderAppAt, SIGNED_IN } from '@/test/page'
@@ -157,6 +158,114 @@ describe('PlanPage', () => {
     expect(
       requests.map((request) => new URL(request.url).pathname),
     ).not.toContain(`/api/v1/clients/${NO_QUIZ.id}/plan`)
+  })
+
+  describe('while a plan is being drafted', () => {
+    const DRAFTING: Client = { ...WAITING, planState: 'PLAN_DRAFTING' }
+    const LINE =
+      "Drafting a plan from Ola Kowalska's quiz answers. This can take a few minutes."
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    it('says so, offers no way to build and asks nothing about a plan', async () => {
+      const { requests } = open(DRAFTING, backend(DRAFTING, null))
+
+      expect(await screen.findByText(LINE)).toHaveAttribute('role', 'status')
+      expect(
+        screen.queryByRole('button', { name: 'Build plan' }),
+      ).not.toBeInTheDocument()
+      expect(
+        requests.map((request) => new URL(request.url).pathname),
+      ).not.toContain(`/api/v1/clients/${DRAFTING.id}/plan`)
+    })
+
+    it('moves on to the editor and the new badge by itself when drafting ends', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      let client = DRAFTING
+      let plan: Plan | null = null
+      open(DRAFTING, async (request) => backend(client, plan)(request))
+      await screen.findByText(LINE)
+      expect(screen.getByText('Plan being drafted')).toBeInTheDocument()
+
+      client = { ...WAITING, planState: 'PLAN_TO_REVIEW' }
+      plan = { ...DRAFT, automaticDraft: 'BUILT' }
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+
+      expect(
+        await screen.findByRole('tab', { name: /Lower/ }),
+      ).toBeInTheDocument()
+      expect(screen.queryByText(LINE)).not.toBeInTheDocument()
+      expect(screen.getAllByRole('status')[0]).toHaveTextContent(
+        'Plan to review',
+      )
+      expect(screen.getByRole('note')).toHaveTextContent(
+        'Built automatically from the quiz answers.',
+      )
+    })
+
+    it('does not ask while the tab is hidden', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const { requests } = open(DRAFTING, backend(DRAFTING, null))
+      await screen.findByText(LINE)
+      const hidden = vi.spyOn(document, 'hidden', 'get').mockReturnValue(true)
+      const asks = () =>
+        requests.filter(
+          (request) =>
+            new URL(request.url).pathname === `/api/v1/clients/${DRAFTING.id}`,
+        ).length
+      const asked = asks()
+
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(15000)
+      })
+
+      expect(asks()).toBe(asked)
+      hidden.mockRestore()
+    })
+
+    it('says a save is refused during drafting and keeps the edits', async () => {
+      const user = userEvent.setup()
+      const healthy = backend(WAITING, null)
+      open(WAITING, async (request) =>
+        request.method === 'PUT'
+          ? problem(409, { status: 409, code: 'plan.drafting' })
+          : healthy(request),
+      )
+      await startBuilding(user)
+      await user.type(await screen.findByLabelText('Session name'), 'Lower')
+
+      await user.click(screen.getByRole('button', { name: 'Save plan' }))
+
+      expect(
+        await screen.findByText(
+          'This plan is still being drafted. Try again in a few minutes.',
+        ),
+      ).toBeInTheDocument()
+      expect(screen.getByLabelText('Session name')).toHaveValue('Lower')
+    })
+
+    it('keeps an editor open when drafting starts while the trainer builds by hand', async () => {
+      const user = userEvent.setup()
+      let client = WAITING
+      open(WAITING, async (request) => backend(client, null)(request))
+      await startBuilding(user)
+      await user.type(await screen.findByLabelText('Session name'), 'Lower')
+
+      client = DRAFTING
+      act(() => {
+        focusManager.setFocused(false)
+        focusManager.setFocused(true)
+      })
+
+      expect(await screen.findByText('Plan being drafted')).toBeInTheDocument()
+      expect(screen.queryByText(LINE)).not.toBeInTheDocument()
+      expect(screen.getByLabelText('Session name')).toHaveValue('Lower')
+      focusManager.setFocused(undefined)
+    })
   })
 
   it('offers to build a plan when there is none', async () => {

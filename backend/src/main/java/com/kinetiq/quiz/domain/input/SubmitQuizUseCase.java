@@ -11,6 +11,6 @@ public interface SubmitQuizUseCase {
      */
     QuizStatus submit(SubmitQuizCommand command);
 
-    /** Tells whether the client has submitted and whether a plan is published. */
+    /** Tells whether the client has submitted, whether a plan is being drafted and whether one is published. */
     QuizStatus status(AccountId client);
 }

@@ -16,6 +16,8 @@ class InMemoryQuizSubmissionRepository implements QuizSubmissionRepository {
 
     final Set<AccountId> withPublishedPlan = new HashSet<>();
 
+    final Set<AccountId> drafting = new HashSet<>();
+
     @Override
     public boolean existsByClient(AccountId client) {
         return byClient.containsKey(client);
@@ -29,6 +31,11 @@ class InMemoryQuizSubmissionRepository implements QuizSubmissionRepository {
     @Override
     public boolean hasPublishedPlan(AccountId client) {
         return withPublishedPlan.contains(client);
+    }
+
+    @Override
+    public boolean isPlanDrafting(AccountId client) {
+        return drafting.contains(client);
     }
 
     // honours the unique constraint on the client, as the database does
