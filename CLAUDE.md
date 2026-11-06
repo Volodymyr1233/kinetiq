@@ -85,8 +85,9 @@ Every task, chore and bug fix, in addition to its own acceptance criteria:
 
 - Every endpoint requires authentication unless deliberately opened. Never open one to make something work.
 - Secrets come from environment variables. Never commit them, never print them, never read `.env`.
+- `.env.example` lists every environment variable the app reads, with a comment and a safe value. A change that adds one adds it there.
 - Never put exception messages, SQL, class names or stack traces in an API response.
-- Never send names, emails or other personal identifiers to an LLM.
+- Never send names, emails or other personal identifiers held as data to an LLM. Free text a person wrote goes only after cleaning, and only when they were told (constitution III).
 - Validate input at the boundary: Bean Validation on request bodies, invariants in domain constructors.
 - Authorise by ownership, not only by role: a trainer sees only their clients, a client only their own data. Answer `404`, not `403`, for another person's resource.
 

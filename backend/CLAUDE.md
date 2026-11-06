@@ -110,7 +110,7 @@ Use the current language and its idioms.
 - An LLM is reached only through a gateway port; the domain decides what is acceptable.
 - Rules over logged data decide when a plan change is due. An LLM may draft its content; the domain validates the draft against bounds before it is stored.
 - Today-only adjustments are computed by rules, never by an LLM.
-- Prompts never contain names, emails or ids of a person.
+- Prompts never contain names, emails or ids of a person held as data. Free text a person wrote is cleaned of known identifiers first, and only sent when they were told (constitution III).
 
 ## Tests
 

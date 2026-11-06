@@ -4,6 +4,12 @@ plugins {
     id("io.spring.dependency-management") version "1.1.7"
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.springframework.ai:spring-ai-bom:2.0.2")
+    }
+}
+
 group = "com.kinetiq"
 version = "0.0.1-SNAPSHOT"
 
@@ -31,6 +37,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
     implementation("org.flywaydb:flyway-database-postgresql")
     implementation("org.mapstruct:mapstruct:$mapstructVersion")
+    implementation("org.springframework.ai:spring-ai-openai")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     developmentOnly("org.springframework.boot:spring-boot-docker-compose")

@@ -25,7 +25,8 @@ Rationale: without CI, drift between the two halves is only prevented by making 
 - Authentication is a server session cookie with CSRF protection, same origin. Tokens MUST NOT be stored in browser storage.
 - Secrets live in environment variables only and MUST NOT be committed.
 - Error responses MUST NOT expose exception messages, SQL, class names or stack traces.
-- Prompts sent to an LLM MUST NOT contain names, emails or other identifiers of a person.
+- Prompts sent to an LLM MUST NOT contain names, emails or other identifiers of a person that the system holds as data.
+- Free text a person wrote MAY go into a prompt only after the known identifiers are removed (stored names, email addresses, phone numbers), and only when that person was told it goes to an LLM and asked not to write such details. Free text cannot be cleaned with certainty, so this is the limit of the rule above.
 
 ### IV. Explainable, Approved Plan Changes
 
@@ -75,4 +76,4 @@ Rationale: training load affects injury risk; a number a person trains with has 
 - Amendments are made by pull request that changes this file and bumps the version: MAJOR for removing or redefining a principle, MINOR for adding one, PATCH for clarifications.
 - Plans MUST include a constitution check; reviewers verify it.
 
-**Version**: 1.1.0 | **Ratified**: 2026-10-11 | **Last Amended**: 2026-10-18
+**Version**: 1.2.0 | **Ratified**: 2026-10-11 | **Last Amended**: 2026-11-05
