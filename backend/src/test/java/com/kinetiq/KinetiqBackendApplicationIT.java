@@ -18,6 +18,7 @@ import java.time.Instant;
 import java.time.ZoneId;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -30,9 +31,12 @@ import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
-/** Whole application against a real database, checking the security defaults. */
+/**
+ * Whole application against a real database, checking the security defaults. The empty key proves it starts without
+ * one, even where the environment has it, and keeps every test away from the real service.
+ */
 @Import(TestcontainersConfiguration.class)
-@SpringBootTest
+@SpringBootTest(properties = "kinetiq.plan-drafting.api-key=")
 @AutoConfigureMockMvc
 class KinetiqBackendApplicationIT {
 
@@ -63,6 +67,13 @@ class KinetiqBackendApplicationIT {
 
     private long storedSignIns() {
         return jdbc.sql("select count(*) from spring_session").query(Long.class).single();
+    }
+
+    // the library logs a whole prompt when a response has no choices
+    @Test
+    void shouldKeepSpringAiOutOfTheLog() {
+        assertThat(LoggerFactory.getLogger("org.springframework.ai.openai.OpenAiChatModel").isErrorEnabled())
+                .isFalse();
     }
 
     @Test

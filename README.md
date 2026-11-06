@@ -9,6 +9,7 @@ Training system for trainers and their clients. Spring Boot REST API in `backend
 - Docker Desktop, running
 - [GitHub CLI](https://cli.github.com/), logged in with `gh auth login`
 - A `CONTEXT7_API_KEY` environment variable ([context7.com](https://context7.com)) for the documentation MCP server used by Claude Code
+- Optionally `OPENROUTER_API_KEY` and `OPENROUTER_MODEL` environment variables (see `.env.example`) for drafting first plans; without a key, every quiz submit gets an empty failed draft
 
 ## Run
 
