@@ -208,7 +208,13 @@ export const createRoutes = (): RouteObject[] => [
     },
     children: [
       { index: true, loader: () => redirect('/app/today') },
-      clientPlaceholder('today'),
+      {
+        path: 'today',
+        lazy: {
+          Component: async () =>
+            (await import('@/features/plan/pages/today-page')).TodayPage,
+        },
+      },
       {
         path: 'plan',
         lazy: {

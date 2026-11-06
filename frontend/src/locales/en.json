@@ -653,6 +653,12 @@
       "built": "Built automatically from the quiz answers. Check the exercises and loads. {{name}} sees the plan only after you publish it.",
       "failed": "Couldn't build this plan automatically. You can build it here."
     },
+    "today": {
+      "restDay": "Rest day",
+      "restText": "Nothing is planned for today.",
+      "start": "Start session",
+      "startSoon": "Starting a session arrives with logging."
+    },
     "client": {
       "none": "You don't have a plan yet.",
       "previous": "Previous week",
