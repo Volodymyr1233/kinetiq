@@ -4,6 +4,7 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.quiz.domain.exception.QuizAlreadySubmittedException;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.output.QuizSubmissionRepository;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,6 +22,11 @@ class QuizSubmissionRepositoryImpl implements QuizSubmissionRepository {
     @Override
     public boolean existsByClient(AccountId client) {
         return jpa.existsByClientId(client.value());
+    }
+
+    @Override
+    public Optional<QuizSubmission> findByClient(AccountId client) {
+        return jpa.findByClientId(client.value()).map(mapper::toDomain);
     }
 
     @Override

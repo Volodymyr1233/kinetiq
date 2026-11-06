@@ -1,5 +1,6 @@
 package com.kinetiq.quiz.infrastructure.output;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -7,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 interface JpaQuizSubmissionRepository extends JpaRepository<QuizSubmissionEntity, UUID> {
 
     boolean existsByClientId(UUID clientId);
+
+    Optional<QuizSubmissionEntity> findByClientId(UUID clientId);
 
     // plans belong to a feature that depends on this one, so they are read by SQL and not by class
     @Query(
