@@ -9,6 +9,7 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
+import com.kinetiq.plan.domain.exception.PlanDraftingInProgressException;
 import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanQuizNotSubmittedException;
@@ -75,6 +76,9 @@ public class PlanManagementService implements ManagePlanUseCase {
         // a version says this editor saw a plan, which is not there
         if (command.version() != null) {
             throw new PlanChangedException();
+        }
+        if (summary.getPlanState() == PlanState.PLAN_DRAFTING) {
+            throw new PlanDraftingInProgressException();
         }
         if (summary.getPlanState() == PlanState.NO_QUIZ) {
             throw new PlanQuizNotSubmittedException();

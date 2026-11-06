@@ -48,6 +48,7 @@ final class DraftingFixture {
             .mapToObj(number -> exercise("Exercise " + number))
             .toList());
     final InMemoryPlanRepository plans = new InMemoryPlanRepository();
+    final InMemoryPlanDraftingRepository draftings = new InMemoryPlanDraftingRepository();
 
     AccountId clientsTrainer = trainer;
     boolean answered = true;

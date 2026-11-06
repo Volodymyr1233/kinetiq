@@ -94,6 +94,7 @@
       "not-found": "Ten klient nie istnieje albo nie jest Twoim klientem."
     },
     "plan": {
+      "drafting": "Ten plan jest jeszcze w przygotowaniu. Spróbuj ponownie za kilka minut.",
       "not-found": "Nie ma jeszcze planu.",
       "changed": "Ten plan zmieniono gdzie indziej. Odśwież stronę, aby go zobaczyć; najpierw skopiuj to, co chcesz zachować.",
       "quiz-not-submitted": "{{name}}: najpierw potrzebne są odpowiedzi z quizu.",
@@ -226,7 +227,7 @@
       "emailHelp": "Z Twojego zaproszenia. Tym adresem będziesz się logować.",
       "namePlaceholder": "np. Anna Kowalska",
       "atLeastSixteen": "Mam co najmniej 16 lat",
-      "consent": "Zgadzam się, aby Kinetiq przetwarzał moje dane o zdrowiu (sen, bolesność mięśni, stres, masa ciała i zapisy treningów), dzięki czemu {{trainerFirst}} zaplanuje mój trening.",
+      "consent": "Zgadzam się, aby Kinetiq przetwarzał moje dane o zdrowiu (sen, bolesność mięśni, stres, masa ciała i zapisy treningów), dzięki czemu {{trainerFirst}} zaplanuje mój trening, oraz wysyłał moje odpowiedzi z quizu do zewnętrznej usługi AI, aby przygotować szkic pierwszego planu.",
       "privacyNotice": "Informacja o prywatności",
       "opensInNewTab": "(otwiera się w nowej karcie)",
       "submit": "Załóż konto",
@@ -504,6 +505,7 @@
       "placeholder": "np. Lewe kolano sztywnieje przy głębokich przysiadach"
     },
     "review": {
+      "notice": "Aby przygotować szkic planu, wysyłamy Twoje odpowiedzi do zewnętrznej usługi AI. Nie wpisuj w uwagach imion ani danych kontaktowych.",
       "label": "Przegląd",
       "title": "Sprawdź swoje odpowiedzi",
       "hint": "Twój pierwszy plan powstanie z tych 7 odpowiedzi. Trener sprawdza plan, zanim go zobaczysz.",
@@ -533,11 +535,8 @@
     },
     "waiting": {
       "building": {
-        "title": "Budujemy Twój plan z 7 odpowiedzi…",
-        "text_one": "Sesje, ćwiczenia i ciężary startowe na {{count}} dzień w tygodniu.",
-        "text_few": "Sesje, ćwiczenia i ciężary startowe na {{count}} dni w tygodniu.",
-        "text_many": "Sesje, ćwiczenia i ciężary startowe na {{count}} dni w tygodniu.",
-        "text_other": "Sesje, ćwiczenia i ciężary startowe na {{count}} dnia w tygodniu."
+        "title": "Budujemy Twój plan",
+        "text": "Sesje, ćwiczenia i obciążenia startowe na podstawie Twoich odpowiedzi. To może potrwać kilka minut, a aplikację możesz zamknąć."
       },
       "reviewing": {
         "title": "Trener sprawdza Twój plan",
@@ -565,6 +564,7 @@
     },
     "planStates": {
       "NO_QUIZ": "Quiz jeszcze nie wypełniony",
+      "PLAN_DRAFTING": "Szkic w przygotowaniu",
       "PLAN_TO_REVIEW": "Plan do przejrzenia",
       "DRAFT": "Szkic",
       "DRAFT_FAILED": "Szkic nieudany",
@@ -663,6 +663,7 @@
     "leave": "Wyjdź"
   },
   "plan": {
+    "drafting": "{{name}}: szkic planu powstaje z odpowiedzi w quizie. To może potrwać kilka minut.",
     "note": {
       "built": "Zbudowano automatycznie z odpowiedzi w quizie. Sprawdź ćwiczenia i obciążenia. {{name}}: plan będzie widoczny dopiero po publikacji.",
       "failed": "Nie udało się zbudować tego planu automatycznie. Możesz zbudować go tutaj."

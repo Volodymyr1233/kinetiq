@@ -1,5 +1,5 @@
 import { CircleAlertIcon } from 'lucide-react'
-import { useState } from 'react'
+import { Fragment, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useOutletContext } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
@@ -13,7 +13,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
-import { usePlan } from '../api/plans'
+import { useFollowDrafting, usePlan } from '../api/plans'
 import { PlanEditor } from '../components/plan-editor'
 
 type Client = components['schemas']['ClientResponse']
@@ -21,15 +21,43 @@ type Client = components['schemas']['ClientResponse']
 export function PlanPage() {
   const client = useOutletContext<Client>()
   // nothing of one client's editor may stay for the next
-  return <ClientPlan key={client.id} client={client} />
+  return (
+    <Fragment key={client.id}>
+      <DraftingEndAnnouncement planState={client.planState} />
+      <ClientPlan client={client} />
+    </Fragment>
+  )
+}
+
+// always there, because a live region announces changes only once it exists; the tab moves on with no action to follow
+function DraftingEndAnnouncement({
+  planState,
+}: {
+  planState: Client['planState']
+}) {
+  const { t } = useTranslation()
+  const [startedDrafting] = useState(planState === 'PLAN_DRAFTING')
+  return (
+    <p role="status" className="sr-only">
+      {startedDrafting &&
+        planState !== 'PLAN_DRAFTING' &&
+        t(`clients.planStates.${planState}`)}
+    </p>
+  )
 }
 
 function ClientPlan({ client }: { client: Client }) {
   const { t } = useTranslation()
   const noQuiz = client.planState === 'NO_QUIZ'
-  const query = usePlan(client.id, !noQuiz)
   // an untouched new plan is not stored, so leaving the tab shows "Build plan" again
   const [building, setBuilding] = useState(false)
+  // a trainer already building by hand keeps their edits; a save then says the plan is being drafted
+  const drafting = client.planState === 'PLAN_DRAFTING' && !building
+  const query = usePlan(client.id, !noQuiz && !drafting)
+
+  if (drafting) {
+    return <DraftingState client={client} />
+  }
 
   if (noQuiz) {
     return (
@@ -56,7 +84,7 @@ function ClientPlan({ client }: { client: Client }) {
         </AlertAction>
       </Alert>
     ) : (
-      <PlanSkeleton />
+      <PlanLoading />
     )
   }
 
@@ -76,13 +104,34 @@ function ClientPlan({ client }: { client: Client }) {
   return <PlanEditor client={client} plan={query.data} />
 }
 
-function PlanSkeleton() {
+function DraftingState({ client }: { client: Client }) {
+  const { t } = useTranslation()
+  useFollowDrafting(client.id)
+  return (
+    <div className="flex flex-col gap-2 pt-4">
+      <p role="status" className="text-muted-foreground text-sm">
+        {t('plan.drafting', { name: client.name })}
+      </p>
+      <PlanSkeleton />
+    </div>
+  )
+}
+
+function PlanLoading() {
   const { t } = useTranslation()
   return (
-    <div className="flex flex-col gap-6 pt-4">
+    <>
       <span className="sr-only" role="status">
         {t('plan.loading')}
       </span>
+      <PlanSkeleton />
+    </>
+  )
+}
+
+function PlanSkeleton() {
+  return (
+    <div className="flex flex-col gap-6 pt-4">
       <div aria-hidden className="flex flex-wrap items-end gap-4">
         <Skeleton className="h-14 w-56" />
         <Skeleton className="h-14 w-32" />

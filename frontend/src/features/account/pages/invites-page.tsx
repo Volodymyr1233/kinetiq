@@ -1,6 +1,7 @@
-import { CircleAlertIcon, UserPlusIcon } from 'lucide-react'
+import { ArrowLeftIcon, CircleAlertIcon, UserPlusIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { toast } from 'sonner'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -81,6 +82,12 @@ export function InvitesPage() {
 
   return (
     <div className="flex max-w-240 flex-col gap-6 px-6 py-8">
+      <Button variant="ghost" size="sm" className="self-start" asChild>
+        <Link to="/trainer/clients">
+          <ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
+          {t('clients.page.back')}
+        </Link>
+      </Button>
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="flex max-w-prose flex-col gap-1">
           <h1

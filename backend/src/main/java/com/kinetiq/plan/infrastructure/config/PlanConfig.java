@@ -7,6 +7,7 @@ import com.kinetiq.plan.domain.input.DraftPlanUseCase;
 import com.kinetiq.plan.domain.input.ManagePlanUseCase;
 import com.kinetiq.plan.domain.input.PlanDrafting;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
+import com.kinetiq.plan.domain.output.PlanDraftingRepository;
 import com.kinetiq.plan.domain.output.PlanGenerator;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import com.kinetiq.plan.domain.service.PlanDraftingJob;
@@ -24,12 +25,16 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.scheduling.annotation.EnableScheduling;
 
 @Configuration(proxyBeanMethods = false)
+@EnableScheduling
 class PlanConfig {
 
     private static final String OPENROUTER_URL = "https://openrouter.ai/api/v1";
     private static final Duration PAUSE_BETWEEN_ATTEMPTS = Duration.ofSeconds(5);
+    // with the sweep's 30 second interval, a drafting cut off by a restart ends within a minute of its last chance
+    private static final Duration SWEEP_MARGIN = Duration.ofSeconds(25);
 
     private static final String ANSWER_SCHEMA =
             """
@@ -90,8 +95,18 @@ class PlanConfig {
             ViewQuizAnswersUseCase quiz,
             CurrentAccountUseCase accounts,
             ListExercisesUseCase exercises,
-            PlanRepository plans) {
-        return new PlanDraftingService(quiz, accounts, exercises, plans);
+            PlanRepository plans,
+            PlanDraftingRepository draftings,
+            @Value("${kinetiq.plan-drafting.timeout}") Duration timeout) {
+        return new PlanDraftingService(
+                quiz, accounts, exercises, plans, draftings, Clock.systemUTC(), draftingLimit(timeout));
+    }
+
+    // a drafting older than this was cut off by a restart: every attempt and the pause have had their time
+    static Duration draftingLimit(Duration timeout) {
+        return timeout.multipliedBy(PlanDraftingJob.MAX_ATTEMPTS)
+                .plus(PAUSE_BETWEEN_ATTEMPTS)
+                .plus(SWEEP_MARGIN);
     }
 
     @Bean

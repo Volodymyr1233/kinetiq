@@ -13,16 +13,39 @@ import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.model.Goal;
+import java.time.Clock;
 import java.time.DayOfWeek;
+import java.time.Duration;
+import java.time.Instant;
+import java.time.ZoneOffset;
 import java.util.List;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class PlanDraftingServiceTest {
 
+    private static final Instant NOW = Instant.parse("2026-11-05T10:00:00Z");
+    private static final Duration LIMIT = Duration.ofMinutes(5).plusSeconds(30);
+
     private final DraftingFixture fixture = new DraftingFixture();
-    private final PlanDraftingService service =
-            new PlanDraftingService(fixture.quiz, fixture.accounts, fixture.exercises, fixture.plans);
+    private final PlanDraftingService service = serviceAt(NOW);
+
+    private PlanDraftingService serviceAt(Instant now) {
+        return new PlanDraftingService(
+                fixture.quiz,
+                fixture.accounts,
+                fixture.exercises,
+                fixture.plans,
+                fixture.draftings,
+                Clock.fixed(now, ZoneOffset.UTC),
+                LIMIT);
+    }
+
+    @BeforeEach
+    void requestDrafting() {
+        service.request(fixture.client);
+    }
 
     private List<Session> sessions() {
         return sessions(fixture.library.getFirst().getId());
@@ -84,6 +107,22 @@ class PlanDraftingServiceTest {
         }
 
         @Test
+        void shouldEndTheDrafting_whenStored() {
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(fixture.draftings.rows).isEmpty();
+        }
+
+        @Test
+        void shouldDropTheResult_whenTheDraftingHasEndedAlready() {
+            fixture.draftings.remove(fixture.client);
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isNull();
+        }
+
+        @Test
         void shouldRefuse_whenAnExerciseHasLeftTheLibrary() {
             assertThatThrownBy(() -> service.storeBuilt(fixture.client, fixture.trainer, sessions(ExerciseId.random())))
                     .isInstanceOf(GeneratedPlanRejectedException.class)
@@ -126,6 +165,7 @@ class PlanDraftingServiceTest {
             service.storeBuilt(fixture.client, fixture.trainer, sessions());
 
             assertThat(stored()).isSameAs(trainers);
+            assertThat(fixture.draftings.rows).isEmpty();
         }
     }
 
@@ -167,6 +207,50 @@ class PlanDraftingServiceTest {
             service.storeFailed(fixture.client);
 
             assertThat(stored()).isSameAs(trainers);
+            assertThat(fixture.draftings.rows).isEmpty();
+        }
+
+        @Test
+        void shouldStoreOnlyOnce_whenTheJobAndTheSweepBothEndADrafting() {
+            service.storeFailed(fixture.client);
+            Plan first = stored();
+
+            service.storeFailed(fixture.client);
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isSameAs(first);
+        }
+    }
+
+    @Nested
+    class Overdue {
+
+
+        @Test
+        void shouldLeaveARow_atTheLimit() {
+            assertThat(serviceAt(NOW.plus(LIMIT)).overdue()).isEmpty();
+        }
+
+        @Test
+        void shouldFindARow_pastTheLimit() {
+            assertThat(serviceAt(NOW.plus(LIMIT).plusSeconds(1)).overdue()).containsExactly(fixture.client);
+        }
+
+        @Test
+        void shouldFindNothing_onceTheDraftingHasEnded() {
+            service.storeFailed(fixture.client);
+
+            assertThat(serviceAt(NOW.plus(LIMIT).plusSeconds(1)).overdue()).isEmpty();
+        }
+
+        @Test
+        void shouldEndWithinSixMinutes_whenARestartLeftADrafting() {
+            PlanDraftingService later = serviceAt(NOW.plus(LIMIT).plusSeconds(30));
+
+            later.overdue().forEach(later::storeFailed);
+
+            assertThat(stored().getAutomaticDraft()).contains(AutomaticDraft.FAILED);
+            assertThat(fixture.draftings.rows).isEmpty();
         }
     }
 }

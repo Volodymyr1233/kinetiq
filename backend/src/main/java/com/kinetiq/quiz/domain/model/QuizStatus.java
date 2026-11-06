@@ -3,6 +3,7 @@ package com.kinetiq.quiz.domain.model;
 /** Where the signed-in client stands with the quiz and the plan that follows it. */
 public enum QuizStatus {
     NOT_SUBMITTED,
+    DRAFTING_PLAN,
     WAITING_FOR_PLAN,
     PLAN_PUBLISHED
 }

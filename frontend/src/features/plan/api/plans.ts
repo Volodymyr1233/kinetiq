@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import { api } from '@/lib/api/client'
 import { problemCode } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
@@ -26,6 +27,23 @@ export function usePlan(client: string, enabled: boolean) {
     // the editor copies the plan once, so opening it must never start from an old copy and then be stale
     gcTime: 0,
   })
+}
+
+/**
+ * While mounted, asks every 5 seconds whether drafting has ended, skipping a hidden tab. The client's state moves the tab
+ * and its badge on; forgetting the plan first keeps an earlier "no plan" from showing for a moment after that.
+ */
+export function useFollowDrafting(client: string) {
+  const queryClient = useQueryClient()
+  useEffect(() => {
+    void queryClient.resetQueries({ queryKey: planKey(client) })
+    const timer = setInterval(() => {
+      if (!document.hidden) {
+        void queryClient.invalidateQueries({ queryKey: ['clients', client] })
+      }
+    }, 5000)
+    return () => clearInterval(timer)
+  }, [queryClient, client])
 }
 
 // the client's status and goal and the library's plan counts follow from what was saved

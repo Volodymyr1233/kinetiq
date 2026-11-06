@@ -28,7 +28,7 @@ class QuizController {
         return new AccountId(UUID.fromString(authentication.getName()));
     }
 
-    /** Answers whether the client has submitted the quiz and whether a plan is published. */
+    /** Answers whether the client has submitted the quiz, whether a plan is being drafted and whether one is published. */
     @GetMapping
     QuizStatusResponse status(Authentication authentication) {
         return new QuizStatusResponse(quiz.status(signedIn(authentication)));

@@ -64,7 +64,7 @@ class QuizControllerTest {
 
     @BeforeEach
     void stubUseCase() {
-        when(quiz.submit(any())).thenReturn(QuizStatus.WAITING_FOR_PLAN);
+        when(quiz.submit(any())).thenReturn(QuizStatus.DRAFTING_PLAN);
         when(quiz.status(any())).thenReturn(QuizStatus.NOT_SUBMITTED);
     }
 
@@ -121,7 +121,7 @@ class QuizControllerTest {
             var result = post(BODY, CLIENT);
 
             assertThat(result).hasStatus(HttpStatus.CREATED);
-            assertThat(result).bodyJson().extractingPath("$").isEqualTo(Map.of("status", "WAITING_FOR_PLAN"));
+            assertThat(result).bodyJson().extractingPath("$").isEqualTo(Map.of("status", "DRAFTING_PLAN"));
             verify(quiz)
                     .submit(new SubmitQuizCommand(
                             CLIENT_ID,

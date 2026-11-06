@@ -47,7 +47,7 @@ function Review({ settings }: { settings?: ReactNode }) {
   const alreadySubmitted =
     problemCode(submit.error) === 'quiz.already-submitted'
   if (submit.isPending || submit.isSuccess || alreadySubmitted) {
-    return <Building days={draft.answers.days} />
+    return <Building />
   }
 
   if (!isComplete(draft, unit)) {
@@ -119,7 +119,8 @@ function Review({ settings }: { settings?: ReactNode }) {
           ))}
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-6 py-6">
+      {/* the margin keeps whatever takes focus clear of the sticky footer */}
+      <main className="flex flex-1 flex-col gap-6 py-6 [&_*]:scroll-mb-60">
         <div className="flex flex-col gap-2">
           <h1
             ref={headingRef}
@@ -178,6 +179,9 @@ function Review({ settings }: { settings?: ReactNode }) {
             </AlertDescription>
           </Alert>
         )}
+        <p className="text-muted-foreground text-sm">
+          {t('quiz.review.notice')}
+        </p>
         <Button
           size="touch"
           className="bg-brand text-brand-foreground hover:bg-brand/80 w-full"
@@ -194,7 +198,7 @@ function Review({ settings }: { settings?: ReactNode }) {
 }
 
 // shown while the answers are on their way; nothing drafts a plan yet, so the reviewing state follows at once
-function Building({ days }: { days: number }) {
+function Building() {
   const { t } = useTranslation()
   const headingRef = useRef<HTMLHeadingElement>(null)
 
@@ -214,7 +218,7 @@ function Building({ days }: { days: number }) {
           {t('quiz.waiting.building.title')}
         </h1>
         <p className="text-muted-foreground">
-          {t('quiz.waiting.building.text', { count: days })}
+          {t('quiz.waiting.building.text')}
         </p>
       </div>
       {/* the plan summary's place, in the card's loading state (design system 6.1) */}

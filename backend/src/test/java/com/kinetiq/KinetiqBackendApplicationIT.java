@@ -1,6 +1,12 @@
 package com.kinetiq;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.reset;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import com.jayway.jsonpath.JsonPath;
 import com.kinetiq.account.domain.model.Account;
@@ -13,10 +19,19 @@ import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.common.domain.model.Email;
+import com.kinetiq.plan.domain.model.GeneratedPlan;
+import com.kinetiq.plan.domain.model.GeneratedPlan.GeneratedEntry;
+import com.kinetiq.plan.domain.model.GeneratedPlan.GeneratedSession;
+import com.kinetiq.plan.domain.output.PlanGenerator;
 import jakarta.servlet.http.Cookie;
 import java.time.Instant;
+import java.time.Duration;
 import java.time.ZoneId;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
+import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +43,7 @@ import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.simple.JdbcClient;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.session.jdbc.JdbcIndexedSessionRepository;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
 
@@ -56,6 +72,9 @@ class KinetiqBackendApplicationIT {
 
     @Autowired
     private PasswordHasher hasher;
+
+    @MockitoBean
+    private PlanGenerator generator;
 
     private Cookie csrfToken(Cookie... cookies) {
         var request = mvc.get().uri("/api/v1/csrf");
@@ -438,6 +457,121 @@ class KinetiqBackendApplicationIT {
             request.contentType(MediaType.APPLICATION_JSON).content(json);
         }
         return request.exchange();
+    }
+
+    private static final String QUIZ =
+            """
+            {"goal":"LOSE_FAT","experience":"YEARS_1_TO_2","level":"INTERMEDIATE","age":30,"heightCm":178,
+             "weightKg":80.0,"likes":["WEIGHTS"],"daysPerWeek":2,"notes":"Left knee"}
+            """;
+
+    private static GeneratedPlan validAnswer() {
+        List<GeneratedEntry> entries = List.of("E1", "E2", "E3", "E4").stream()
+                .map(key -> new GeneratedEntry(key, 3, 10, null, 7, 90))
+                .toList();
+        return new GeneratedPlan(
+                List.of(
+                        new GeneratedSession("Lower body", "TUESDAY", entries),
+                        new GeneratedSession("Upper body", "FRIDAY", entries)));
+    }
+
+    private void assertQuizStatus(Cookie client, String status) {
+        assertThat(mvc.get().uri("/api/v1/quiz").cookie(client))
+                .hasStatusOk()
+                .bodyJson()
+                .extractingPath("$.status")
+                .isEqualTo(status);
+    }
+
+    private AccountId trainerOf(AccountId client) {
+        return accounts.findById(client).orElseThrow().getTrainerId().orElseThrow();
+    }
+
+    @Test
+    void shouldAnswerAtOnceAndDraftInTheBackground_whenAQuizIsSubmitted() throws Exception {
+        reset(generator);
+        CountDownLatch release = new CountDownLatch(1);
+        when(generator.generate(any())).thenAnswer(call -> {
+            assertThat(release.await(30, TimeUnit.SECONDS)).isTrue();
+            return validAnswer();
+        });
+        AccountId clientId = saveAccount("it.quiz.client@example.com", Role.CLIENT);
+        Cookie client = signIn("it.quiz.client@example.com").getResponse().getCookie("SESSION");
+        Cookie trainer = signIn("coach.it.quiz.client@example.com").getResponse().getCookie("SESSION");
+        String planAddress = "/api/v1/clients/" + clientId.value() + "/plan";
+
+        assertThat(send(client, mvc.post().uri("/api/v1/quiz"), QUIZ))
+                .hasStatus(HttpStatus.CREATED)
+                .bodyJson()
+                .extractingPath("$.status")
+                .isEqualTo("DRAFTING_PLAN");
+
+        assertQuizStatus(client, "DRAFTING_PLAN");
+        assertThat(mvc.get().uri("/api/v1/clients/" + clientId.value()).cookie(trainer))
+                .bodyJson()
+                .extractingPath("$.planState")
+                .isEqualTo("PLAN_DRAFTING");
+        assertThat(mvc.get().uri(planAddress).cookie(trainer)).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(send(
+                        trainer,
+                        mvc.put().uri(planAddress),
+                        "{\"goal\":\"LOSE_FAT\",\"weeks\":12,\"sessions\":[]}"))
+                .hasStatus(HttpStatus.CONFLICT)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("plan.drafting");
+
+        release.countDown();
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .untilAsserted(() -> assertQuizStatus(client, "WAITING_FOR_PLAN"));
+
+        var plan = mvc.get().uri(planAddress).cookie(trainer).exchange();
+        assertThat(plan).hasStatusOk();
+        assertThat(plan).bodyJson().extractingPath("$.automaticDraft").isEqualTo("BUILT");
+        assertThat(plan).bodyJson().extractingPath("$.goal").isEqualTo("LOSE_FAT");
+        assertThat(plan).bodyJson().extractingPath("$.weeks").isEqualTo(12);
+        assertThat(plan).bodyJson().extractingPath("$.sessions[0].day").isEqualTo("TUESDAY");
+        assertThat(plan).bodyJson().extractingPath("$.sessions[1].day").isEqualTo("FRIDAY");
+        assertThat(mvc.get().uri("/api/v1/clients/" + clientId.value()).cookie(trainer))
+                .bodyJson()
+                .extractingPath("$.planState")
+                .isEqualTo("PLAN_TO_REVIEW");
+        assertThat(mvc.get().uri("/api/v1/plan").cookie(client))
+                .hasStatus(HttpStatus.NOT_FOUND)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("plan.not-found");
+    }
+
+    @Test
+    void shouldStartNothing_whenASubmitIsRefused() {
+        reset(generator);
+        when(generator.generate(any())).thenReturn(validAnswer());
+        AccountId clientId = saveAccount("it.quiz.twice@example.com", Role.CLIENT);
+        Cookie client = signIn("it.quiz.twice@example.com").getResponse().getCookie("SESSION");
+
+        assertThat(send(client, mvc.post().uri("/api/v1/quiz"), QUIZ.replace("\"age\":30", "\"age\":15")))
+                .hasStatus(HttpStatus.BAD_REQUEST);
+        verify(generator, never()).generate(any());
+        assertQuizStatus(client, "NOT_SUBMITTED");
+
+        assertThat(send(client, mvc.post().uri("/api/v1/quiz"), QUIZ)).hasStatus(HttpStatus.CREATED);
+        Awaitility.await()
+                .atMost(Duration.ofSeconds(30))
+                .untilAsserted(() -> assertQuizStatus(client, "WAITING_FOR_PLAN"));
+
+        assertThat(send(client, mvc.post().uri("/api/v1/quiz"), QUIZ))
+                .hasStatus(HttpStatus.CONFLICT)
+                .bodyJson()
+                .extractingPath("$.code")
+                .isEqualTo("quiz.already-submitted");
+        assertThat(jdbc.sql("select count(*) from plan_draftings where client_id = ?")
+                        .param(clientId.value())
+                        .query(Long.class)
+                        .single())
+                .isZero();
+        verify(generator, times(1)).generate(any());
     }
 
     @Test

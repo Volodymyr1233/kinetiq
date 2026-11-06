@@ -1,5 +1,6 @@
 package com.kinetiq.quiz.infrastructure.config;
 
+import com.kinetiq.quiz.domain.output.QuizEventPublisher;
 import com.kinetiq.quiz.domain.output.QuizSubmissionRepository;
 import com.kinetiq.quiz.domain.service.QuizSubmissionService;
 import java.time.Clock;
@@ -10,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 class QuizConfig {
 
     @Bean
-    QuizSubmissionService quizSubmissionService(QuizSubmissionRepository submissions) {
-        return new QuizSubmissionService(submissions, Clock.systemUTC());
+    QuizSubmissionService quizSubmissionService(QuizSubmissionRepository submissions, QuizEventPublisher events) {
+        return new QuizSubmissionService(submissions, events, Clock.systemUTC());
     }
 }

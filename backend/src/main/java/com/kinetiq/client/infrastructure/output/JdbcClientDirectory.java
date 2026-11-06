@@ -16,16 +16,18 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 
-// a read model over the accounts, the quiz answers and the plans: one query, and no class of those features
+// a read model over the accounts, the quiz answers, the plans and their drafting: one query, and no class of those features
 @Repository
 @RequiredArgsConstructor
 class JdbcClientDirectory implements ClientDirectory {
 
     private static final String CLIENTS_OF = """
-            select a.id, a.name, a.time_zone, q.goal as quiz_goal, p.goal as plan_goal, p.first_week, p.automatic_draft
+            select a.id, a.name, a.time_zone, q.goal as quiz_goal, p.goal as plan_goal, p.first_week, p.automatic_draft,
+                   d.client_id is not null as drafting
             from accounts a
             left join quiz_submissions q on q.client_id = a.id
             left join plans p on p.client_id = a.id
+            left join plan_draftings d on d.client_id = a.id
             where a.trainer_id = ?
             """;
 
@@ -51,11 +53,13 @@ class JdbcClientDirectory implements ClientDirectory {
                 new AccountId(rows.getObject("id", UUID.class)),
                 rows.getString("name"),
                 goal == null ? null : Goal.valueOf(goal),
-                planState(
-                        quizGoal,
-                        planGoal,
-                        rows.getObject("first_week", LocalDate.class),
-                        rows.getString("automatic_draft")),
+                rows.getBoolean("drafting")
+                        ? PlanState.PLAN_DRAFTING
+                        : planState(
+                                quizGoal,
+                                planGoal,
+                                rows.getObject("first_week", LocalDate.class),
+                                rows.getString("automatic_draft")),
                 ZoneId.of(rows.getString("time_zone")));
     }
 

@@ -11,19 +11,20 @@ import { useQuizStatus, type QuizStatus } from '../api/quiz'
 // a published plan leaves the quiz for the app
 const PAGE_FOR: Record<QuizStatus, string> = {
   NOT_SUBMITTED: '/app/quiz',
+  DRAFTING_PLAN: '/app/quiz/waiting',
   WAITING_FOR_PLAN: '/app/quiz/waiting',
   PLAN_PUBLISHED: '/app',
 }
 
 /**
- * Shows a page only for the quiz status it belongs to, a quiz page or the client area, and sends the client to the
+ * Shows a page only for the quiz statuses it belongs to, a quiz page or the client area, and sends the client to the
  * page of their status (research R12).
  */
 export function QuizStatusCheck({
   status,
   children,
 }: {
-  status: QuizStatus
+  status: QuizStatus | QuizStatus[]
   children: ReactNode
 }) {
   const { t } = useTranslation()
@@ -59,7 +60,7 @@ export function QuizStatusCheck({
     )
   }
 
-  if (query.data !== status) {
+  if (![status].flat().includes(query.data)) {
     return <Navigate replace to={PAGE_FOR[query.data]} />
   }
   return children

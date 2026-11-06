@@ -12,10 +12,13 @@ import com.kinetiq.quiz.domain.model.Level;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizStatus;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
+import com.kinetiq.quiz.domain.model.QuizSubmitted;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -26,8 +29,9 @@ class QuizSubmissionServiceTest {
     private static final AccountId CLIENT = AccountId.random();
 
     private final InMemoryQuizSubmissionRepository submissions = new InMemoryQuizSubmissionRepository();
+    private final List<QuizSubmitted> published = new ArrayList<>();
     private final QuizSubmissionService service =
-            new QuizSubmissionService(submissions, Clock.fixed(NOW, ZoneOffset.UTC));
+            new QuizSubmissionService(submissions, published::add, Clock.fixed(NOW, ZoneOffset.UTC));
 
     private static SubmitQuizCommand command(Goal goal) {
         return new SubmitQuizCommand(
@@ -50,7 +54,8 @@ class QuizSubmissionServiceTest {
         void shouldStoreTheAnswersWithTheTime_whenFirstSubmit() {
             QuizStatus status = service.submit(command(Goal.BUILD_MUSCLE));
 
-            assertThat(status).isEqualTo(QuizStatus.WAITING_FOR_PLAN);
+            assertThat(status).isEqualTo(QuizStatus.DRAFTING_PLAN);
+            assertThat(published).containsExactly(new QuizSubmitted(CLIENT));
             QuizSubmission stored = submissions.byClient.get(CLIENT);
             assertThat(stored.getGoal()).isEqualTo(Goal.BUILD_MUSCLE);
             assertThat(stored.getNotes()).contains("Left knee");
@@ -64,6 +69,7 @@ class QuizSubmissionServiceTest {
             assertThatThrownBy(() -> service.submit(command(Goal.LOSE_FAT)))
                     .isInstanceOf(QuizAlreadySubmittedException.class);
             assertThat(submissions.byClient.get(CLIENT).getGoal()).isEqualTo(Goal.BUILD_MUSCLE);
+            assertThat(published).hasSize(1);
         }
     }
 
@@ -80,6 +86,23 @@ class QuizSubmissionServiceTest {
             service.submit(command(Goal.BUILD_MUSCLE));
 
             assertThat(service.status(CLIENT)).isEqualTo(QuizStatus.WAITING_FOR_PLAN);
+        }
+
+        @Test
+        void shouldSayAPlanIsBeingDrafted_whileThereIsADrafting() {
+            service.submit(command(Goal.BUILD_MUSCLE));
+            submissions.drafting.add(CLIENT);
+
+            assertThat(service.status(CLIENT)).isEqualTo(QuizStatus.DRAFTING_PLAN);
+        }
+
+        @Test
+        void shouldSayThePlanIsPublished_evenIfADraftingWereLeft() {
+            service.submit(command(Goal.BUILD_MUSCLE));
+            submissions.drafting.add(CLIENT);
+            submissions.withPublishedPlan.add(CLIENT);
+
+            assertThat(service.status(CLIENT)).isEqualTo(QuizStatus.PLAN_PUBLISHED);
         }
 
         @Test

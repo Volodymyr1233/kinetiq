@@ -8,16 +8,23 @@ import java.util.Optional;
 /** The short reads and writes of a drafting, each in its own transaction, so that no model call holds a connection. */
 public interface DraftPlanUseCase {
 
+    /** Records that the client's first plan is being drafted. Part of the submit's transaction. */
+    void request(AccountId client);
+
     /** What a drafting needs; empty when the client's answers or trainer are gone. */
     Optional<DraftInput> input(AccountId client);
 
     /**
-     * Stores the draft with the quiz's goal and 12 weeks, unless the client has a plan by now, or their answers are gone,
-     * or {@code trainer} is no longer their trainer. Throws {@code GeneratedPlanRejectedException} when an exercise has
-     * left the trainer's library since the prompt was built.
+     * Ends the drafting and stores the draft with the quiz's goal and 12 weeks, unless the drafting has ended already, the
+     * client has a plan by now, their answers are gone, or {@code trainer} is no longer their trainer. Throws
+     * {@code GeneratedPlanRejectedException} when an exercise has left the trainer's library since the prompt was built,
+     * which also undoes ending the drafting, so another attempt can store.
      */
     void storeBuilt(AccountId client, AccountId trainer, List<Session> sessions);
 
-    /** Stores an empty failed draft with the quiz's goal and 12 weeks, under the same conditions as a built one. */
+    /** Ends the drafting and stores an empty failed draft with the quiz's goal and 12 weeks, under the same conditions. */
     void storeFailed(AccountId client);
+
+    /** The clients whose drafting has lasted too long to be still running, so a restart cannot leave anyone waiting. */
+    List<AccountId> overdue();
 }

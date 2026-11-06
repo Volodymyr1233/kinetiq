@@ -22,6 +22,7 @@ import com.kinetiq.plan.domain.exception.PlanAlreadyPublishedException;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
+import com.kinetiq.plan.domain.exception.PlanDraftingInProgressException;
 import com.kinetiq.plan.domain.exception.PlanQuizNotSubmittedException;
 import com.kinetiq.plan.domain.exception.PlanRuleViolationException;
 import com.kinetiq.plan.domain.exception.PlanWeeksBeforeCurrentException;
@@ -375,6 +376,7 @@ class PlanControllerTest {
         return Stream.of(
                 Arguments.of(new PlanChangedException(), HttpStatus.CONFLICT, "plan.changed"),
                 Arguments.of(new PlanQuizNotSubmittedException(), HttpStatus.CONFLICT, "plan.quiz-not-submitted"),
+                Arguments.of(new PlanDraftingInProgressException(), HttpStatus.CONFLICT, "plan.drafting"),
                 Arguments.of(
                         new PlanExerciseNotInLibraryException(),
                         HttpStatus.BAD_REQUEST,
