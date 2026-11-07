@@ -20,6 +20,7 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
+import com.kinetiq.plan.domain.input.DraftSummary;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
@@ -90,6 +91,11 @@ class SessionLogServiceTest {
 
         @Override
         public void acknowledge(AccountId client) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public DraftSummary draftSummary(AccountId client) {
             throw new UnsupportedOperationException();
         }
 

@@ -21,6 +21,7 @@ import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanWeekOutOfRangeException;
+import com.kinetiq.plan.domain.input.DraftSummary;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
@@ -358,6 +359,66 @@ class PlanViewServiceTest {
             service.acknowledge(CLIENT);
 
             assertThat(plans.seen).containsExactly(CLIENT);
+        }
+    }
+
+    @Nested
+    class Summary {
+
+        private void assertNoSummary(AccountId client) {
+            assertThatThrownBy(() -> service.draftSummary(client)).isExactlyInstanceOf(PlanNotFoundException.class);
+        }
+
+        @Test
+        void shouldGiveTheDaysInWeekOrderTheWeeksAndTheGoal_whenTheDraftHasSessions() {
+            plans.byClient.put(CLIENT, Plan.draft(CLIENT, Goal.GET_STRONGER, 10, sessions().reversed()));
+
+            assertThat(service.draftSummary(CLIENT))
+                    .isEqualTo(new DraftSummary(List.of(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), 10, Goal.GET_STRONGER));
+        }
+
+        @Test
+        void shouldGiveTheSummary_whenTheDraftWasBuiltAutomatically() {
+            plans.byClient.put(CLIENT, Plan.built(CLIENT, Goal.GET_STRONGER, 12, sessions()));
+
+            assertThat(service.draftSummary(CLIENT).trainingDays()).hasSize(2);
+        }
+
+        @Test
+        void shouldGiveTheSummary_whenTheTrainerFilledAFailedDraft() {
+            Plan failed = Plan.failed(CLIENT, Goal.GET_STRONGER, 12);
+            plans.byClient.put(CLIENT, failed.edit(Goal.LOSE_FAT, 8, sessions(), FIRST_WEEK));
+
+            assertThat(service.draftSummary(CLIENT))
+                    .isEqualTo(new DraftSummary(List.of(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), 8, Goal.LOSE_FAT));
+        }
+
+        @Test
+        void shouldAnswerLikeNoPlan_whenTheDraftFailed() {
+            plans.byClient.put(CLIENT, Plan.failed(CLIENT, Goal.GET_STRONGER, 12));
+
+            assertNoSummary(CLIENT);
+        }
+
+        @Test
+        void shouldAnswerLikeNoPlan_whenTheDraftHasNoSessions() {
+            plans.byClient.put(CLIENT, Plan.draft(CLIENT, Goal.GET_STRONGER, 12, List.of()));
+
+            assertNoSummary(CLIENT);
+        }
+
+        @Test
+        void shouldAnswerLikeNoPlan_whenThePlanIsPublished() {
+            storePublished(12, FIRST_WEEK);
+
+            assertNoSummary(CLIENT);
+        }
+
+        @Test
+        void shouldAnswerLikeNoPlan_whenTheClientHasNoPlan() {
+            storeDraft();
+
+            assertNoSummary(OTHER_CLIENT);
         }
     }
 }

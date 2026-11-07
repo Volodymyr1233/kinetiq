@@ -18,6 +18,7 @@ import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanWeekOutOfRangeException;
+import com.kinetiq.plan.domain.input.DraftSummary;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
@@ -49,6 +50,7 @@ class ClientPlanControllerTest {
     private static final AccountId TRAINER_ID = new AccountId(UUID.fromString("00000000-0000-4000-8000-000000000001"));
     private static final String ADDRESS = "/api/v1/plan";
     private static final String ACKNOWLEDGEMENT = ADDRESS + "/acknowledgement";
+    private static final String DRAFT_SUMMARY = ADDRESS + "/draft-summary";
     private static final RequestPostProcessor CLIENT =
             user(CLIENT_ID.value().toString()).roles("CLIENT");
     private static final RequestPostProcessor TRAINER =
@@ -202,6 +204,34 @@ class ClientPlanControllerTest {
                 mvc.post().uri(ACKNOWLEDGEMENT).with(csrf()).exchange(),
                 HttpStatus.UNAUTHORIZED,
                 "request.unauthenticated");
+        verifyNoInteractions(plans);
+    }
+
+    @Test
+    void shouldAnswerTheSummaryOfTheSignedInClientsDraft_andNothingElseOfIt() {
+        when(plans.draftSummary(CLIENT_ID))
+                .thenReturn(new DraftSummary(List.of(DayOfWeek.MONDAY, DayOfWeek.THURSDAY), 12, Goal.LOSE_FAT));
+
+        var result = mvc.get().uri(DRAFT_SUMMARY).with(CLIENT).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().isStrictlyEqualTo("""
+                {"trainingDays": ["MONDAY", "THURSDAY"], "weeks": 12, "goal": "LOSE_FAT"}
+                """);
+    }
+
+    @Test
+    void shouldAnswerNotFound_whenThereIsNoDraftSummary() {
+        when(plans.draftSummary(CLIENT_ID)).thenThrow(new PlanNotFoundException());
+
+        assertRefused(mvc.get().uri(DRAFT_SUMMARY).with(CLIENT).exchange(), HttpStatus.NOT_FOUND, "plan.not-found");
+    }
+
+    @Test
+    void shouldRefuseATrainerAndAskAVisitorToSignIn_onTheDraftSummary() {
+        assertRefused(
+                mvc.get().uri(DRAFT_SUMMARY).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(DRAFT_SUMMARY).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
         verifyNoInteractions(plans);
     }
 }

@@ -3,6 +3,7 @@ package com.kinetiq.plan.infrastructure.input;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.plan.domain.input.DraftSummary;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.PlanDetails;
 import com.kinetiq.plan.domain.input.SavePlanCommand;
@@ -17,6 +18,8 @@ import org.mapstruct.MappingConstants;
 
 @Mapper(componentModel = MappingConstants.ComponentModel.SPRING)
 interface PlanWebMapper {
+
+    DraftSummaryResponse toResponse(DraftSummary summary);
 
     default PlanResponse toResponse(PlanDetails details, Locale locale) {
         Plan plan = details.plan();

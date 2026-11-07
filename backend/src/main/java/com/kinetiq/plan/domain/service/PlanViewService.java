@@ -8,10 +8,12 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanWeekOutOfRangeException;
+import com.kinetiq.plan.domain.input.DraftSummary;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import java.time.Clock;
 import java.time.LocalDate;
@@ -63,6 +65,15 @@ public class PlanViewService implements ViewOwnPlanUseCase {
     public void acknowledge(AccountId client) {
         publishedPlan(client);
         plans.markSeenByClient(client, clock.instant());
+    }
+
+    @Override
+    public DraftSummary draftSummary(AccountId client) {
+        Plan draft = plans.findByClient(client)
+                .filter(plan -> !plan.isPublished() && !plan.getSessions().isEmpty())
+                .orElseThrow(PlanNotFoundException::new);
+        return new DraftSummary(
+                draft.getSessions().stream().map(Session::day).toList(), draft.getWeeks(), draft.getGoal());
     }
 
     // weeks are Monday to Sunday in the client's time zone

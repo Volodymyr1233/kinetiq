@@ -40,7 +40,10 @@ The training a trainer has prescribed for one client: a set of sessions repeated
 _Avoid_: Program, routine
 
 **Draft**:
-A plan the client cannot see yet; the first one is built automatically from the quiz.
+A plan only the trainer can read until it is published; the first one is built automatically from the quiz. The client sees at most its draft summary.
+
+**Draft summary**:
+What a client may read of their draft while they wait: its training days, length and focus.
 
 **Failed draft**:
 A draft the system could not build automatically: empty, and marked so for the trainer.
