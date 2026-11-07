@@ -29,7 +29,9 @@
     "plan": "Plan",
     "progress": "Progress",
     "open": "Open menu",
-    "menu": "Menu"
+    "menu": "Menu",
+    "approvalsCount_one": ", {{count, number}} drafted plan waiting",
+    "approvalsCount_other": ", {{count, number}} drafted plans waiting"
   },
   "areas": {
     "trainer": "Trainer area",
@@ -589,6 +591,28 @@
       "body": "Check the spelling or clear the search.",
       "clear": "Clear search"
     }
+  },
+  "approvals": {
+    "title": "Approvals",
+    "intro": "New plans wait here for your review.",
+    "draftedPlans": "Drafted plans",
+    "loading": "Loading drafted plans",
+    "retry": "Try again",
+    "empty": {
+      "title": "Nothing to approve.",
+      "body": "Drafted plans show up here.",
+      "action": "View clients"
+    },
+    "kinds": {
+      "BUILT": "Plan to review",
+      "FAILED": "Draft failed",
+      "SAVED": "Draft"
+    },
+    "meta": "{{weeks}} · {{sessions}}",
+    "weeks_one": "{{count, number}} week",
+    "weeks_other": "{{count, number}} weeks",
+    "sessionsPerWeek_one": "{{count, number}} session a week",
+    "sessionsPerWeek_other": "{{count, number}} sessions a week"
   },
   "invites": {
     "title": "Open invites",

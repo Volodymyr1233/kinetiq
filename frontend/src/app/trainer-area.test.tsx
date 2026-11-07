@@ -45,6 +45,41 @@ describe('TrainerArea', () => {
     })
   })
 
+  describe('drafted plans count on the Approvals item', () => {
+    const drafting =
+      (count: number): Reply =>
+      (request) =>
+        new URL(request.url).pathname === '/api/v1/approvals/drafted-plans'
+          ? json({
+              items: Array.from({ length: count }, (_, index) => ({
+                clientId: `00000000-0000-4000-8000-00000000010${index}`,
+                clientName: 'Ola Kowalska',
+                kind: 'BUILT',
+                createdAt: '2026-11-07T09:30:00Z',
+                weeks: 12,
+                sessionsPerWeek: 3,
+              })),
+            })
+          : new Response(null, { status: 204 })
+
+    it('shows how many drafts wait and announces it as part of the name', async () => {
+      renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, drafting(3))
+
+      const link = await screen.findByRole('link', {
+        name: 'Approvals, 3 drafted plans waiting',
+      })
+      expect(within(link).getByText('3')).toBeInTheDocument()
+    })
+
+    it('shows nothing at 0', async () => {
+      renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, drafting(0))
+
+      expect(
+        await screen.findByRole('link', { name: 'Approvals' }),
+      ).toBeInTheDocument()
+    })
+  })
+
   it('keeps the sections behind a button on a narrow screen', async () => {
     const user = userEvent.setup()
     vi.stubGlobal('innerWidth', 375)
