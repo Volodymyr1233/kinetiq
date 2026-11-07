@@ -484,6 +484,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{id}/quiz-answers": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["quizAnswers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals/drafted-plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["draftedPlans"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/sign-ins/current": {
         parameters: {
             query?: never;
@@ -910,6 +942,41 @@ export interface components {
             goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
             /** @enum {string} */
             planState: "NO_QUIZ" | "PLAN_DRAFTING" | "PLAN_TO_REVIEW" | "DRAFT" | "DRAFT_FAILED" | "PUBLISHED";
+        };
+        QuizAnswersResponse: {
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** @enum {string} */
+            experience: "LESS_THAN_3_MONTHS" | "MONTHS_3_TO_6" | "MONTHS_6_TO_12" | "YEARS_1_TO_2" | "YEARS_2_TO_5" | "YEARS_5_PLUS";
+            /** @enum {string} */
+            level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ATHLETE";
+            /** Format: int32 */
+            age: number;
+            /** Format: int32 */
+            heightCm: number;
+            weightKg: number;
+            likes: ("WEIGHTS" | "CARDIO" | "HIIT" | "YOGA_PILATES" | "BODYWEIGHT")[];
+            /** Format: int32 */
+            daysPerWeek: number;
+            notes?: string;
+            /** Format: date-time */
+            submittedAt: string;
+        };
+        DraftedPlanResponse: {
+            /** Format: uuid */
+            clientId: string;
+            clientName: string;
+            /** @enum {string} */
+            kind: "BUILT" | "FAILED" | "SAVED";
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: int32 */
+            weeks: number;
+            /** Format: int32 */
+            sessionsPerWeek: number;
+        };
+        DraftedPlansResponse: {
+            items: components["schemas"]["DraftedPlanResponse"][];
         };
     };
     responses: never;
@@ -1718,6 +1785,48 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClientResponse"];
+                };
+            };
+        };
+    };
+    quizAnswers: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["QuizAnswersResponse"];
+                };
+            };
+        };
+    };
+    draftedPlans: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DraftedPlansResponse"];
                 };
             };
         };

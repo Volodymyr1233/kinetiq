@@ -59,7 +59,8 @@ public class SecurityConfig {
                                 "/api/v1/invite-checks",
                                 "/api/v1/invite-acceptances")
                         .permitAll()
-                        .requestMatchers("/api/v1/exercises/**", "/api/v1/invites/**", "/api/v1/clients/**")
+                        .requestMatchers(
+                                "/api/v1/exercises/**", "/api/v1/invites/**", "/api/v1/clients/**", "/api/v1/approvals/**")
                         .hasRole("TRAINER")
                         .requestMatchers("/api/v1/quiz/**", "/api/v1/plan/**", "/api/v1/today/**", "/api/v1/session-logs/**")
                         .hasRole("CLIENT")

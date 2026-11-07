@@ -4,12 +4,15 @@ import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.plan.domain.input.DraftPlanUseCase;
+import com.kinetiq.plan.domain.input.ListDraftedPlansUseCase;
 import com.kinetiq.plan.domain.input.ManagePlanUseCase;
 import com.kinetiq.plan.domain.input.PlanDrafting;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
+import com.kinetiq.plan.domain.output.DraftedPlanDirectory;
 import com.kinetiq.plan.domain.output.PlanDraftingRepository;
 import com.kinetiq.plan.domain.output.PlanGenerator;
 import com.kinetiq.plan.domain.output.PlanRepository;
+import com.kinetiq.plan.domain.service.DraftedPlanListService;
 import com.kinetiq.plan.domain.service.PlanDraftingJob;
 import com.kinetiq.plan.domain.service.PlanDraftingService;
 import com.kinetiq.plan.domain.service.PlanManagementService;
@@ -82,6 +85,11 @@ class PlanConfig {
     ManagePlanUseCase managePlanUseCase(
             ViewClientsUseCase clients, ListExercisesUseCase exercises, PlanRepository plans) {
         return new PlanManagementService(clients, exercises, plans, Clock.systemUTC());
+    }
+
+    @Bean
+    ListDraftedPlansUseCase listDraftedPlansUseCase(DraftedPlanDirectory drafts) {
+        return new DraftedPlanListService(drafts);
     }
 
     @Bean
