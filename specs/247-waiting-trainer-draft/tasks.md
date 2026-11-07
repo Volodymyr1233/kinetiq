@@ -36,13 +36,13 @@ description: "Tasks for story #247, Client sees their trainer and a draft summar
 
 **Goal**: `GET /api/v1/plan/draft-summary` for a signed-in client (contract: `contracts/draft-summary-api.md`; spec FR-007 to FR-013).
 
-- [ ] T009 [US3] Domain: record `DraftSummary` (`List<DayOfWeek> trainingDays`, `int weeks`, `Goal goal`, with a defensive copy of the list) in `B/plan/domain/input/`; `ViewOwnPlanUseCase.draftSummary(client)`; `PlanViewService.draftSummary`: only a plan with no first week and at least one session gives a summary, in the plan's session order; a failed draft, a draft without sessions, no plan and a published plan all throw `PlanNotFoundException`
-- [ ] T010 [US3] Domain test additions in `BT/plan/domain/service/PlanViewServiceTest.java`: a draft gives its days in week order, its weeks and its goal, and a draft the trainer saved counts like a built one; a failed draft, a draft without sessions, no plan and a published plan each answer `plan.not-found`
-- [ ] T011 [US3] Web in `B/plan/infrastructure/input/`: `DraftSummaryResponse` (every field `@NotNull`), `GET /draft-summary` in `ClientPlanController`, a mapper method in `PlanWebMapper`; the client comes from the sign-in only
-- [ ] T012 [US3] Controller test additions in `BT/plan/infrastructure/input/ClientPlanControllerTest.java`: `200` with `trainingDays`, `weeks` and `goal` and nothing else, so no session names, exercises or loads; the signed-in client's id passed to the use case; `404 plan.not-found`; `403 request.not-allowed` for a trainer; `401` for a visitor
-- [ ] T013 [US3] `CONTEXT.md`: add "Draft summary" under Planning, and change "Draft", which says the client cannot see a draft
-- [ ] T014 Regenerate `F/lib/api/schema.d.ts` (`npm run gen:api`, backend running) and run `npm run check`
-- [ ] T015 `./gradlew check` passes (Docker running), including `HexagonalArchitectureTest`; follow `quickstart.md` section 3; commit `feat(backend): add draft summary api`
+- [X] T009 [US3] Domain: record `DraftSummary` (`List<DayOfWeek> trainingDays`, `int weeks`, `Goal goal`, with a defensive copy of the list) in `B/plan/domain/input/`; `ViewOwnPlanUseCase.draftSummary(client)`; `PlanViewService.draftSummary`: only a plan with no first week and at least one session gives a summary, in the plan's session order; a failed draft, a draft without sessions, no plan and a published plan all throw `PlanNotFoundException`. The anonymous `ViewOwnPlanUseCase` in `BT/sessionlog/domain/service/SessionLogServiceTest.java` gets the new method, unused there, so the tests compile
+- [X] T010 [US3] Domain test additions in `BT/plan/domain/service/PlanViewServiceTest.java`: a draft gives its days in week order, its weeks and its goal, and a draft the trainer saved counts like a built one; a failed draft, a draft without sessions, no plan and a published plan each answer `plan.not-found`
+- [X] T011 [US3] Web in `B/plan/infrastructure/input/`: `DraftSummaryResponse` (every field `@NotNull`), `GET /draft-summary` in `ClientPlanController`, a mapper method in `PlanWebMapper`; the client comes from the sign-in only
+- [X] T012 [US3] Controller test additions in `BT/plan/infrastructure/input/ClientPlanControllerTest.java`: `200` with `trainingDays`, `weeks` and `goal` and nothing else, so no session names, exercises or loads; the signed-in client's id passed to the use case; `404 plan.not-found`; `403 request.not-allowed` for a trainer; `401` for a visitor
+- [X] T013 [US3] `CONTEXT.md`: add "Draft summary" under Planning, and change "Draft", which says the client cannot see a draft
+- [X] T014 Regenerate `F/lib/api/schema.d.ts` (`npm run gen:api`, backend running) and run `npm run check`
+- [X] T015 `./gradlew check` passes (Docker running), including `HexagonalArchitectureTest`; follow `quickstart.md` section 3; commit `feat(backend): add draft summary api`
 
 ## Phase 4: task #250, draft card on the waiting state (US2)
 

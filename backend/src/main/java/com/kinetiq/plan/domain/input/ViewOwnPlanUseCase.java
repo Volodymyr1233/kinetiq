@@ -18,4 +18,10 @@ public interface ViewOwnPlanUseCase {
 
     /** Marks the client's published plan as seen; repeating it changes nothing. */
     void acknowledge(AccountId client);
+
+    /**
+     * The summary of the client's draft with sessions. A failed draft, a draft without sessions, a missing plan and a
+     * published plan are all {@code PlanNotFoundException}, so the answer does not say which.
+     */
+    DraftSummary draftSummary(AccountId client);
 }

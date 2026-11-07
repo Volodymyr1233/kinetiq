@@ -388,6 +388,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plan/draft-summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getDraftSummary"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/csrf": {
         parameters: {
             query?: never;
@@ -836,6 +852,13 @@ export interface components {
             number: number;
             /** Format: date */
             startsOn: string;
+        };
+        DraftSummaryResponse: {
+            trainingDays: ("MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY")[];
+            /** Format: int32 */
+            weeks: number;
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
         };
         InviteListResponse: {
             invites: components["schemas"]["InviteResponse"][];
@@ -1575,6 +1598,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClientPlanResponse"];
+                };
+            };
+        };
+    };
+    getDraftSummary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["DraftSummaryResponse"];
                 };
             };
         };

@@ -45,4 +45,13 @@ class ClientPlanController {
     void acknowledgePlan(Authentication authentication) {
         plans.acknowledge(signedIn(authentication));
     }
+
+    /**
+     * The summary of the signed-in client's draft. {@code 404} with {@code plan.not-found} for a failed draft, a draft
+     * without sessions, no plan and a published plan alike.
+     */
+    @GetMapping("/draft-summary")
+    DraftSummaryResponse getDraftSummary(Authentication authentication) {
+        return mapper.toResponse(plans.draftSummary(signedIn(authentication)));
+    }
 }

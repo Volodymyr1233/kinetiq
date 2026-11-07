@@ -75,6 +75,7 @@ backend/src/main/java/com/kinetiq/plan/
     ├── DraftSummaryResponse.java
     └── PlanWebMapper.java                               # + summary response
 backend/src/test/java/com/kinetiq/plan/...               # PlanViewServiceTest, ClientPlanControllerTest additions
+backend/src/test/java/com/kinetiq/sessionlog/...         # SessionLogServiceTest: its stand-in of the port gains the new method
 
 frontend/src/
 ├── app/
