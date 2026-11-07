@@ -7,14 +7,7 @@ import {
 } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
-import {
-  matchPath,
-  NavLink,
-  Outlet,
-  useLocation,
-  useOutletContext,
-} from 'react-router'
-import { PlaceholderPage } from '@/app/placeholder-page'
+import { matchPath, NavLink, Outlet, useLocation } from 'react-router'
 import {
   Sidebar,
   SidebarContent,
@@ -33,6 +26,29 @@ import { AccountAvatar } from '@/components/account-avatar'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
 import { useUnreadCount } from '@/features/messaging/api/messaging'
 import { UnreadCount } from '@/features/messaging/components/unread-count'
+import { useDraftedPlans } from '@/features/plan/api/drafted-plans'
+import { Badge } from '@/components/ui/badge'
+
+// plan changes are a later story, so the count is only of drafted plans; like the unread count, the whole number is
+// hidden text that joins the link's name
+function DraftedPlansCount() {
+  const { t } = useTranslation()
+  const { data } = useDraftedPlans()
+  const count = data?.items.length ?? 0
+  if (count <= 0) return null
+  return (
+    <>
+      <span className="sr-only">{t('nav.approvalsCount', { count })}</span>
+      <Badge
+        aria-hidden
+        variant="secondary"
+        className="num ml-auto h-[18px] min-w-[18px] px-[5px]"
+      >
+        {count}
+      </Badge>
+    </>
+  )
+}
 
 const NAV_ITEMS = [
   { path: 'clients', labelKey: 'nav.clients', Icon: UsersIcon },
@@ -73,6 +89,7 @@ function TrainerSidebar({ activePath }: { activePath?: string }) {
                     <NavLink to={path} onClick={() => setOpenMobile(false)}>
                       <Icon aria-hidden />
                       <span>{t(labelKey)}</span>
+                      {path === 'approvals' && <DraftedPlansCount />}
                       {path === 'messages' && (
                         <UnreadCount
                           count={unread?.count ?? 0}
@@ -122,14 +139,9 @@ export function TrainerArea() {
           <p className="text-sm font-medium">{title}</p>
         </header>
         <main className="flex-1">
-          <Outlet context={title} />
+          <Outlet />
         </main>
       </div>
     </SidebarProvider>
   )
-}
-
-// the five sections show this until their features are built
-export function TrainerPlaceholder() {
-  return <PlaceholderPage title={useOutletContext<string>()} />
 }

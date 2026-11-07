@@ -29,7 +29,11 @@
     "plan": "Plan",
     "progress": "Postępy",
     "open": "Otwórz menu",
-    "menu": "Menu"
+    "menu": "Menu",
+    "approvalsCount_one": ", {{count, number}} szkic planu czeka",
+    "approvalsCount_few": ", {{count, number}} szkice planów czekają",
+    "approvalsCount_many": ", {{count, number}} szkiców planów czeka",
+    "approvalsCount_other": ", {{count, number}} szkicu planu czeka"
   },
   "areas": {
     "trainer": "Panel trenera",
@@ -602,6 +606,32 @@
       "body": "Sprawdź pisownię lub wyczyść wyszukiwanie.",
       "clear": "Wyczyść wyszukiwanie"
     }
+  },
+  "approvals": {
+    "title": "Do akceptacji",
+    "intro": "Tutaj czekają nowe plany do Twojego przeglądu.",
+    "draftedPlans": "Szkice planów",
+    "loading": "Wczytywanie szkiców planów",
+    "retry": "Spróbuj ponownie",
+    "empty": {
+      "title": "Nic do akceptacji.",
+      "body": "Szkice planów pojawią się tutaj.",
+      "action": "Zobacz klientów"
+    },
+    "kinds": {
+      "BUILT": "Plan do przejrzenia",
+      "FAILED": "Szkic nieudany",
+      "SAVED": "Szkic"
+    },
+    "meta": "{{weeks}} · {{sessions}}",
+    "weeks_one": "{{count, number}} tydzień",
+    "weeks_few": "{{count, number}} tygodnie",
+    "weeks_many": "{{count, number}} tygodni",
+    "weeks_other": "{{count, number}} tygodnia",
+    "sessionsPerWeek_one": "{{count, number}} sesja w tygodniu",
+    "sessionsPerWeek_few": "{{count, number}} sesje w tygodniu",
+    "sessionsPerWeek_many": "{{count, number}} sesji w tygodniu",
+    "sessionsPerWeek_other": "{{count, number}} sesji w tygodniu"
   },
   "invites": {
     "title": "Otwarte zaproszenia",

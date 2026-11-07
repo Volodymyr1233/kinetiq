@@ -46,13 +46,14 @@ export function useFollowDrafting(client: string) {
   }, [queryClient, client])
 }
 
-// the client's status and goal and the library's plan counts follow from what was saved
+// the client's status and goal, the library's plan counts and the drafted plans follow from what was saved
 function useRefreshAfterSaving(client: string) {
   const queryClient = useQueryClient()
   return (plan: Plan) => {
     queryClient.setQueryData(planKey(client), plan)
     void queryClient.invalidateQueries({ queryKey: ['clients'] })
     void queryClient.invalidateQueries({ queryKey: ['exercises'] })
+    void queryClient.invalidateQueries({ queryKey: ['approvals'] })
   }
 }
 

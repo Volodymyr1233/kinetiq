@@ -7,14 +7,6 @@ import { NotFoundPage } from '@/app/not-found-page'
 // area chunks are tiny, so a blank frame while one loads beats a flashing spinner
 const BlankWhileLoading = () => null
 
-const trainerPlaceholder = (path: string): RouteObject => ({
-  path,
-  lazy: {
-    Component: async () =>
-      (await import('@/app/trainer-area')).TrainerPlaceholder,
-  },
-})
-
 const clientPlaceholder = (path: string): RouteObject => ({
   path,
   lazy: {
@@ -131,7 +123,15 @@ export const createRoutes = (): RouteObject[] => [
           },
         ],
       },
-      trainerPlaceholder('approvals'),
+      {
+        path: 'approvals',
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/plan/pages/approvals-page'))
+              .ApprovalsPage,
+        },
+      },
       {
         path: 'messages/:clientId?',
         HydrateFallback: BlankWhileLoading,

@@ -35,8 +35,13 @@ describe('routes', () => {
 
   it('reaches the open invites from the clients section, which stays current', async () => {
     const user = userEvent.setup()
-    const { router } = renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, () =>
-      json({ invites: [] }),
+    const { router } = renderAppAt(
+      '/trainer/clients',
+      SIGNED_IN.TRAINER,
+      (request) =>
+        new URL(request.url).pathname === '/api/v1/approvals/drafted-plans'
+          ? json({ items: [] })
+          : json({ invites: [] }),
     )
 
     await user.click(await screen.findByRole('link', { name: 'Open invites' }))
