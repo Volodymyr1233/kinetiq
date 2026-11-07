@@ -530,6 +530,7 @@
       "reviewing": {
         "title": "Your trainer is reviewing your plan",
         "text": "Your trainer checks it before you see it. You get a notice here when it's ready.",
+        "textNamed": "{{name}} checks it before you see it. You get a notice here when it's ready.",
         "message": "Message your trainer"
       }
     },

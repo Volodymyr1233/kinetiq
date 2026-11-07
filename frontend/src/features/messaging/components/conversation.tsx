@@ -6,15 +6,13 @@ import {
   EmptyTitle,
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
+import { firstName } from '@/lib/first-name'
 import { messagesOf, useMessages } from '../api/messaging'
 import { useFirstUnread } from '../use-first-unread'
 import type { OutboxEntry } from '../use-outbox'
 import { Composer } from './composer'
 import { LoadError } from './load-error'
 import { MessageList } from './message-list'
-
-// "Marek Nowak" talks as "Marek", as on the boards
-const firstName = (name: string) => name.trim().split(/\s+/)[0] ?? name
 
 /** One open conversation: its messages and the composer, for either person. It marks itself read while on screen. */
 export function Conversation({
