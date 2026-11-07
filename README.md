@@ -28,14 +28,15 @@ The `local` profile adds demo data. Every account uses the password `Kinetiq-dem
 | `demo.unconfirmed@example.com` | Trainer, email not confirmed |
 | `demo.client@example.com` | Client, email confirmed, quiz not submitted |
 | `demo.client.waiting@example.com` | Client, email confirmed, quiz submitted (waiting for a plan) |
-| `demo.client.draft@example.com` | Client, email confirmed, quiz submitted, plan in draft (waiting for a plan) |
+| `demo.client.draft@example.com` | Client, email confirmed, quiz submitted, plan in draft saved by the trainer 3 days ago (waiting for a plan) |
 | `demo.client.published@example.com` | Client, email confirmed, quiz submitted, plan published and not opened yet (the plan-ready screen shows) |
 | `demo.client.seen@example.com` | Client, email confirmed, quiz submitted, plan published and already opened, week 3 of 8 |
 | `demo.client.finished@example.com` | Client, email confirmed, quiz submitted, plan published and finished after week 4 |
 | `demo.client.daily@example.com` | Client, email confirmed, quiz submitted, plan published and opened, a session Monday to Saturday (week 3 of 8) |
-| `demo.client.built@example.com` | Client, email confirmed, quiz submitted, plan drafted automatically and not reviewed yet |
-| `demo.client.failed@example.com` | Client, email confirmed, quiz submitted, automatic drafting failed: an empty draft |
+| `demo.client.built@example.com` | Client, email confirmed, quiz submitted, plan drafted automatically 3 hours ago and not reviewed yet |
+| `demo.client.failed@example.com` | Client, email confirmed, quiz submitted, automatic drafting failed 26 hours ago: an empty draft |
 | `demo.trainer2@example.com` | Trainer, email confirmed, second trainer for isolation checks |
+| `demo.client.other@example.com` | Client of the second trainer, quiz submitted, plan drafted automatically (never in the first trainer's approvals) |
 
 ```bash
 cd frontend

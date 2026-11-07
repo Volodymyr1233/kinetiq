@@ -2,11 +2,12 @@
 -- weeks before the first run, so it starts in week 6 and shortening it below that can be tried. The client has not
 -- opened it yet, so the plan-ready screen shows. Demo Client Seen has opened a plan of 8 weeks, in week 3, and Demo
 -- Client Finished has a plan of 4 weeks that ended last week. Demo Client Built has a draft built automatically, and
--- Demo Client Failed an empty one that could not be
+-- Demo Client Failed an empty one that could not be. The three drafts wait for different times, so the approvals list
+-- has an order to show, and Demo Client Other is the second trainer's, so it never shows for the first
 insert into plans (id, client_id, goal, weeks, first_week, client_seen_at, automatic_draft, created_at, updated_at,
                    version)
 values ('00000000-0000-4000-9300-000000000001', '00000000-0000-4000-8000-000000000006', 'GET_STRONGER', 12, null,
-        null, null, now(), now(), 0),
+        null, null, now() - interval '3 days', now(), 0),
        ('00000000-0000-4000-9300-000000000002', '00000000-0000-4000-8000-000000000007', 'LOSE_FAT', 16,
         (date_trunc('week', current_date) - interval '5 weeks')::date, null, null, now(), now(), 0),
        ('00000000-0000-4000-9300-000000000003', '00000000-0000-4000-8000-000000000008', 'GENERAL_FITNESS', 8,
@@ -14,9 +15,11 @@ values ('00000000-0000-4000-9300-000000000001', '00000000-0000-4000-8000-0000000
        ('00000000-0000-4000-9300-000000000004', '00000000-0000-4000-8000-000000000009', 'MOVE_BETTER', 4,
         (date_trunc('week', current_date) - interval '4 weeks')::date, now(), null, now(), now(), 0),
        ('00000000-0000-4000-9300-000000000005', '00000000-0000-4000-8000-000000000010', 'BUILD_MUSCLE', 12, null,
-        null, 'BUILT', now(), now(), 0),
+        null, 'BUILT', now() - interval '3 hours', now(), 0),
        ('00000000-0000-4000-9300-000000000006', '00000000-0000-4000-8000-000000000011', 'GENERAL_FITNESS', 12, null,
-        null, 'FAILED', now(), now(), 0)
+        null, 'FAILED', now() - interval '26 hours', now(), 0),
+       ('00000000-0000-4000-9300-000000000020', '00000000-0000-4000-8000-000000000020', 'LOSE_FAT', 12, null,
+        null, 'BUILT', now() - interval '5 hours', now(), 0)
 on conflict do nothing;
 
 insert into plan_sessions (id, plan_id, name, day_of_week)
@@ -29,7 +32,9 @@ values ('00000000-0000-4000-9400-000000000001', '00000000-0000-4000-9300-0000000
        ('00000000-0000-4000-9400-000000000007', '00000000-0000-4000-9300-000000000004', 'Strength', 'SATURDAY'),
        ('00000000-0000-4000-9400-000000000008', '00000000-0000-4000-9300-000000000005', 'Lower body A', 'MONDAY'),
        ('00000000-0000-4000-9400-000000000009', '00000000-0000-4000-9300-000000000005', 'Upper body', 'WEDNESDAY'),
-       ('00000000-0000-4000-9400-000000000010', '00000000-0000-4000-9300-000000000005', 'Lower body B', 'FRIDAY')
+       ('00000000-0000-4000-9400-000000000010', '00000000-0000-4000-9300-000000000005', 'Lower body B', 'FRIDAY'),
+       ('00000000-0000-4000-9400-000000000020', '00000000-0000-4000-9300-000000000020', 'Full body A', 'TUESDAY'),
+       ('00000000-0000-4000-9400-000000000021', '00000000-0000-4000-9300-000000000020', 'Full body B', 'FRIDAY')
 on conflict do nothing;
 
 -- a save through the editor replaces a plan's sessions, so a session here may be gone when this file runs again
@@ -57,7 +62,9 @@ from (values ('00000000-0000-4000-9400-000000000001', 0, '00000000-0000-4000-910
        ('00000000-0000-4000-9400-000000000010', 0, '00000000-0000-4000-9100-000000000014', 3, 12, 60.0, 7, 90),
        ('00000000-0000-4000-9400-000000000010', 1, '00000000-0000-4000-9100-000000000007', 3, 10, 30.0, 7, 90),
        ('00000000-0000-4000-9400-000000000010', 2, '00000000-0000-4000-9100-000000000002', 3, 10, 10.0, 7, 60),
-       ('00000000-0000-4000-9400-000000000010', 3, '00000000-0000-4000-9100-000000000021', 2, 12, 6.0, 6, 60)
+       ('00000000-0000-4000-9400-000000000010', 3, '00000000-0000-4000-9100-000000000021', 2, 12, 6.0, 6, 60),
+       ('00000000-0000-4000-9400-000000000020', 0, '00000000-0000-4000-9100-000000000011', 3, 10, 30.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000021', 0, '00000000-0000-4000-9100-000000000026', 3, 30, null, 7, 45)
 ) as entry (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
 join plan_sessions session on session.id = entry.session_id::uuid
 on conflict do nothing;
