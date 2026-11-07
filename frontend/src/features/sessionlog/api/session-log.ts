@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
@@ -27,5 +27,63 @@ export function useSession() {
     // what is logged here is written into the cache as it happens; a refetch would only repeat the start
     staleTime: Infinity,
     refetchOnWindowFocus: false,
+  })
+}
+
+export type LogSetBody = components['schemas']['LogSetRequest']
+type LoggedSet = components['schemas']['SetLogResponse']
+
+// the answer says which place was logged, so the row shows as logged without asking the server again
+function withLoggedSet(session: SessionLog, set: LoggedSet): SessionLog {
+  return {
+    ...session,
+    entries: session.entries.map((entry) =>
+      entry.position !== set.entryPosition
+        ? entry
+        : {
+            ...entry,
+            sets: entry.sets.map((planned) =>
+              planned.number !== set.setNumber
+                ? planned
+                : {
+                    ...planned,
+                    log: {
+                      id: set.id,
+                      loadKg: set.loadKg,
+                      amount: set.amount,
+                      rpe: set.rpe,
+                      loggedAt: set.loggedAt,
+                    },
+                  },
+            ),
+          },
+    ),
+  }
+}
+
+/** Logs a set, or changes it when the id was logged already; sending the same id again stores the set once. */
+export function useLogSet(sessionId: string) {
+  const queryClient = useQueryClient()
+  const { i18n } = useTranslation()
+  return useMutation({
+    mutationFn: async ({
+      setLogId,
+      body,
+    }: {
+      setLogId: string
+      body: LogSetBody
+    }) => {
+      const { data, error } = await api.PUT(
+        '/api/v1/session-logs/{id}/set-logs/{setLogId}',
+        { params: { path: { id: sessionId, setLogId } }, body },
+      )
+      if (error !== undefined) throw error
+      return data
+    },
+    onSuccess: (set) =>
+      queryClient.setQueryData<SessionLog>(
+        sessionLogKey(i18n.language),
+        (session) => session && withLoggedSet(session, set),
+      ),
   })
 }

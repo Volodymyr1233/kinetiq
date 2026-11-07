@@ -658,7 +658,30 @@
       "noLoad": "No load",
       "rpe": "RPE {{rpe, number}}",
       "logged": "Logged",
-      "planned": "Planned"
+      "planned": "Planned",
+      "open": "Choose set {{number}} of {{exercise}}",
+      "edit": "Change set {{number}} of {{exercise}}",
+      "tick": "Log set {{number}} of {{exercise}} as planned"
+    },
+    "panel": {
+      "load": "Load, {{unit}}",
+      "noLoad": "No load",
+      "loadField": "Load in {{unit}} for set {{number}} of {{exercise}}",
+      "loadMore": "More load for set {{number}} of {{exercise}}",
+      "loadLess": "Less load for set {{number}} of {{exercise}}",
+      "loadProblem": "Leave the load empty or enter a number above 0.",
+      "amount": {
+        "REPS": "Repetitions",
+        "SECONDS": "Seconds"
+      },
+      "amountField": "{{amount}} for set {{number}} of {{exercise}}",
+      "amountMore": "More: {{amount}}, set {{number}} of {{exercise}}",
+      "amountLess": "Fewer: {{amount}}, set {{number}} of {{exercise}}",
+      "amountProblem": "Enter a whole number from 1 to 3600.",
+      "rpe": "RPE",
+      "rpeOption": "RPE {{rpe}} for set {{number}} of {{exercise}}",
+      "log": "Log set",
+      "update": "Update set"
     }
   },
   "plan": {

@@ -1,4 +1,5 @@
 import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
@@ -16,6 +17,8 @@ export function LoggerPage() {
   const { t, i18n } = useTranslation()
   const query = useSession()
   const session = query.data
+  // one entry panel is open at a time
+  const [openSet, setOpenSet] = useState<string | null>(null)
 
   if (session === undefined) {
     if (query.isPending) {
@@ -88,9 +91,19 @@ export function LoggerPage() {
             {entry.exerciseName}
           </h2>
           <ol className="flex flex-col divide-y border-t">
-            {entry.sets.map((set) => (
-              <SetRow key={set.number} entry={entry} set={set} />
-            ))}
+            {entry.sets.map((set) => {
+              const key = `${entry.position}-${set.number}`
+              return (
+                <SetRow
+                  key={key}
+                  sessionId={session.id}
+                  entry={entry}
+                  set={set}
+                  open={openSet === key}
+                  onToggle={() => setOpenSet(openSet === key ? null : key)}
+                />
+              )
+            })}
           </ol>
         </section>
       ))}

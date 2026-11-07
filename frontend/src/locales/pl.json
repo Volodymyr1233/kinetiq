@@ -673,7 +673,30 @@
       "noLoad": "Bez obciążenia",
       "rpe": "RPE {{rpe, number}}",
       "logged": "Zapisano",
-      "planned": "Zaplanowano"
+      "planned": "Zaplanowano",
+      "open": "Wybierz serię {{number}}: {{exercise}}",
+      "edit": "Zmień serię {{number}}: {{exercise}}",
+      "tick": "Zapisz serię {{number}}: {{exercise}} zgodnie z planem"
+    },
+    "panel": {
+      "load": "Obciążenie, {{unit}}",
+      "noLoad": "Bez obciążenia",
+      "loadField": "Obciążenie w {{unit}}, seria {{number}}: {{exercise}}",
+      "loadMore": "Większe obciążenie, seria {{number}}: {{exercise}}",
+      "loadLess": "Mniejsze obciążenie, seria {{number}}: {{exercise}}",
+      "loadProblem": "Zostaw obciążenie puste albo wpisz liczbę większą od 0.",
+      "amount": {
+        "REPS": "Powtórzenia",
+        "SECONDS": "Sekundy"
+      },
+      "amountField": "{{amount}}, seria {{number}}: {{exercise}}",
+      "amountMore": "Więcej: {{amount}}, seria {{number}}: {{exercise}}",
+      "amountLess": "Mniej: {{amount}}, seria {{number}}: {{exercise}}",
+      "amountProblem": "Wpisz liczbę całkowitą od 1 do 3600.",
+      "rpe": "RPE",
+      "rpeOption": "RPE {{rpe}}, seria {{number}}: {{exercise}}",
+      "log": "Zapisz serię",
+      "update": "Zaktualizuj serię"
     }
   },
   "plan": {
