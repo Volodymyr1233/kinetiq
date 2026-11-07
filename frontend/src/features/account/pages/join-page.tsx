@@ -20,6 +20,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import { firstName } from '@/lib/first-name'
 import { inviteCheckQuery, useJoin, type CurrentAccount } from '../api/account'
 import { AccountAvatar } from '@/components/account-avatar'
 import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
@@ -43,10 +44,6 @@ const touchInput = 'h-(--control-h-touch) text-base md:text-base'
 // may show the form again
 function tokenFromAddress() {
   return new URLSearchParams(window.location.hash.slice(1)).get('token')
-}
-
-function firstName(name: string) {
-  return name.trim().split(/\s+/)[0] ?? ''
 }
 
 export function JoinPage() {

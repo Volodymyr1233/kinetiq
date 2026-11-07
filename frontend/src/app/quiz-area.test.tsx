@@ -1,7 +1,15 @@
-import { act, screen, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { json, quizStatus, renderAppAt, SIGNED_IN } from '@/test/page'
+import {
+  json,
+  pathsOf,
+  problem,
+  quizStatus,
+  renderAppAt,
+  SIGNED_IN,
+  type Reply,
+} from '@/test/page'
 
 const DRAFT = {
   answers: {
@@ -133,6 +141,89 @@ function waitingWith(messages: object[]) {
     return new Response(null, { status: 204 })
   })
 }
+
+const NAMED_TEXT =
+  "Marek checks it before you see it. You get a notice here when it's ready."
+const UNNAMED_TEXT =
+  "Your trainer checks it before you see it. You get a notice here when it's ready."
+
+function waitingWhereTheList(list: Reply) {
+  const others = waitingWith([])
+  return (request: Request) =>
+    new URL(request.url).pathname === '/api/v1/conversations'
+      ? list(request)
+      : others(request)
+}
+
+describe('the trainer on the waiting state', () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  it('takes the name from the conversation list and leaves the message button as it was', async () => {
+    renderAppAt('/app/quiz/waiting', SIGNED_IN.CLIENT, waitingWith([]))
+
+    expect(await screen.findByText(NAMED_TEXT)).toBeInTheDocument()
+    expect(screen.getByText('MN')).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Message your trainer' }),
+    ).toBeInTheDocument()
+  })
+
+  it.each<[string, Reply]>([
+    ['fails', () => problem(403, { status: 403, code: 'request.not-allowed' })],
+    ['holds no conversation', () => json({ conversations: [] })],
+  ])('says "your trainer" when the list %s', async (_, list) => {
+    const { requests } = renderAppAt(
+      '/app/quiz/waiting',
+      SIGNED_IN.CLIENT,
+      waitingWhereTheList(list),
+    )
+    await screen.findByText(UNNAMED_TEXT)
+
+    await waitFor(() =>
+      expect(pathsOf(requests)).toContain('/api/v1/conversations'),
+    )
+
+    expect(await screen.findByText(UNNAMED_TEXT)).toBeInTheDocument()
+    expect(screen.queryByText('MN')).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Message your trainer' }),
+    ).toBeInTheDocument()
+  })
+
+  it('shows the name a later read brings, with focus where it was', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true })
+    let failures = 1
+    renderAppAt(
+      '/app/quiz/waiting',
+      SIGNED_IN.CLIENT,
+      waitingWhereTheList(() =>
+        failures-- > 0
+          ? problem(500, { status: 500, code: 'internal.error' })
+          : json({
+              conversations: [
+                {
+                  clientId: SIGNED_IN.CLIENT.id,
+                  name: 'Marek Nowak',
+                  unreadCount: 0,
+                },
+              ],
+            }),
+      ),
+    )
+    const heading = await screen.findByRole('heading', {
+      name: 'Your trainer is reviewing your plan',
+    })
+    expect(screen.getByText(UNNAMED_TEXT)).toBeInTheDocument()
+
+    await act(() => vi.advanceTimersByTimeAsync(2_000))
+
+    expect(await screen.findByText(NAMED_TEXT)).toBeInTheDocument()
+    expect(heading).toHaveFocus()
+  })
+})
 
 async function openConversation(user: ReturnType<typeof userEvent.setup>) {
   await user.click(

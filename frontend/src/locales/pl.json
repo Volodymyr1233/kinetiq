@@ -541,6 +541,7 @@
       "reviewing": {
         "title": "Trener sprawdza Twój plan",
         "text": "Trener sprawdza plan, zanim go zobaczysz. Gdy będzie gotowy, dostaniesz tu powiadomienie.",
+        "textNamed": "{{name}} sprawdza plan, zanim go zobaczysz. Gdy będzie gotowy, dostaniesz tu powiadomienie.",
         "message": "Napisz do trenera"
       }
     },

@@ -9,12 +9,15 @@ import { json, problem, stubApi, type Reply } from '@/test/page'
 import { QuizPage } from './quiz-page'
 import { WaitingPage } from './waiting-page'
 
-function openWaiting(reply: Reply) {
+function openWaiting(reply: Reply, trainerName?: string) {
   stubApi(reply)
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [
-      { path: '/app/quiz/waiting', Component: WaitingPage },
+      {
+        path: '/app/quiz/waiting',
+        element: <WaitingPage trainerName={trainerName} />,
+      },
       { path: '/app/quiz/:step?', Component: QuizPage },
       { path: '/app', Component: () => <h1>Today</h1> },
     ],
@@ -32,8 +35,52 @@ function openWaiting(reply: Reply) {
 
 const statusIs = (status: string) => () => json({ status })
 
+const avatar = () => document.querySelector('[data-slot="avatar"]')
+
 describe('WaitingPage', () => {
   afterEach(() => i18n.changeLanguage('en'))
+
+  describe("with the trainer's name", () => {
+    it('shows their avatar and names them in the text, under the same heading', async () => {
+      openWaiting(statusIs('WAITING_FOR_PLAN'), 'Marek Nowak')
+
+      expect(
+        await screen.findByRole('heading', {
+          name: 'Your trainer is reviewing your plan',
+        }),
+      ).toHaveFocus()
+      expect(screen.getByText('MN')).toBeInTheDocument()
+      expect(
+        screen.getByText(
+          "Marek checks it before you see it. You get a notice here when it's ready.",
+        ),
+      ).toBeInTheDocument()
+    })
+
+    it('keeps the name as it is in Polish', async () => {
+      await i18n.changeLanguage('pl')
+      openWaiting(statusIs('WAITING_FOR_PLAN'), 'Marek Nowak')
+
+      expect(
+        await screen.findByText(
+          'Marek sprawdza plan, zanim go zobaczysz. Gdy będzie gotowy, dostaniesz tu powiadomienie.',
+        ),
+      ).toBeInTheDocument()
+    })
+
+    it('leaves the building state as it is', async () => {
+      openWaiting(statusIs('DRAFTING_PLAN'), 'Marek Nowak')
+
+      await screen.findByRole('heading', { name: 'Building your plan' })
+
+      expect(avatar()).toBeNull()
+      expect(
+        screen.getByText(
+          'Sessions, exercises and starting weights from your answers. This can take a few minutes, and you can close the app.',
+        ),
+      ).toBeInTheDocument()
+    })
+  })
 
   describe('while the plan is being built', () => {
     afterEach(() => {
@@ -209,6 +256,7 @@ describe('WaitingPage', () => {
         "Your trainer checks it before you see it. You get a notice here when it's ready.",
       ),
     ).toBeInTheDocument()
+    expect(avatar()).toBeNull()
   })
 
   it('speaks Polish when the UI does', async () => {

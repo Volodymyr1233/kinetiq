@@ -1,3 +1,5 @@
+import { useQuery } from '@tanstack/react-query'
+import { conversationsQuery } from '@/features/messaging/api/messaging'
 import { QuizPage } from '@/features/quiz/pages/quiz-page'
 import { ReviewPage } from '@/features/quiz/pages/review-page'
 import { WaitingPage } from '@/features/quiz/pages/waiting-page'
@@ -20,10 +22,14 @@ export function QuizReviewRoute() {
 }
 
 export function QuizWaitingRoute() {
+  // a client's one conversation is the one with their trainer; a failed read leaves the page saying "your trainer"
+  const { data } = useQuery(conversationsQuery)
+
   return (
     <WaitingPage
       settings={<SettingsSheet />}
       message={<MessageTrainerSheet />}
+      trainerName={data?.conversations[0]?.name}
     />
   )
 }
