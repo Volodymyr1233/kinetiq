@@ -662,6 +662,19 @@
     "stay": "Zostań",
     "leave": "Wyjdź"
   },
+  "sessionlog": {
+    "loading": "Wczytywanie sesji",
+    "retry": "Spróbuj ponownie",
+    "back": "Dzisiaj",
+    "row": {
+      "amount": "{{amount, number}} {{unit}}",
+      "load": "{{load, number}} {{unit}}",
+      "noLoad": "Bez obciążenia",
+      "rpe": "RPE {{rpe, number}}",
+      "logged": "Zapisano",
+      "planned": "Zaplanowano"
+    }
+  },
   "plan": {
     "drafting": "{{name}}: szkic planu powstaje z odpowiedzi w quizie. To może potrwać kilka minut.",
     "note": {
