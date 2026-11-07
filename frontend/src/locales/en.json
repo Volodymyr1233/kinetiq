@@ -681,6 +681,11 @@
       "rpeOption": "RPE {{rpe}} for set {{number}} of {{exercise}}",
       "log": "Log set",
       "update": "Update set"
+    },
+    "rest": {
+      "label": "Rest",
+      "over": "Rest over",
+      "dismiss": "Dismiss the rest timer"
     }
   },
   "plan": {

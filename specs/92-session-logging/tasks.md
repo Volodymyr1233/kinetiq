@@ -66,10 +66,10 @@ description: "Tasks for story #92, Client logs sets (tasks #93 to #97)"
 
 **Goal**: a countdown of the target rest after each logged set (spec FR-019).
 
-- [ ] T028 [US4] `F/features/sessionlog/components/rest-timer.tsx`: given `endsAt` and the total, shows the seconds left, updated every second from `Date.now()`, "Rest over" at zero (no sound, no vibration), and a dismiss action; announced politely to assistive technology without repeating every second; it never receives focus and never disables anything
-- [ ] T029 [US4] Wire it into the logger page: a successful log with a rest above 0 starts it with that entry's rest, another log restarts it, dismissing removes it, a reload shows none; strings in `en.json` and `pl.json`
-- [ ] T030 [US4] Tests: the countdown from the exercise's rest (fake timers); another log restarts it; a log works while it runs; dismiss removes it; no countdown when the rest is 0; it ends with "Rest over"
-- [ ] T031 [US4] `npm run check` passes; check in a browser; commit `feat(frontend): add rest timer (#97)`
+- [X] T028 [US4] `F/features/sessionlog/components/rest-timer.tsx`: given `endsAt` and the total, shows the seconds left, updated every second from `Date.now()`, "Rest over" at zero (no sound, no vibration), and a dismiss action; announced politely to assistive technology without repeating every second; it never receives focus and never disables anything
+- [X] T029 [US4] Wire it into the logger page: a successful log with a rest above 0 starts it with that entry's rest, another log restarts it, dismissing removes it, a reload shows none; strings in `en.json` and `pl.json`
+- [X] T030 [US4] Tests: the countdown from the exercise's rest (fake timers); another log restarts it; a log works while it runs; dismiss removes it; no countdown when the rest is 0; it ends with "Rest over"
+- [X] T031 [US4] `npm run check` passes; check in a browser; commit `feat(frontend): add rest timer (#97)`
 
 ## Phase 7: Close the story
 
