@@ -4,6 +4,22 @@
  */
 
 export interface paths {
+    "/api/v1/session-logs/{id}/set-logs/{setLogId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["logSet"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/exercises/{id}": {
         parameters: {
             query?: never;
@@ -78,6 +94,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["signIn"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/session-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["start"];
         delete?: never;
         options?: never;
         head?: never;
@@ -472,6 +504,32 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        LogSetRequest: {
+            /** Format: int32 */
+            entryPosition: number;
+            /** Format: int32 */
+            setNumber: number;
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            rpe: number;
+        };
+        SetLogResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: int32 */
+            entryPosition: number;
+            /** Format: int32 */
+            setNumber: number;
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            rpe: number;
+            /** Format: date-time */
+            loggedAt: string;
+        };
         UpdateExerciseRequest: {
             name: string;
             /** @enum {string} */
@@ -594,6 +652,52 @@ export interface components {
             /** @enum {string} */
             theme: "LIGHT" | "DARK" | "SYSTEM";
             emailConfirmed: boolean;
+        };
+        LoggedEntryResponse: {
+            /** Format: int32 */
+            position: number;
+            /** Format: uuid */
+            exerciseId: string;
+            exerciseName: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            /** Format: int32 */
+            restSeconds: number;
+            sets: components["schemas"]["PlannedSetResponse"][];
+        };
+        LoggedSetResponse: {
+            /** Format: uuid */
+            id: string;
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            rpe: number;
+            /** Format: date-time */
+            loggedAt: string;
+        };
+        PlannedSetResponse: {
+            /** Format: int32 */
+            number: number;
+            target: components["schemas"]["TargetResponse"];
+            log?: components["schemas"]["LoggedSetResponse"];
+        };
+        SessionLogResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: date */
+            date: string;
+            name: string;
+            /** Format: date-time */
+            startedAt: string;
+            entries: components["schemas"]["LoggedEntryResponse"][];
+        };
+        TargetResponse: {
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            rpe: number;
         };
         SubmitQuizRequest: {
             /** @enum {string} */
@@ -793,6 +897,33 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    logSet: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                setLogId: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LogSetRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SetLogResponse"];
+                };
+            };
+        };
+    };
     updateExercise: {
         parameters: {
             query?: never;
@@ -929,6 +1060,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["CurrentAccountResponse"];
+                };
+            };
+        };
+    };
+    start: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SessionLogResponse"];
                 };
             };
         };
