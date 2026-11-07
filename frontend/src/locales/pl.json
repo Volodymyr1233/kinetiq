@@ -746,6 +746,14 @@
         "sessionsPerWeek_other": "{{count, number}} sesji w tygodniu",
         "view": "Zobacz mój plan"
       },
+      "draft": {
+        "label": "Szkic",
+        "waiting": "Czeka na trenera",
+        "trainingDays": "Dni treningowe",
+        "length": "Długość",
+        "focus": "Cel",
+        "note": "Trener może to jeszcze zmienić."
+      },
       "finished": {
         "title": "Trener przygotowuje Twój kolejny plan.",
         "text": "Twój plan na {{weeks, number}} tyg. dobiegł końca."

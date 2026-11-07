@@ -29,6 +29,18 @@ export function useOwnPlan(week?: number) {
   })
 }
 
+/** The summary of the signed-in client's draft; without one the query fails with `plan.not-found`. */
+export function useDraftSummary() {
+  return useQuery({
+    queryKey: ['draft-summary'],
+    queryFn: async () => {
+      const { data, error } = await api.GET('/api/v1/plan/draft-summary')
+      if (error !== undefined) throw error
+      return data
+    },
+  })
+}
+
 /** Marks the client's published plan as seen, so the plan-ready screen does not show again. */
 export function useAcknowledgePlan() {
   const queryClient = useQueryClient()

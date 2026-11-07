@@ -50,16 +50,16 @@ description: "Tasks for story #247, Client sees their trainer and a draft summar
 
 **Goal**: the reviewing state shows the card when a summary exists (spec FR-014 to FR-017).
 
-- [ ] T016 [US2] `F/features/plan/api/client-plan.ts`: `useDraftSummary()` for `GET /api/v1/plan/draft-summary`, typed by the generated schema, with no refresh interval (research R6)
-- [ ] T017 [US2] `F/features/plan/components/draft-card.tsx`: nothing until there is data; then `Card` with `CardHeader` and `CardContent`, the label, the `Badge`, the rows as a description list and the line. Days with `dayName(day, language, 'short')` joined by `Intl.ListFormat`, length with the existing `plan.client.ready.weeks`, focus with `quiz.goal.options.<goal>.title`. Read `npx shadcn@latest docs card` and `npx shadcn@latest docs badge` first, and take the look from the board
-- [ ] T018 [US2] `F/features/quiz/pages/waiting-page.tsx`: a slot `draftCard`, shown on the reviewing state only, between the text and the `message` slot, and the comment above `Waiting` removed; `F/app/quiz-area.tsx` passes `<DraftCard />` (research R5)
-- [ ] T019 [US2] Strings `plan.client.draft.*` in `F/locales/en.json` and `pl.json`, as in the spec's Texts
-- [ ] T020 [US2] Tests: `F/features/plan/components/draft-card.test.tsx` (the rows and the line for a summary, in English and Polish; nothing for a `plan.not-found` answer or a failed read); in `F/features/quiz/pages/waiting-page.test.tsx` the slot shows on the reviewing state and not on the building state, and arrives by itself at the move from building to reviewing, with focus kept
-- [ ] T021 `npm run check` passes; follow `quickstart.md` section 2 at 375 px and 320 px, light and dark, with the keyboard, and compare the card with the board; commit `feat(frontend): show the draft card on the waiting state`
+- [X] T016 [US2] `F/features/plan/api/client-plan.ts`: `useDraftSummary()` for `GET /api/v1/plan/draft-summary`, typed by the generated schema, with no refresh interval (research R6)
+- [X] T017 [US2] `F/features/plan/components/draft-card.tsx`: nothing until there is data; then `Card` with `CardHeader` and `CardContent`, the label, the `Badge`, the rows as a description list and the line. Days with `dayName(day, language, 'short')` joined by `Intl.ListFormat`, length with the existing `plan.client.ready.weeks`, focus with `quiz.goal.options.<goal>.title`. Read `npx shadcn@latest docs card` and `npx shadcn@latest docs badge` first, and take the look from the board. The board's badge is blue, so `F/components/ui/badge.tsx` gains the variant `info` from the existing `info` tokens, beside `warning` and `success`
+- [X] T018 [US2] `F/features/quiz/pages/waiting-page.tsx`: a slot `draftCard`, shown on the reviewing state only, between the text and the `message` slot, and the comment above `Waiting` removed; `F/app/quiz-area.tsx` passes `<DraftCard />` (research R5)
+- [X] T019 [US2] Strings `plan.client.draft.*` in `F/locales/en.json` and `pl.json`, as in the spec's Texts
+- [X] T020 [US2] Tests: `F/features/plan/components/draft-card.test.tsx` (the rows and the line for a summary, in English and Polish; nothing for a `plan.not-found` answer or a failed read); in `F/features/quiz/pages/waiting-page.test.tsx` the slot shows on the reviewing state and not on the building state, and arrives by itself at the move from building to reviewing, with focus kept
+- [X] T021 `npm run check` passes; follow `quickstart.md` section 2 at 375 px and 320 px, light and dark, with the keyboard, and compare the card with the board; commit `feat(frontend): show the draft card on the waiting state`
 
 ## Phase 5: Close the story
 
-- [ ] T022 On the branch of task #250, before its pull request is opened, run `/speckit-converge` and turn its findings into new tasks under #247; the pull request of #250 ends with `Closes #250` and `Closes #247`
+- [X] T022 On the branch of task #250, before its pull request is opened, run `/speckit-converge` and turn its findings into new tasks under #247; the pull request of #250 ends with `Closes #250` and `Closes #247`
 
 ## Dependencies
 

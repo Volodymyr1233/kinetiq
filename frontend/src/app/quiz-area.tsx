@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { conversationsQuery } from '@/features/messaging/api/messaging'
+import { DraftCard } from '@/features/plan/components/draft-card'
 import { QuizPage } from '@/features/quiz/pages/quiz-page'
 import { ReviewPage } from '@/features/quiz/pages/review-page'
 import { WaitingPage } from '@/features/quiz/pages/waiting-page'
@@ -29,6 +30,7 @@ export function QuizWaitingRoute() {
     <WaitingPage
       settings={<SettingsSheet />}
       message={<MessageTrainerSheet />}
+      draftCard={<DraftCard />}
       trainerName={data?.conversations[0]?.name}
     />
   )

@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ComponentProps } from 'react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import i18n from '@/lib/i18n'
@@ -9,14 +10,17 @@ import { json, problem, stubApi, type Reply } from '@/test/page'
 import { QuizPage } from './quiz-page'
 import { WaitingPage } from './waiting-page'
 
-function openWaiting(reply: Reply, trainerName?: string) {
+function openWaiting(
+  reply: Reply,
+  props: ComponentProps<typeof WaitingPage> = {},
+) {
   stubApi(reply)
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [
       {
         path: '/app/quiz/waiting',
-        element: <WaitingPage trainerName={trainerName} />,
+        element: <WaitingPage {...props} />,
       },
       { path: '/app/quiz/:step?', Component: QuizPage },
       { path: '/app', Component: () => <h1>Today</h1> },
@@ -42,7 +46,7 @@ describe('WaitingPage', () => {
 
   describe("with the trainer's name", () => {
     it('shows their avatar and names them in the text, under the same heading', async () => {
-      openWaiting(statusIs('WAITING_FOR_PLAN'), 'Marek Nowak')
+      openWaiting(statusIs('WAITING_FOR_PLAN'), { trainerName: 'Marek Nowak' })
 
       expect(
         await screen.findByRole('heading', {
@@ -59,7 +63,7 @@ describe('WaitingPage', () => {
 
     it('keeps the name as it is in Polish', async () => {
       await i18n.changeLanguage('pl')
-      openWaiting(statusIs('WAITING_FOR_PLAN'), 'Marek Nowak')
+      openWaiting(statusIs('WAITING_FOR_PLAN'), { trainerName: 'Marek Nowak' })
 
       expect(
         await screen.findByText(
@@ -69,7 +73,7 @@ describe('WaitingPage', () => {
     })
 
     it('leaves the building state as it is', async () => {
-      openWaiting(statusIs('DRAFTING_PLAN'), 'Marek Nowak')
+      openWaiting(statusIs('DRAFTING_PLAN'), { trainerName: 'Marek Nowak' })
 
       await screen.findByRole('heading', { name: 'Building your plan' })
 
@@ -152,6 +156,25 @@ describe('WaitingPage', () => {
       expect(elsewhere).toHaveFocus()
       expect(screen.getByRole('status')).toHaveTextContent(reviewingTitle)
       expect(document.querySelector('[data-slot="skeleton"]')).toBeNull()
+      elsewhere.remove()
+    })
+
+    it('brings the draft card by itself once the plan is with the trainer, leaving focus where it is', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const { backend, reply } = drafting()
+      openWaiting(reply, { draftCard: <p>Draft card</p> })
+      await screen.findByRole('heading', { name: 'Building your plan' })
+      expect(screen.queryByText('Draft card')).not.toBeInTheDocument()
+      const elsewhere = document.createElement('button')
+      document.body.append(elsewhere)
+      elsewhere.focus()
+
+      backend.status = 'WAITING_FOR_PLAN'
+      await nextCheck()
+
+      expect(await screen.findByText('Draft card')).toBeInTheDocument()
+      expect(elsewhere).toHaveFocus()
+      expect(screen.getByRole('status')).toHaveTextContent(reviewingTitle)
       elsewhere.remove()
     })
 
