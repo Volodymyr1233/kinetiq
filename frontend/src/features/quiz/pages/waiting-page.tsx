@@ -11,28 +11,24 @@ import { QuizStatusCheck } from '../components/quiz-status-check'
 type Props = {
   settings?: ReactNode
   message?: ReactNode
+  draftCard?: ReactNode
   trainerName?: string
 }
 
 /**
  * The waiting state after submitting: a plan being built, then a trainer reviewing it. The app gives `settings`, shown
- * in a header above the heading, `message`, shown below the text, and `trainerName`, which is missing until it is read
- * and when it cannot be.
+ * in a header above the heading, `message`, shown below the text, `draftCard`, shown above it while reviewing, and
+ * `trainerName`, which is missing until it is read and when it cannot be.
  */
-export function WaitingPage({ settings, message, trainerName }: Props) {
+export function WaitingPage(props: Props) {
   return (
     <QuizStatusCheck status={['DRAFTING_PLAN', 'WAITING_FOR_PLAN']}>
-      <Waiting
-        settings={settings}
-        message={message}
-        trainerName={trainerName}
-      />
+      <Waiting {...props} />
     </QuizStatusCheck>
   )
 }
 
-// the board's draft summary is not shown (spec 79, Departures)
-function Waiting({ settings, message, trainerName }: Props) {
+function Waiting({ settings, message, draftCard, trainerName }: Props) {
   const { t } = useTranslation()
   const { data: status } = useQuizStatusWhileDrafting()
   const building = status === 'DRAFTING_PLAN'
@@ -80,7 +76,7 @@ function Waiting({ settings, message, trainerName }: Props) {
         <p role="status" className="sr-only">
           {startedBuilding && !building && t('quiz.waiting.reviewing.title')}
         </p>
-        {building && <PlanSkeleton />}
+        {building ? <PlanSkeleton /> : draftCard}
         {message}
       </main>
     </div>

@@ -19,6 +19,8 @@ const badgeVariants = cva(
         warning: "bg-warning-muted text-warning",
         // design system: done, synced, applied
         success: "bg-success-muted text-success",
+        // design system: information that asks for nothing, such as a draft waiting for the trainer
+        info: "bg-info-muted text-info",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",

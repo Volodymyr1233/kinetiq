@@ -81,6 +81,7 @@ frontend/src/
 ├── app/
 │   ├── quiz-area.tsx                                    # reads the trainer's name; passes the name and the card
 │   └── quiz-area.test.tsx
+├── components/ui/badge.tsx                              # + variant info
 ├── features/
 │   ├── quiz/pages/waiting-page.tsx                      # avatar, text with the name, card slot; + tests
 │   ├── plan/api/client-plan.ts                          # + useDraftSummary

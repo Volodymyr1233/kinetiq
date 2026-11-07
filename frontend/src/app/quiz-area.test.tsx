@@ -225,6 +225,58 @@ describe('the trainer on the waiting state', () => {
   })
 })
 
+function waitingWhereTheSummary(summary: Reply) {
+  const others = waitingWith([])
+  return (request: Request) =>
+    new URL(request.url).pathname === '/api/v1/plan/draft-summary'
+      ? summary(request)
+      : others(request)
+}
+
+describe('the draft card on the waiting state', () => {
+  it('stands between the text and the message button', async () => {
+    renderAppAt(
+      '/app/quiz/waiting',
+      SIGNED_IN.CLIENT,
+      waitingWhereTheSummary(() =>
+        json({ trainingDays: ['TUESDAY'], weeks: 12, goal: 'LOSE_FAT' }),
+      ),
+    )
+
+    const card = await screen.findByText('Tue')
+    const text = screen.getByText(NAMED_TEXT)
+    const button = screen.getByRole('button', { name: 'Message your trainer' })
+
+    expect(text.compareDocumentPosition(card)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+    expect(card.compareDocumentPosition(button)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
+  })
+
+  it('leaves the waiting state as it is when there is no summary', async () => {
+    const { requests } = renderAppAt(
+      '/app/quiz/waiting',
+      SIGNED_IN.CLIENT,
+      waitingWhereTheSummary(() =>
+        problem(404, { status: 404, code: 'plan.not-found' }),
+      ),
+    )
+
+    expect(await screen.findByText(NAMED_TEXT)).toBeInTheDocument()
+    await waitFor(() =>
+      expect(pathsOf(requests)).toContain('/api/v1/plan/draft-summary'),
+    )
+
+    expect(screen.queryByText('Training days')).not.toBeInTheDocument()
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Message your trainer' }),
+    ).toBeInTheDocument()
+  })
+})
+
 async function openConversation(user: ReturnType<typeof userEvent.setup>) {
   await user.click(
     await screen.findByRole('button', { name: 'Message your trainer' }),

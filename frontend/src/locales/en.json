@@ -783,6 +783,14 @@
         "sessionsPerWeek_other": "{{count, number}} sessions a week",
         "view": "View my plan"
       },
+      "draft": {
+        "label": "Draft",
+        "waiting": "Waiting for your trainer",
+        "trainingDays": "Training days",
+        "length": "Length",
+        "focus": "Focus",
+        "note": "Your trainer can still change these."
+      },
       "finished": {
         "title": "Your trainer is preparing your next plan.",
         "text": "Your {{weeks, number}}-week plan has finished."
