@@ -648,6 +648,19 @@
     "stay": "Stay",
     "leave": "Leave"
   },
+  "sessionlog": {
+    "loading": "Loading session",
+    "retry": "Try again",
+    "back": "Today",
+    "row": {
+      "amount": "{{amount, number}} {{unit}}",
+      "load": "{{load, number}} {{unit}}",
+      "noLoad": "No load",
+      "rpe": "RPE {{rpe, number}}",
+      "logged": "Logged",
+      "planned": "Planned"
+    }
+  },
   "plan": {
     "drafting": "Drafting a plan from {{name}}'s quiz answers. This can take a few minutes.",
     "note": {

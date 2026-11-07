@@ -189,6 +189,17 @@ export const createRoutes = (): RouteObject[] => [
       Component: async () => (await import('@/app/quiz-area')).QuizStepsRoute,
     },
   },
+  // the logger takes the whole screen, so like the quiz it has no tab bar
+  {
+    path: '/app/session',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/sessionlog/pages/logger-page')).LoggerPage,
+    },
+  },
   {
     path: '/app/plan-ready',
     loader: requireRole('CLIENT'),
