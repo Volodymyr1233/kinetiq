@@ -63,11 +63,13 @@ public class PlanManagementService implements ManagePlanUseCase {
         if (stored.isPublished()) {
             throw new PlanAlreadyPublishedException();
         }
+        requireNotDrafting(summary);
         requireSameVersion(stored, version);
         return details(plans.save(stored.publish(today(summary))), summary, library(trainer));
     }
 
     private Plan edit(Plan stored, SavePlanCommand command, ClientSummary summary) {
+        requireNotDrafting(summary);
         requireSameVersion(stored, command.version());
         return stored.edit(command.goal(), command.weeks(), command.sessions(), today(summary));
     }
@@ -77,13 +79,18 @@ public class PlanManagementService implements ManagePlanUseCase {
         if (command.version() != null) {
             throw new PlanChangedException();
         }
-        if (summary.getPlanState() == PlanState.PLAN_DRAFTING) {
-            throw new PlanDraftingInProgressException();
-        }
+        requireNotDrafting(summary);
         if (summary.getPlanState() == PlanState.NO_QUIZ) {
             throw new PlanQuizNotSubmittedException();
         }
         return Plan.draft(command.client(), command.goal(), command.weeks(), command.sessions());
+    }
+
+    // a draft being built again is about to be replaced, so a change to it now would be lost (research R3)
+    private static void requireNotDrafting(ClientSummary summary) {
+        if (summary.getPlanState() == PlanState.PLAN_DRAFTING) {
+            throw new PlanDraftingInProgressException();
+        }
     }
 
     private static void requireSameVersion(Plan stored, Long version) {

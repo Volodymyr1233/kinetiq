@@ -127,6 +127,20 @@ public class Plan {
     }
 
     /**
+     * Returns this draft with the content of a new automatic one: the same id, client and version, marked as built. The
+     * version is raised when it is stored, so an editor that still shows the old content cannot save over it. Only a
+     * complete draft replaces one, and a published plan is never replaced.
+     */
+    public Plan rebuiltWith(Goal goal, int weeks, List<Session> sessions) {
+        if (isPublished()) {
+            throw new PlanAlreadyPublishedException();
+        }
+        Plan rebuilt = new Plan(id, client, goal, weeks, null, sessions, version, AutomaticDraft.BUILT);
+        rebuilt.requireComplete();
+        return rebuilt;
+    }
+
+    /**
      * Returns this plan with new values, the same first week and no mark, because it is now the trainer's. A published
      * plan must stay complete, and is refused
      * only when its length gets shorter and falls below the current plan week, so a finished plan can still be saved.

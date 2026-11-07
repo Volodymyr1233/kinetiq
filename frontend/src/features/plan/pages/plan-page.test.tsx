@@ -169,16 +169,17 @@ describe('PlanPage', () => {
       vi.useRealTimers()
     })
 
-    it('says so, offers no way to build and asks nothing about a plan', async () => {
-      const { requests } = open(DRAFTING, backend(DRAFTING, null))
+    it('says so and offers no way to build, when there is no plan yet', async () => {
+      open(DRAFTING, backend(DRAFTING, null))
 
       expect(await screen.findByText(LINE)).toHaveAttribute('role', 'status')
       expect(
         screen.queryByRole('button', { name: 'Build plan' }),
       ).not.toBeInTheDocument()
+      expect(screen.queryByLabelText('Session name')).not.toBeInTheDocument()
       expect(
-        requests.map((request) => new URL(request.url).pathname),
-      ).not.toContain(`/api/v1/clients/${DRAFTING.id}/plan`)
+        screen.queryByRole('button', { name: 'Build again' }),
+      ).not.toBeInTheDocument()
     })
 
     it('moves on to the editor and the new badge by itself when drafting ends', async () => {
@@ -265,6 +266,248 @@ describe('PlanPage', () => {
       expect(screen.queryByText(LINE)).not.toBeInTheDocument()
       expect(screen.getByLabelText('Session name')).toHaveValue('Lower')
       focusManager.setFocused(undefined)
+    })
+  })
+
+  describe('building a draft again', () => {
+    const ANSWERS = {
+      goal: 'LOSE_FAT',
+      experience: 'YEARS_1_TO_2',
+      level: 'INTERMEDIATE',
+      age: 29,
+      heightCm: 168,
+      weightKg: 62.5,
+      likes: ['WEIGHTS'],
+      daysPerWeek: 3,
+      notes: 'Left knee gets stiff',
+      submittedAt: '2026-11-05T10:00:00Z',
+    }
+    const BUILT: Plan = { ...DRAFT, automaticDraft: 'BUILT' }
+    const LINE =
+      "Building a new draft from Ola Kowalska's answers. This can take a few minutes."
+    const KEPT = "Couldn't build a new draft. Your previous one is kept."
+
+    afterEach(() => {
+      vi.useRealTimers()
+    })
+
+    // the server's side: Build again starts a drafting, unless `refusal` says why not
+    function server(refusal?: () => Response) {
+      const state = {
+        client: WAITING,
+        plan: BUILT as Plan,
+        posts: 0,
+      }
+      const reply = async (request: Request) => {
+        const { pathname } = new URL(request.url)
+        if (pathname === `/api/v1/clients/${WAITING.id}/quiz-answers`)
+          return json(ANSWERS)
+        if (pathname === `/api/v1/clients/${WAITING.id}/plan/drafting`) {
+          state.posts++
+          if (refusal) return refusal()
+          state.client = { ...WAITING, planState: 'PLAN_DRAFTING' }
+          return new Response(null, { status: 202 })
+        }
+        return backend(state.client, state.plan)(request)
+      }
+      return { state, reply }
+    }
+
+    async function accept(user: ReturnType<typeof userEvent.setup>) {
+      await user.click(
+        await screen.findByRole('button', { name: 'Build again' }),
+      )
+      await user.click(
+        await screen.findByRole('button', { name: 'Replace draft' }),
+      )
+    }
+
+    function drafted(state: { client: Client; plan: Plan }, plan: Plan) {
+      state.client = { ...WAITING, planState: 'PLAN_TO_REVIEW' }
+      state.plan = plan
+    }
+
+    it('asks first, with Cancel focused, and does nothing until accepted', async () => {
+      const user = userEvent.setup()
+      const { state, reply } = server()
+      open(WAITING, reply)
+
+      await user.click(
+        await screen.findByRole('button', { name: 'Build again' }),
+      )
+
+      const dialog = await screen.findByRole('alertdialog', {
+        name: "Build Ola Kowalska's plan again?",
+      })
+      expect(dialog).toHaveTextContent(
+        'The current draft, including your edits, will be replaced by a new automatic one if it can be built.',
+      )
+      const cancel = within(dialog).getByRole('button', { name: 'Cancel' })
+      expect(cancel).toHaveFocus()
+      await user.click(cancel)
+      expect(state.posts).toBe(0)
+      expect(screen.getByRole('button', { name: 'Build again' })).toHaveFocus()
+    })
+
+    it('shows the drafting above the previous draft, which can be read but not changed', async () => {
+      const user = userEvent.setup()
+      const { state, reply } = server()
+      open(WAITING, reply)
+
+      await accept(user)
+
+      expect(await screen.findByText(LINE)).toHaveAttribute('role', 'status')
+      expect(state.posts).toBe(1)
+      expect(screen.getByLabelText('Session name')).toBeDisabled()
+      expect(screen.getByLabelText('Length')).toBeDisabled()
+      expect(screen.getByRole('button', { name: 'Save plan' })).toBeDisabled()
+      expect(
+        screen.getByRole('button', { name: 'Publish plan' }),
+      ).toBeDisabled()
+      expect(
+        screen.getByRole('button', { name: 'Build again' }),
+      ).toHaveAttribute('aria-disabled', 'true')
+      // the other sessions can still be read
+      await user.click(screen.getByRole('tab', { name: /Upper/ }))
+      expect(screen.getByLabelText('Session name')).toHaveValue('Upper')
+    })
+
+    it('moves on to the new draft by itself, with no message, when one was built', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const { state, reply } = server()
+      open(WAITING, reply)
+      await accept(user)
+      await screen.findByText(LINE)
+
+      drafted(state, {
+        ...BUILT,
+        version: 4,
+        sessions: [{ name: 'Full body', day: 'TUESDAY', entries: [] }],
+      })
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+
+      expect(
+        await screen.findByRole('tab', { name: /Full body/ }),
+      ).toBeInTheDocument()
+      expect(screen.queryByText(LINE)).not.toBeInTheDocument()
+      expect(screen.queryByText(KEPT)).not.toBeInTheDocument()
+      expect(screen.getByLabelText('Session name')).toBeEnabled()
+      expect(screen.getAllByRole('status')[0]).toHaveTextContent(
+        'Plan to review',
+      )
+    })
+
+    it('says the previous draft is kept, and offers Build again, when none could be built', async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true })
+      const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+      const { state, reply } = server()
+      open(WAITING, reply)
+      await accept(user)
+      await screen.findByText(LINE)
+
+      drafted(state, BUILT)
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(5000)
+      })
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(KEPT)
+      expect(screen.getByRole('tab', { name: /Lower/ })).toBeInTheDocument()
+      expect(
+        screen.getByRole('button', { name: 'Build again' }),
+      ).toHaveAttribute('aria-disabled', 'false')
+    })
+
+    // with no drafting service a rebuild ends at once, before the tab ever sees it running
+    it('says the previous draft is kept, when the drafting ended before the tab saw it', async () => {
+      const user = userEvent.setup()
+      const { reply } = server(() => new Response(null, { status: 202 }))
+      open(WAITING, reply)
+
+      await accept(user)
+
+      expect(await screen.findByRole('alert')).toHaveTextContent(KEPT)
+      expect(screen.getByLabelText('Session name')).toBeEnabled()
+    })
+
+    it('shows the new draft, when the drafting ended before the tab saw it', async () => {
+      const user = userEvent.setup()
+      const { state, reply } = server(() => {
+        state.plan = {
+          ...BUILT,
+          version: 4,
+          sessions: [{ name: 'Full body', day: 'TUESDAY', entries: [] }],
+        }
+        return new Response(null, { status: 202 })
+      })
+      open(WAITING, reply)
+
+      await accept(user)
+
+      expect(
+        await screen.findByRole('tab', { name: /Full body/ }),
+      ).toBeInTheDocument()
+      expect(screen.queryByText(KEPT)).not.toBeInTheDocument()
+    })
+
+    it('says when it can be used again, and stays unavailable, once the day’s builds are used', async () => {
+      const user = userEvent.setup()
+      const { state, reply } = server(() =>
+        problem(429, {
+          status: 429,
+          code: 'plan.rebuild-limit-reached',
+          availableAt: '2026-11-08T09:30:00Z',
+        }),
+      )
+      open(WAITING, reply)
+
+      await accept(user)
+
+      expect(
+        await screen.findByText(
+          /You've used today's automatic builds\. You can build again from .*2026/,
+        ),
+      ).toBeInTheDocument()
+      const button = screen.getByRole('button', { name: 'Build again' })
+      expect(button).toHaveAttribute('aria-disabled', 'true')
+      await user.click(button)
+      expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument()
+      expect(state.posts).toBe(1)
+    })
+
+    it('moves to the drafting already running, when the request is refused for it', async () => {
+      const user = userEvent.setup()
+      const { state, reply } = server(() => {
+        state.client = { ...WAITING, planState: 'PLAN_DRAFTING' }
+        return problem(409, { status: 409, code: 'plan.drafting' })
+      })
+      open(WAITING, reply)
+
+      await accept(user)
+
+      expect(await screen.findByText(LINE)).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+
+    it('offers no panel for a published plan', async () => {
+      const { state, reply } = server()
+      state.plan = {
+        ...DRAFT,
+        status: 'PUBLISHED',
+        firstWeek: '2026-11-02',
+        currentWeek: 1,
+      }
+      open(WAITING, reply)
+
+      await screen.findByRole('tab', { name: /Lower/ })
+      expect(
+        screen.queryByRole('button', { name: 'Build again' }),
+      ).not.toBeInTheDocument()
+      expect(
+        screen.queryByText("Ola Kowalska's answers"),
+      ).not.toBeInTheDocument()
     })
   })
 

@@ -114,7 +114,11 @@
       "load-out-of-range": "Leave the load empty or enter a number above 0.",
       "rpe-out-of-range": "Enter an RPE from 5 to 10, in whole steps.",
       "rest-out-of-range": "Enter 0 to 600 seconds.",
-      "already-published": "This plan is already published. Reload the page to see it."
+      "already-published": "This plan is already published. Reload the page to see it.",
+      "rebuild-limit-reached": "You've used today's automatic builds. Try again later."
+    },
+    "quiz": {
+      "not-found": "This client hasn't answered the quiz yet."
     }
   },
   "account": {
@@ -716,8 +720,38 @@
   "plan": {
     "drafting": "Drafting a plan from {{name}}'s quiz answers. This can take a few minutes.",
     "note": {
-      "built": "Built automatically from the quiz answers. Check the exercises and loads. {{name}} sees the plan only after you publish it.",
-      "failed": "Couldn't build this plan automatically. You can build it here."
+      "built": "Built automatically from the quiz answers. Check the exercises and loads. {{name}} sees the plan only after you publish it."
+    },
+    "panel": {
+      "title": "{{name}}'s answers",
+      "goal": "Goal",
+      "experience": "Training for",
+      "level": "Level",
+      "age": "Age",
+      "height": "Height",
+      "weight": "Body weight",
+      "likes": "Likes",
+      "days": "Days a week",
+      "notes": "Notes",
+      "ageValue_one": "{{count, number}} year",
+      "ageValue_other": "{{count, number}} years",
+      "heightValue": "{{height, number}} cm",
+      "weightValue": "{{weight, number}} {{unit}}",
+      "daysValue": "{{count, number}}",
+      "noNotes": "{{name}} wrote no notes.",
+      "unavailable": "{{name}}'s quiz answers aren't available.",
+      "failed": "Couldn't build this plan automatically. Try again or build it yourself.",
+      "buildAgain": "Build again",
+      "limit": "You've used today's automatic builds. You can build again from {{time}}."
+    },
+    "rebuild": {
+      "drafting": "Building a new draft from {{name}}'s answers. This can take a few minutes.",
+      "failed": "Couldn't build a new draft. Your previous one is kept.",
+      "dialog": {
+        "title": "Build {{name}}'s plan again?",
+        "body": "The current draft, including your edits, will be replaced by a new automatic one if it can be built.",
+        "accept": "Replace draft"
+      }
     },
     "today": {
       "restDay": "Rest day",

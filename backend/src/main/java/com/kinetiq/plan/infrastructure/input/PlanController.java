@@ -2,10 +2,12 @@ package com.kinetiq.plan.infrastructure.input;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.plan.domain.input.ManagePlanUseCase;
+import com.kinetiq.plan.domain.input.RebuildPlanUseCase;
 import jakarta.validation.Valid;
 import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 // /api/v1/clients/** needs the role TRAINER; the use case checks the client is this trainer's own
@@ -22,6 +25,8 @@ import org.springframework.web.bind.annotation.RestController;
 class PlanController {
 
     private final ManagePlanUseCase plans;
+    private final RebuildPlanUseCase rebuilds;
+    private final DraftingRunner runner;
     private final PlanWebMapper mapper;
 
     // sign-in stores the account id as the principal's name
@@ -66,5 +71,20 @@ class PlanController {
             Authentication authentication) {
         return mapper.toResponse(
                 plans.publish(signedIn(authentication), new AccountId(id), request.version()), locale);
+    }
+
+    /**
+     * Starts a new automatic draft of the client's draft plan and returns without waiting for it; the client's plan
+     * state is {@code PLAN_DRAFTING} until it ends. {@code 404} with {@code client.not-found} or {@code plan.not-found},
+     * {@code 409} with {@code plan.already-published} or {@code plan.drafting}, and {@code 429} with
+     * {@code plan.rebuild-limit-reached} and {@code availableAt} once the day's builds are used.
+     */
+    @PostMapping("/drafting")
+    @ResponseStatus(HttpStatus.ACCEPTED)
+    void rebuildPlan(@PathVariable UUID id, Authentication authentication) {
+        AccountId client = new AccountId(id);
+        rebuilds.rebuild(signedIn(authentication), client);
+        // the use case's transaction has committed by now, so the job finds its row; a crash in between is swept
+        runner.start(client);
     }
 }

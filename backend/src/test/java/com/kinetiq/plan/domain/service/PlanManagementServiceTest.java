@@ -145,6 +145,18 @@ class PlanManagementServiceTest {
         assertThatThrownBy(() -> service.save(foreign)).isInstanceOf(ClientNotFoundException.class);
     }
 
+    // a draft being built again would lose a change made now, so the stored draft is refused like a first save
+    @Test
+    void shouldRefuseSavingAndPublishingAStoredDraft_whileItIsBeingBuiltAgain() {
+        Plan draft = plans.save(Plan.draft(DRAFTING_CLIENT, Goal.LOSE_FAT, 12, sessions(SQUAT.getId())));
+
+        assertThatThrownBy(() -> service.save(save(DRAFTING_CLIENT, draft.getVersion(), 12, sessions(SQUAT.getId()))))
+                .isInstanceOf(PlanDraftingInProgressException.class);
+        assertThatThrownBy(() -> service.publish(TRAINER, DRAFTING_CLIENT, draft.getVersion()))
+                .isInstanceOf(PlanDraftingInProgressException.class);
+        assertThat(plans.byClient.get(DRAFTING_CLIENT)).isSameAs(draft);
+    }
+
     @Test
     void shouldClearTheMark_whenTheTrainerSavesAMarkedDraft() {
         Plan marked = plans.save(Plan.failed(CLIENT, Goal.LOSE_FAT, 12));

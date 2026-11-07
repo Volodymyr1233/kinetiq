@@ -35,8 +35,9 @@ The `local` profile adds demo data. Every account uses the password `Kinetiq-dem
 | `demo.client.daily@example.com` | Client, email confirmed, quiz submitted, plan published and opened, a session Monday to Saturday (week 3 of 8) |
 | `demo.client.built@example.com` | Client, email confirmed, quiz submitted, plan drafted automatically 3 hours ago and not reviewed yet |
 | `demo.client.failed@example.com` | Client, email confirmed, quiz submitted, automatic drafting failed 26 hours ago: an empty draft |
-| `demo.trainer2@example.com` | Trainer, email confirmed, second trainer for isolation checks |
+| `demo.trainer2@example.com` | Trainer, email confirmed, second trainer for isolation checks; 9 of 10 automatic builds of the last 24 hours used |
 | `demo.client.other@example.com` | Client of the second trainer, quiz submitted, plan drafted automatically (never in the first trainer's approvals) |
+| `demo.client.rebuilding@example.com` | Client, email confirmed, quiz submitted, automatic draft being built again (the sweep ends it a few minutes after start) |
 
 ```bash
 cd frontend

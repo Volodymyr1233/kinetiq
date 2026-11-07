@@ -101,6 +101,41 @@ class PlanTest {
     }
 
     @Nested
+    class RebuiltWith {
+
+        private final Plan saved = new Plan(PlanId.random(), CLIENT, Goal.LOSE_FAT, 8, null, List.of(), 4);
+        private final List<Session> newSessions =
+                List.of(session(DayOfWeek.TUESDAY), session(DayOfWeek.FRIDAY), session(DayOfWeek.SUNDAY));
+
+        @Test
+        void shouldReplaceTheContentAndMarkItBuilt_keepingIdClientAndVersion() {
+            Plan rebuilt = saved.rebuiltWith(Goal.GET_STRONGER, 12, newSessions);
+
+            assertThat(rebuilt.getId()).isEqualTo(saved.getId());
+            assertThat(rebuilt.getClient()).isEqualTo(CLIENT);
+            assertThat(rebuilt.getVersion()).isEqualTo(4);
+            assertThat(rebuilt.getGoal()).isEqualTo(Goal.GET_STRONGER);
+            assertThat(rebuilt.getWeeks()).isEqualTo(12);
+            assertThat(rebuilt.getSessions()).isEqualTo(newSessions);
+            assertThat(rebuilt.getAutomaticDraft()).contains(AutomaticDraft.BUILT);
+            assertThat(rebuilt.isPublished()).isFalse();
+        }
+
+        @Test
+        void shouldRefuseAnIncompleteResult() {
+            assertRefused(
+                    () -> saved.rebuiltWith(Goal.GET_STRONGER, 12, List.of(session(DayOfWeek.MONDAY))),
+                    "plan.too-few-sessions");
+        }
+
+        @Test
+        void shouldRefuseAPublishedPlan() {
+            assertThatThrownBy(() -> published(12, MONDAY).rebuiltWith(Goal.GET_STRONGER, 12, newSessions))
+                    .isInstanceOf(PlanAlreadyPublishedException.class);
+        }
+    }
+
+    @Nested
     class Entries {
 
         private static ExerciseEntry load(String kg) {
