@@ -9,11 +9,13 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.GeneratedPlanRejectedException;
 import com.kinetiq.plan.domain.input.DraftInput;
 import com.kinetiq.plan.domain.input.DraftPlanUseCase;
+import com.kinetiq.plan.domain.model.DraftingKind;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.plan.domain.output.PlanDraftingRepository;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
+import com.kinetiq.quiz.domain.model.Goal;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import java.time.Clock;
 import java.time.Duration;
@@ -39,7 +41,7 @@ public class PlanDraftingService implements DraftPlanUseCase {
 
     @Override
     public void request(AccountId client) {
-        draftings.start(client, clock.instant());
+        draftings.start(client, clock.instant(), DraftingKind.FIRST);
     }
 
     // answers point at the client, and a client at their trainer, so neither account can be missing once these are read
@@ -61,23 +63,44 @@ public class PlanDraftingService implements DraftPlanUseCase {
     @Override
     public void storeBuilt(AccountId client, AccountId trainer, List<Session> sessions) {
         // whoever removes the row stores: the job and the sweep cannot both, and a late result is dropped
-        if (!draftings.remove(client)) {
+        Optional<DraftingKind> kind = draftings.remove(client);
+        if (kind.isEmpty()) {
             return;
         }
-        Optional<QuizSubmission> answers = storableAnswers(client);
+        Optional<QuizSubmission> answers = quiz.answers(client);
         if (answers.isEmpty() || !accounts.find(client).getTrainerId().filter(trainer::equals).isPresent()) {
             return;
         }
-        requireInLibrary(sessions, trainer);
-        plans.save(Plan.built(client, answers.get().getGoal(), WEEKS, sessions));
+        Optional<Plan> stored = plans.findByClient(client);
+        Goal goal = answers.get().getGoal();
+        switch (kind.get()) {
+            // a plan that is already there stays as it is
+            case FIRST -> {
+                if (stored.isEmpty()) {
+                    requireInLibrary(sessions, trainer);
+                    plans.save(Plan.built(client, goal, WEEKS, sessions));
+                }
+            }
+            // a published plan is the client's now, and a draft gone meanwhile has nothing to replace
+            case REBUILD -> {
+                if (stored.isPresent() && !stored.get().isPublished()) {
+                    requireInLibrary(sessions, trainer);
+                    plans.save(stored.get().rebuiltWith(goal, WEEKS, sessions));
+                }
+            }
+        }
     }
 
+    // a failed rebuild keeps the draft the trainer had, so only a first drafting stores an empty one
     @Override
     public void storeFailed(AccountId client) {
-        if (!draftings.remove(client)) {
+        if (draftings.remove(client).filter(DraftingKind.FIRST::equals).isEmpty()) {
             return;
         }
-        storableAnswers(client)
+        if (plans.findByClient(client).isPresent()) {
+            return;
+        }
+        quiz.answers(client)
                 .filter(answers -> accounts.find(client).getTrainerId().isPresent())
                 .ifPresent(answers -> plans.save(Plan.failed(client, answers.getGoal(), WEEKS)));
     }
@@ -85,11 +108,6 @@ public class PlanDraftingService implements DraftPlanUseCase {
     @Override
     public List<AccountId> overdue() {
         return draftings.startedBefore(clock.instant().minus(draftingLimit));
-    }
-
-    // a plan that is already there stays as it is
-    private Optional<QuizSubmission> storableAnswers(AccountId client) {
-        return plans.findByClient(client).isPresent() ? Optional.empty() : quiz.answers(client);
     }
 
     private void requireInLibrary(List<Session> sessions, AccountId trainer) {

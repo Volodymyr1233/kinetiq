@@ -63,6 +63,7 @@ export function EntriesTable({
   session,
   sessionLabel,
   unit,
+  readOnly,
   errorOf,
   onLeaveField,
   onChange,
@@ -70,6 +71,8 @@ export function EntriesTable({
   session: DraftSession
   sessionLabel: string
   unit: WeightUnit
+  /** Leaves out the grip, which is no button a disabled fieldset turns off. */
+  readOnly: boolean
   /** The message for a field that should show one now. */
   errorOf: (id: string) => string | undefined
   onLeaveField: (id: string) => void
@@ -234,7 +237,7 @@ export function EntriesTable({
                     )}
                   >
                     <TableCell className="align-top">
-                      {entries.length > 1 && (
+                      {entries.length > 1 && !readOnly && (
                         <MoveHandle
                           id={target.move(entry.key)}
                           label={t('plan.entries.move', names)}

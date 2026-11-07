@@ -29,6 +29,7 @@ export function SessionPanel({
   session,
   sessions,
   unit,
+  readOnly,
   errorOf,
   onLeaveField,
   onChange,
@@ -37,6 +38,7 @@ export function SessionPanel({
   session: DraftSession
   sessions: DraftSession[]
   unit: WeightUnit
+  readOnly: boolean
   errorOf: (id: string) => string | undefined
   onLeaveField: (id: string) => void
   onChange: (
@@ -108,6 +110,7 @@ export function SessionPanel({
               session={session}
               sessionLabel={label}
               unit={unit}
+              readOnly={readOnly}
               errorOf={errorOf}
               onLeaveField={onLeaveField}
               onChange={(entries) => onChange({ entries })}

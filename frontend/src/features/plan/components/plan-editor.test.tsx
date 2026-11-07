@@ -705,8 +705,6 @@ describe('PlanEditor', () => {
   describe('a draft the system built or failed to build', () => {
     const BUILT_NOTE =
       'Built automatically from the quiz answers. Check the exercises and loads. Ola Kowalska sees the plan only after you publish it.'
-    const FAILED_NOTE =
-      "Couldn't build this plan automatically. You can build it here."
     const FAILED: Plan = {
       ...DRAFT,
       automaticDraft: 'FAILED',
@@ -748,13 +746,18 @@ describe('PlanEditor', () => {
       expect(screen.getByRole('note')).toHaveTextContent(BUILT_NOTE)
     })
 
-    it('says drafting failed and offers "Add session", and publishing lists what is missing', async () => {
+    // the panel beside the editor says it, and findByRole would fail on a second note above the sessions
+    it('says drafting failed once, beside the editor, offers "Add session", and publishing lists what is missing', async () => {
       const user = userEvent.setup()
       const { reply, calls } = backend(FAILED)
       open(reply)
 
-      expect(await screen.findByRole('note')).toHaveTextContent(FAILED_NOTE)
-      expect(screen.getByRole('button', { name: 'Add session' })).toBeVisible()
+      expect(
+        await screen.findByRole('button', { name: 'Add session' }),
+      ).toBeVisible()
+      expect(await screen.findByRole('note')).toHaveTextContent(
+        "Couldn't build this plan automatically. Try again or build it yourself.",
+      )
 
       await user.click(screen.getByRole('button', { name: 'Publish plan' }))
 

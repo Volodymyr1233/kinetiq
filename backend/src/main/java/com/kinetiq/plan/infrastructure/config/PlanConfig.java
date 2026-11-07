@@ -7,8 +7,10 @@ import com.kinetiq.plan.domain.input.DraftPlanUseCase;
 import com.kinetiq.plan.domain.input.ListDraftedPlansUseCase;
 import com.kinetiq.plan.domain.input.ManagePlanUseCase;
 import com.kinetiq.plan.domain.input.PlanDrafting;
+import com.kinetiq.plan.domain.input.RebuildPlanUseCase;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.output.DraftedPlanDirectory;
+import com.kinetiq.plan.domain.output.PlanBuildRequests;
 import com.kinetiq.plan.domain.output.PlanDraftingRepository;
 import com.kinetiq.plan.domain.output.PlanGenerator;
 import com.kinetiq.plan.domain.output.PlanRepository;
@@ -16,6 +18,7 @@ import com.kinetiq.plan.domain.service.DraftedPlanListService;
 import com.kinetiq.plan.domain.service.PlanDraftingJob;
 import com.kinetiq.plan.domain.service.PlanDraftingService;
 import com.kinetiq.plan.domain.service.PlanManagementService;
+import com.kinetiq.plan.domain.service.PlanRebuildService;
 import com.kinetiq.plan.domain.service.PlanViewService;
 import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
 import java.time.Clock;
@@ -85,6 +88,15 @@ class PlanConfig {
     ManagePlanUseCase managePlanUseCase(
             ViewClientsUseCase clients, ListExercisesUseCase exercises, PlanRepository plans) {
         return new PlanManagementService(clients, exercises, plans, Clock.systemUTC());
+    }
+
+    @Bean
+    RebuildPlanUseCase rebuildPlanUseCase(
+            ViewClientsUseCase clients,
+            PlanRepository plans,
+            PlanDraftingRepository draftings,
+            PlanBuildRequests requests) {
+        return new PlanRebuildService(clients, plans, draftings, requests, Clock.systemUTC());
     }
 
     @Bean

@@ -17,6 +17,9 @@ interface JpaQuizSubmissionRepository extends JpaRepository<QuizSubmissionEntity
             nativeQuery = true)
     boolean hasPublishedPlan(UUID clientId);
 
-    @Query(value = "select exists (select 1 from plan_draftings where client_id = :clientId)", nativeQuery = true)
+    // a rebuild replaces a draft the client cannot see, so it must not take them back to "building"
+    @Query(
+            value = "select exists (select 1 from plan_draftings where client_id = :clientId and not rebuild)",
+            nativeQuery = true)
     boolean isPlanDrafting(UUID clientId);
 }

@@ -2,6 +2,8 @@ package com.kinetiq.plan.infrastructure.input;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -24,9 +26,11 @@ import com.kinetiq.plan.domain.exception.PlanExerciseNotInLibraryException;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanDraftingInProgressException;
 import com.kinetiq.plan.domain.exception.PlanQuizNotSubmittedException;
+import com.kinetiq.plan.domain.exception.PlanRebuildLimitReachedException;
 import com.kinetiq.plan.domain.exception.PlanRuleViolationException;
 import com.kinetiq.plan.domain.exception.PlanWeeksBeforeCurrentException;
 import com.kinetiq.plan.domain.input.ManagePlanUseCase;
+import com.kinetiq.plan.domain.input.RebuildPlanUseCase;
 import com.kinetiq.plan.domain.input.PlanDetails;
 import com.kinetiq.plan.domain.input.SavePlanCommand;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
@@ -35,6 +39,7 @@ import com.kinetiq.plan.domain.model.PlanId;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.model.Goal;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -42,12 +47,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Stream;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
+import org.mockito.InOrder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
@@ -97,6 +104,12 @@ class PlanControllerTest {
 
     @MockitoBean
     private ManagePlanUseCase plans;
+
+    @MockitoBean
+    private RebuildPlanUseCase rebuilds;
+
+    @MockitoBean
+    private DraftingRunner runner;
 
     private static PlanDetails details(LocalDate firstWeek, Integer currentWeek, BigDecimal load) {
         Session session = new Session(
@@ -494,5 +507,73 @@ class PlanControllerTest {
 
         assertRefused(result, HttpStatus.BAD_REQUEST, "plan.weeks-before-current");
         assertThat(result).bodyJson().extractingPath("$.currentWeek").isEqualTo(6);
+    }
+
+    @Nested
+    class Rebuild {
+
+        private static final String DRAFTING = ADDRESS + "/drafting";
+
+        private MvcTestResult post() {
+            return mvc.post().uri(DRAFTING).with(TRAINER).with(csrf()).exchange();
+        }
+
+        @Test
+        void shouldAcceptWithNoBody_andStartTheJobOnlyAfterTheUseCaseReturned() {
+            var result = post();
+
+            assertThat(result).hasStatus(HttpStatus.ACCEPTED);
+            assertThat(result).bodyText().isEmpty();
+            InOrder order = inOrder(rebuilds, runner);
+            order.verify(rebuilds).rebuild(TRAINER_ID, CLIENT_ID);
+            order.verify(runner).start(CLIENT_ID);
+        }
+
+        static Stream<Arguments> refusals() {
+            return Stream.of(
+                    Arguments.of(new ClientNotFoundException(), HttpStatus.NOT_FOUND, "client.not-found"),
+                    Arguments.of(new PlanNotFoundException(), HttpStatus.NOT_FOUND, "plan.not-found"),
+                    Arguments.of(new PlanAlreadyPublishedException(), HttpStatus.CONFLICT, "plan.already-published"),
+                    Arguments.of(new PlanDraftingInProgressException(), HttpStatus.CONFLICT, "plan.drafting"));
+        }
+
+        @ParameterizedTest
+        @MethodSource("refusals")
+        void shouldRefuseWithTheCode_andStartNoJob(DomainException refusal, HttpStatus status, String code) {
+            doThrow(refusal).when(rebuilds).rebuild(TRAINER_ID, CLIENT_ID);
+
+            var result = post();
+
+            assertRefused(result, status, code);
+            assertThat(result).bodyText().doesNotContain(refusal.getMessage());
+            verifyNoInteractions(runner);
+        }
+
+        @Test
+        void shouldSayWhenTheNextBuildIsAllowed_whenTheLimitIsReached() {
+            doThrow(new PlanRebuildLimitReachedException(Instant.parse("2026-11-08T09:30:00Z")))
+                    .when(rebuilds)
+                    .rebuild(TRAINER_ID, CLIENT_ID);
+
+            var result = post();
+
+            assertRefused(result, HttpStatus.TOO_MANY_REQUESTS, "plan.rebuild-limit-reached");
+            assertThat(result).bodyJson().extractingPath("$.availableAt").isEqualTo("2026-11-08T09:30:00Z");
+            verifyNoInteractions(runner);
+        }
+
+        @Test
+        void shouldRefuse_byRoleWithoutASignInAndWithoutTheCsrfToken() {
+            assertRefused(
+                    mvc.post().uri(DRAFTING).with(CLIENT).with(csrf()).exchange(),
+                    HttpStatus.FORBIDDEN,
+                    "request.not-allowed");
+            assertRefused(
+                    mvc.post().uri(DRAFTING).with(csrf()).exchange(),
+                    HttpStatus.UNAUTHORIZED,
+                    "request.unauthenticated");
+            assertRefused(mvc.post().uri(DRAFTING).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.forbidden");
+            verifyNoInteractions(rebuilds, runner);
+        }
     }
 }

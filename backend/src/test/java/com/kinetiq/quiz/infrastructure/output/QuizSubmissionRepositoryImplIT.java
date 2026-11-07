@@ -181,6 +181,17 @@ class QuizSubmissionRepositoryImplIT {
         assertThat(repository.isPlanDrafting(notDrafting)).isFalse();
     }
 
+    // the client waits for the trainer's review all through a rebuild, which they never see (spec 85, FR-013a)
+    @Test
+    void shouldNotSayDrafting_whenTheTrainerHasADraftBuiltAgain() {
+        AccountId rebuilding = insertClient();
+        jdbc.update(
+                "insert into plan_draftings (client_id, started_at, rebuild) values (?, now(), true)",
+                rebuilding.value());
+
+        assertThat(repository.isPlanDrafting(rebuilding)).isFalse();
+    }
+
     private void insertPlan(AccountId client, LocalDate firstWeek) {
         jdbc.update(
                 """

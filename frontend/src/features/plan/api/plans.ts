@@ -29,14 +29,10 @@ export function usePlan(client: string, enabled: boolean) {
   })
 }
 
-/**
- * While mounted, asks every 5 seconds whether drafting has ended, skipping a hidden tab. The client's state moves the tab
- * and its badge on; forgetting the plan first keeps an earlier "no plan" from showing for a moment after that.
- */
+/** While mounted, asks every 5 seconds whether drafting has ended, skipping a hidden tab; the client's state moves the tab on. */
 export function useFollowDrafting(client: string) {
   const queryClient = useQueryClient()
   useEffect(() => {
-    void queryClient.resetQueries({ queryKey: planKey(client) })
     const timer = setInterval(() => {
       if (!document.hidden) {
         void queryClient.invalidateQueries({ queryKey: ['clients', client] })
@@ -84,5 +80,24 @@ export function useSavePlan(client: string) {
       return data
     },
     onSuccess: refresh,
+  })
+}
+
+/** Asks for a new automatic draft; the client's state then says drafting runs, so the tab follows it. */
+export function useBuildPlanAgain(client: string) {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await api.POST('/api/v1/clients/{id}/plan/drafting', {
+        params: { path: { id: client } },
+      })
+      if (error !== undefined) throw error
+    },
+    // awaited, so the caller's onSuccess sees the client's new state; a refusal for a drafting already running moves
+    // the tab to it, too
+    onSettled: (_, error) =>
+      !error || problemCode(error) === 'plan.drafting'
+        ? queryClient.invalidateQueries({ queryKey: ['clients'] })
+        : undefined,
   })
 }

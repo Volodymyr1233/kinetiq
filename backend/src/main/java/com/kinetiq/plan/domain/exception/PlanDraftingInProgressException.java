@@ -2,11 +2,11 @@ package com.kinetiq.plan.domain.exception;
 
 import com.kinetiq.common.domain.exception.DomainException;
 
-/** A first save arrived while the client's first plan is being drafted, and would collide with the draft. */
+/** A change or a new drafting arrived while the client's plan is being drafted, and would collide with its result. */
 public class PlanDraftingInProgressException extends DomainException {
 
     public PlanDraftingInProgressException() {
-        super("the client's first plan is being drafted");
+        super("the client's plan is being drafted");
     }
 
     @Override

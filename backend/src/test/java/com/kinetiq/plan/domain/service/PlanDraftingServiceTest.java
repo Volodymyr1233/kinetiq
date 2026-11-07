@@ -9,8 +9,10 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.GeneratedPlanRejectedException;
 import com.kinetiq.plan.domain.input.DraftInput;
 import com.kinetiq.plan.domain.model.AutomaticDraft;
+import com.kinetiq.plan.domain.model.DraftingKind;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.PlanId;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.model.Goal;
 import java.time.Clock;
@@ -18,6 +20,7 @@ import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -219,6 +222,127 @@ class PlanDraftingServiceTest {
             service.storeBuilt(fixture.client, fixture.trainer, sessions());
 
             assertThat(stored()).isSameAs(first);
+        }
+    }
+
+    @Nested
+    class Rebuild {
+
+        private Plan rebuildOver(Plan plan) {
+            Plan saved = fixture.plans.save(plan);
+            fixture.draftings.start(fixture.client, NOW, DraftingKind.REBUILD);
+            return saved;
+        }
+
+        private Plan savedByTrainer() {
+            return new Plan(PlanId.random(), fixture.client, Goal.GET_STRONGER, 8, null, List.of(), 0);
+        }
+
+        @Test
+        void shouldReplaceABuiltAFailedAndASavedDraft_inPlaceWithAHigherVersion() {
+            for (Plan draft : List.of(
+                    Plan.built(fixture.client, Goal.GET_STRONGER, 8, sessions().subList(0, 2)),
+                    Plan.failed(fixture.client, Goal.GET_STRONGER, 8),
+                    savedByTrainer())) {
+                fixture.plans.byClient.clear();
+                Plan before = rebuildOver(draft);
+
+                service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+                assertThat(stored().getId()).isEqualTo(before.getId());
+                assertThat(stored().getVersion()).isGreaterThan(before.getVersion());
+                assertThat(stored().getAutomaticDraft()).contains(AutomaticDraft.BUILT);
+                assertThat(stored().getGoal()).isEqualTo(Goal.LOSE_FAT);
+                assertThat(stored().getWeeks()).isEqualTo(12);
+                assertThat(stored().getSessions()).isEqualTo(sessions());
+                assertThat(fixture.draftings.rows).isEmpty();
+            }
+        }
+
+        @Test
+        void shouldKeepTheDraftAndItsVersion_whenTheRebuildFails() {
+            Plan before = rebuildOver(savedByTrainer());
+
+            service.storeFailed(fixture.client);
+
+            assertThat(stored()).isSameAs(before);
+            assertThat(fixture.draftings.rows).isEmpty();
+        }
+
+        @Test
+        void shouldDropTheResult_whenThePlanWasPublishedMeanwhile() {
+            Plan published = rebuildOver(new Plan(
+                    PlanId.random(),
+                    fixture.client,
+                    Goal.GET_STRONGER,
+                    8,
+                    LocalDate.parse("2026-11-02"),
+                    sessions(),
+                    3));
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isSameAs(published);
+        }
+
+        @Test
+        void shouldDropTheResult_whenTheDraftIsGone() {
+            fixture.draftings.start(fixture.client, NOW, DraftingKind.REBUILD);
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isNull();
+            assertThat(fixture.draftings.rows).isEmpty();
+        }
+
+        @Test
+        void shouldDropTheResult_whenTheAnswersAreGone() {
+            Plan before = rebuildOver(savedByTrainer());
+            fixture.answered = false;
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isSameAs(before);
+        }
+
+        @Test
+        void shouldDropTheResult_whenTheClientsTrainerHasChanged() {
+            Plan before = rebuildOver(savedByTrainer());
+            fixture.clientsTrainer = AccountId.random();
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isSameAs(before);
+        }
+
+        @Test
+        void shouldDropTheResult_whenTheDraftingHasEndedAlready() {
+            Plan before = rebuildOver(savedByTrainer());
+            fixture.draftings.remove(fixture.client);
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(stored()).isSameAs(before);
+        }
+
+        @Test
+        void shouldRefuseAndKeepTheDraft_whenAnExerciseHasLeftTheLibrary() {
+            Plan before = rebuildOver(savedByTrainer());
+
+            assertThatThrownBy(() -> service.storeBuilt(fixture.client, fixture.trainer, sessions(ExerciseId.random())))
+                    .isInstanceOf(GeneratedPlanRejectedException.class);
+            assertThat(stored()).isSameAs(before);
+        }
+
+        @Test
+        void shouldKeepTheDraft_whenTheSweepEndsAnOverdueRebuild() {
+            Plan before = rebuildOver(savedByTrainer());
+            PlanDraftingService later = serviceAt(NOW.plus(LIMIT).plusSeconds(30));
+
+            later.overdue().forEach(later::storeFailed);
+
+            assertThat(stored()).isSameAs(before);
+            assertThat(fixture.draftings.rows).isEmpty();
         }
     }
 

@@ -65,14 +65,17 @@ const letter = (index: number) => String.fromCharCode(65 + index)
 
 /**
  * Holds a local draft until Save. The plan seeds it once; after that the query is not read again, so a refresh in the
- * background never overwrites what the trainer is typing.
+ * background never overwrites what the trainer is typing. `readOnly` shows the plan with every change, Save and
+ * Publish unavailable, while its sessions can still be read one by one.
  */
 export function PlanEditor({
   client,
   plan,
+  readOnly = false,
 }: {
   client: Client
   plan: Plan | null
+  readOnly?: boolean
 }) {
   const { t, i18n } = useTranslation()
   const id = useId()
@@ -267,13 +270,15 @@ export function PlanEditor({
     // the margin keeps whatever takes focus clear of the sticky page header
     <div className="flex flex-col gap-6 pt-4 [&_*]:scroll-mt-16">
       <LeaveGuard dirty={dirty} body={t('leave.planBody')} />
-      {saved.plan?.automaticDraft && (
-        <AutomaticDraftNote
-          mark={saved.plan.automaticDraft}
-          clientName={client.name}
-        />
+      {/* a failed draft says so in the panel beside the editor */}
+      {saved.plan?.automaticDraft === 'BUILT' && (
+        <AutomaticDraftNote clientName={client.name} />
       )}
-      <div className="flex flex-wrap items-start gap-x-4 gap-y-3">
+      {/* a disabled fieldset turns off every control inside, the way the platform does it */}
+      <fieldset
+        disabled={readOnly}
+        className="flex min-w-0 flex-wrap items-start gap-x-4 gap-y-3"
+      >
         <Field className="w-56 max-w-full">
           <FieldLabel htmlFor={`${id}-goal`}>
             {t('plan.fields.goal')}
@@ -374,7 +379,7 @@ export function PlanEditor({
             </Button>
           )}
         </div>
-      </div>
+      </fieldset>
 
       {published && (
         <p className="text-muted-foreground text-sm">
@@ -408,6 +413,7 @@ export function PlanEditor({
           <Button
             id={target.addSession}
             variant="outline"
+            disabled={readOnly}
             onClick={onAddSession}
           >
             <PlusIcon data-icon="inline-start" aria-hidden="true" />
@@ -462,7 +468,7 @@ export function PlanEditor({
               id={target.addSession}
               variant="outline"
               size="sm"
-              disabled={draft.sessions.length >= MAX_SESSIONS}
+              disabled={readOnly || draft.sessions.length >= MAX_SESSIONS}
               onClick={onAddSession}
             >
               <PlusIcon data-icon="inline-start" aria-hidden="true" />
@@ -475,16 +481,19 @@ export function PlanEditor({
             )}
           </div>
           {selected && (
-            <SessionPanel
-              key={selected.key}
-              session={selected}
-              sessions={draft.sessions}
-              unit={unit}
-              errorOf={errorOf}
-              onLeaveField={leaveField}
-              onChange={(values) => onChangeSession(selected.key, values)}
-              onDelete={() => onDeleteSession(selected)}
-            />
+            <fieldset disabled={readOnly} className="contents">
+              <SessionPanel
+                key={selected.key}
+                session={selected}
+                sessions={draft.sessions}
+                unit={unit}
+                readOnly={readOnly}
+                errorOf={errorOf}
+                onLeaveField={leaveField}
+                onChange={(values) => onChangeSession(selected.key, values)}
+                onDelete={() => onDeleteSession(selected)}
+              />
+            </fieldset>
           )}
         </Tabs>
       )}

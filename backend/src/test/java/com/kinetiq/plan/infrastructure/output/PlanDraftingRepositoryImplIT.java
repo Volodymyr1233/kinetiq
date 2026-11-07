@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.plan.domain.model.DraftingKind;
 import java.time.Instant;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
@@ -43,12 +44,25 @@ class PlanDraftingRepositoryImplIT {
     }
 
     @Test
-    void shouldTellWhetherThereWasARow_whenRemoving() {
-        AccountId client = insertClient();
-        repository.start(client, NOW);
+    void shouldTellTheKindOfTheRow_whenRemoving() {
+        AccountId first = insertClient();
+        AccountId again = insertClient();
+        repository.start(first, NOW, DraftingKind.FIRST);
+        repository.start(again, NOW, DraftingKind.REBUILD);
 
-        assertThat(repository.remove(client)).isTrue();
-        assertThat(repository.remove(client)).isFalse();
+        assertThat(repository.remove(first)).contains(DraftingKind.FIRST);
+        assertThat(repository.remove(again)).contains(DraftingKind.REBUILD);
+        assertThat(repository.remove(first)).isEmpty();
+    }
+
+    @Test
+    void shouldTellWhetherARowExists() {
+        AccountId client = insertClient();
+        assertThat(repository.exists(client)).isFalse();
+
+        repository.start(client, NOW, DraftingKind.REBUILD);
+
+        assertThat(repository.exists(client)).isTrue();
     }
 
     @Test
@@ -56,9 +70,9 @@ class PlanDraftingRepositoryImplIT {
         AccountId older = insertClient();
         AccountId atTheInstant = insertClient();
         AccountId newer = insertClient();
-        repository.start(older, NOW.minusSeconds(1));
-        repository.start(atTheInstant, NOW);
-        repository.start(newer, NOW.plusSeconds(1));
+        repository.start(older, NOW.minusSeconds(1), DraftingKind.FIRST);
+        repository.start(atTheInstant, NOW, DraftingKind.FIRST);
+        repository.start(newer, NOW.plusSeconds(1), DraftingKind.REBUILD);
 
         assertThat(repository.startedBefore(NOW)).contains(older).doesNotContain(atTheInstant, newer);
     }
