@@ -697,6 +697,11 @@
       "rpeOption": "RPE {{rpe}}, seria {{number}}: {{exercise}}",
       "log": "Zapisz serię",
       "update": "Zaktualizuj serię"
+    },
+    "rest": {
+      "label": "Odpoczynek",
+      "over": "Koniec odpoczynku",
+      "dismiss": "Zamknij odmierzanie odpoczynku"
     }
   },
   "plan": {

@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useSession } from '../api/session-log'
+import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
 
 // a rest day, a finished plan and no plan leave nothing to log: the client goes back to Today
@@ -19,6 +20,8 @@ export function LoggerPage() {
   const session = query.data
   // one entry panel is open at a time
   const [openSet, setOpenSet] = useState<string | null>(null)
+  // when the rest after the last logged set ends; not kept, so a reload shows none
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
 
   if (session === undefined) {
     if (query.isPending) {
@@ -101,12 +104,24 @@ export function LoggerPage() {
                   set={set}
                   open={openSet === key}
                   onToggle={() => setOpenSet(openSet === key ? null : key)}
+                  onLogged={(restSeconds) =>
+                    setRestEndsAt(
+                      restSeconds > 0 ? Date.now() + restSeconds * 1000 : null,
+                    )
+                  }
                 />
               )
             })}
           </ol>
         </section>
       ))}
+      {restEndsAt !== null && (
+        <RestTimer
+          key={restEndsAt}
+          endsAt={restEndsAt}
+          onDismiss={() => setRestEndsAt(null)}
+        />
+      )}
     </main>
   )
 }

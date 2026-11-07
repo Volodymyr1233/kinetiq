@@ -24,12 +24,15 @@ export function SetRow({
   set,
   open,
   onToggle,
+  onLogged,
 }: {
   sessionId: string
   entry: LoggedEntry
   set: PlannedSet
   open: boolean
   onToggle: () => void
+  // told when a set is logged for the first time, so the rest after it can start; a change does not start one
+  onLogged: (restSeconds: number) => void
 }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
@@ -62,6 +65,7 @@ export function SetRow({
           setEdited(null)
           setTried(false)
           if (open) onToggle()
+          if (!logged) onLogged(entry.restSeconds)
         },
       },
     )
