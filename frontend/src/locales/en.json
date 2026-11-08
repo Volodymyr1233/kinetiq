@@ -837,7 +837,6 @@
       "restDay": "Rest day",
       "restText": "Nothing is planned for today.",
       "start": "Start session",
-      "startSoon": "Starting a session arrives with logging.",
       "done": "Session done"
     },
     "client": {

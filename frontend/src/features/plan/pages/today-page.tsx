@@ -16,8 +16,8 @@ export function TodayPage() {
   const { t, i18n } = useTranslation()
   const query = useToday()
   const states = useSessionStates().data?.sessions
-  const why = useId()
   const today = query.data
+  const name = useId()
 
   if (today === undefined) {
     if (query.isPending) {
@@ -72,11 +72,11 @@ export function TodayPage() {
       {today.state === 'SESSION' && today.session && (
         <>
           <section
-            aria-labelledby={`${why}-name`}
+            aria-labelledby={`${name}-name`}
             className="bg-card text-card-foreground rounded-xl border"
           >
             <h2
-              id={`${why}-name`}
+              id={`${name}-name`}
               className="font-heading px-4 pt-4 pb-3 text-lg font-semibold break-words"
             >
               <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
@@ -104,18 +104,13 @@ export function TodayPage() {
             </div>
           ) : (
             <div className="flex flex-col gap-2">
-              {/* the logger arrives with story #92; until then the action is shown and cannot be used */}
               <Button
                 size="touch"
-                disabled
-                aria-describedby={why}
+                asChild
                 className="bg-brand text-brand-foreground hover:bg-brand/80"
               >
-                {t('plan.today.start')}
+                <Link to="/app/session">{t('plan.today.start')}</Link>
               </Button>
-              <p id={why} className="text-muted-foreground text-sm">
-                {t('plan.today.startSoon')}
-              </p>
             </div>
           )}
         </>
