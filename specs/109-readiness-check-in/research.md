@@ -44,7 +44,7 @@
 
 **Decision**: `SaveCheckInRequest` has `@NotNull @Min(1) @Max(5) Integer` for `sleep`, `soreness`, `stress` → `400 validation.failed` with `errors[{field, code}]` (`not-null`, `min`, `max`). The domain's `Answers` record checks 1–5 again and throws `InvalidValueException`. A body that cannot be read is `400 request.invalid`.
 
-**Why**: The project's boundary rule (Bean Validation on bodies, invariants in domain constructors). Fractions such as `2.5` fail to bind to `Integer` and give `request.invalid`.
+**Why**: The project's boundary rule (Bean Validation on bodies, invariants in domain constructors). Fractions such as `2.5` give `request.invalid`: Jackson would cut them to a whole number, so `spring.jackson.deserialization.accept-float-as-int` is off for the whole API.
 
 ## R7. Storage
 

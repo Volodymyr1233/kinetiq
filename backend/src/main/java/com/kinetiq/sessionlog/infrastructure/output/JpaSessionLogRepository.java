@@ -26,4 +26,11 @@ interface JpaSessionLogRepository extends JpaRepository<SessionLogEntity, UUID> 
 
     @Query("select setLog.sessionLog.id from SetLogEntity setLog where setLog.id = :setLogId")
     Optional<UUID> findSessionIdOfSetLog(UUID setLogId);
+
+    @Query(
+            """
+            select count(setLog) > 0 from SetLogEntity setLog
+            where setLog.sessionLog.clientId = :clientId and setLog.sessionLog.logDate = :logDate
+            """)
+    boolean hasSetLogOn(UUID clientId, LocalDate logDate);
 }

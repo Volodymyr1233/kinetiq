@@ -65,7 +65,7 @@ Whether it may be saved is decided by the service, not the aggregate: it needs t
 |---|---|---|
 | `CheckInUseCase` | `readiness.domain.input` | `TodayCheckIn today(AccountId client)`; `TodayCheckIn save(SaveCheckInCommand command)` |
 | `SaveCheckInCommand` | `readiness.domain.input` | record `(AccountId client, Answers answers)` |
-| `TodayCheckIn` | `readiness.domain.input` | record `(LocalDate date, boolean open, Optional<CheckIn> checkIn)` |
+| `TodayCheckIn` | `readiness.domain.input` | record `(LocalDate date, boolean open, CheckIn checkIn)`, `checkIn` null until the client checks in (like `TodayView.session`; `Optional` is not used for fields) |
 | `CheckInRepository` | `readiness.domain.output` | `Optional<CheckIn> findByClientAndDate(AccountId, LocalDate)`; `CheckIn save(CheckIn)` |
 | `TrainingProgress` | `readiness.domain.output` | `boolean hasLoggedSet(AccountId client, LocalDate date)`; implemented by `sessionlog` |
 | `ViewOwnPlanUseCase` | `plan.domain.input` (existing) | `today(client)` gives the date and the state |
