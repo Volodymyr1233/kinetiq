@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
@@ -40,7 +41,11 @@ const sessionDay: Reply = (request) =>
     ? json({ today: '2026-11-05', sessions: [] })
     : json({ date: '2026-11-05', state: 'SESSION', session: SESSION })
 
-function openToday(reply: Reply, unit: WeightUnit = 'KG') {
+function openToday(
+  reply: Reply,
+  unit: WeightUnit = 'KG',
+  beforeSession?: ReactNode,
+) {
   const requests = stubApi(reply)
   render(
     <QueryClientProvider
@@ -50,7 +55,7 @@ function openToday(reply: Reply, unit: WeightUnit = 'KG') {
     >
       <WeightUnitContext value={unit}>
         <MemoryRouter>
-          <TodayPage />
+          <TodayPage beforeSession={beforeSession} />
         </MemoryRouter>
       </WeightUnitContext>
     </QueryClientProvider>,
@@ -219,5 +224,22 @@ describe('TodayPage', () => {
       await screen.findByRole('heading', { name: 'Upper body' }),
     ).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start session' })).toBeDisabled()
+  })
+
+  it('shows what comes before the session only on a day with a session', async () => {
+    openToday(sessionDay, 'KG', <p>Check-in</p>)
+    expect(await screen.findByText('Check-in')).toBeInTheDocument()
+    cleanup()
+
+    for (const state of ['REST', 'FINISHED']) {
+      openToday(
+        () => json({ date: '2026-11-06', state }),
+        'KG',
+        <p>Check-in</p>,
+      )
+      expect(await screen.findByRole('heading')).toBeInTheDocument()
+      expect(screen.queryByText('Check-in')).toBeNull()
+      cleanup()
+    }
   })
 })

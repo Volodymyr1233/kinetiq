@@ -128,6 +128,10 @@
       "not-finished": "Najpierw zakończ sesję.",
       "changed": "Sesja zmieniła się w tym samym momencie. Spróbuj ponownie.",
       "note-invalid": "Notatka może mieć do 500 znaków. Skróć ją i zapisz ponownie."
+    },
+    "check-in": {
+      "training-started": "Trening już się zaczął, więc dzisiejszych odpowiedzi nie można zmienić.",
+      "no-session-today": "Dziś nie masz sesji, więc nie ma czego oceniać."
     }
   },
   "account": {
@@ -1104,6 +1108,32 @@
     "errors": {
       "retry": "Spróbuj ponownie",
       "loadEarlier": "Nie udało się wczytać wcześniejszych wiadomości. Spróbuj ponownie."
+    }
+  },
+  "readiness": {
+    "checkIn": {
+      "title": "Jak się dziś czujesz?",
+      "sleep": { "label": "Sen", "scale": "1 źle · 5 świetnie" },
+      "soreness": {
+        "label": "Bolesność mięśni",
+        "scale": "1 brak · 5 bardzo silna"
+      },
+      "stress": { "label": "Stres", "scale": "1 spokój · 5 wysoki" },
+      "skip": "Pomiń",
+      "savesAfterThird": "Zapisuje się po trzeciej odpowiedzi",
+      "saving": "Zapisywanie…",
+      "retry": "Spróbuj ponownie",
+      "skipped": "Pominięto ocenę samopoczucia. Sesja jest zgodna z planem.",
+      "checkIn": "Oceń samopoczucie"
+    },
+    "card": {
+      "summary": "Gotowość {{score, number}}: {{band}}",
+      "band": {
+        "READY": { "name": "Pełna gotowość" },
+        "TAKE_IT_EASIER": { "name": "Trochę lżej" },
+        "RECOVERY_DAY": { "name": "Dzień regeneracji" }
+      },
+      "answers": "Sen {{sleep, number}} · bolesność {{soreness, number}} · stres {{stress, number}}"
     }
   }
 }

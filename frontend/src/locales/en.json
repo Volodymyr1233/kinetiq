@@ -126,6 +126,10 @@
       "not-finished": "Finish the session first.",
       "changed": "The session changed at the same moment. Try again.",
       "note-invalid": "A note can have up to 500 characters. Shorten it and save again."
+    },
+    "check-in": {
+      "training-started": "Training has started, so today’s answers can no longer change.",
+      "no-session-today": "There is no session today, so there is no check-in to give."
     }
   },
   "account": {
@@ -1063,6 +1067,29 @@
     "errors": {
       "retry": "Try again",
       "loadEarlier": "Earlier messages did not load. Try again."
+    }
+  },
+  "readiness": {
+    "checkIn": {
+      "title": "How do you feel today?",
+      "sleep": { "label": "Sleep", "scale": "1 bad · 5 great" },
+      "soreness": { "label": "Soreness", "scale": "1 none · 5 very sore" },
+      "stress": { "label": "Stress", "scale": "1 calm · 5 high" },
+      "skip": "Skip",
+      "savesAfterThird": "Saves after the third answer",
+      "saving": "Saving…",
+      "retry": "Try again",
+      "skipped": "Check-in skipped. Your session is as planned.",
+      "checkIn": "Check in"
+    },
+    "card": {
+      "summary": "Readiness {{score, number}}: {{band}}",
+      "band": {
+        "READY": { "name": "Ready" },
+        "TAKE_IT_EASIER": { "name": "Take it easier" },
+        "RECOVERY_DAY": { "name": "Recovery day" }
+      },
+      "answers": "Sleep {{sleep, number}} · soreness {{soreness, number}} · stress {{stress, number}}"
     }
   }
 }
