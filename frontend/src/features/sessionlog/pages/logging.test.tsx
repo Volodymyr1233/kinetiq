@@ -26,7 +26,8 @@ const started = () =>
       id: '00000000-0000-4000-a000-000000000001',
       date: '2026-11-07',
       name: 'Lower body',
-      startedAt: '2026-11-07T10:00:00Z',
+      // started just now, so the session is open: it locks 24 hours after its start
+      startedAt: new Date().toISOString(),
       entries: [SQUAT],
     },
     201,

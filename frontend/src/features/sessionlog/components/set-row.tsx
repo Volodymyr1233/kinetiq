@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
-import { errorMessageKey } from '@/lib/api/problem'
+import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { cn } from '@/lib/utils'
 import { fromKg, useWeightUnit } from '@/lib/weight'
 import {
@@ -16,23 +16,29 @@ import { EntryPanel } from './entry-panel'
 
 /**
  * One planned set: its targets in grey until it is logged, and what the client did afterwards. A tick logs the set as
- * planned; choosing the row opens the entry panel to log other values or to change a logged set.
+ * planned; choosing the row opens the entry panel to log other values or to change a logged set. A locked row only
+ * shows what was logged, with nothing to focus.
  */
 export function SetRow({
   sessionId,
   entry,
   set,
   open,
+  locked,
   onToggle,
   onLogged,
+  onLocked,
 }: {
   sessionId: string
   entry: LoggedEntry
   set: PlannedSet
   open: boolean
+  locked: boolean
   onToggle: () => void
   // told when a set is logged for the first time, so the rest after it can start; a change does not start one
   onLogged: (restSeconds: number) => void
+  // told when the server refuses a log because the session is locked, which the device's clock may not know yet
+  onLocked: () => void
 }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
@@ -67,7 +73,64 @@ export function SetRow({
           if (open) onToggle()
           if (!logged) onLogged(entry.restSeconds)
         },
+        onError: (error) => {
+          if (problemCode(error) === 'session-log.locked') onLocked()
+        },
       },
+    )
+  }
+
+  const shownValues = (
+    <span className="flex min-w-0 flex-1 flex-wrap gap-x-3 gap-y-0.5">
+      <span className="num">
+        {t('sessionlog.row.amount', {
+          amount: shown.amount,
+          unit: measure,
+        })}
+      </span>
+      <span className="num">
+        {shown.loadKg === undefined
+          ? t('sessionlog.row.noLoad')
+          : t('sessionlog.row.load', {
+              load: fromKg(shown.loadKg, unit),
+              unit: t(`plan.units.${unit}`),
+            })}
+      </span>
+      <span className="num">{t('sessionlog.row.rpe', { rpe: shown.rpe })}</span>
+    </span>
+  )
+
+  // logged is told by an icon and by text, not by colour alone
+  const loggedMark = (
+    <span className="text-foreground flex shrink-0 items-center gap-1 text-sm font-medium">
+      <CheckIcon aria-hidden className="size-5" />
+      {t('sessionlog.row.logged')}
+    </span>
+  )
+
+  if (locked) {
+    // nothing here takes focus; the dashed line is the locked look, and the page's message says it in words
+    return (
+      <li
+        className={cn(
+          'flex min-h-14 items-center gap-2 px-4 py-1',
+          !logged && 'text-muted-foreground',
+        )}
+      >
+        <span className="bg-muted/50 flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-md border border-dashed px-2">
+          <span className="num w-6 shrink-0 text-sm font-medium">
+            {set.number}
+          </span>
+          {shownValues}
+        </span>
+        {logged ? (
+          loggedMark
+        ) : (
+          <span className="shrink-0 text-sm">
+            {t('sessionlog.row.notLogged')}
+          </span>
+        )}
+      </li>
     )
   }
 
@@ -91,32 +154,10 @@ export function SetRow({
           <span aria-hidden className="num w-6 shrink-0 text-sm font-medium">
             {set.number}
           </span>
-          <span className="flex min-w-0 flex-1 flex-wrap gap-x-3 gap-y-0.5">
-            <span className="num">
-              {t('sessionlog.row.amount', {
-                amount: shown.amount,
-                unit: measure,
-              })}
-            </span>
-            <span className="num">
-              {shown.loadKg === undefined
-                ? t('sessionlog.row.noLoad')
-                : t('sessionlog.row.load', {
-                    load: fromKg(shown.loadKg, unit),
-                    unit: t(`plan.units.${unit}`),
-                  })}
-            </span>
-            <span className="num">
-              {t('sessionlog.row.rpe', { rpe: shown.rpe })}
-            </span>
-          </span>
+          {shownValues}
         </button>
-        {/* logged is told by an icon and by text, not by colour alone */}
         {logged ? (
-          <span className="text-foreground flex shrink-0 items-center gap-1 text-sm font-medium">
-            <CheckIcon aria-hidden className="size-5" />
-            {t('sessionlog.row.logged')}
-          </span>
+          loggedMark
         ) : (
           <Button
             type="button"
