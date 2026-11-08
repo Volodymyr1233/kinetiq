@@ -58,7 +58,7 @@ A finished log is `DONE` for good, also after its lock.
 | `averageRpe` | `BigDecimal` | Mean RPE of the logged sets, half up, one decimal. |
 | `minutes` | int | Whole minutes from `startedAt` to `finishedAt`, at least 1. |
 
-Derived on read. `name`, `date` and `note` of the log travel with it in the answer.
+Derived on read. `name`, `date`, `startedAt` and `note` of the log travel with it in the answer.
 
 ## Migrations
 

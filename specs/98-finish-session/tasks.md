@@ -116,3 +116,10 @@ description: "Tasks for story #98, Client finishes a session (tasks #99, #100)"
 - US1 and US2 (finish and an accurate summary) are the MVP: T002 is not needed for them, but the one commit of #99 carries it. Within #99, build bottom-up (published day, aggregate, derived values, ports, web) with the tests of each step.
 - Verify twice: the API by hand after T022, then the whole flow in the browser after T038. Do not move on with a failing gate.
 - Leave "Start session" on Today, and the Plan card's "Edit log" and "View log", to their owners; reuse their places as described in T032 and T033.
+
+## Phase 5: Convergence
+
+- [X] T040 Give each week strip day mark (done, missed, today) visually hidden text of its state, so the mark has an accessible name as the board shows, without the card's badge being read twice, in `F/features/plan/components/day-mark.tsx` and its test per FR-016 (partial)
+- [X] T041 Make the handlers of `F/app/client-area.test.tsx` answer `/api/v1/session-states` with an empty list by default per T037 (partial)
+- [X] T042 Add `startedAt` to `SessionSummaryResponse` in `contracts/session-log-api.md` and `data-model.md`; the done screen needs it to tell when the note locks, per FR-013a (unrequested)
+- [X] T043 In the built-in browser at 375 px, check by keyboard only: focus into and back out of the finish dialog, Escape closing it, the note field and the "View summary" links; and a 501-character note and a failed finish, per FR-011, FR-012, FR-021 (partial)

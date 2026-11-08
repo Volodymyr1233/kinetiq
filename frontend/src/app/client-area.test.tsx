@@ -11,7 +11,14 @@ import {
 } from '@/test/page'
 
 // a client with a published plan gets the area itself
-const published = (reply?: Reply) => quizStatus('PLAN_PUBLISHED', reply)
+// the states of Plan and Today are empty unless a test says otherwise
+const otherCalls: Reply = (request) =>
+  new URL(request.url).pathname === '/api/v1/session-states'
+    ? json({ today: '2026-11-05', sessions: [] })
+    : new Response(null, { status: 204 })
+
+const published = (reply: Reply = otherCalls) =>
+  quizStatus('PLAN_PUBLISHED', reply)
 
 async function renderClientAt(path: string) {
   renderAppAt(path, SIGNED_IN.CLIENT, published())
@@ -353,7 +360,7 @@ describe('ClientArea plan-ready gate', () => {
   const otherReply = (request: Request) =>
     new URL(request.url).pathname === '/api/v1/quiz'
       ? json({ status: 'PLAN_PUBLISHED' })
-      : new Response(null, { status: 204 })
+      : otherCalls(request)
   const planReply =
     (seen: boolean): Reply =>
     (request) =>
