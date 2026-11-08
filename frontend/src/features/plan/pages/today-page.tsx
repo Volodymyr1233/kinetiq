@@ -1,6 +1,6 @@
 import { CircleAlertIcon } from 'lucide-react'
 import { Link } from 'react-router'
-import { useId } from 'react'
+import { useId, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -11,8 +11,12 @@ import { useToday } from '../api/today'
 import { EntryRow } from '../components/entry-row'
 import { SessionStateBadge } from '../components/session-state-badge'
 
-/** The client's Today tab: the session their plan has for today, a rest day, or the end of the plan. */
-export function TodayPage() {
+/**
+ * The client's Today tab: the session their plan has for today, a rest day, or the end of the plan. `beforeSession` is
+ * shown above the session, only on a day with one: the app puts today's check-in there, which belongs to another
+ * feature.
+ */
+export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
   const { t, i18n } = useTranslation()
   const query = useToday()
   const states = useSessionStates().data?.sessions
@@ -71,6 +75,7 @@ export function TodayPage() {
 
       {today.state === 'SESSION' && today.session && (
         <>
+          {beforeSession}
           <section
             aria-labelledby={`${why}-name`}
             className="bg-card text-card-foreground rounded-xl border"
