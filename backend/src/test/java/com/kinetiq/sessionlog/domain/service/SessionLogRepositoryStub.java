@@ -27,6 +27,11 @@ class SessionLogRepositoryStub implements SessionLogRepository {
     }
 
     @Override
+    public List<SessionLog> findAllByClient(AccountId client) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public Optional<SessionLog> findByClientAndDate(AccountId client, LocalDate date) {
         throw new UnsupportedOperationException();
     }

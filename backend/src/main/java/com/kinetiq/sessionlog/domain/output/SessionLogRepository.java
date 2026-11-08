@@ -23,6 +23,9 @@ public interface SessionLogRepository {
     /** The headers of the client's session logs dated {@code from} to {@code to}, both included. */
     List<SessionLogHeader> headersBetween(AccountId client, LocalDate from, LocalDate to);
 
+    /** Every session log of the client with its entries and set logs, newest date first. */
+    List<SessionLog> findAllByClient(AccountId client);
+
     /**
      * Inserts the session log or replaces the stored one with its set logs, and returns it as stored. A copy that was
      * changed by another request since it was read is {@code SessionLogChangedException}.

@@ -386,4 +386,24 @@ class SessionLogTest {
             assertThatThrownBy(() -> new SetValues(new BigDecimal("100.25"), 8, 8)).hasMessageContaining("loadKg");
         }
     }
+
+    @Nested
+    class Figures {
+
+        @Test
+        void shouldAverageTheLoggedRpeToOneDecimal_beforeTheSessionIsFinished() {
+            SessionLog log = started();
+            log.logSet(newId(), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+            log.logSet(newId(), 0, 2, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+            log.logSet(newId(), 0, 3, new SetValues(new BigDecimal("100.0"), 5, 9), NOW);
+
+            assertThat(log.averageRpe()).hasValueSatisfying(rpe -> assertThat(rpe).isEqualByComparingTo("8.3"));
+            assertThat(log.setsPlanned()).isEqualTo(5);
+        }
+
+        @Test
+        void shouldHaveNoAverageRpe_whileNoSetIsLogged() {
+            assertThat(started().averageRpe()).isEmpty();
+        }
+    }
 }

@@ -13,6 +13,8 @@ interface JpaSessionLogRepository extends JpaRepository<SessionLogEntity, UUID> 
 
     Optional<SessionLogEntity> findByIdAndClientId(UUID id, UUID clientId);
 
+    List<SessionLogEntity> findByClientIdOrderByLogDateDesc(UUID clientId);
+
     @Query(
             """
             select new com.kinetiq.sessionlog.infrastructure.output.HeaderRow(

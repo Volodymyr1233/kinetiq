@@ -207,6 +207,34 @@ class SessionLogRepositoryImplIT {
     }
 
     @Test
+    void shouldReadEveryLogOfTheClientWithItsSets_newestFirst() {
+        AccountId client = insertClient();
+        AccountId other = insertClient();
+        ExerciseId squat = insertExercise();
+        ExerciseId plank = insertExercise();
+        List<LoggedEntry> entries = List.of(
+                new LoggedEntry(squat, 3, 5, new BigDecimal("100.0"), 8, 120),
+                new LoggedEntry(plank, 2, 45, null, 7, 60));
+        SessionLog older = start(client, DATE, entries);
+        older.logSet(new SetLogId(UUID.randomUUID()), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+        repository.save(older);
+        SessionLog newer = start(client, DATE.plusDays(2), entries);
+        newer.logSet(new SetLogId(UUID.randomUUID()), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+        newer.logSet(new SetLogId(UUID.randomUUID()), 1, 1, new SetValues(null, 45, 7), NOW);
+        repository.save(newer);
+        repository.save(start(other, DATE.plusDays(1), entries));
+        flushAndClear();
+
+        List<SessionLog> found = repository.findAllByClient(client);
+
+        assertThat(found).extracting(SessionLog::getId).containsExactly(newer.getId(), older.getId());
+        assertThat(found).allSatisfy(log -> assertThat(log.getEntries()).extracting(LoggedEntry::exercise)
+                .containsExactly(squat, plank));
+        assertThat(found.getFirst().getSetLogs()).hasSize(2);
+        assertThat(found.getLast().getSetLogs()).hasSize(1);
+    }
+
+    @Test
     void shouldStoreTheFinishTime() {
         AccountId client = insertClient();
         ExerciseId squat = insertExercise();

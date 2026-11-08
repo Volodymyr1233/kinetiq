@@ -191,6 +191,11 @@ class SessionLogServiceTest {
         }
 
         @Override
+        public List<SessionLog> findAllByClient(AccountId client) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
         public SessionLog save(SessionLog log) {
             stored.put(log.getId(), log);
             return log;

@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 @Getter
 @Setter
@@ -34,11 +36,14 @@ class SessionLogEntity extends BaseEntity {
     private Instant finishedAt;
     private String note;
 
+    // subselect fetching loads the collections of every log a query returned at once, not one log at a time
     @ElementCollection
     @CollectionTable(name = "session_log_entries", joinColumns = @JoinColumn(name = "session_log_id"))
     @OrderColumn(name = "position")
+    @Fetch(FetchMode.SUBSELECT)
     private List<LoggedEntryEmbeddable> entries = new ArrayList<>();
 
     @OneToMany(mappedBy = "sessionLog", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Fetch(FetchMode.SUBSELECT)
     private List<SetLogEntity> setLogs = new ArrayList<>();
 }

@@ -596,6 +596,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{id}/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/approvals/drafted-plans": {
         parameters: {
             query?: never;
@@ -1097,6 +1113,56 @@ export interface components {
             notes?: string;
             /** Format: date-time */
             submittedAt: string;
+        };
+        ClientOverviewResponse: {
+            /** Format: date */
+            today: string;
+            week?: components["schemas"]["OverviewWeekResponse"];
+            recentSessions: components["schemas"]["ClientSessionResponse"][];
+            quizAnswers?: components["schemas"]["OverviewQuizAnswersResponse"];
+        };
+        ClientSessionResponse: {
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            name: string;
+            /** @enum {string} */
+            state?: "DONE" | "IN_PROGRESS" | "MISSED" | "TODAY" | "PLANNED";
+            locked: boolean;
+            /** Format: int32 */
+            setsLogged: number;
+            /** Format: int32 */
+            setsPlanned: number;
+            averageRpe?: number;
+            /** Format: uuid */
+            sessionLogId?: string;
+        };
+        OverviewQuizAnswersResponse: {
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** @enum {string} */
+            experience: "LESS_THAN_3_MONTHS" | "MONTHS_3_TO_6" | "MONTHS_6_TO_12" | "YEARS_1_TO_2" | "YEARS_2_TO_5" | "YEARS_5_PLUS";
+            /** @enum {string} */
+            level: "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "ATHLETE";
+            /** Format: int32 */
+            age: number;
+            /** Format: int32 */
+            heightCm: number;
+            weightKg: number;
+            likes: ("WEIGHTS" | "CARDIO" | "HIIT" | "YOGA_PILATES" | "BODYWEIGHT")[];
+            /** Format: int32 */
+            daysPerWeek: number;
+            notes?: string;
+            /** Format: date-time */
+            submittedAt: string;
+        };
+        OverviewWeekResponse: {
+            /** Format: int32 */
+            number: number;
+            /** Format: date */
+            startsOn: string;
+            sessions: components["schemas"]["ClientSessionResponse"][];
         };
         DraftedPlanResponse: {
             /** Format: uuid */
@@ -2075,6 +2141,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["QuizAnswersResponse"];
+                };
+            };
+        };
+    };
+    overview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientOverviewResponse"];
                 };
             };
         };
