@@ -24,6 +24,8 @@ function backend(request: Request) {
     (client) => pathname === `/api/v1/clients/${client.id}`,
   )
   if (own) return json(own)
+  if (pathname.endsWith('/overview'))
+    return json({ today: '2026-11-04', recentSessions: [] })
   return problem(404, { status: 404, code: 'client.not-found' })
 }
 
@@ -57,7 +59,11 @@ describe('ClientPage', () => {
       'aria-selected',
       'true',
     )
-    expect(screen.getByRole('tabpanel')).toHaveTextContent('Nothing here yet')
+    expect(
+      await within(screen.getByRole('tabpanel')).findByRole('heading', {
+        name: 'This week',
+      }),
+    ).toBeInTheDocument()
   })
 
   it('says there is no goal yet when the client has not answered the quiz', async () => {

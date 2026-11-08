@@ -2,6 +2,7 @@ import { ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
+import { SessionStateBadge } from '@/components/session-state-badge'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -12,7 +13,6 @@ import { locksAt } from '@/lib/edit-window'
 import type { OwnPlan } from '../api/client-plan'
 import type { SessionState } from '../api/session-states'
 import { EntryRow } from './entry-row'
-import { SessionStateBadge } from './session-state-badge'
 
 type Session = OwnPlan['sessions'][number]
 

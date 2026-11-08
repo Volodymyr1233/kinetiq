@@ -183,6 +183,7 @@ The main English and Polish texts. Polish uses informal "ty" and should be confi
 | Labels | Done · Locked · In progress · Missed · Today · Planned | Zrobiona · Zablokowana · W trakcie · Opuszczona · Dziś · Zaplanowana |
 | Sets | {logged} of {planned} sets | Serie: {logged} z {planned} |
 | Average RPE | Average RPE {value} | Średnie RPE {value} |
+| Figures in the Overview's rows | {logged}/{planned} sets · RPE {value} | Serie: {logged}/{planned} · RPE {value} |
 | No plan | No published plan yet. | Brak opublikowanego planu. |
 | Plan finished | The plan has finished. | Plan się zakończył. |
 | No sessions | No sessions yet. | Brak sesji. |
@@ -192,7 +193,7 @@ The main English and Polish texts. Polish uses informal "ty" and should be confi
 | Still changeable | {client} can still change these logs until {time}. | {client} może jeszcze zmieniać te logi do {time}. |
 | Logs table | Exercise · Set · Target · Load · Reps · Seconds · RPE | Ćwiczenie · Seria · Cel · Ciężar · Powt. · Sek. · RPE |
 | Client's note | Note from {client} | Notatka od: {client} |
-| Load failed | Could not load the client's training. Try again. | Nie udało się wczytać treningów klienta. Spróbuj ponownie. |
+| Load failed | The error's message, as on the client page's other tabs, and "Try again" | Komunikat błędu, jak na innych zakładkach strony klienta, i „Spróbuj ponownie” |
 
 ## Assumptions
 

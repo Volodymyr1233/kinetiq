@@ -94,6 +94,15 @@ export const createRoutes = (): RouteObject[] => [
             },
             children: [
               {
+                index: true,
+                lazy: {
+                  Component: async () =>
+                    (
+                      await import('@/features/sessionlog/pages/client-overview-tab')
+                    ).ClientOverviewTab,
+                },
+              },
+              {
                 path: 'plan',
                 lazy: {
                   Component: async () =>
@@ -101,9 +110,8 @@ export const createRoutes = (): RouteObject[] => [
                 },
               },
               // these tabs are empty until their features land
-              ...[undefined, 'logs', 'messages'].map((path): RouteObject => ({
+              ...['logs', 'messages'].map((path): RouteObject => ({
                 path,
-                index: path === undefined,
                 lazy: {
                   Component: async () =>
                     (await import('@/features/client/pages/client-page'))

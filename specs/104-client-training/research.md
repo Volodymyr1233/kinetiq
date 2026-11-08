@@ -81,3 +81,20 @@ Decisions taken while planning. Each: what, why, what else was considered.
 **Decision**: `quickstart.md` uses the demo session logs of #100 (`R__demo_session_logs.sql`, Demo Client Daily) and one SQL statement to make a session started less than 24 hours ago. No demo data is added.
 
 **Why**: Nothing new is stored, so no demo entity is due (`CLAUDE.md`, Definition of Done). A repeatable demo migration cannot hold a time relative to "now" (spec 101, R8).
+
+## R12. The Overview tab against the board (#106)
+
+**Decision**: The tab follows the board "Trainer · client overview" card by card, with these differences:
+
+- **Layout**: the board's plan change alert, metric tiles and "Readiness, last 14 days" belong to other stories (spec, Departures). The three cards of this task keep the board's order in its two-column grid: "This week" beside "Recent sessions", "Quiz answers" below. On the board "This week" sits beside the readiness chart and "Recent sessions" beside "Quiz answers".
+- **Day strip**: as on the board, a Done day is a filled ink circle with a check, today's cell is tinted lime with a ringed circle, a planned day is an outlined circle with the session's letter, and a rest day is a muted circle with a dash. The board shows no Missed day: it is a circle in the muted destructive colour with a cross, as the Missed badge is red. A session In progress, and one before the publish day, keeps its letter like a planned day. The strip is not interactive; each day says its session and state in words for assistive technology, and today's day is marked as the current date.
+- **Rows of "This week"**: "Upper body · Mon", "RPE 8.2" once a set is logged, and the badge, as on the board. The board's "in progress" beside a "Today" badge is the In progress badge (spec, Departures).
+- **Figures of "Recent sessions"**: "15/15 sets · RPE 8.2", as on the board, instead of the longer "15 of 15 sets" and "Average RPE 8.2" of the Logs tab (spec, Texts).
+- **Badges**: Locked is the board's neutral badge, with a lock icon; Done, Missed, Today and Planned keep the look they have on the client's Plan tab.
+- **"All logs"**: the board's small outline button at the top right of "Recent sessions".
+- **Quiz answers**: the draft panel's rows (R9).
+- **Failure**: the error's own translated message and "Try again", as the client page and its Plan tab show a failed load (`frontend/CLAUDE.md`: "Show `t('errors.<code>')`").
+
+**Why**: Task #106 is done when the tab "Matches the mockup at 1280px"; the cards of other stories are left out, so their places close up. A Missed day needs a look the board does not give, and red is what the Missed badge already uses.
+
+**Rejected**: Leaving the readiness chart's place empty until story #122 (an empty half of the first row); the longer figures of the Logs tab in the overview's rows (they do not fit the board's one-line rows).

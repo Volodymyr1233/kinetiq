@@ -2,6 +2,7 @@ import { CircleAlertIcon } from 'lucide-react'
 import { Link } from 'react-router'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
+import { SessionStateBadge } from '@/components/session-state-badge'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -9,7 +10,6 @@ import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useSessionStates } from '../api/session-states'
 import { useToday } from '../api/today'
 import { EntryRow } from '../components/entry-row'
-import { SessionStateBadge } from '../components/session-state-badge'
 
 /** The client's Today tab: the session their plan has for today, a rest day, or the end of the plan. */
 export function TodayPage() {
