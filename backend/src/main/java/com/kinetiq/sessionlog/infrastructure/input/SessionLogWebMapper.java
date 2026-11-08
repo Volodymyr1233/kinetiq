@@ -1,6 +1,9 @@
 package com.kinetiq.sessionlog.infrastructure.input;
 
 import com.kinetiq.exercise.domain.model.Exercise;
+import com.kinetiq.quiz.domain.model.QuizSubmission;
+import com.kinetiq.sessionlog.domain.input.ClientOverview;
+import com.kinetiq.sessionlog.domain.input.ClientSession;
 import com.kinetiq.sessionlog.domain.input.SessionStates;
 import com.kinetiq.sessionlog.domain.input.SessionSummaryView;
 import com.kinetiq.sessionlog.domain.input.StartedSession;
@@ -97,6 +100,47 @@ class SessionLogWebMapper {
                                 entry.sessionLogId().map(SessionLogId::value).orElse(null),
                                 entry.startedAt().orElse(null)))
                         .toList());
+    }
+
+    ClientOverviewResponse toResponse(ClientOverview overview) {
+        return new ClientOverviewResponse(
+                overview.getToday(),
+                overview.getWeek()
+                        .map(week -> new ClientOverviewResponse.OverviewWeekResponse(
+                                week.number(), week.startsOn(), toResponses(week.sessions())))
+                        .orElse(null),
+                toResponses(overview.getRecentSessions()),
+                overview.getQuizAnswers().map(this::toResponse).orElse(null));
+    }
+
+    private List<ClientOverviewResponse.ClientSessionResponse> toResponses(List<ClientSession> sessions) {
+        return sessions.stream()
+                .map(session -> new ClientOverviewResponse.ClientSessionResponse(
+                        session.getDate(),
+                        session.getDate().getDayOfWeek(),
+                        session.getName(),
+                        session.getState().orElse(null),
+                        session.isLocked(),
+                        session.getSetsLogged(),
+                        session.getSetsPlanned(),
+                        session.getAverageRpe().orElse(null),
+                        session.getSessionLogId().map(SessionLogId::value).orElse(null)))
+                .toList();
+    }
+
+    // likes in their declared order, as the client feature answers them
+    private ClientOverviewResponse.OverviewQuizAnswersResponse toResponse(QuizSubmission answers) {
+        return new ClientOverviewResponse.OverviewQuizAnswersResponse(
+                answers.getGoal(),
+                answers.getExperience(),
+                answers.getLevel(),
+                answers.getAge(),
+                answers.getHeightCm(),
+                answers.getWeightKg(),
+                answers.getLikes().stream().sorted().toList(),
+                answers.getDaysPerWeek(),
+                answers.getNotes().orElse(null),
+                answers.getSubmittedAt());
     }
 
     SetLogResponse toResponse(SetLog set) {

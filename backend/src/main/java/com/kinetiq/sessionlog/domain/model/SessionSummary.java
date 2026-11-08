@@ -28,16 +28,12 @@ public record SessionSummary(
                 .map(set -> set.values().loadKg().multiply(BigDecimal.valueOf(set.values().amount())))
                 .reduce(BigDecimal::add)
                 .orElse(null);
-        int rpeSum = sets.stream().mapToInt(set -> set.values().rpe()).sum();
-        BigDecimal averageRpe = sets.isEmpty()
-                ? BigDecimal.ZERO.setScale(DECIMALS)
-                : BigDecimal.valueOf(rpeSum).divide(BigDecimal.valueOf(sets.size()), DECIMALS, RoundingMode.HALF_UP);
         long minutes = Duration.between(log.getStartedAt(), finishedAt).toMinutes();
         return new SessionSummary(
                 sets.size(),
-                log.getEntries().stream().mapToInt(LoggedEntry::sets).sum(),
+                log.setsPlanned(),
                 Optional.ofNullable(volume).map(v -> v.setScale(DECIMALS, RoundingMode.HALF_UP)),
-                averageRpe,
+                log.averageRpe().orElse(BigDecimal.ZERO.setScale(DECIMALS)),
                 (int) Math.max(1, minutes));
     }
 

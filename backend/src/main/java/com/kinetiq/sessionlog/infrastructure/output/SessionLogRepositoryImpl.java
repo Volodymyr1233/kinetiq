@@ -50,6 +50,13 @@ class SessionLogRepositoryImpl implements SessionLogRepository {
     }
 
     @Override
+    public List<SessionLog> findAllByClient(AccountId client) {
+        return jpa.findByClientIdOrderByLogDateDesc(client.value()).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
     public SessionLog save(SessionLog log) {
         try {
             // a new session is flushed alone first: Hibernate writes its entries after the set logs it is given with

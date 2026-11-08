@@ -9,6 +9,8 @@ import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,6 +30,8 @@ import lombok.Getter;
 public class SessionLog {
 
     public static final int NOTE_MAX_LENGTH = 500;
+
+    private static final int RPE_DECIMALS = 1;
 
     // also trims no-break and other Unicode spaces, as a session name does
     private static final Pattern EDGE_SPACES = Pattern.compile("^[\\s\\p{Z}]+|[\\s\\p{Z}]+$");
@@ -163,6 +167,21 @@ public class SessionLog {
     /** The summary of this finished session, as its sets are now; {@code measures} gives each exercise its measure. */
     public SessionSummary summary(Map<ExerciseId, Measure> measures) {
         return SessionSummary.of(this, measures);
+    }
+
+    /** How many sets the session planned, over all its entries. */
+    public int setsPlanned() {
+        return entries.stream().mapToInt(LoggedEntry::sets).sum();
+    }
+
+    /** The mean RPE of the logged sets to one decimal, rounded half up; empty while no set is logged. */
+    public Optional<BigDecimal> averageRpe() {
+        if (setLogs.isEmpty()) {
+            return Optional.empty();
+        }
+        int sum = setLogs.stream().mapToInt(set -> set.values().rpe()).sum();
+        return Optional.of(
+                BigDecimal.valueOf(sum).divide(BigDecimal.valueOf(setLogs.size()), RPE_DECIMALS, RoundingMode.HALF_UP));
     }
 
     private LoggedEntry plannedEntry(int entryPosition, int setNumber) {
