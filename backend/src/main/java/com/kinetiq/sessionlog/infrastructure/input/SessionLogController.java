@@ -50,7 +50,8 @@ class SessionLogController {
     /**
      * Logs a set, or changes it: the first call with an id creates it, and a repeat with the same values changes
      * nothing. {@code 404} with {@code session-log.not-found} for a session that is not the client's, {@code 400} with
-     * {@code set-values.invalid} for a value outside its limits, {@code 409} when the id or the place is already used.
+     * {@code set-values.invalid} for a value outside its limits, {@code 409} when the id or the place is already used, and
+     * {@code 409} with {@code session-log.locked} from 24 hours after the session started.
      */
     @PutMapping("/{id}/set-logs/{setLogId}")
     SetLogResponse logSet(

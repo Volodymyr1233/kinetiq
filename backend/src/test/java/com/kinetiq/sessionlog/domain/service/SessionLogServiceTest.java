@@ -27,10 +27,12 @@ import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
+import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
 import com.kinetiq.sessionlog.domain.input.LogSetCommand;
 import com.kinetiq.sessionlog.domain.input.StartedSession;
+import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SetLog;
@@ -39,6 +41,7 @@ import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
 import java.time.DayOfWeek;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -190,6 +193,16 @@ class SessionLogServiceTest {
         return new SetLogId(UUID.randomUUID());
     }
 
+    private SessionLogId startedAt(Instant start, AccountId client) {
+        SessionLog log = SessionLog.start(
+                client,
+                TODAY.minusDays(1),
+                "Lower body",
+                List.of(new LoggedEntry(SQUAT.getId(), 3, 5, new BigDecimal("100.0"), 8, 120)),
+                start);
+        return logs.save(log).getId();
+    }
+
     @Nested
     class Start {
 
@@ -311,6 +324,33 @@ class SessionLogServiceTest {
                     .isInstanceOf(SetValuesInvalidException.class);
 
             assertThat(stored.get(session).getSetLogs()).isEmpty();
+        }
+
+        @Test
+        void shouldTakeASet_whenTheSessionStartedASecondLessThan24HoursAgo() {
+            SessionLogId session = startedAt(NOW.minus(Duration.ofHours(24)).plusSeconds(1), CLIENT);
+
+            service.logSet(command(CLIENT, session, newId(), 0, 1, 5, 8));
+
+            assertThat(stored.get(session).getSetLogs()).hasSize(1);
+        }
+
+        @Test
+        void shouldRefuseASetAndStoreNothing_whenTheSessionStarted24HoursAgo() {
+            SessionLogId session = startedAt(NOW.minus(Duration.ofHours(24)), CLIENT);
+
+            assertThatThrownBy(() -> service.logSet(command(CLIENT, session, newId(), 0, 1, 5, 8)))
+                    .isInstanceOf(SessionLogLockedException.class);
+
+            assertThat(stored.get(session).getSetLogs()).isEmpty();
+        }
+
+        @Test
+        void shouldAnswerNotFound_whenALockedSessionIsAnotherClients() {
+            SessionLogId theirs = startedAt(NOW.minus(Duration.ofHours(25)), OTHER_CLIENT);
+
+            assertThatThrownBy(() -> service.logSet(command(CLIENT, theirs, newId(), 0, 1, 5, 8)))
+                    .isInstanceOf(SessionLogNotFoundException.class);
         }
     }
 }

@@ -13,7 +13,8 @@ public interface LogSessionUseCase {
 
     /**
      * Logs a set into the client's own session, or changes it when the id was logged already. A session that is not the
-     * client's is {@code SessionLogNotFoundException}, and so is a set id that belongs to another session.
+     * client's is {@code SessionLogNotFoundException}, and so is a set id that belongs to another session. From 24 hours
+     * after the session started, a new set or a change is {@code SessionLogLockedException}.
      */
     SetLog logSet(LogSetCommand command);
 }

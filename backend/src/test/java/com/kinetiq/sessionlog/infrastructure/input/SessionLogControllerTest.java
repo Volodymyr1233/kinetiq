@@ -19,6 +19,7 @@ import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
+import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
@@ -229,6 +230,9 @@ class SessionLogControllerTest {
 
         doThrow(SetLogConflictException.placeTaken()).when(sessions).logSet(any());
         assertRefused(put(BODY), HttpStatus.CONFLICT, "set-log.place-taken");
+
+        doThrow(new SessionLogLockedException()).when(sessions).logSet(any());
+        assertRefused(put(BODY), HttpStatus.CONFLICT, "session-log.locked");
     }
 
     @Test
