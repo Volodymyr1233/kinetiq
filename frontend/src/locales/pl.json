@@ -757,6 +757,31 @@
       "noAnswers": "Brak odpowiedzi z quizu.",
       "loading": "Wczytywanie przeglądu"
     },
+    "logs": {
+      "sessions": "Sesje",
+      "row": "{{date}} · RPE {{value}}",
+      "rowNoSets": "{{date}} · Brak serii",
+      "title": "{{name}} · {{date}}",
+      "figures": "Serie: {{logged}} z {{planned}}",
+      "figuresRpe": "Serie: {{logged}} z {{planned}} · średnie RPE {{value}}",
+      "figuresFinished": "Serie: {{logged}} z {{planned}} · {{minutes}} min · średnie RPE {{value}}",
+      "columns": {
+        "exercise": "Ćwiczenie",
+        "set": "Seria",
+        "target": "Cel",
+        "reps": "Powt.",
+        "repsOrSeconds": "Powt. / s",
+        "rpe": "RPE"
+      },
+      "target": "{{amount}} × {{load}}",
+      "seconds": "{{value}} s",
+      "noLoad": "Bez obciążenia",
+      "notLogged": "Nie zapisano",
+      "notStarted": "Nie rozpoczęto",
+      "changeable": "{{name}} może jeszcze zmieniać te logi do {{time}}.",
+      "loading": "Wczytywanie logów",
+      "loadingSession": "Wczytywanie sesji"
+    },
     "locked": {
       "title": "Sesja zablokowana",
       "text": "Serie można zapisywać i zmieniać przez 24 godziny od rozpoczęcia sesji."

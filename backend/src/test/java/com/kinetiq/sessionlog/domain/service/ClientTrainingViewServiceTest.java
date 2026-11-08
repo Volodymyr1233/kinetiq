@@ -2,13 +2,21 @@ package com.kinetiq.sessionlog.domain.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.assertj.core.api.Assertions.tuple;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.client.domain.exception.ClientNotFoundException;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
+import com.kinetiq.exercise.domain.input.ExerciseListing;
+import com.kinetiq.exercise.domain.input.ListExercisesQuery;
+import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
+import com.kinetiq.exercise.domain.model.Category;
+import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.exercise.domain.model.LocalizedText;
+import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.input.DraftSummary;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.TodayView;
@@ -24,8 +32,10 @@ import com.kinetiq.quiz.domain.model.Level;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
+import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
+import com.kinetiq.sessionlog.domain.input.ClientSessionLog;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
 import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
@@ -48,6 +58,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class ClientTrainingViewServiceTest {
@@ -60,9 +71,11 @@ class ClientTrainingViewServiceTest {
     private static final LocalDate WEEK_3_WEDNESDAY = WEEK_3_MONDAY.plusDays(2);
     // Wednesday of week 3, 11:00 in Warsaw
     private static final Instant WEDNESDAY = Instant.parse("2026-11-04T10:00:00Z");
+    private static final Exercise SQUAT = exercise("Squat", Measure.REPS);
+    private static final Exercise PLANK = exercise("Plank", Measure.SECONDS);
     private static final List<LoggedEntry> ENTRIES = List.of(
-            new LoggedEntry(ExerciseId.random(), 3, 5, new BigDecimal("100.0"), 8, 120),
-            new LoggedEntry(ExerciseId.random(), 2, 45, null, 7, 60));
+            new LoggedEntry(SQUAT.getId(), 3, 5, new BigDecimal("100.0"), 8, 120),
+            new LoggedEntry(PLANK.getId(), 2, 45, null, 7, 60));
     private static final List<Session> SESSIONS = List.of(
             session("Upper body", DayOfWeek.MONDAY),
             session("Lower body", DayOfWeek.WEDNESDAY),
@@ -74,6 +87,20 @@ class ClientTrainingViewServiceTest {
     private Instant now = WEDNESDAY;
     private final List<SessionLog> stored = new ArrayList<>();
     private final List<String> reads = new ArrayList<>();
+
+    private static Exercise exercise(String name, Measure measure) {
+        return new Exercise(
+                ExerciseId.random(),
+                TRAINER,
+                new LocalizedText(name, name),
+                Category.LEGS,
+                new LocalizedText("", ""),
+                measure,
+                3,
+                5,
+                60,
+                new LocalizedText("", ""));
+    }
 
     private static Session session(String name, DayOfWeek day) {
         return new Session(
@@ -105,9 +132,14 @@ class ClientTrainingViewServiceTest {
     }
 
     // a session log of that date with one set logged for each RPE, finished when finishedAt is given
-    private void log(LocalDate date, String name, String startedAt, String finishedAt, int... rpes) {
+    private SessionLog log(LocalDate date, String name, String startedAt, String finishedAt, int... rpes) {
+        return log(CLIENT, date, name, startedAt, finishedAt, rpes);
+    }
+
+    private SessionLog log(
+            AccountId client, LocalDate date, String name, String startedAt, String finishedAt, int... rpes) {
         Instant start = Instant.parse(startedAt);
-        SessionLog log = SessionLog.start(CLIENT, date, name, ENTRIES, start);
+        SessionLog log = SessionLog.start(client, date, name, ENTRIES, start);
         for (int number = 1; number <= rpes.length; number++) {
             log.logSet(
                     new SetLogId(UUID.randomUUID()),
@@ -120,6 +152,7 @@ class ClientTrainingViewServiceTest {
             log.finish(Instant.parse(finishedAt));
         }
         stored.add(log);
+        return log;
     }
 
     private final ViewClientsUseCase clients = new ViewClientsUseCase() {
@@ -187,7 +220,10 @@ class ClientTrainingViewServiceTest {
 
         @Override
         public Optional<SessionLog> findByIdAndClient(SessionLogId id, AccountId client) {
-            throw new UnsupportedOperationException();
+            reads.add("log");
+            return stored.stream()
+                    .filter(log -> log.getId().equals(id) && log.getClient().equals(client))
+                    .findFirst();
         }
 
         @Override
@@ -206,9 +242,26 @@ class ClientTrainingViewServiceTest {
         }
     };
 
+    private final ListExercisesUseCase exercises = new ListExercisesUseCase() {
+        @Override
+        public ExerciseListing list(ListExercisesQuery query) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Exercise> library(AccountId trainer) {
+            reads.add("library");
+            return List.of(SQUAT, PLANK);
+        }
+    };
+
+    private ClientTrainingViewService service() {
+        return new ClientTrainingViewService(
+                clients, quiz, planPort, exercises, logs, Clock.fixed(now, ZoneOffset.UTC));
+    }
+
     private ClientOverview overview() {
-        return new ClientTrainingViewService(clients, quiz, planPort, logs, Clock.fixed(now, ZoneOffset.UTC))
-                .overview(TRAINER, CLIENT);
+        return service().overview(TRAINER, CLIENT);
     }
 
     private static ClientSession on(List<ClientSession> sessions, LocalDate date) {
@@ -222,158 +275,237 @@ class ClientTrainingViewServiceTest {
         return overview.getWeek().orElseThrow().sessions();
     }
 
-    @Test
-    void shouldGiveEachSessionOfTheWeek_withItsStateAndFigures() {
-        log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", "2026-11-02T17:50:00Z", 7, 8);
+    @Nested
+    class Overview {
 
-        ClientOverview overview = overview();
+        @Test
+        void shouldGiveEachSessionOfTheWeek_withItsStateAndFigures() {
+            log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", "2026-11-02T17:50:00Z", 7, 8);
 
-        assertThat(overview.getToday()).isEqualTo(WEEK_3_WEDNESDAY);
-        assertThat(overview.getWeek()).hasValueSatisfying(week -> {
-            assertThat(week.number()).isEqualTo(3);
-            assertThat(week.startsOn()).isEqualTo(WEEK_3_MONDAY);
-        });
-        assertThat(week(overview))
-                .extracting(ClientSession::getName)
-                .containsExactly("Upper body", "Lower body", "Full body");
-        ClientSession monday = on(week(overview), WEEK_3_MONDAY);
-        assertThat(monday.getState()).contains(SessionState.DONE);
-        assertThat(monday.isLocked()).isTrue();
-        assertThat(monday.getSetsLogged()).isEqualTo(2);
-        assertThat(monday.getSetsPlanned()).isEqualTo(5);
-        assertThat(monday.getAverageRpe()).hasValueSatisfying(rpe -> assertThat(rpe).isEqualByComparingTo("7.5"));
-        assertThat(monday.getSessionLogId()).isPresent();
-        ClientSession today = on(week(overview), WEEK_3_WEDNESDAY);
-        assertThat(today.getState()).contains(SessionState.TODAY);
-        assertThat(today.isLocked()).isFalse();
-        assertThat(today.getSetsLogged()).isZero();
-        assertThat(today.getSetsPlanned()).isEqualTo(5);
-        assertThat(today.getAverageRpe()).isEmpty();
-        assertThat(today.getSessionLogId()).isEmpty();
-        assertThat(on(week(overview), WEEK_3_MONDAY.plusDays(4)).getState()).contains(SessionState.PLANNED);
+            ClientOverview overview = overview();
+
+            assertThat(overview.getToday()).isEqualTo(WEEK_3_WEDNESDAY);
+            assertThat(overview.getWeek()).hasValueSatisfying(week -> {
+                assertThat(week.number()).isEqualTo(3);
+                assertThat(week.startsOn()).isEqualTo(WEEK_3_MONDAY);
+            });
+            assertThat(week(overview))
+                    .extracting(ClientSession::getName)
+                    .containsExactly("Upper body", "Lower body", "Full body");
+            ClientSession monday = on(week(overview), WEEK_3_MONDAY);
+            assertThat(monday.getState()).contains(SessionState.DONE);
+            assertThat(monday.isLocked()).isTrue();
+            assertThat(monday.getSetsLogged()).isEqualTo(2);
+            assertThat(monday.getSetsPlanned()).isEqualTo(5);
+            assertThat(monday.getAverageRpe()).hasValueSatisfying(rpe -> assertThat(rpe).isEqualByComparingTo("7.5"));
+            assertThat(monday.getSessionLogId()).isPresent();
+            ClientSession today = on(week(overview), WEEK_3_WEDNESDAY);
+            assertThat(today.getState()).contains(SessionState.TODAY);
+            assertThat(today.isLocked()).isFalse();
+            assertThat(today.getSetsLogged()).isZero();
+            assertThat(today.getSetsPlanned()).isEqualTo(5);
+            assertThat(today.getAverageRpe()).isEmpty();
+            assertThat(today.getSessionLogId()).isEmpty();
+            assertThat(on(week(overview), WEEK_3_MONDAY.plusDays(4)).getState()).contains(SessionState.PLANNED);
+        }
+
+        @Test
+        void shouldTellDoneFromLocked_andInProgressFromMissed_byTheTwentyFourHours() {
+            // Thursday 11:00: Wednesday's session ended 18 hours ago, Monday's unfinished one locked on Tuesday
+            now = Instant.parse("2026-11-05T10:00:00Z");
+            log(WEEK_3_WEDNESDAY, "Lower body", "2026-11-04T16:00:00Z", "2026-11-04T16:50:00Z", 8);
+            log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 9);
+
+            ClientOverview overview = overview();
+
+            ClientSession wednesday = on(week(overview), WEEK_3_WEDNESDAY);
+            assertThat(wednesday.getState()).contains(SessionState.DONE);
+            assertThat(wednesday.isLocked()).isFalse();
+            ClientSession monday = on(week(overview), WEEK_3_MONDAY);
+            assertThat(monday.getState()).contains(SessionState.MISSED);
+            assertThat(monday.isLocked()).isTrue();
+            assertThat(monday.getSetsLogged()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldGiveInProgress_toAStartedSessionWithinItsTwentyFourHours() {
+            log(WEEK_3_WEDNESDAY, "Lower body", "2026-11-04T08:00:00Z", null, 8);
+
+            ClientSession wednesday = on(week(overview()), WEEK_3_WEDNESDAY);
+
+            assertThat(wednesday.getState()).contains(SessionState.IN_PROGRESS);
+            assertThat(wednesday.isLocked()).isFalse();
+        }
+
+        @Test
+        void shouldGiveNoState_toADayBeforeThePublishDay_andNotListIt() {
+            plan = published(WEEK_3_MONDAY, WEEK_3_WEDNESDAY, 8);
+
+            ClientOverview overview = overview();
+
+            assertThat(on(week(overview), WEEK_3_MONDAY).getState()).isEmpty();
+            assertThat(on(week(overview), WEEK_3_WEDNESDAY).getState()).contains(SessionState.TODAY);
+            assertThat(overview.getRecentSessions()).isEmpty();
+        }
+
+        @Test
+        void shouldListTheFourNewestSessions_withTheMissedOnesNeverStarted() {
+            log(LocalDate.parse("2026-10-26"), "Upper body", "2026-10-26T17:00:00Z", "2026-10-26T17:50:00Z", 8);
+            log(LocalDate.parse("2026-10-30"), "Full body", "2026-10-30T17:00:00Z", "2026-10-30T17:50:00Z", 8);
+            log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", "2026-11-02T17:50:00Z", 8);
+            // a Tuesday the plan does not have, as after the trainer moved the session
+            log(LocalDate.parse("2026-11-03"), "Moved session", "2026-11-03T17:00:00Z", "2026-11-03T17:50:00Z", 8);
+
+            List<ClientSession> recent = overview().getRecentSessions();
+
+            // Wednesday 28 October was never started; today's session is not listed
+            assertThat(recent)
+                    .extracting(ClientSession::getDate)
+                    .containsExactly(
+                            LocalDate.parse("2026-11-03"),
+                            WEEK_3_MONDAY,
+                            LocalDate.parse("2026-10-30"),
+                            LocalDate.parse("2026-10-28"));
+            assertThat(recent.getFirst().getName()).isEqualTo("Moved session");
+            ClientSession missed = recent.getLast();
+            assertThat(missed.getName()).isEqualTo("Lower body");
+            assertThat(missed.getState()).contains(SessionState.MISSED);
+            assertThat(missed.isLocked()).isFalse();
+            assertThat(missed.getSetsLogged()).isZero();
+            assertThat(missed.getSetsPlanned()).isEqualTo(5);
+            assertThat(missed.getAverageRpe()).isEmpty();
+            assertThat(missed.getSessionLogId()).isEmpty();
+        }
+
+        @Test
+        void shouldReadNoPlan_andHaveNoWeek_whenThePlanIsNotPublished() {
+            planState = PlanState.DRAFT;
+
+            ClientOverview overview = overview();
+
+            assertThat(reads).doesNotContain("plan");
+            assertThat(overview.getWeek()).isEmpty();
+            assertThat(overview.getRecentSessions()).isEmpty();
+            assertThat(overview.getQuizAnswers()).isPresent();
+        }
+
+        @Test
+        void shouldHaveNoWeek_butKeepTheRecentSessions_whenThePlanHasFinished() {
+            // weeks 1 to 4 from 5 October, so Wednesday 4 November is after the last week
+            plan = published(LocalDate.parse("2026-10-05"), LocalDate.parse("2026-10-05"), 4);
+
+            ClientOverview overview = overview();
+
+            assertThat(overview.getWeek()).isEmpty();
+            assertThat(overview.getRecentSessions())
+                    .extracting(ClientSession::getDate)
+                    .containsExactly(
+                            LocalDate.parse("2026-10-30"),
+                            LocalDate.parse("2026-10-28"),
+                            LocalDate.parse("2026-10-26"),
+                            LocalDate.parse("2026-10-23"));
+        }
+
+        @Test
+        void shouldLeaveTheQuizAnswersOut_beforeTheQuiz() {
+            answers = null;
+
+            assertThat(overview().getQuizAnswers()).isEmpty();
+        }
+
+        @Test
+        void shouldTakeTodayInTheClientsTimeZone() {
+            // 23:30 UTC on Tuesday is 00:30 on Wednesday in Warsaw
+            now = Instant.parse("2026-11-03T23:30:00Z");
+
+            ClientOverview overview = overview();
+
+            assertThat(overview.getToday()).isEqualTo(WEEK_3_WEDNESDAY);
+            assertThat(on(week(overview), WEEK_3_WEDNESDAY).getState()).contains(SessionState.TODAY);
+        }
+
+        @Test
+        void shouldRefuseAnotherTrainersClient_andReadNothing() {
+            assertThatThrownBy(() -> service().overview(AccountId.random(), CLIENT))
+                    .isInstanceOf(ClientNotFoundException.class);
+            assertThat(reads).isEmpty();
+        }
     }
 
-    @Test
-    void shouldTellDoneFromLocked_andInProgressFromMissed_byTheTwentyFourHours() {
-        // Thursday 11:00: Wednesday's session ended 18 hours ago, Monday's unfinished one locked on Tuesday
-        now = Instant.parse("2026-11-05T10:00:00Z");
-        log(WEEK_3_WEDNESDAY, "Lower body", "2026-11-04T16:00:00Z", "2026-11-04T16:50:00Z", 8);
-        log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 9);
+    @Nested
+    class Sessions {
 
-        ClientOverview overview = overview();
+        @Test
+        void shouldListEveryLogAndEveryMissedSession_newestFirst() {
+            log(LocalDate.parse("2026-10-26"), "Upper body", "2026-10-26T17:00:00Z", "2026-10-26T17:50:00Z", 8);
+            log(LocalDate.parse("2026-10-30"), "Full body", "2026-10-30T17:00:00Z", "2026-10-30T17:50:00Z", 8);
+            log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", "2026-11-02T17:50:00Z", 8);
+            log(LocalDate.parse("2026-11-03"), "Moved session", "2026-11-03T17:00:00Z", "2026-11-03T17:50:00Z", 8);
 
-        ClientSession wednesday = on(week(overview), WEEK_3_WEDNESDAY);
-        assertThat(wednesday.getState()).contains(SessionState.DONE);
-        assertThat(wednesday.isLocked()).isFalse();
-        ClientSession monday = on(week(overview), WEEK_3_MONDAY);
-        assertThat(monday.getState()).contains(SessionState.MISSED);
-        assertThat(monday.isLocked()).isTrue();
-        assertThat(monday.getSetsLogged()).isEqualTo(1);
+            List<ClientSession> sessions = service().sessions(TRAINER, CLIENT);
+
+            // every planned day from the publish day on 19 October until yesterday, and the moved session
+            assertThat(sessions)
+                    .extracting(ClientSession::getDate, session -> session.getState().orElseThrow())
+                    .containsExactly(
+                            tuple(LocalDate.parse("2026-11-03"), SessionState.DONE),
+                            tuple(WEEK_3_MONDAY, SessionState.DONE),
+                            tuple(LocalDate.parse("2026-10-30"), SessionState.DONE),
+                            tuple(LocalDate.parse("2026-10-28"), SessionState.MISSED),
+                            tuple(LocalDate.parse("2026-10-26"), SessionState.DONE),
+                            tuple(LocalDate.parse("2026-10-23"), SessionState.MISSED),
+                            tuple(LocalDate.parse("2026-10-21"), SessionState.MISSED),
+                            tuple(WEEK_1_MONDAY, SessionState.MISSED));
+        }
+
+        @Test
+        void shouldRefuseAnotherTrainersClient_andReadNothing() {
+            assertThatThrownBy(() -> service().sessions(AccountId.random(), CLIENT))
+                    .isInstanceOf(ClientNotFoundException.class);
+            assertThat(reads).isEmpty();
+        }
     }
 
-    @Test
-    void shouldGiveInProgress_toAStartedSessionWithinItsTwentyFourHours() {
-        log(WEEK_3_WEDNESDAY, "Lower body", "2026-11-04T08:00:00Z", null, 8);
+    @Nested
+    class SessionLogOf {
 
-        ClientSession wednesday = on(week(overview()), WEEK_3_WEDNESDAY);
+        @Test
+        void shouldAnswerTheClientsOwnLog_withItsSessionAndTheTrainersLibrary() {
+            SessionLog monday = log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", "2026-11-02T17:50:00Z", 7, 8);
 
-        assertThat(wednesday.getState()).contains(SessionState.IN_PROGRESS);
-        assertThat(wednesday.isLocked()).isFalse();
-    }
+            ClientSessionLog read = service().sessionLog(TRAINER, CLIENT, monday.getId());
 
-    @Test
-    void shouldGiveNoState_toADayBeforeThePublishDay_andNotListIt() {
-        plan = published(WEEK_3_MONDAY, WEEK_3_WEDNESDAY, 8);
+            assertThat(read.log()).isSameAs(monday);
+            assertThat(read.session().getState()).contains(SessionState.DONE);
+            assertThat(read.session().isLocked()).isTrue();
+            assertThat(read.session().getSetsLogged()).isEqualTo(2);
+            assertThat(read.session().getSessionLogId()).contains(monday.getId());
+            assertThat(read.library()).containsEntry(SQUAT.getId(), SQUAT).containsEntry(PLANK.getId(), PLANK);
+        }
 
-        ClientOverview overview = overview();
+        @Test
+        void shouldNotFindAnotherClientsLog_underAnOwnClient() {
+            SessionLog foreign = log(
+                    AccountId.random(), WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 8);
 
-        assertThat(on(week(overview), WEEK_3_MONDAY).getState()).isEmpty();
-        assertThat(on(week(overview), WEEK_3_WEDNESDAY).getState()).contains(SessionState.TODAY);
-        assertThat(overview.getRecentSessions()).isEmpty();
-    }
+            assertThatThrownBy(() -> service().sessionLog(TRAINER, CLIENT, foreign.getId()))
+                    .isInstanceOf(SessionLogNotFoundException.class);
+            assertThat(reads).doesNotContain("library");
+        }
 
-    @Test
-    void shouldListTheFourNewestSessions_withTheMissedOnesNeverStarted() {
-        log(LocalDate.parse("2026-10-26"), "Upper body", "2026-10-26T17:00:00Z", "2026-10-26T17:50:00Z", 8);
-        log(LocalDate.parse("2026-10-30"), "Full body", "2026-10-30T17:00:00Z", "2026-10-30T17:50:00Z", 8);
-        log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", "2026-11-02T17:50:00Z", 8);
-        // a Tuesday the plan does not have, as after the trainer moved the session
-        log(LocalDate.parse("2026-11-03"), "Moved session", "2026-11-03T17:00:00Z", "2026-11-03T17:50:00Z", 8);
+        @Test
+        void shouldNotFindAnUnknownLog() {
+            assertThatThrownBy(() -> service().sessionLog(TRAINER, CLIENT, SessionLogId.random()))
+                    .isInstanceOf(SessionLogNotFoundException.class);
+        }
 
-        List<ClientSession> recent = overview().getRecentSessions();
+        @Test
+        void shouldRefuseAnotherTrainersClient_andReadNothing() {
+            SessionLog monday = log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 8);
 
-        // Wednesday 28 October was never started; today's session is not listed
-        assertThat(recent)
-                .extracting(ClientSession::getDate)
-                .containsExactly(
-                        LocalDate.parse("2026-11-03"),
-                        WEEK_3_MONDAY,
-                        LocalDate.parse("2026-10-30"),
-                        LocalDate.parse("2026-10-28"));
-        assertThat(recent.getFirst().getName()).isEqualTo("Moved session");
-        ClientSession missed = recent.getLast();
-        assertThat(missed.getName()).isEqualTo("Lower body");
-        assertThat(missed.getState()).contains(SessionState.MISSED);
-        assertThat(missed.isLocked()).isFalse();
-        assertThat(missed.getSetsLogged()).isZero();
-        assertThat(missed.getSetsPlanned()).isEqualTo(5);
-        assertThat(missed.getAverageRpe()).isEmpty();
-        assertThat(missed.getSessionLogId()).isEmpty();
-    }
-
-    @Test
-    void shouldReadNoPlan_andHaveNoWeek_whenThePlanIsNotPublished() {
-        planState = PlanState.DRAFT;
-
-        ClientOverview overview = overview();
-
-        assertThat(reads).doesNotContain("plan");
-        assertThat(overview.getWeek()).isEmpty();
-        assertThat(overview.getRecentSessions()).isEmpty();
-        assertThat(overview.getQuizAnswers()).isPresent();
-    }
-
-    @Test
-    void shouldHaveNoWeek_butKeepTheRecentSessions_whenThePlanHasFinished() {
-        // weeks 1 to 4 from 5 October, so Wednesday 4 November is after the last week
-        plan = published(LocalDate.parse("2026-10-05"), LocalDate.parse("2026-10-05"), 4);
-
-        ClientOverview overview = overview();
-
-        assertThat(overview.getWeek()).isEmpty();
-        assertThat(overview.getRecentSessions())
-                .extracting(ClientSession::getDate)
-                .containsExactly(
-                        LocalDate.parse("2026-10-30"),
-                        LocalDate.parse("2026-10-28"),
-                        LocalDate.parse("2026-10-26"),
-                        LocalDate.parse("2026-10-23"));
-    }
-
-    @Test
-    void shouldLeaveTheQuizAnswersOut_beforeTheQuiz() {
-        answers = null;
-
-        assertThat(overview().getQuizAnswers()).isEmpty();
-    }
-
-    @Test
-    void shouldTakeTodayInTheClientsTimeZone() {
-        // 23:30 UTC on Tuesday is 00:30 on Wednesday in Warsaw
-        now = Instant.parse("2026-11-03T23:30:00Z");
-
-        ClientOverview overview = overview();
-
-        assertThat(overview.getToday()).isEqualTo(WEEK_3_WEDNESDAY);
-        assertThat(on(week(overview), WEEK_3_WEDNESDAY).getState()).contains(SessionState.TODAY);
-    }
-
-    @Test
-    void shouldRefuseAnotherTrainersClient_andReadNothing() {
-        var service = new ClientTrainingViewService(clients, quiz, planPort, logs, Clock.fixed(now, ZoneOffset.UTC));
-
-        assertThatThrownBy(() -> service.overview(AccountId.random(), CLIENT))
-                .isInstanceOf(ClientNotFoundException.class);
-        assertThat(reads).isEmpty();
+            assertThatThrownBy(() -> service().sessionLog(AccountId.random(), CLIENT, monday.getId()))
+                    .isInstanceOf(ClientNotFoundException.class);
+            assertThat(reads).isEmpty();
+        }
     }
 }

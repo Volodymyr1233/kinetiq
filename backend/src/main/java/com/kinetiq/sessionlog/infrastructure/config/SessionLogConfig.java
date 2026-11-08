@@ -39,7 +39,8 @@ class SessionLogConfig {
             ViewClientsUseCase clients,
             ViewQuizAnswersUseCase quiz,
             ViewOwnPlanUseCase plan,
+            ListExercisesUseCase exercises,
             SessionLogRepository logs) {
-        return new ClientTrainingViewService(clients, quiz, plan, logs, Clock.systemUTC());
+        return new ClientTrainingViewService(clients, quiz, plan, exercises, logs, Clock.systemUTC());
     }
 }

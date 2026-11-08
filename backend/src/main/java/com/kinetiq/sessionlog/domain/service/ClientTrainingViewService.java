@@ -4,17 +4,22 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
+import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
+import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
+import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
+import com.kinetiq.sessionlog.domain.input.ClientSessionLog;
 import com.kinetiq.sessionlog.domain.input.ViewClientTrainingUseCase;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
 import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
+import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SessionState;
 import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
 import java.time.Clock;
@@ -27,6 +32,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
@@ -37,6 +43,7 @@ public class ClientTrainingViewService implements ViewClientTrainingUseCase {
     private final ViewClientsUseCase clients;
     private final ViewQuizAnswersUseCase quiz;
     private final ViewOwnPlanUseCase plan;
+    private final ListExercisesUseCase exercises;
     private final SessionLogRepository logs;
     private final Clock clock;
 
@@ -45,24 +52,59 @@ public class ClientTrainingViewService implements ViewClientTrainingUseCase {
         ClientSummary summary = clients.getClient(trainer, client);
         Instant now = clock.instant();
         LocalDate today = now.atZone(summary.getTimeZone()).toLocalDate();
-        // a client has one session log a day at most
-        Map<LocalDate, SessionLog> byDate = logs.findAllByClient(client).stream()
-                .collect(Collectors.toMap(SessionLog::getDate, Function.identity()));
-        List<ClientSession> sessions = new ArrayList<>(
-                byDate.values().stream().map(log -> started(log, now)).toList());
-        ClientOverview.Week week = null;
-        // a draft has no week, and asking for one would only be refused as no plan
-        if (summary.getPlanState() == PlanState.PUBLISHED) {
-            OwnPlanView view = plan.view(client, null);
-            sessions.addAll(neverStarted(view, byDate, today));
-            week = view.week() == null ? null : week(view, byDate, today, now);
-        }
-        sessions.sort(Comparator.comparing(ClientSession::getDate).reversed());
+        Map<LocalDate, SessionLog> byDate = byDate(client);
+        Optional<OwnPlanView> view = published(summary, client);
         return new ClientOverview(
                 today,
-                week,
-                sessions.stream().limit(RECENT_SESSIONS).toList(),
+                view.filter(published -> published.week() != null)
+                        .map(published -> week(published, byDate, today, now))
+                        .orElse(null),
+                newestFirst(byDate, view.map(v -> neverStarted(v, byDate, today)).orElse(List.of()), now).stream()
+                        .limit(RECENT_SESSIONS)
+                        .toList(),
                 quiz.answers(client).orElse(null));
+    }
+
+    @Override
+    public List<ClientSession> sessions(AccountId trainer, AccountId client) {
+        ClientSummary summary = clients.getClient(trainer, client);
+        Instant now = clock.instant();
+        LocalDate today = now.atZone(summary.getTimeZone()).toLocalDate();
+        Map<LocalDate, SessionLog> byDate = byDate(client);
+        return newestFirst(
+                byDate,
+                published(summary, client).map(v -> neverStarted(v, byDate, today)).orElse(List.of()),
+                now);
+    }
+
+    @Override
+    public ClientSessionLog sessionLog(AccountId trainer, AccountId client, SessionLogId id) {
+        clients.getClient(trainer, client);
+        SessionLog log = logs.findByIdAndClient(id, client).orElseThrow(SessionLogNotFoundException::new);
+        return new ClientSessionLog(
+                log,
+                started(log, clock.instant()),
+                exercises.library(trainer).stream().collect(Collectors.toMap(Exercise::getId, Function.identity())));
+    }
+
+    // a client has one session log a day at most
+    private Map<LocalDate, SessionLog> byDate(AccountId client) {
+        return logs.findAllByClient(client).stream()
+                .collect(Collectors.toMap(SessionLog::getDate, Function.identity()));
+    }
+
+    // a draft has no week, and asking for one would only be refused as no plan
+    private Optional<OwnPlanView> published(ClientSummary summary, AccountId client) {
+        return summary.getPlanState() == PlanState.PUBLISHED
+                ? Optional.of(plan.view(client, null))
+                : Optional.empty();
+    }
+
+    private static List<ClientSession> newestFirst(
+            Map<LocalDate, SessionLog> byDate, List<ClientSession> neverStarted, Instant now) {
+        return Stream.concat(byDate.values().stream().map(log -> started(log, now)), neverStarted.stream())
+                .sorted(Comparator.comparing(ClientSession::getDate).reversed())
+                .toList();
     }
 
     private static ClientOverview.Week week(

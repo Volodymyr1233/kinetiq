@@ -2,6 +2,8 @@ package com.kinetiq.sessionlog.infrastructure.input;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.sessionlog.domain.input.ViewClientTrainingUseCase;
+import com.kinetiq.sessionlog.domain.model.SessionLogId;
+import java.util.Locale;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -23,8 +25,33 @@ class ClientTrainingController {
      */
     @GetMapping("/api/v1/clients/{id}/overview")
     ClientOverviewResponse overview(@PathVariable UUID id, Authentication authentication) {
-        // sign-in stores the account id as the principal's name
-        AccountId trainer = new AccountId(UUID.fromString(authentication.getName()));
-        return mapper.toResponse(training.overview(trainer, new AccountId(id)));
+        return mapper.toResponse(training.overview(trainer(authentication), new AccountId(id)));
+    }
+
+    /**
+     * Every session of one of the signed-in trainer's clients, newest first. {@code 404} with {@code client.not-found}
+     * for an unknown client and another trainer's alike.
+     */
+    @GetMapping("/api/v1/clients/{id}/session-logs")
+    ClientSessionsResponse sessions(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(training.sessions(trainer(authentication), new AccountId(id)));
+    }
+
+    /**
+     * One session log of one of the signed-in trainer's clients, each planned set with its target and its log, the
+     * exercise names in the request's language. {@code 404} with {@code client.not-found} for an unknown client and
+     * another trainer's alike, and with {@code session-log.not-found} for a log that is not this client's.
+     */
+    @GetMapping("/api/v1/clients/{id}/session-logs/{sessionLogId}")
+    ClientSessionLogResponse sessionLog(
+            @PathVariable UUID id, @PathVariable UUID sessionLogId, Locale locale, Authentication authentication) {
+        return mapper.toResponse(
+                training.sessionLog(trainer(authentication), new AccountId(id), new SessionLogId(sessionLogId)),
+                locale);
+    }
+
+    // sign-in stores the account id as the principal's name
+    private static AccountId trainer(Authentication authentication) {
+        return new AccountId(UUID.fromString(authentication.getName()));
     }
 }

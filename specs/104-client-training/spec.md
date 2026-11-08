@@ -191,7 +191,9 @@ The main English and Polish texts. Polish uses informal "ty" and should be confi
 | Not started | Not started | Nie rozpoczęto |
 | Set not logged | Not logged | Nie zapisano |
 | Still changeable | {client} can still change these logs until {time}. | {client} może jeszcze zmieniać te logi do {time}. |
-| Logs table | Exercise · Set · Target · Load · Reps · Seconds · RPE | Ćwiczenie · Seria · Cel · Ciężar · Powt. · Sek. · RPE |
+| Logs table | Exercise · Set · Target · kg or lb · Reps (Reps / s with an exercise in seconds) · RPE | Ćwiczenie · Seria · Cel · kg lub lb · Powt. (Powt. / s z ćwiczeniem na czas) · RPE |
+| Chosen session | {logged} of {planned} sets · {minutes} min · average RPE {value} | Serie: {logged} z {planned} · {minutes} min · średnie RPE {value} |
+| A session without sets in the list | No sets | Brak serii |
 | Client's note | Note from {client} | Notatka od: {client} |
 | Load failed | The error's message, as on the client page's other tabs, and "Try again" | Komunikat błędu, jak na innych zakładkach strony klienta, i „Spróbuj ponownie” |
 
