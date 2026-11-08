@@ -11,6 +11,7 @@ import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -172,6 +173,12 @@ public class SessionLog {
     /** How many sets the session planned, over all its entries. */
     public int setsPlanned() {
         return entries.stream().mapToInt(LoggedEntry::sets).sum();
+    }
+
+    /** The whole minutes from the start to the finish, at least 1; empty until the session is finished. */
+    public Optional<Integer> minutes() {
+        return getFinishedAt()
+                .map(finished -> (int) Math.max(1, Duration.between(startedAt, finished).toMinutes()));
     }
 
     /** The mean RPE of the logged sets to one decimal, rounded half up; empty while no set is logged. */

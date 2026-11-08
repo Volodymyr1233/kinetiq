@@ -405,5 +405,24 @@ class SessionLogTest {
         void shouldHaveNoAverageRpe_whileNoSetIsLogged() {
             assertThat(started().averageRpe()).isEmpty();
         }
+
+        @Test
+        void shouldCountTheWholeMinutesFromStartToFinish_atLeastOne() {
+            SessionLog log = started();
+            log.logSet(newId(), 0, 1, asPlanned(), NOW);
+            log.finish(Instant.parse("2026-11-07T10:47:59Z"));
+
+            SessionLog quick = started();
+            quick.logSet(newId(), 0, 1, asPlanned(), NOW);
+            quick.finish(Instant.parse("2026-11-07T10:00:20Z"));
+
+            assertThat(log.minutes()).contains(47);
+            assertThat(quick.minutes()).contains(1);
+        }
+
+        @Test
+        void shouldHaveNoMinutes_untilTheSessionIsFinished() {
+            assertThat(started().minutes()).isEmpty();
+        }
     }
 }

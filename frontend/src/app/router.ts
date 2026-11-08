@@ -109,15 +109,24 @@ export const createRoutes = (): RouteObject[] => [
                     (await import('@/features/plan/pages/plan-page')).PlanPage,
                 },
               },
-              // these tabs are empty until their features land
-              ...['logs', 'messages'].map((path): RouteObject => ({
-                path,
+              {
+                path: 'logs',
+                lazy: {
+                  Component: async () =>
+                    (
+                      await import('@/features/sessionlog/pages/client-logs-tab')
+                    ).ClientLogsTab,
+                },
+              },
+              // this tab is empty until its feature lands
+              {
+                path: 'messages',
                 lazy: {
                   Component: async () =>
                     (await import('@/features/client/pages/client-page'))
                       .ClientTabEmpty,
                 },
-              })),
+              },
             ],
           },
           {

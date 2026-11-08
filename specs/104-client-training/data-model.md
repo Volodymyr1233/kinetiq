@@ -41,8 +41,7 @@ Label shown (spec FR-004): Locked when the state is Done and Locked is true; oth
 | Value | Notes |
 |---|---|
 | Client session values | as above |
-| Started, finished | instants; minutes as spec 98 counts them, only when finished |
-| Locks at | start + 24 hours |
+| Started, finished | instants; minutes as spec 98 counts them, only when finished; the log locks 24 hours after the start |
 | Entries | in order: exercise name and measure from the trainer's library, targets copied at the start (sets, repetitions or seconds, load, RPE) |
-| Set logs | entry position, set number, logged load, repetitions or seconds, RPE |
+| Planned sets | each set of an entry, with its log when there is one: logged load, repetitions or seconds, RPE |
 | Note | the client's note, when there is one (#261) |

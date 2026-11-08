@@ -739,6 +739,31 @@
       "noAnswers": "No quiz answers yet.",
       "loading": "Loading the overview"
     },
+    "logs": {
+      "sessions": "Sessions",
+      "row": "{{date}} · RPE {{value}}",
+      "rowNoSets": "{{date}} · No sets",
+      "title": "{{name}} · {{date}}",
+      "figures": "{{logged}} of {{planned}} sets",
+      "figuresRpe": "{{logged}} of {{planned}} sets · average RPE {{value}}",
+      "figuresFinished": "{{logged}} of {{planned}} sets · {{minutes}} min · average RPE {{value}}",
+      "columns": {
+        "exercise": "Exercise",
+        "set": "Set",
+        "target": "Target",
+        "reps": "Reps",
+        "repsOrSeconds": "Reps / s",
+        "rpe": "RPE"
+      },
+      "target": "{{amount}} × {{load}}",
+      "seconds": "{{value}} s",
+      "noLoad": "No load",
+      "notLogged": "Not logged",
+      "notStarted": "Not started",
+      "changeable": "{{name}} can still change these logs until {{time}}.",
+      "loading": "Loading the logs",
+      "loadingSession": "Loading the session"
+    },
     "locked": {
       "title": "Session locked",
       "text": "Sets can be logged and changed for 24 hours after a session starts."

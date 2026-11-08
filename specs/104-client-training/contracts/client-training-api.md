@@ -42,15 +42,12 @@ The item every list below holds.
 
 | Field | Type | Notes |
 |---|---|---|
-| `startedAt` | instant | |
+| `startedAt` | instant | the log locks 24 hours later (spec 101); the tab works the time out from it |
 | `finishedAt` | instant | left out until finished |
 | `minutes` | integer | left out until finished; as spec 98 counts them |
-| `locksAt` | instant | `startedAt` + 24 hours |
-| `entries` | object[] | in order: `exerciseName`, `measure` (`REPS`, `SECONDS`), `sets`, `amount`, `loadKg` (left out without a load), `rpe` |
-| `setLogs` | object[] | `entryPosition`, `setNumber`, `loadKg` (left out without a load), `amount`, `rpe` |
+| `entries` | object[] | in order, as the logger's session log answers them: `position`, `exerciseId`, `exerciseName` (in the request's language), `measure` (`REPS`, `SECONDS`), `restSeconds`, `sets` |
+| `entries[].sets` | object[] | each planned set: `number`, `target` (`loadKg` left out without a load, `amount`, `rpe`), and `log` (`id`, `loadKg` left out without a load, `amount`, `rpe`, `loggedAt`), left out until the set is logged |
 | `note` | string | #261; left out when there is none |
-
-The exact shape of #107 is fixed when #107 is planned in detail; this table records what the spec needs.
 
 ## Errors
 

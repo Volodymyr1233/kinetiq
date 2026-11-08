@@ -596,6 +596,38 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{id}/session-logs": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sessions"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{id}/session-logs/{sessionLogId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["sessionLog"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients/{id}/quiz-answers": {
         parameters: {
             query?: never;
@@ -1145,6 +1177,50 @@ export interface components {
             /** @enum {string} */
             planState: "NO_QUIZ" | "PLAN_DRAFTING" | "PLAN_TO_REVIEW" | "DRAFT" | "DRAFT_FAILED" | "PUBLISHED";
         };
+        ClientSessionResponse: {
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            name: string;
+            /** @enum {string} */
+            state?: "DONE" | "IN_PROGRESS" | "MISSED" | "TODAY" | "PLANNED";
+            locked: boolean;
+            /** Format: int32 */
+            setsLogged: number;
+            /** Format: int32 */
+            setsPlanned: number;
+            averageRpe?: number;
+            /** Format: uuid */
+            sessionLogId?: string;
+        };
+        ClientSessionsResponse: {
+            sessions: components["schemas"]["ClientSessionResponse"][];
+        };
+        ClientSessionLogResponse: {
+            /** Format: uuid */
+            sessionLogId: string;
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            name: string;
+            /** @enum {string} */
+            state: "DONE" | "IN_PROGRESS" | "MISSED" | "TODAY" | "PLANNED";
+            locked: boolean;
+            /** Format: int32 */
+            setsLogged: number;
+            /** Format: int32 */
+            setsPlanned: number;
+            averageRpe?: number;
+            /** Format: date-time */
+            startedAt: string;
+            /** Format: date-time */
+            finishedAt?: string;
+            /** Format: int32 */
+            minutes?: number;
+            entries: components["schemas"]["LoggedEntryResponse"][];
+        };
         QuizAnswersResponse: {
             /** @enum {string} */
             goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
@@ -1170,23 +1246,6 @@ export interface components {
             week?: components["schemas"]["OverviewWeekResponse"];
             recentSessions: components["schemas"]["ClientSessionResponse"][];
             quizAnswers?: components["schemas"]["OverviewQuizAnswersResponse"];
-        };
-        ClientSessionResponse: {
-            /** Format: date */
-            date: string;
-            /** @enum {string} */
-            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
-            name: string;
-            /** @enum {string} */
-            state?: "DONE" | "IN_PROGRESS" | "MISSED" | "TODAY" | "PLANNED";
-            locked: boolean;
-            /** Format: int32 */
-            setsLogged: number;
-            /** Format: int32 */
-            setsPlanned: number;
-            averageRpe?: number;
-            /** Format: uuid */
-            sessionLogId?: string;
         };
         OverviewQuizAnswersResponse: {
             /** @enum {string} */
@@ -2213,6 +2272,51 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClientResponse"];
+                };
+            };
+        };
+    };
+    sessions: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientSessionsResponse"];
+                };
+            };
+        };
+    };
+    sessionLog: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+                sessionLogId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientSessionLogResponse"];
                 };
             };
         };

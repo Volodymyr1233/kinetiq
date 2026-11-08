@@ -72,9 +72,11 @@ Decisions taken while planning. Each: what, why, what else was considered.
 
 ## R10. Logs API (#107) and the note (#261)
 
-**Decision**: `GET /api/v1/clients/{id}/session-logs` answers the list of R5 in full; `GET /api/v1/clients/{id}/session-logs/{sessionLogId}` answers one session log with its entries, each entry's exercise name and measure from the trainer's library (`ListExercisesUseCase.library(trainer)`), its set logs, its state, `locked` and `locksAt`, and the summary figures. #261 adds the note to that answer. A Missed session never started has no session log and is shown from its list item alone.
+**Decision**: `GET /api/v1/clients/{id}/session-logs` answers the list of R5 in full; `GET /api/v1/clients/{id}/session-logs/{sessionLogId}` answers one session log: its client session (state, `locked`, sets logged and planned, average RPE), `startedAt`, `finishedAt` and `minutes` once finished, and its entries in the logger's shape (`SessionLogResponse.LoggedEntryResponse`): each entry's exercise name and measure from the trainer's library (`ListExercisesUseCase.library(trainer)`), and each planned set with its target and, once logged, its log. #261 adds the note to that answer. A Missed session never started has no session log and is shown from its list item alone. The minutes come from `SessionLog.minutes()`, which the session summary of #99 uses as well. The time the log locks is not in the answer: the tab works it out from `startedAt` with `locksAt` of `lib/edit-window.ts`, as the client's locked logger does (spec 101), while the server decides `locked`.
 
-**Why**: The list answers every item at once (at most 96); one log's sets are read when the trainer opens it. The logger already takes names and measures from the library for the same entries (`StartedSession`).
+**Why**: The list answers every item at once (at most 96); one log's sets are read when the trainer opens it. The logger already takes names and measures from the library for the same entries (`StartedSession`), and its entry records, private to this feature, already pair each planned set with its log, which the tab's table shows row by row with "Not logged" for a set without one. One `minutes()` keeps the trainer's minutes equal to the client's summary, as R7 does for the sets and the RPE.
+
+**Rejected**: A flat list of set logs beside the entries (the tab would match them to planned sets itself); `locksAt` in the answer (spec 101 kept the lock time out of the API, and the tab already has the same rule).
 
 ## R11. Seeing the labels locally
 
@@ -98,3 +100,19 @@ Decisions taken while planning. Each: what, why, what else was considered.
 **Why**: Task #106 is done when the tab "Matches the mockup at 1280px"; the cards of other stories are left out, so their places close up. A Missed day needs a look the board does not give, and red is what the Missed badge already uses.
 
 **Rejected**: Leaving the readiness chart's place empty until story #122 (an empty half of the first row); the longer figures of the Logs tab in the overview's rows (they do not fit the board's one-line rows).
+
+## R13. The Logs tab against the board (#107)
+
+**Decision**: The tab follows the board "Trainer · client logs": the list of sessions in a card on the left and the chosen session in a card on the right, with these choices and differences:
+
+- **List**: each row is a button with the name, "Mon 5 Oct · RPE 8.2" (or "No sets" when nothing was logged) and the badge (Done, Locked, In progress, Missed); the chosen row has the muted background and a line on its left edge, as on the board, and is marked as the current one for assistive technology. The newest session is chosen when the tab opens (spec, Assumptions).
+- **Chosen session**: its card stays in view while a long list scrolls; the title "Upper body · Mon 5 Oct" and the line "15 of 15 sets · 48 min · average RPE 8.2", the minutes only once finished and the RPE only once a set is logged.
+- **Table**: one table at trainer density, as on the board, with the columns Exercise, Set, Target, the trainer's unit ("kg" or "lb", the board's "KG"), Reps and RPE. The exercise's name is on its first set's row only. The target reads "8 × 50" (repetitions or seconds × load), or the amount alone without a load. The board shows only repetitions: an exercise measured in seconds shows its amounts as "45 s", and in a session that has one the column is "Reps / s". A planned set without a log shows "Not logged" across the logged columns.
+- **RPE**: the logged RPE's number with a dot in the design system's RPE colour, by the set's target: below it easy, at it on target, above it hard. The number carries the value, so the colour is never the only cue.
+- **Still changeable**: "{client} can still change these logs until {time}." under the table while the log is not locked, as on the board.
+- **Missed, never started**: the title, and "Not started" instead of the table.
+- **Not built**: the "Synced" badge (#114), the message icon on each set (#172) and "Adjusted" (#117, #122) (spec, Departures).
+
+**Why**: The board is the screen the tab answers to (spec FR-011); a table per exercise, as first planned, would repeat the header for every exercise where the board has one. A session mixing repetitions and seconds must not show seconds under "Reps" (spec, Edge Cases).
+
+**Rejected**: A table per exercise (unlike the board); the column "Load" (the board names the unit).
