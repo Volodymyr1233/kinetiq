@@ -200,6 +200,17 @@ export const createRoutes = (): RouteObject[] => [
         (await import('@/features/sessionlog/pages/logger-page')).LoggerPage,
     },
   },
+  // an earlier session, opened from its card on the Plan tab
+  {
+    path: '/app/session/:id',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/features/sessionlog/pages/logger-page')).LoggerPage,
+    },
+  },
   {
     path: '/app/summary/:id',
     loader: requireRole('CLIENT'),

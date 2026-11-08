@@ -187,6 +187,17 @@ class SessionStateServiceTest {
     }
 
     @Test
+    void shouldGiveWhenAStartedSessionStarted_andNothingForOneNeverStarted() {
+        Instant start = Instant.parse("2026-11-02T08:00:00Z");
+        headers.add(header(WEEK_3_MONDAY, start, Instant.parse("2026-11-02T09:00:00Z")));
+
+        SessionStates states = states(null);
+
+        assertThat(states.sessions().getFirst().startedAt()).contains(start);
+        assertThat(states.sessions().get(2).startedAt()).isEmpty();
+    }
+
+    @Test
     void shouldGiveToday_whenTodaysSessionWasNotStarted() {
         now = Instant.parse("2026-11-07T10:00:00Z");
 

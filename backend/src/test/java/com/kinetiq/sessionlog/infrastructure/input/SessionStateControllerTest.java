@@ -16,6 +16,7 @@ import com.kinetiq.sessionlog.domain.input.ViewSessionStatesUseCase;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SessionState;
 import java.time.DayOfWeek;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -64,13 +65,19 @@ class SessionStateControllerTest {
                                         DayOfWeek.MONDAY,
                                         LocalDate.parse("2026-11-02"),
                                         Optional.of(SessionState.DONE),
-                                        Optional.of(new SessionLogId(LOG_ID))),
+                                        Optional.of(new SessionLogId(LOG_ID)),
+                                        Optional.of(Instant.parse("2026-11-02T08:00:00Z"))),
                                 new SessionStates.Entry(
-                                        DayOfWeek.TUESDAY, LocalDate.parse("2026-11-03"), Optional.empty(), Optional.empty()),
+                                        DayOfWeek.TUESDAY,
+                                        LocalDate.parse("2026-11-03"),
+                                        Optional.empty(),
+                                        Optional.empty(),
+                                        Optional.empty()),
                                 new SessionStates.Entry(
                                         DayOfWeek.WEDNESDAY,
                                         LocalDate.parse("2026-11-04"),
                                         Optional.of(SessionState.TODAY),
+                                        Optional.empty(),
                                         Optional.empty()))));
 
         var result = mvc.get().uri(STATES).param("week", "3").with(CLIENT).exchange();
@@ -81,10 +88,13 @@ class SessionStateControllerTest {
         assertThat(result).bodyJson().extractingPath("$.sessions[0].date").isEqualTo("2026-11-02");
         assertThat(result).bodyJson().extractingPath("$.sessions[0].state").isEqualTo("DONE");
         assertThat(result).bodyJson().extractingPath("$.sessions[0].sessionLogId").isEqualTo(LOG_ID.toString());
+        assertThat(result).bodyJson().extractingPath("$.sessions[0].startedAt").isEqualTo("2026-11-02T08:00:00Z");
         assertThat(result).bodyJson().doesNotHavePath("$.sessions[1].state");
         assertThat(result).bodyJson().doesNotHavePath("$.sessions[1].sessionLogId");
+        assertThat(result).bodyJson().doesNotHavePath("$.sessions[1].startedAt");
         assertThat(result).bodyJson().extractingPath("$.sessions[2].state").isEqualTo("TODAY");
         assertThat(result).bodyJson().doesNotHavePath("$.sessions[2].sessionLogId");
+        assertThat(result).bodyJson().doesNotHavePath("$.sessions[2].startedAt");
     }
 
     @Test

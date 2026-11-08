@@ -174,6 +174,31 @@ class SessionLogControllerTest {
     }
 
     @Test
+    void shouldAnswerTheClientsSessionOfAnyDay_inTheShapeOfAStartedOne() {
+        when(sessions.find(CLIENT_ID, new SessionLogId(SESSION_ID))).thenReturn(started(false, true));
+
+        var result = mvc.get()
+                .uri(SESSIONS + "/" + SESSION_ID)
+                .header("Accept-Language", "pl")
+                .with(CLIENT)
+                .exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.id").isEqualTo(SESSION_ID.toString());
+        assertThat(result).bodyJson().extractingPath("$.entries[0].exerciseName").isEqualTo("Przysiad ze sztangą");
+        assertThat(result).bodyJson().extractingPath("$.entries[0].sets[0].log.id").isEqualTo(SET_ID.toString());
+    }
+
+    @Test
+    void shouldRefuseToFindASession_thatIsNotTheClientsOrNotThere_aTrainerAndAVisitor() {
+        String session = SESSIONS + "/" + SESSION_ID;
+        doThrow(new SessionLogNotFoundException()).when(sessions).find(CLIENT_ID, new SessionLogId(SESSION_ID));
+        assertRefused(mvc.get().uri(session).with(CLIENT).exchange(), HttpStatus.NOT_FOUND, "session-log.not-found");
+        assertRefused(mvc.get().uri(session).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(session).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+    }
+
+    @Test
     void shouldNameExercisesInTheLanguageOfTheRequest() {
         when(sessions.start(CLIENT_ID)).thenReturn(started(true, false));
 

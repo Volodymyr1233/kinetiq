@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  type QueryClient,
+} from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
@@ -7,19 +12,40 @@ export type SessionLog = components['schemas']['SessionLogResponse']
 export type LoggedEntry = SessionLog['entries'][number]
 export type PlannedSet = LoggedEntry['sets'][number]
 
-export const sessionLogKey = (language: string) => ['session-log', language]
+const SESSION_LOGS = ['session-log']
 
 /**
- * Today's session, started if it was not yet; opening the logger again returns the same one, so this is a query. A
- * rest day or no plan fails with its code, which the page turns into a way back to Today.
+ * Writes a change into every cached copy of the session: today's logger and an earlier session opened by its id can
+ * hold the same one.
  */
-export function useSession() {
+export function updateSessionLog(
+  queryClient: QueryClient,
+  sessionId: string,
+  update: (session: SessionLog) => SessionLog,
+) {
+  queryClient.setQueriesData<SessionLog>(
+    { queryKey: SESSION_LOGS },
+    (session) => (session?.id === sessionId ? update(session) : session),
+  )
+}
+
+/**
+ * Today's session, started if it was not yet, or the client's session of `id`, of any day, without starting anything.
+ * Opening the logger again returns the same one, so this is a query. A rest day or no plan fails with its code, and so
+ * does an id that is not the client's, which the page turns into a way back.
+ */
+export function useSession(id?: string) {
   const { i18n } = useTranslation()
   return useQuery({
     // the backend names exercises in the UI language, so the language is part of the key
-    queryKey: sessionLogKey(i18n.language),
+    queryKey: [...SESSION_LOGS, i18n.language, id ?? 'today'],
     queryFn: async () => {
-      const { data, error } = await api.POST('/api/v1/session-logs')
+      const { data, error } =
+        id === undefined
+          ? await api.POST('/api/v1/session-logs')
+          : await api.GET('/api/v1/session-logs/{id}', {
+              params: { path: { id } },
+            })
       // openapi-fetch returns errors instead of throwing; throw the problem detail so the query fails with its code
       if (error !== undefined) throw error
       return data
@@ -64,7 +90,6 @@ function withLoggedSet(session: SessionLog, set: LoggedSet): SessionLog {
 /** Logs a set, or changes it when the id was logged already; sending the same id again stores the set once. */
 export function useLogSet(sessionId: string) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
   return useMutation({
     mutationFn: async ({
       setLogId,
@@ -81,9 +106,8 @@ export function useLogSet(sessionId: string) {
       return data
     },
     onSuccess: (set) => {
-      queryClient.setQueryData<SessionLog>(
-        sessionLogKey(i18n.language),
-        (session) => session && withLoggedSet(session, set),
+      updateSessionLog(queryClient, sessionId, (session) =>
+        withLoggedSet(session, set),
       )
       // a finished session's summary follows its sets
       void queryClient.invalidateQueries({ queryKey: ['session-summary'] })

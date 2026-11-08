@@ -1,7 +1,7 @@
 import { ArrowLeftIcon, CircleAlertIcon, LockIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate } from 'react-router'
+import { Link, Navigate, useLocation, useParams } from 'react-router'
 import {
   Alert,
   AlertAction,
@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import { locksAt as lockMoment } from '@/lib/edit-window'
 import { useSession, type SessionLog } from '../api/session-log'
 import { FinishFooter } from '../components/finish-footer'
 import { RestTimer } from '../components/rest-timer'
@@ -19,13 +20,25 @@ import { SetRow } from '../components/set-row'
 // a rest day, a finished plan and no plan leave nothing to log: the client goes back to Today
 const NOTHING_TO_LOG = ['session-log.no-session-today', 'plan.not-found']
 
-// the backend's rule (session-log.locked); the screen follows it, and the server still decides
-const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000
+// the Plan card passes its address, week included, so going back returns to that week
+function planAddress(state: unknown): string | undefined {
+  const from =
+    typeof state === 'object' && state !== null && 'from' in state
+      ? state.from
+      : undefined
+  return typeof from === 'string' && from.startsWith('/app/plan')
+    ? from
+    : undefined
+}
 
-/** The session logger: today's session with one row for each planned set. */
+/**
+ * The session logger: today's session, or the client's session of the id in the address, with one row for each planned
+ * set.
+ */
 export function LoggerPage() {
   const { t } = useTranslation()
-  const query = useSession()
+  const { id } = useParams()
+  const query = useSession(id)
   const session = query.data
 
   if (session === undefined) {
@@ -46,6 +59,13 @@ export function LoggerPage() {
     }
     if (NOTHING_TO_LOG.includes(problemCode(query.error) ?? '')) {
       return <Navigate replace to="/app/today" />
+    }
+    // an earlier session that is not the client's, or no longer there: back to where such sessions are listed
+    if (
+      id !== undefined &&
+      problemCode(query.error) === 'session-log.not-found'
+    ) {
+      return <Navigate replace to="/app/plan" />
     }
     return (
       <main className="mx-auto flex min-h-svh max-w-[640px] flex-col justify-center gap-4 px-4">
@@ -68,11 +88,12 @@ export function LoggerPage() {
 
 function Session({ session }: { session: SessionLog }) {
   const { t, i18n } = useTranslation()
+  const plan = planAddress(useLocation().state)
   // one entry panel is open at a time
   const [openSet, setOpenSet] = useState<string | null>(null)
   // when the rest after the last logged set ends; not kept, so a reload shows none
   const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
-  const locksAt = Date.parse(session.startedAt) + EDIT_WINDOW_MS
+  const locksAt = lockMoment(session.startedAt)
   const [lockedOnArrival] = useState(() => Date.now() >= locksAt)
   // locked while the page is open, by its timer or by the server; only this is announced
   const [lockedHere, setLockedHere] = useState(false)
@@ -96,9 +117,9 @@ function Session({ session }: { session: SessionLog }) {
   return (
     <main className="mx-auto flex min-h-svh max-w-[640px] flex-col gap-4 px-4 pt-4 pb-0">
       <Button variant="ghost" size="touch" asChild className="self-start px-2">
-        <Link to="/app/today">
+        <Link to={plan ?? '/app/today'}>
           <ArrowLeftIcon aria-hidden />
-          {t('sessionlog.back')}
+          {t(plan === undefined ? 'sessionlog.back' : 'sessionlog.backToPlan')}
         </Link>
       </Button>
       <header className="flex flex-col gap-1">

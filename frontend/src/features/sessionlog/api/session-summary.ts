@@ -1,8 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
-import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
-import { sessionLogKey, type SessionLog } from './session-log'
+import { updateSessionLog } from './session-log'
 
 export type SessionSummary = components['schemas']['SessionSummaryResponse']
 
@@ -14,7 +13,6 @@ const SESSION_STATES = ['session-states']
 /** Finishes the session; the answer is its summary, which the done screen shows without asking again. */
 export function useFinishSession(sessionId: string) {
   const queryClient = useQueryClient()
-  const { i18n } = useTranslation()
   return useMutation({
     mutationFn: async () => {
       const { data, error } = await api.POST(
@@ -27,11 +25,10 @@ export function useFinishSession(sessionId: string) {
     onSuccess: (summary) => {
       queryClient.setQueryData(summaryKey(sessionId), summary)
       // the logger offers "View summary" from now on
-      queryClient.setQueryData<SessionLog>(
-        sessionLogKey(i18n.language),
-        (session) =>
-          session && { ...session, finishedAt: new Date().toISOString() },
-      )
+      updateSessionLog(queryClient, sessionId, (session) => ({
+        ...session,
+        finishedAt: new Date().toISOString(),
+      }))
       void queryClient.invalidateQueries({ queryKey: SESSION_STATES })
     },
   })

@@ -69,6 +69,11 @@ public class SessionLogService implements LogSessionUseCase {
     }
 
     @Override
+    public StartedSession find(AccountId client, SessionLogId id) {
+        return new StartedSession(ownLog(client, id), library(client), false);
+    }
+
+    @Override
     public SetLog logSet(LogSetCommand command) {
         SessionLog log = logs.findByIdAndClient(command.session(), command.client())
                 .orElseThrow(SessionLogNotFoundException::new);

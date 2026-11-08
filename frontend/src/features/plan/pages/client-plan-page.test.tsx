@@ -90,7 +90,10 @@ function openPlan(
 ) {
   const requests = stubApi(reply)
   const router = createMemoryRouter(
-    [{ path: '/app/plan', Component: ClientPlanPage }],
+    [
+      { path: '/app/plan', Component: ClientPlanPage },
+      { path: '/app/session/:id', Component: () => <h1>Logger</h1> },
+    ],
     { initialEntries: [address] },
   )
   render(
@@ -341,6 +344,87 @@ describe('ClientPlanPage', () => {
       'href',
       `/app/summary/${LOG}`,
     )
+  })
+
+  describe('the way to a past session', () => {
+    const HOUR = 60 * 60 * 1000
+
+    // week 6 with Monday's session started at `startedAt` and finished, and Thursday's missed without a log
+    const withMondaysLog =
+      (startedAt: Date, today = '2026-11-06'): Reply =>
+      (request) =>
+        isStates(request)
+          ? json({
+              today,
+              sessions: [
+                {
+                  day: 'MONDAY',
+                  date: '2026-11-02',
+                  state: 'DONE',
+                  sessionLogId: LOG,
+                  startedAt: startedAt.toISOString(),
+                },
+                { day: 'THURSDAY', date: '2026-11-05', state: 'MISSED' },
+              ],
+            })
+          : json(planAt(weekAsked(request)))
+
+    it('offers "Edit log" within its 24 hours, beside the summary, and takes the week along for the way back', async () => {
+      const { router } = openPlan(
+        withMondaysLog(new Date(Date.now() - 2 * HOUR)),
+        '/app/plan?week=6',
+      )
+      const user = userEvent.setup()
+
+      await user.click(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      )
+
+      expect(screen.getByRole('link', { name: 'View summary' })).toBeVisible()
+      await user.click(screen.getByRole('link', { name: 'Edit log' }))
+      expect(router.state.location.pathname).toBe(`/app/session/${LOG}`)
+      expect(router.state.location.state).toEqual({ from: '/app/plan?week=6' })
+    })
+
+    it('offers "View log" once its 24 hours have passed', async () => {
+      openPlan(withMondaysLog(new Date(Date.now() - 25 * HOUR)))
+      const user = userEvent.setup()
+
+      await user.click(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      )
+
+      expect(screen.getByRole('link', { name: 'View log' })).toHaveAttribute(
+        'href',
+        `/app/session/${LOG}`,
+      )
+      expect(screen.queryByRole('link', { name: 'Edit log' })).toBeNull()
+    })
+
+    it('offers no log for a past day without one', async () => {
+      openPlan(withMondaysLog(new Date()))
+      const user = userEvent.setup()
+
+      await user.click(await screen.findByRole('button', { name: /Core/ }))
+
+      expect(
+        screen.queryByRole('link', { name: /Edit log|View log/ }),
+      ).toBeNull()
+    })
+
+    it("offers no log for today's session, which Today opens", async () => {
+      openPlan(withMondaysLog(new Date(), '2026-11-02'))
+      const user = userEvent.setup()
+
+      await user.click(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      )
+
+      expect(screen.getByRole('link', { name: 'View summary' })).toBeVisible()
+      expect(
+        screen.queryByRole('link', { name: /Edit log|View log/ }),
+      ).toBeNull()
+    })
   })
 
   it('asks for the states of the week it shows', async () => {

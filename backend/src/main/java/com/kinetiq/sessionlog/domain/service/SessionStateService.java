@@ -55,7 +55,8 @@ public class SessionStateService implements ViewSessionStatesUseCase {
                                     session.day(),
                                     date,
                                     SessionState.of(date, today, publishedOn, log, now),
-                                    log.map(SessionLogHeader::id));
+                                    log.map(SessionLogHeader::id),
+                                    log.map(SessionLogHeader::startedAt));
                         })
                         .toList());
     }
