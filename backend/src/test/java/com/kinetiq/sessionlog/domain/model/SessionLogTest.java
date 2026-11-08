@@ -6,7 +6,9 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.common.domain.exception.DomainException;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
 import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
+import com.kinetiq.sessionlog.domain.exception.NoteInvalidException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
@@ -282,6 +284,75 @@ class SessionLogTest {
             SetLog second = log.logSet(newId(), 0, 2, asPlanned(), LATER.plusSeconds(60));
 
             assertThat(log.getSetLogs()).contains(second).hasSize(2);
+        }
+    }
+
+    @Nested
+    class Note {
+
+        private SessionLog finished() {
+            SessionLog log = started();
+            log.logSet(newId(), 0, 1, asPlanned(), NOW);
+            log.finish(LATER);
+            return log;
+        }
+
+        @Test
+        void shouldKeepTheTrimmedNote() {
+            SessionLog log = finished();
+
+            log.writeNote("  Knee felt fine \u00a0", LATER);
+
+            assertThat(log.getNote()).contains("Knee felt fine");
+        }
+
+        @Test
+        void shouldClearTheNote_whenTheTextIsEmptyOrBlank() {
+            SessionLog log = finished();
+            log.writeNote("Tired", LATER);
+
+            log.writeNote("   ", LATER);
+
+            assertThat(log.getNote()).isEmpty();
+        }
+
+        @Test
+        void shouldAccept500Characters_andRefuse501() {
+            SessionLog log = finished();
+
+            log.writeNote("a".repeat(500), LATER);
+            assertThat(log.getNote()).hasValueSatisfying(note -> assertThat(note).hasSize(500));
+
+            assertThatThrownBy(() -> log.writeNote("a".repeat(501), LATER))
+                    .isInstanceOf(NoteInvalidException.class)
+                    .extracting(error -> ((DomainException) error).code())
+                    .isEqualTo("session-log.note-invalid");
+            assertThat(log.getNote()).hasValueSatisfying(note -> assertThat(note).hasSize(500));
+        }
+
+        @Test
+        void shouldCountTheLimitAfterTrimming() {
+            SessionLog log = finished();
+
+            log.writeNote(" ".repeat(10) + "a".repeat(500), LATER);
+
+            assertThat(log.getNote()).hasValueSatisfying(note -> assertThat(note).hasSize(500));
+        }
+
+        @Test
+        void shouldRefuse_whenTheSessionIsNotFinished() {
+            SessionLog log = started();
+
+            assertThatThrownBy(() -> log.writeNote("Tired", LATER)).isInstanceOf(NotFinishedException.class);
+        }
+
+        @Test
+        void shouldRefuse_whenTheSessionIsLocked() {
+            SessionLog log = finished();
+
+            assertThatThrownBy(() -> log.writeNote("Tired", LOCKS_AT)).isInstanceOf(SessionLogLockedException.class);
+            log.writeNote("Tired", LOCKS_AT.minusNanos(1));
+            assertThat(log.getNote()).contains("Tired");
         }
     }
 

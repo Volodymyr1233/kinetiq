@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useAcknowledgePlan, useOwnPlan } from '../api/client-plan'
+import { useSessionStates } from '../api/session-states'
 import { WeekStrip } from '../components/week-strip'
 
 // a plan week is a whole number from 1; anything else in the address means the current week
@@ -21,7 +22,9 @@ const parseWeek = (text: string | null) =>
 export function ClientPlanPage() {
   const { t, i18n } = useTranslation()
   const [params, setParams] = useSearchParams()
-  const query = useOwnPlan(parseWeek(params.get('week')))
+  const askedWeek = parseWeek(params.get('week'))
+  const query = useOwnPlan(askedWeek)
+  const states = useSessionStates(askedWeek).data?.sessions
   const plan = query.data
   const acknowledge = useAcknowledgePlan()
   const acknowledged = useRef(false)
@@ -134,7 +137,15 @@ export function ClientPlanPage() {
               {t('plan.client.currentWeek')}
             </Button>
           )}
-          <WeekStrip week={week} sessions={plan.sessions} />
+          {states !== undefined && (
+            <p className="text-muted-foreground text-sm">
+              {t('plan.client.weekDone', {
+                done: states.filter((s) => s.state === 'DONE').length,
+                count: plan.sessions.length,
+              })}
+            </p>
+          )}
+          <WeekStrip week={week} sessions={plan.sessions} states={states} />
         </>
       )}
     </div>

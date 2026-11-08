@@ -59,6 +59,7 @@ class SessionLogRepositoryImpl implements SessionLogRepository {
             }
             syncSetLogs(log, entity);
             entity.setFinishedAt(log.getFinishedAt().orElse(null));
+            entity.setNote(log.getNote().orElse(null));
             return mapper.toDomain(jpa.saveAndFlush(entity));
         } catch (ObjectOptimisticLockingFailureException exception) {
             throw new SessionLogChangedException();

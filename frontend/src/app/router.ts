@@ -201,6 +201,16 @@ export const createRoutes = (): RouteObject[] => [
     },
   },
   {
+    path: '/app/summary/:id',
+    loader: requireRole('CLIENT'),
+    ErrorBoundary: AreaErrorPage,
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () =>
+        (await import('@/app/summary-route')).SessionSummaryRoute,
+    },
+  },
+  {
     path: '/app/plan-ready',
     loader: requireRole('CLIENT'),
     ErrorBoundary: AreaErrorPage,

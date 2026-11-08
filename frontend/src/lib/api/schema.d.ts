@@ -20,6 +20,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/session-logs/{id}/note": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["saveNote"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/exercises/{id}": {
         parameters: {
             query?: never;
@@ -642,6 +658,9 @@ export interface components {
             /** Format: date-time */
             loggedAt: string;
         };
+        SaveNoteRequest: {
+            text: string;
+        };
         UpdateExerciseRequest: {
             name: string;
             /** @enum {string} */
@@ -819,6 +838,8 @@ export interface components {
             name: string;
             /** Format: date */
             date: string;
+            /** Format: date-time */
+            startedAt: string;
             /** Format: int32 */
             setsLogged: number;
             /** Format: int32 */
@@ -827,6 +848,7 @@ export interface components {
             averageRpe: number;
             /** Format: int32 */
             minutes: number;
+            note?: string;
         };
         SubmitQuizRequest: {
             /** @enum {string} */
@@ -1107,6 +1129,30 @@ export interface operations {
                 content: {
                     "*/*": components["schemas"]["SetLogResponse"];
                 };
+            };
+        };
+    };
+    saveNote: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveNoteRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
             };
         };
     };

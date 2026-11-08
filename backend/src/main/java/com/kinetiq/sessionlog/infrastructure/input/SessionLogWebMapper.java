@@ -77,11 +77,13 @@ class SessionLogWebMapper {
                 log.getId().value(),
                 log.getName(),
                 log.getDate(),
+                log.getStartedAt(),
                 summary.setsLogged(),
                 summary.setsPlanned(),
                 summary.volumeKg().orElse(null),
                 summary.averageRpe(),
-                summary.minutes());
+                summary.minutes(),
+                log.getNote().orElse(null));
     }
 
     SessionStatesResponse toResponse(SessionStates states) {

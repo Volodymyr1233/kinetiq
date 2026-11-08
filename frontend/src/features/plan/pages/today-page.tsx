@@ -1,17 +1,21 @@
 import { CircleAlertIcon } from 'lucide-react'
+import { Link } from 'react-router'
 import { useId } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import { useSessionStates } from '../api/session-states'
 import { useToday } from '../api/today'
 import { EntryRow } from '../components/entry-row'
+import { SessionStateBadge } from '../components/session-state-badge'
 
 /** The client's Today tab: the session their plan has for today, a rest day, or the end of the plan. */
 export function TodayPage() {
   const { t, i18n } = useTranslation()
   const query = useToday()
+  const states = useSessionStates().data?.sessions
   const why = useId()
   const today = query.data
 
@@ -58,6 +62,9 @@ export function TodayPage() {
     timeZone: 'UTC',
   }).format(new Date(Date.UTC(year, month - 1, day)))
 
+  // the states are for the week, so today's is found by its date
+  const entry = states?.find((e) => e.date === today.date)
+
   return (
     <div className="flex flex-col gap-4 px-4">
       <p className="text-muted-foreground">{date}</p>
@@ -72,7 +79,10 @@ export function TodayPage() {
               id={`${why}-name`}
               className="font-heading px-4 pt-4 pb-3 text-lg font-semibold break-words"
             >
-              {today.session.name}
+              <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                {today.session.name}
+                <SessionStateBadge state={entry?.state} />
+              </span>
             </h2>
             <ol className="flex flex-col divide-y border-t">
               {today.session.entries.map((entry, index) => (
@@ -81,20 +91,33 @@ export function TodayPage() {
               ))}
             </ol>
           </section>
-          <div className="flex flex-col gap-2">
-            {/* the logger arrives with story #92; until then the action is shown and cannot be used */}
-            <Button
-              size="touch"
-              disabled
-              aria-describedby={why}
-              className="bg-brand text-brand-foreground hover:bg-brand/80"
-            >
-              {t('plan.today.start')}
-            </Button>
-            <p id={why} className="text-muted-foreground text-sm">
-              {t('plan.today.startSoon')}
-            </p>
-          </div>
+          {entry?.state === 'DONE' && entry.sessionLogId !== undefined ? (
+            <div className="flex flex-col gap-2">
+              <p className="text-muted-foreground text-sm">
+                {t('plan.today.done')}
+              </p>
+              <Button variant="outline" size="touch" asChild>
+                <Link to={`/app/summary/${entry.sessionLogId}`}>
+                  {t('plan.client.viewSummary')}
+                </Link>
+              </Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {/* the logger arrives with story #92; until then the action is shown and cannot be used */}
+              <Button
+                size="touch"
+                disabled
+                aria-describedby={why}
+                className="bg-brand text-brand-foreground hover:bg-brand/80"
+              >
+                {t('plan.today.start')}
+              </Button>
+              <p id={why} className="text-muted-foreground text-sm">
+                {t('plan.today.startSoon')}
+              </p>
+            </div>
+          )}
         </>
       )}
 

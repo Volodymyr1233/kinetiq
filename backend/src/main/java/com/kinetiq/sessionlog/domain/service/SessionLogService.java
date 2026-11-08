@@ -98,6 +98,13 @@ public class SessionLogService implements LogSessionUseCase {
         return view(ownLog(client, id), client);
     }
 
+    @Override
+    public void saveNote(AccountId client, SessionLogId id, String text) {
+        SessionLog log = ownLog(client, id);
+        log.writeNote(text, clock.instant());
+        logs.save(log);
+    }
+
     private SessionLog ownLog(AccountId client, SessionLogId id) {
         return logs.findByIdAndClient(id, client).orElseThrow(SessionLogNotFoundException::new);
     }

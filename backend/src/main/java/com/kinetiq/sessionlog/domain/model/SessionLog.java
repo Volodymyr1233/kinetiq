@@ -3,6 +3,8 @@ package com.kinetiq.sessionlog.domain.model;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.sessionlog.domain.exception.NoteInvalidException;
+import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
 import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import lombok.AccessLevel;
 import lombok.Getter;
 
@@ -24,6 +27,11 @@ import lombok.Getter;
 @Getter
 public class SessionLog {
 
+    public static final int NOTE_MAX_LENGTH = 500;
+
+    // also trims no-break and other Unicode spaces, as a session name does
+    private static final Pattern EDGE_SPACES = Pattern.compile("^[\\s\\p{Z}]+|[\\s\\p{Z}]+$");
+
     private final SessionLogId id;
     private final AccountId client;
     private final LocalDate date;
@@ -33,11 +41,14 @@ public class SessionLog {
     @Getter(AccessLevel.NONE)
     private Instant finishedAt;
 
+    @Getter(AccessLevel.NONE)
+    private String note;
+
     private final List<LoggedEntry> entries;
     private final List<SetLog> setLogs;
     private final long version;
 
-    /** Rebuilds a stored session log; {@code finishedAt} is {@code null} until the session is finished. */
+    /** Rebuilds a stored session log without a note. */
     public SessionLog(
             SessionLogId id,
             AccountId client,
@@ -48,12 +59,28 @@ public class SessionLog {
             List<LoggedEntry> entries,
             List<SetLog> setLogs,
             long version) {
+        this(id, client, date, name, startedAt, finishedAt, null, entries, setLogs, version);
+    }
+
+    /** Rebuilds a stored session log; {@code finishedAt} and {@code note} are {@code null} until they are set. */
+    public SessionLog(
+            SessionLogId id,
+            AccountId client,
+            LocalDate date,
+            String name,
+            Instant startedAt,
+            Instant finishedAt,
+            String note,
+            List<LoggedEntry> entries,
+            List<SetLog> setLogs,
+            long version) {
         this.id = Objects.requireNonNull(id);
         this.client = Objects.requireNonNull(client);
         this.date = Objects.requireNonNull(date);
         this.name = Objects.requireNonNull(name);
         this.startedAt = Objects.requireNonNull(startedAt);
         this.finishedAt = finishedAt;
+        this.note = note;
         this.entries = List.copyOf(entries);
         this.setLogs = new ArrayList<>(setLogs);
         this.version = version;
@@ -67,6 +94,11 @@ public class SessionLog {
 
     public Optional<Instant> getFinishedAt() {
         return Optional.ofNullable(finishedAt);
+    }
+
+    /** What the client wrote for their trainer; empty until they write one. */
+    public Optional<String> getNote() {
+        return Optional.ofNullable(note);
     }
 
     public List<SetLog> getSetLogs() {
@@ -109,6 +141,23 @@ public class SessionLog {
             throw new NothingLoggedException();
         }
         finishedAt = now;
+    }
+
+    /**
+     * Writes the note for the trainer, replacing the one before; empty text removes it. Only a finished session has a
+     * note ({@code NotFinishedException}), and only while it is open ({@code SessionLogLockedException}). The text is
+     * trimmed, and one over {@value #NOTE_MAX_LENGTH} characters is {@code NoteInvalidException}.
+     */
+    public void writeNote(String text, Instant now) {
+        if (finishedAt == null) {
+            throw new NotFinishedException();
+        }
+        requireOpen(now);
+        String trimmed = EDGE_SPACES.matcher(text).replaceAll("");
+        if (trimmed.length() > NOTE_MAX_LENGTH) {
+            throw new NoteInvalidException();
+        }
+        note = trimmed.isEmpty() ? null : trimmed;
     }
 
     /** The summary of this finished session, as its sets are now; {@code measures} gives each exercise its measure. */

@@ -31,4 +31,11 @@ public interface LogSessionUseCase {
      * {@code SessionLogNotFoundException}, and one not finished is {@code NotFinishedException}.
      */
     SessionSummaryView summary(AccountId client, SessionLogId id);
+
+    /**
+     * Saves the note the client wrote for their trainer on their own finished session; empty text removes it. A session
+     * that is not the client's is {@code SessionLogNotFoundException}, one not finished is {@code NotFinishedException},
+     * a locked one is {@code SessionLogLockedException}, and a note over 500 characters is {@code NoteInvalidException}.
+     */
+    void saveNote(AccountId client, SessionLogId id, String text);
 }

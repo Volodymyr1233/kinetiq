@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 // /api/v1/session-logs/** needs the role CLIENT; the session is the signed-in client's own, so no client id is taken
@@ -68,6 +69,19 @@ class SessionLogController {
     @GetMapping("/{id}/summary")
     SessionSummaryResponse summary(@PathVariable UUID id, Authentication authentication) {
         return mapper.toResponse(sessions.summary(signedIn(authentication), new SessionLogId(id)));
+    }
+
+    /**
+     * Saves the note for the trainer on the client's own finished session; empty text removes it. {@code 204} without a
+     * body. {@code 404} with {@code session-log.not-found} for a session that is not the client's, {@code 400} with
+     * {@code session-log.note-invalid} for a note over 500 characters, {@code 409} with {@code session-log.not-finished}
+     * while it is not finished, with {@code session-log.locked} from 24 hours after the start, and with
+     * {@code session-log.changed} when another request changed the session at the same moment.
+     */
+    @PutMapping("/{id}/note")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    void saveNote(@PathVariable UUID id, @Valid @RequestBody SaveNoteRequest request, Authentication authentication) {
+        sessions.saveNote(signedIn(authentication), new SessionLogId(id), request.text());
     }
 
     /**

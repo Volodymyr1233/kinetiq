@@ -61,7 +61,27 @@ const weekAsked = (request: Request) => {
   return week === null ? 6 : Number(week)
 }
 
-const servePlan: Reply = (request) => json(planAt(weekAsked(request)))
+const LOG = '00000000-0000-4000-a000-000000000001'
+
+// the states of week 6: Monday is done and Thursday is missed
+const STATES = {
+  today: '2026-11-06',
+  sessions: [
+    { day: 'MONDAY', date: '2026-11-02', state: 'DONE', sessionLogId: LOG },
+    { day: 'THURSDAY', date: '2026-11-05', state: 'MISSED' },
+  ],
+}
+
+const isStates = (request: Request) =>
+  new URL(request.url).pathname === '/api/v1/session-states'
+
+const servePlan: Reply = (request) =>
+  isStates(request)
+    ? json({ today: '2026-11-06', sessions: [] })
+    : json(planAt(weekAsked(request)))
+
+const servePlanWithStates: Reply = (request) =>
+  isStates(request) ? json(STATES) : json(planAt(weekAsked(request)))
 
 function openPlan(
   reply: Reply,
@@ -293,5 +313,56 @@ describe('ClientPlanPage', () => {
 
     expect(await screen.findByText('Week 6 of 12')).toBeInTheDocument()
     expect(acknowledgements(requests)).toHaveLength(0)
+  })
+
+  it('shows the state of each session as a word, on the right day', async () => {
+    openPlan(servePlanWithStates)
+
+    const days = await screen.findAllByRole('listitem')
+    expect(await within(days[0]).findByText('Done')).toBeInTheDocument()
+    expect(within(days[3]).getByText('Missed')).toBeInTheDocument()
+    expect(within(days[1]).queryByText(/Done|Missed|Today/)).toBeNull()
+  })
+
+  it('counts the sessions done in the week shown', async () => {
+    openPlan(servePlanWithStates)
+
+    expect(await screen.findByText('1 of 2 sessions done')).toBeInTheDocument()
+  })
+
+  it('offers the summary of a done session in its opened card', async () => {
+    openPlan(servePlanWithStates)
+    const user = userEvent.setup()
+
+    await user.click(await screen.findByRole('button', { name: /Upper body/ }))
+
+    expect(screen.getByRole('link', { name: 'View summary' })).toHaveAttribute(
+      'href',
+      `/app/summary/${LOG}`,
+    )
+  })
+
+  it('asks for the states of the week it shows', async () => {
+    const { requests } = openPlan(servePlanWithStates, '/app/plan?week=5')
+
+    await screen.findByText('Week 5 of 12')
+
+    expect(
+      requests
+        .filter(isStates)
+        .map((request) => new URL(request.url).searchParams.get('week')),
+    ).toEqual(['5'])
+  })
+
+  it('still shows the plan, without states, when they cannot be read', async () => {
+    openPlan((request) =>
+      isStates(request)
+        ? problem(500, { status: 500, code: 'internal.error' })
+        : json(planAt(weekAsked(request))),
+    )
+
+    expect(await screen.findByText('Week 6 of 12')).toBeInTheDocument()
+    expect(screen.queryByText(/sessions done/)).not.toBeInTheDocument()
+    expect(screen.getByText('Upper body')).toBeInTheDocument()
   })
 })

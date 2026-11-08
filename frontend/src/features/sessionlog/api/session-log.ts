@@ -80,10 +80,13 @@ export function useLogSet(sessionId: string) {
       if (error !== undefined) throw error
       return data
     },
-    onSuccess: (set) =>
+    onSuccess: (set) => {
       queryClient.setQueryData<SessionLog>(
         sessionLogKey(i18n.language),
         (session) => session && withLoggedSet(session, set),
-      ),
+      )
+      // a finished session's summary follows its sets
+      void queryClient.invalidateQueries({ queryKey: ['session-summary'] })
+    },
   })
 }

@@ -453,4 +453,32 @@ class SessionLogServiceTest {
             assertThat(view.summary().setsLogged()).isEqualTo(1);
         }
     }
+
+    @Nested
+    class SaveNote {
+
+        @Test
+        void shouldStoreTheNote_onTheClientsFinishedSession() {
+            SessionLogId session = service.start(CLIENT).log().getId();
+            service.logSet(command(CLIENT, session, newId(), 0, 1, 5, 8));
+            service.finish(CLIENT, session);
+
+            service.saveNote(CLIENT, session, "Felt strong");
+
+            assertThat(stored.get(session).getNote()).contains("Felt strong");
+        }
+
+        @Test
+        void shouldAnswerNotFoundAndStoreNothing_whenTheSessionIsAnotherClientsOrUnknown() {
+            SessionLogId session = service.start(CLIENT).log().getId();
+            service.logSet(command(CLIENT, session, newId(), 0, 1, 5, 8));
+            service.finish(CLIENT, session);
+
+            assertThatThrownBy(() -> service.saveNote(OTHER_CLIENT, session, "Hi"))
+                    .isInstanceOf(SessionLogNotFoundException.class);
+            assertThatThrownBy(() -> service.saveNote(CLIENT, SessionLogId.random(), "Hi"))
+                    .isInstanceOf(SessionLogNotFoundException.class);
+            assertThat(stored.get(session).getNote()).isEmpty();
+        }
+    }
 }
