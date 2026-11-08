@@ -121,6 +121,13 @@
     },
     "quiz": {
       "not-found": "Ten klient nie wypełnił jeszcze quizu."
+    },
+    "session-log": {
+      "locked": "Ta sesja jest zablokowana. Nie można jej już zmienić.",
+      "nothing-logged": "Zapisz co najmniej jedną serię, aby zakończyć.",
+      "not-finished": "Najpierw zakończ sesję.",
+      "changed": "Sesja zmieniła się w tym samym momencie. Spróbuj ponownie.",
+      "note-invalid": "Notatka może mieć do 500 znaków. Skróć ją i zapisz ponownie."
     }
   },
   "account": {
@@ -411,12 +418,24 @@
       "title": "Jak długo trenujesz regularnie?",
       "hint": "Licz okres treningów co najmniej dwa razy w tygodniu.",
       "options": {
-        "LESS_THAN_3_MONTHS": { "title": "Mniej niż 3 miesiące" },
-        "MONTHS_3_TO_6": { "title": "3–6 miesięcy" },
-        "MONTHS_6_TO_12": { "title": "6–12 miesięcy" },
-        "YEARS_1_TO_2": { "title": "1–2 lata" },
-        "YEARS_2_TO_5": { "title": "2–5 lat" },
-        "YEARS_5_PLUS": { "title": "Ponad 5 lat" }
+        "LESS_THAN_3_MONTHS": {
+          "title": "Mniej niż 3 miesiące"
+        },
+        "MONTHS_3_TO_6": {
+          "title": "3–6 miesięcy"
+        },
+        "MONTHS_6_TO_12": {
+          "title": "6–12 miesięcy"
+        },
+        "YEARS_1_TO_2": {
+          "title": "1–2 lata"
+        },
+        "YEARS_2_TO_5": {
+          "title": "2–5 lat"
+        },
+        "YEARS_5_PLUS": {
+          "title": "Ponad 5 lat"
+        }
       }
     },
     "level": {
@@ -518,19 +537,34 @@
       "title": "Sprawdź swoje odpowiedzi",
       "hint": "Twój pierwszy plan powstanie z tych 7 odpowiedzi. Trener sprawdza plan, zanim go zobaczysz.",
       "rows": {
-        "goal": { "label": "Cel", "change": "Zmień cel" },
+        "goal": {
+          "label": "Cel",
+          "change": "Zmień cel"
+        },
         "experience": {
           "label": "Staż treningowy",
           "change": "Zmień staż treningowy"
         },
-        "level": { "label": "Poziom", "change": "Zmień poziom" },
-        "about": { "label": "O Tobie", "change": "Zmień dane o sobie" },
+        "level": {
+          "label": "Poziom",
+          "change": "Zmień poziom"
+        },
+        "about": {
+          "label": "O Tobie",
+          "change": "Zmień dane o sobie"
+        },
         "likes": {
           "label": "Ulubione treningi",
           "change": "Zmień ulubione treningi"
         },
-        "days": { "label": "Dni w tygodniu", "change": "Zmień dni w tygodniu" },
-        "notes": { "label": "Notatki", "change": "Zmień notatki" }
+        "days": {
+          "label": "Dni w tygodniu",
+          "change": "Zmień dni w tygodniu"
+        },
+        "notes": {
+          "label": "Notatki",
+          "change": "Zmień notatki"
+        }
       },
       "change": "Zmień",
       "about_one": "{{count, number}} rok · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
@@ -741,6 +775,50 @@
       "label": "Odpoczynek",
       "over": "Koniec odpoczynku",
       "dismiss": "Zamknij odmierzanie odpoczynku"
+    },
+    "finish": {
+      "action": "Zakończ sesję",
+      "count_one": "Zapisano {{logged, number}} z {{count, number}} serii",
+      "count_few": "Zapisano {{logged, number}} z {{count, number}} serii",
+      "count_many": "Zapisano {{logged, number}} z {{count, number}} serii",
+      "count_other": "Zapisano {{logged, number}} z {{count, number}} serii",
+      "nothingLogged": "Zapisz co najmniej jedną serię, aby zakończyć.",
+      "viewSummary": "Zobacz podsumowanie",
+      "failed": "Nie udało się zakończyć sesji. Spróbuj ponownie.",
+      "confirm": {
+        "title": "Zakończyć mimo niezapisanych serii?",
+        "text_one": "Niezapisane serie: {{count, number}}. Możesz je jeszcze zapisać przez 24 godziny od rozpoczęcia sesji.",
+        "text_few": "Niezapisane serie: {{count, number}}. Możesz je jeszcze zapisać przez 24 godziny od rozpoczęcia sesji.",
+        "text_many": "Niezapisane serie: {{count, number}}. Możesz je jeszcze zapisać przez 24 godziny od rozpoczęcia sesji.",
+        "text_other": "Niezapisane serie: {{count, number}}. Możesz je jeszcze zapisać przez 24 godziny od rozpoczęcia sesji.",
+        "keep": "Zapisuj dalej"
+      }
+    },
+    "summary": {
+      "loading": "Wczytywanie podsumowania",
+      "done": "Zrobiona",
+      "title": "{{name}} zakończona",
+      "figures": "Wyniki sesji",
+      "sets": "Serie",
+      "setsValue": "{{logged, number}} z {{planned, number}}",
+      "volume": "Łączna objętość",
+      "volumeValue": "{{volume}} {{unit}}",
+      "rpe": "Średnie RPE",
+      "time": "Czas sesji",
+      "minutes_one": "{{count, number}} min",
+      "minutes_few": "{{count, number}} min",
+      "minutes_many": "{{count, number}} min",
+      "minutes_other": "{{count, number}} min",
+      "noteLabel": "Notatka dla: {{name}}",
+      "notePlaceholder": "Jak poszło?",
+      "noteHelp": "Opcjonalna. {{name}} zobaczy ją przy tej sesji.",
+      "noteCount": "{{length, number}} / {{max, number}}",
+      "noteSaved": "Notatka zapisana",
+      "noteLocked": "Ta sesja jest zablokowana. Notatki nie można już zmienić.",
+      "saveNote": "Zapisz notatkę",
+      "backToToday": "Wróć do dziś",
+      "message": "Napisz do: {{name}}",
+      "yourTrainer": "Twój trener"
     }
   },
   "plan": {
@@ -785,7 +863,8 @@
       "restDay": "Dzień odpoczynku",
       "restText": "Na dziś nic nie zaplanowano.",
       "start": "Rozpocznij sesję",
-      "startSoon": "Rozpoczęcie sesji będzie dostępne wkrótce."
+      "startSoon": "Rozpoczęcie sesji będzie dostępne wkrótce.",
+      "done": "Sesja zakończona"
     },
     "client": {
       "none": "Nie masz jeszcze planu.",
@@ -828,7 +907,12 @@
       "finished": {
         "title": "Trener przygotowuje Twój kolejny plan.",
         "text": "Twój plan na {{weeks, number}} tyg. dobiegł końca."
-      }
+      },
+      "weekDone_one": "Zrobione sesje: {{done, number}} z {{count, number}}",
+      "weekDone_few": "Zrobione sesje: {{done, number}} z {{count, number}}",
+      "weekDone_many": "Zrobione sesje: {{done, number}} z {{count, number}}",
+      "weekDone_other": "Zrobione sesje: {{done, number}} z {{count, number}}",
+      "viewSummary": "Zobacz podsumowanie"
     },
     "loading": "Wczytywanie planu",
     "retry": "Spróbuj ponownie",
@@ -956,6 +1040,13 @@
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Dodaj co najmniej 1 ćwiczenie do sesji {{session}}.",
       "load": "Zostaw obciążenie puste lub wpisz liczbę większą od 0, do {{max, number}} {{unit}}."
+    },
+    "state": {
+      "DONE": "Zrobiona",
+      "IN_PROGRESS": "W trakcie",
+      "MISSED": "Opuszczona",
+      "TODAY": "Dziś",
+      "PLANNED": "Zaplanowana"
     }
   },
   "messaging": {

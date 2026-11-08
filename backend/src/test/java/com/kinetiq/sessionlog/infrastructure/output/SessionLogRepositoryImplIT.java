@@ -227,6 +227,27 @@ class SessionLogRepositoryImplIT {
     }
 
     @Test
+    void shouldStoreTheNote_andClearIt() {
+        AccountId client = insertClient();
+        ExerciseId squat = insertExercise();
+        SessionLog log = start(client, DATE, List.of(new LoggedEntry(squat, 3, 5, new BigDecimal("100.0"), 8, 120)));
+        log.logSet(new SetLogId(UUID.randomUUID()), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+        log.finish(NOW.plusSeconds(60));
+        log.writeNote("Felt strong", NOW.plusSeconds(60));
+        repository.save(log);
+        flushAndClear();
+
+        SessionLog stored = repository.findByIdAndClient(log.getId(), client).orElseThrow();
+        assertThat(stored.getNote()).contains("Felt strong");
+
+        stored.writeNote("", NOW.plusSeconds(120));
+        repository.save(stored);
+        flushAndClear();
+
+        assertThat(repository.findByIdAndClient(log.getId(), client).orElseThrow().getNote()).isEmpty();
+    }
+
+    @Test
     void shouldRefuseAsChanged_whenSavedFromAStaleCopy() {
         AccountId client = insertClient();
         ExerciseId squat = insertExercise();

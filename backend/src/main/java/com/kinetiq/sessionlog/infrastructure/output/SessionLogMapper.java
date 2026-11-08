@@ -22,6 +22,7 @@ class SessionLogMapper {
                 entity.getSessionName(),
                 entity.getStartedAt(),
                 entity.getFinishedAt(),
+                entity.getNote(),
                 entity.getEntries().stream().map(this::toDomain).toList(),
                 entity.getSetLogs().stream().map(this::toDomain).toList(),
                 entity.getVersion());

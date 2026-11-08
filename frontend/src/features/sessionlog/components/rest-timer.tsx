@@ -29,7 +29,7 @@ export function RestTimer({
   const over = left === 0
 
   return (
-    <div className="bg-card text-card-foreground sticky bottom-4 flex items-center gap-3 rounded-xl border px-4 py-2 shadow-md">
+    <div className="bg-card text-card-foreground flex items-center gap-3 rounded-xl border px-4 py-2 shadow-md">
       <TimerIcon aria-hidden className="size-5 shrink-0" />
       <div className="flex min-w-0 flex-1 flex-col">
         <span className="text-muted-foreground text-xs">

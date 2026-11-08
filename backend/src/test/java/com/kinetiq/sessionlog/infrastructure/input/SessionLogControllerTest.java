@@ -21,6 +21,7 @@ import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
 import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
 import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
+import com.kinetiq.sessionlog.domain.exception.NoteInvalidException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogChangedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
@@ -307,6 +308,7 @@ class SessionLogControllerTest {
         assertThat(result).bodyJson().extractingPath("$.sessionLogId").isEqualTo(SESSION_ID.toString());
         assertThat(result).bodyJson().extractingPath("$.name").isEqualTo("Lower body");
         assertThat(result).bodyJson().extractingPath("$.date").isEqualTo("2026-11-07");
+        assertThat(result).bodyJson().extractingPath("$.startedAt").isEqualTo("2026-11-07T10:00:00Z");
         assertThat(result).bodyJson().extractingPath("$.setsLogged").isEqualTo(1);
         assertThat(result).bodyJson().extractingPath("$.setsPlanned").isEqualTo(2);
         assertThat(result).bodyJson().extractingPath("$.volumeKg").isEqualTo(1512.5);
@@ -373,5 +375,81 @@ class SessionLogControllerTest {
         var result = mvc.post().uri(SESSIONS).with(CLIENT).with(csrf()).exchange();
 
         assertThat(result).bodyJson().extractingPath("$.finishedAt").isEqualTo("2026-11-07T10:10:00Z");
+    }
+
+    private static final String NOTE = SESSIONS + "/" + SESSION_ID + "/note";
+
+    private MvcTestResult putNote(RequestPostProcessor who, String body) {
+        return mvc.put()
+                .uri(NOTE)
+                .with(who)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .exchange();
+    }
+
+    @Test
+    void shouldSaveTheNoteOfTheSignedInClient() {
+        var result = putNote(CLIENT, "{\"text\":\"Felt strong\"}");
+
+        assertThat(result).hasStatus(HttpStatus.NO_CONTENT);
+        verify(sessions).saveNote(CLIENT_ID, new SessionLogId(SESSION_ID), "Felt strong");
+    }
+
+    @Test
+    void shouldAnswerTheNoteInTheSummary() {
+        SessionLog log = started(false, true).log();
+        SessionLog withNote = new SessionLog(
+                log.getId(), CLIENT_ID, log.getDate(), log.getName(), NOW, NOW.plusSeconds(60), "Felt strong",
+                log.getEntries(), log.getSetLogs(), 0);
+        when(sessions.summary(CLIENT_ID, new SessionLogId(SESSION_ID)))
+                .thenReturn(new SessionSummaryView(
+                        withNote, new SessionSummary(1, 2, Optional.empty(), new BigDecimal("8.0"), 3)));
+
+        var result = mvc.get().uri(SUMMARY).with(CLIENT).exchange();
+
+        assertThat(result).bodyJson().extractingPath("$.note").isEqualTo("Felt strong");
+    }
+
+    @Test
+    void shouldMapTheRefusalsOfTheNote() {
+        doThrow(new NoteInvalidException()).when(sessions).saveNote(any(), any(), any());
+        assertRefused(putNote(CLIENT, "{\"text\":\"x\"}"), HttpStatus.BAD_REQUEST, "session-log.note-invalid");
+
+        doThrow(new SessionLogNotFoundException()).when(sessions).saveNote(any(), any(), any());
+        assertRefused(putNote(CLIENT, "{\"text\":\"x\"}"), HttpStatus.NOT_FOUND, "session-log.not-found");
+
+        doThrow(new NotFinishedException()).when(sessions).saveNote(any(), any(), any());
+        assertRefused(putNote(CLIENT, "{\"text\":\"x\"}"), HttpStatus.CONFLICT, "session-log.not-finished");
+
+        doThrow(new SessionLogLockedException()).when(sessions).saveNote(any(), any(), any());
+        assertRefused(putNote(CLIENT, "{\"text\":\"x\"}"), HttpStatus.CONFLICT, "session-log.locked");
+
+        doThrow(new SessionLogChangedException()).when(sessions).saveNote(any(), any(), any());
+        assertRefused(putNote(CLIENT, "{\"text\":\"x\"}"), HttpStatus.CONFLICT, "session-log.changed");
+    }
+
+    @Test
+    void shouldRefuseAMissingOrOversizedText() {
+        assertRefused(putNote(CLIENT, "{}"), HttpStatus.BAD_REQUEST, "validation.failed");
+        assertRefused(
+                putNote(CLIENT, "{\"text\":\"" + "a".repeat(2001) + "\"}"), HttpStatus.BAD_REQUEST, "validation.failed");
+        verifyNoInteractions(sessions);
+    }
+
+    @Test
+    void shouldRefuseATrainerAndAVisitor_onTheNote() {
+        assertRefused(putNote(TRAINER, "{\"text\":\"x\"}"), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(
+                mvc.put()
+                        .uri(NOTE)
+                        .with(csrf())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"text\":\"x\"}")
+                        .exchange(),
+                HttpStatus.UNAUTHORIZED,
+                "request.unauthenticated");
+        verifyNoInteractions(sessions);
     }
 }

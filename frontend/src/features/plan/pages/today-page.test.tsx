@@ -34,8 +34,11 @@ const SESSION = {
   ],
 }
 
-const sessionDay = () =>
-  json({ date: '2026-11-05', state: 'SESSION', session: SESSION })
+// the states of the week are empty unless a test says otherwise
+const sessionDay: Reply = (request) =>
+  request && new URL(request.url).pathname === '/api/v1/session-states'
+    ? json({ today: '2026-11-05', sessions: [] })
+    : json({ date: '2026-11-05', state: 'SESSION', session: SESSION })
 
 function openToday(reply: Reply, unit: WeightUnit = 'KG') {
   const requests = stubApi(reply)
@@ -136,10 +139,10 @@ describe('TodayPage', () => {
   it('offers to try again when Today cannot be loaded', async () => {
     const user = userEvent.setup()
     let failing = true
-    openToday(() =>
+    openToday((request) =>
       failing
         ? problem(429, { status: 429, code: 'request.too-many' })
-        : sessionDay(),
+        : sessionDay(request),
     )
 
     const retry = await screen.findByRole('button', { name: 'Try again' })
@@ -160,5 +163,61 @@ describe('TodayPage', () => {
       screen.getByRole('button', { name: 'Rozpocznij sesję' }),
     ).toBeDisabled()
     expect(screen.getByText('4 × 8 powt.')).toBeInTheDocument()
+  })
+
+  const states = (state?: string) =>
+    json({
+      today: '2026-11-05',
+      sessions: [
+        {
+          day: 'THURSDAY',
+          date: '2026-11-05',
+          state,
+          sessionLogId: state === 'DONE' ? 'log-1' : undefined,
+        },
+      ],
+    })
+  const withStates =
+    (state?: string): Reply =>
+    (request) =>
+      new URL(request.url).pathname === '/api/v1/session-states'
+        ? states(state)
+        : sessionDay(request)
+
+  it('says the session is done and links to its summary instead of the start action', async () => {
+    openToday(withStates('DONE'))
+
+    expect(await screen.findByText('Done')).toBeInTheDocument()
+    expect(screen.getByText('Session done')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'View summary' })).toHaveAttribute(
+      'href',
+      '/app/summary/log-1',
+    )
+    expect(
+      screen.queryByRole('button', { name: 'Start session' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('keeps the disabled start action when the session is not done', async () => {
+    openToday(withStates('IN_PROGRESS'))
+
+    expect(await screen.findByText('In progress')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start session' })).toBeDisabled()
+    expect(
+      screen.queryByRole('link', { name: 'View summary' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('shows the session as before when the states cannot be read', async () => {
+    openToday((request) =>
+      new URL(request.url).pathname === '/api/v1/session-states'
+        ? problem(500, { status: 500, code: 'internal.error' })
+        : sessionDay(request),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'Upper body' }),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Start session' })).toBeDisabled()
   })
 })

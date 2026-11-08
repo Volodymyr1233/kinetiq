@@ -32,6 +32,7 @@ class SessionLogEntity extends BaseEntity {
     private String sessionName;
     private Instant startedAt;
     private Instant finishedAt;
+    private String note;
 
     @ElementCollection
     @CollectionTable(name = "session_log_entries", joinColumns = @JoinColumn(name = "session_log_id"))

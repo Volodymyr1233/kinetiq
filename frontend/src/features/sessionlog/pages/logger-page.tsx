@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useSession, type SessionLog } from '../api/session-log'
+import { FinishFooter } from '../components/finish-footer'
 import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
 
@@ -93,7 +94,7 @@ function Session({ session }: { session: SessionLog }) {
   }).format(new Date(Date.UTC(year, month - 1, day)))
 
   return (
-    <main className="mx-auto flex max-w-[640px] flex-col gap-4 px-4 pt-4 pb-10">
+    <main className="mx-auto flex min-h-svh max-w-[640px] flex-col gap-4 px-4 pt-4 pb-0">
       <Button variant="ghost" size="touch" asChild className="self-start px-2">
         <Link to="/app/today">
           <ArrowLeftIcon aria-hidden />
@@ -154,13 +155,21 @@ function Session({ session }: { session: SessionLog }) {
           </ol>
         </section>
       ))}
-      {!locked && restEndsAt !== null && (
-        <RestTimer
-          key={restEndsAt}
-          endsAt={restEndsAt}
-          onDismiss={() => setRestEndsAt(null)}
+      {/* one sticky block, so the rest timer sits above the footer instead of over it */}
+      <div className="sticky bottom-0 -mx-4 mt-auto flex flex-col gap-2 px-4">
+        {!locked && restEndsAt !== null && (
+          <RestTimer
+            key={restEndsAt}
+            endsAt={restEndsAt}
+            onDismiss={() => setRestEndsAt(null)}
+          />
+        )}
+        <FinishFooter
+          session={session}
+          locked={locked}
+          onLocked={() => setLockedHere(true)}
         />
-      )}
+      </div>
     </main>
   )
 }

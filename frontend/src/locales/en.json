@@ -119,6 +119,13 @@
     },
     "quiz": {
       "not-found": "This client hasn't answered the quiz yet."
+    },
+    "session-log": {
+      "locked": "This session is locked. It can no longer be changed.",
+      "nothing-logged": "Log at least one set to finish.",
+      "not-finished": "Finish the session first.",
+      "changed": "The session changed at the same moment. Try again.",
+      "note-invalid": "A note can have up to 500 characters. Shorten it and save again."
     }
   },
   "account": {
@@ -403,12 +410,24 @@
       "title": "How long have you trained regularly?",
       "hint": "Count the time you trained at least twice a week.",
       "options": {
-        "LESS_THAN_3_MONTHS": { "title": "Less than 3 months" },
-        "MONTHS_3_TO_6": { "title": "3–6 months" },
-        "MONTHS_6_TO_12": { "title": "6–12 months" },
-        "YEARS_1_TO_2": { "title": "1–2 years" },
-        "YEARS_2_TO_5": { "title": "2–5 years" },
-        "YEARS_5_PLUS": { "title": "5+ years" }
+        "LESS_THAN_3_MONTHS": {
+          "title": "Less than 3 months"
+        },
+        "MONTHS_3_TO_6": {
+          "title": "3–6 months"
+        },
+        "MONTHS_6_TO_12": {
+          "title": "6–12 months"
+        },
+        "YEARS_1_TO_2": {
+          "title": "1–2 years"
+        },
+        "YEARS_2_TO_5": {
+          "title": "2–5 years"
+        },
+        "YEARS_5_PLUS": {
+          "title": "5+ years"
+        }
       }
     },
     "level": {
@@ -510,16 +529,34 @@
       "title": "Check your answers",
       "hint": "Your first plan is built from these 7 answers. Your trainer checks it before you see it.",
       "rows": {
-        "goal": { "label": "Goal", "change": "Change goal" },
+        "goal": {
+          "label": "Goal",
+          "change": "Change goal"
+        },
         "experience": {
           "label": "Training for",
           "change": "Change training for"
         },
-        "level": { "label": "Level", "change": "Change level" },
-        "about": { "label": "About you", "change": "Change about you" },
-        "likes": { "label": "Likes", "change": "Change likes" },
-        "days": { "label": "Days a week", "change": "Change days a week" },
-        "notes": { "label": "Notes", "change": "Change notes" }
+        "level": {
+          "label": "Level",
+          "change": "Change level"
+        },
+        "about": {
+          "label": "About you",
+          "change": "Change about you"
+        },
+        "likes": {
+          "label": "Likes",
+          "change": "Change likes"
+        },
+        "days": {
+          "label": "Days a week",
+          "change": "Change days a week"
+        },
+        "notes": {
+          "label": "Notes",
+          "change": "Change notes"
+        }
       },
       "change": "Change",
       "about_one": "{{count, number}} year · {{height, number}} cm · {{weight, number}} {{weightUnit}}",
@@ -720,6 +757,43 @@
       "label": "Rest",
       "over": "Rest over",
       "dismiss": "Dismiss the rest timer"
+    },
+    "finish": {
+      "action": "Finish session",
+      "count_one": "{{logged, number}} of {{count, number}} set logged",
+      "count_other": "{{logged, number}} of {{count, number}} sets logged",
+      "nothingLogged": "Log at least one set to finish.",
+      "viewSummary": "View summary",
+      "failed": "Could not finish the session. Try again.",
+      "confirm": {
+        "title": "Finish with sets not logged?",
+        "text_one": "{{count, number}} set is not logged. You can still log it for 24 hours after the session started.",
+        "text_other": "{{count, number}} sets are not logged. You can still log them for 24 hours after the session started.",
+        "keep": "Keep logging"
+      }
+    },
+    "summary": {
+      "loading": "Loading summary",
+      "done": "Done",
+      "title": "{{name}} done",
+      "figures": "Session figures",
+      "sets": "Sets",
+      "setsValue": "{{logged, number}} of {{planned, number}}",
+      "volume": "Total volume",
+      "volumeValue": "{{volume}} {{unit}}",
+      "rpe": "Average RPE",
+      "time": "Time in session",
+      "minutes": "{{count, number}} min",
+      "noteLabel": "Note for {{name}}",
+      "notePlaceholder": "How did it feel?",
+      "noteHelp": "Optional. {{name}} will see it with this session.",
+      "noteCount": "{{length, number}} / {{max, number}}",
+      "noteSaved": "Note saved",
+      "noteLocked": "This session is locked. The note can no longer be changed.",
+      "saveNote": "Save note",
+      "backToToday": "Back to today",
+      "message": "Message {{name}}",
+      "yourTrainer": "your trainer"
     }
   },
   "plan": {
@@ -762,7 +836,8 @@
       "restDay": "Rest day",
       "restText": "Nothing is planned for today.",
       "start": "Start session",
-      "startSoon": "Starting a session arrives with logging."
+      "startSoon": "Starting a session arrives with logging.",
+      "done": "Session done"
     },
     "client": {
       "none": "You don't have a plan yet.",
@@ -799,7 +874,10 @@
       "finished": {
         "title": "Your trainer is preparing your next plan.",
         "text": "Your {{weeks, number}}-week plan has finished."
-      }
+      },
+      "weekDone_one": "{{done, number}} of {{count, number}} session done",
+      "weekDone_other": "{{done, number}} of {{count, number}} sessions done",
+      "viewSummary": "View summary"
     },
     "loading": "Loading plan",
     "retry": "Try again",
@@ -923,6 +1001,13 @@
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Add at least 1 exercise to {{session}}.",
       "load": "Leave the load empty or enter a number above 0, up to {{max, number}} {{unit}}."
+    },
+    "state": {
+      "DONE": "Done",
+      "IN_PROGRESS": "In progress",
+      "MISSED": "Missed",
+      "TODAY": "Today",
+      "PLANNED": "Planned"
     }
   },
   "messaging": {
