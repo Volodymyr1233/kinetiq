@@ -6,7 +6,7 @@
 
 ## Summary
 
-A session log can be logged into and changed for 24 hours after it started, then it is locked. #102 puts the rule in the `SessionLog` aggregate: `logSet` refuses a set at or after `startedAt` + 24 hours with `SessionLogLockedException` (`session-log.locked`, 409), except a repeat that changes nothing. The answers of the API keep their shape, so `schema.d.ts` does not change; `CONTEXT.md` gains "Locked". #103 makes the logger read-only: the page works out the moment the session locks from `startedAt`, as `set-values.ts` mirrors the set limits, turns read-only at that moment or on a `session-log.locked` refusal, and says why. #256 lets the logger open an earlier session by its date (`GET /api/v1/session-logs?date=`, `/app/session/:date`) and adds "Edit log" and "View log" to the past session cards on the Plan tab. Nothing is stored and no dependency is added.
+A session log can be logged into and changed for 24 hours after it started, then it is locked. #102 puts the rule in the `SessionLog` aggregate: `logSet` refuses a set at or after `startedAt` + 24 hours with `SessionLogLockedException` (`session-log.locked`, 409), except a repeat that changes nothing. The answers of the API keep their shape, so `schema.d.ts` does not change; `CONTEXT.md` gains "Locked". #103 makes the logger read-only: the page works out the moment the session locks from `startedAt`, as `set-values.ts` mirrors the set limits, turns read-only at that moment or on a `session-log.locked` refusal, and says why. #256 lets the logger open an earlier session by its id (`GET /api/v1/session-logs/{id}`, `/app/session/:id`), adds `startedAt` to the session states of #99, and adds "Edit log" and "View log" to the past session cards on the Plan tab. Nothing is stored and no dependency is added.
 
 ## Technical Context
 
@@ -69,20 +69,26 @@ backend/src/main/java/com/kinetiq/sessionlog/
 ├── domain/
 │   ├── model/SessionLog.java                            # #102: the 24 hours in logSet
 │   ├── exception/SessionLogLockedException.java         # #102: session-log.locked, CONFLICT
-│   ├── input/LogSessionUseCase.java                     # #256: + find(client, date)
-│   └── service/SessionLogService.java                   # #256: + find
-└── infrastructure/input/SessionLogController.java       # #102: doc of PUT; #256: + GET ?date
-backend/src/test/java/com/kinetiq/sessionlog/...         # SessionLogTest, SessionLogServiceTest, SessionLogControllerTest
+│   ├── input/LogSessionUseCase.java                     # #256: + find(client, id)
+│   ├── input/SessionStates.java                         # #256: + startedAt
+│   ├── service/SessionLogService.java                   # #256: + find
+│   └── service/SessionStateService.java                 # #256: startedAt from the header
+└── infrastructure/input/
+    ├── SessionLogController.java                        # #102: doc of PUT; #256: + GET /{id}
+    ├── SessionStatesResponse.java                       # #256: + startedAt
+    └── SessionLogWebMapper.java                         # #256: startedAt
+backend/src/test/java/com/kinetiq/sessionlog/...         # SessionLogTest, SessionLogServiceTest, SessionStateServiceTest, controller tests
 
 frontend/src/
 ├── features/sessionlog/
-│   ├── api/session-log.ts                               # #256: the session of a date
+│   ├── api/session-log.ts                               # #256: the session of an id
+│   ├── api/session-summary.ts                           # #256: a finish updates the session under any key
 │   ├── components/set-row.tsx                           # #103: locked row
-│   ├── pages/logger-page.tsx                            # #103: locked state, EDIT_WINDOW_MS; #256: a date from the address
+│   ├── pages/logger-page.tsx                            # #103: locked state, EDIT_WINDOW_MS; #256: an id from the address
 │   └── pages/locked.test.tsx                            # #103
-├── features/plan/components/session-card.tsx            # #256: Edit log / View log
+├── features/plan/components/{session-card,week-strip}.tsx   # #256: Edit log / View log
 ├── lib/edit-window.ts                                   # #256: EDIT_WINDOW_MS moved up for the Plan card
-├── app/router.ts                                        # #256: /app/session/:date
+├── app/router.ts                                        # #256: /app/session/:id
 ├── lib/api/schema.d.ts                                  # #256: regenerated
 └── locales/{en,pl}.json                                 # #103: sessionlog.locked.*, errors.session-log.locked; #256: plan actions
 
@@ -95,10 +101,6 @@ CONTEXT.md                                               # #102: + Locked
 
 - **#102 (backend)**: the rule in `SessionLog.logSet`, `SessionLogLockedException`, tests at the boundary with a fixed clock, the controller's doc and test, `CONTEXT.md`.
 - **#103 (frontend)**: the lock moment in the logger page, the locked rows and message, the switch at the lock moment and on a refusal, strings, tests. Blocked by #102.
-- **#256 (backend and frontend)**: the read of an earlier session log by date, the logger's address with a date, the Plan card's actions, strings, tests, regenerated `schema.d.ts`. Blocked by #103 and #100.
+- **#256 (backend and frontend)**: the read of an earlier session log by id, `startedAt` in the session states, the logger's address with an id, the Plan card's actions, strings, tests, regenerated `schema.d.ts`. Blocked by #103 and #100.
 
 Each task is its own pull request, squash merged.
-
-## Open items
-
-- #256: how the Plan card learns that a past day has a session log, and when that session started (for "Edit log" or "View log"). The session states of #100 may say it, but a Missed day can have a log too (spec, User Story 3, scenario 3). Settled when #100 is merged, before #256 starts (tasks.md, T015).

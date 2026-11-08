@@ -276,6 +276,31 @@ class SessionLogServiceTest {
     }
 
     @Nested
+    class Find {
+
+        @Test
+        void shouldGiveTheClientsSessionOfAnEarlierDay_withoutStartingTodays() {
+            SessionLogId yesterdays = startedAt(NOW.minus(Duration.ofHours(20)), CLIENT);
+
+            StartedSession found = service.find(CLIENT, yesterdays);
+
+            assertThat(found.log().getId()).isEqualTo(yesterdays);
+            assertThat(found.created()).isFalse();
+            assertThat(found.library()).containsKey(SQUAT.getId());
+            assertThat(stored).hasSize(1);
+        }
+
+        @Test
+        void shouldAnswerNotFound_whenTheSessionIsAnotherClientsOrUnknown() {
+            SessionLogId theirs = startedAt(NOW.minus(Duration.ofHours(20)), OTHER_CLIENT);
+
+            assertThatThrownBy(() -> service.find(CLIENT, theirs)).isInstanceOf(SessionLogNotFoundException.class);
+            assertThatThrownBy(() -> service.find(CLIENT, SessionLogId.random()))
+                    .isInstanceOf(SessionLogNotFoundException.class);
+        }
+    }
+
+    @Nested
     class LogSet {
 
         @Test

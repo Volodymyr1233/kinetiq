@@ -717,6 +717,7 @@
     "loading": "Loading session",
     "retry": "Try again",
     "back": "Today",
+    "backToPlan": "Plan",
     "locked": {
       "title": "Session locked",
       "text": "Sets can be logged and changed for 24 hours after a session starts."
@@ -877,7 +878,9 @@
       },
       "weekDone_one": "{{done, number}} of {{count, number}} session done",
       "weekDone_other": "{{done, number}} of {{count, number}} sessions done",
-      "viewSummary": "View summary"
+      "viewSummary": "View summary",
+      "editLog": "Edit log",
+      "viewLog": "View log"
     },
     "loading": "Loading plan",
     "retry": "Try again",

@@ -50,11 +50,19 @@ Decisions taken while planning. Each: what, why, what else was considered.
 
 ## R7. Opening an earlier session (#256)
 
-**Decision**: `GET /api/v1/session-logs?date=YYYY-MM-DD` answers the signed-in client's session log of that date, in the same shape as starting one, or `404 session-log.not-found`. The logger opens it at `/app/session/:date`, and `/app/session` keeps starting today's session. The Plan card links to that address.
+**Decision**: `GET /api/v1/session-logs/{id}` answers the signed-in client's own session log, in the same shape as starting one, or `404 session-log.not-found`. The logger opens it at `/app/session/:id`, and `/app/session` keeps starting today's session. The Plan card links to that address.
 
-**Why**: The Plan card knows its day's date and nothing about session log ids. A date in the address survives a reload and needs no state. The answer's shape is the one the logger already shows, so the locked state of #103 applies unchanged.
+**Why**: The session states of #99 give each started session's `sessionLogId`, so the Plan card knows the id; the summary is already at `/app/summary/:id`. An id in the address survives a reload and needs no state. The answer's shape is the one the logger already shows, so the locked state of #103 applies unchanged.
 
-**Rejected**: An address by session log id (the Plan does not know ids); a list of the week's session logs for the logger (more than it needs; whether the Plan needs one is the plan's open item).
+**Rejected**: An address by date (`/app/session/:date`, the first plan, written before the card had the id: it needs a second lookup by client and date for what the id names directly).
+
+## R9. What the Plan card knows (#256, settled when #100 was merged)
+
+**Decision**: The card takes everything from `GET /api/v1/session-states` (#99), which the Plan tab already reads for its badges (#100): each planned session's `date`, `state` and `sessionLogId`, and the client's `today`. A session is past when its `date` is before `today`, and has a log when it has a `sessionLogId`, finished or not. Each entry also gains `startedAt` when its session was started, so the card tells "Edit log" from "View log" with the same 24 hours as the logger, moved up to `lib/edit-window.ts`.
+
+**Why**: The state alone does not say it: a Done session can be inside or past its 24 hours. `startedAt` is what the summary of #99 already gives for the same reason (spec 98, T042). One read serves the badge and the action, and `features/plan` still imports nothing from `features/sessionlog`.
+
+**Rejected**: A lock flag in the states (a second rule beside the 24 hours the screen already knows, and it would go stale while the tab stays open); the card asking the session log itself (a request per card).
 
 ## R8. Seeing a locked session locally
 

@@ -1,12 +1,14 @@
 import { ChevronDownIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link } from 'react-router'
+import { Link, useLocation } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { locksAt } from '@/lib/edit-window'
 import type { OwnPlan } from '../api/client-plan'
 import type { SessionState } from '../api/session-states'
 import { EntryRow } from './entry-row'
@@ -15,20 +17,44 @@ import { SessionStateBadge } from './session-state-badge'
 type Session = OwnPlan['sessions'][number]
 
 /**
- * One session of the week, closed to its name and state and opened to its exercises and their targets. A finished
- * session also links to its summary; the address is all this feature knows of the logger.
+ * The way from a past session's card to its log: "Edit log" while its sets can still change, "View log" after. The
+ * Plan's address goes along, so the logger's back link returns to this week.
+ */
+function PastLogLink({ id, startedAt }: { id: string; startedAt: string }) {
+  const { t } = useTranslation()
+  const { pathname, search } = useLocation()
+  // read once: the logger itself turns read-only when the 24 hours end
+  const [open] = useState(() => Date.now() < locksAt(startedAt))
+
+  return (
+    <Button variant="outline" size="touch" className="w-full" asChild>
+      <Link to={`/app/session/${id}`} state={{ from: pathname + search }}>
+        {t(open ? 'plan.client.editLog' : 'plan.client.viewLog')}
+      </Link>
+    </Button>
+  )
+}
+
+/**
+ * One session of the week, closed to its name and state and opened to its exercises and their targets. A past session
+ * with a log links to it, and a finished session to its summary; the addresses are all this feature knows of the
+ * logger.
  */
 export function SessionCard({
   session,
   state,
   summaryId,
+  pastLog,
 }: {
   session: Session
   state?: SessionState
   // the session log of a finished session, whose summary the opened card links to
   summaryId?: string
+  // the session log of an earlier day, started, finished or not
+  pastLog?: { id: string; startedAt: string }
 }) {
   const { t } = useTranslation()
+  const withSummary = state === 'DONE' && summaryId !== undefined
 
   return (
     <Collapsible className="bg-card text-card-foreground rounded-xl border">
@@ -54,13 +80,16 @@ export function SessionCard({
             <EntryRow key={index} entry={entry} />
           ))}
         </ol>
-        {state === 'DONE' && summaryId !== undefined && (
-          <div className="border-t p-3">
-            <Button variant="outline" size="touch" className="w-full" asChild>
-              <Link to={`/app/summary/${summaryId}`}>
-                {t('plan.client.viewSummary')}
-              </Link>
-            </Button>
+        {(pastLog !== undefined || withSummary) && (
+          <div className="flex flex-col gap-2 border-t p-3">
+            {pastLog !== undefined && <PastLogLink {...pastLog} />}
+            {withSummary && (
+              <Button variant="outline" size="touch" className="w-full" asChild>
+                <Link to={`/app/summary/${summaryId}`}>
+                  {t('plan.client.viewSummary')}
+                </Link>
+              </Button>
+            )}
           </div>
         )}
       </CollapsibleContent>

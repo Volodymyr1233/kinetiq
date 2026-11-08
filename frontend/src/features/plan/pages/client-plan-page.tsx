@@ -24,7 +24,8 @@ export function ClientPlanPage() {
   const [params, setParams] = useSearchParams()
   const askedWeek = parseWeek(params.get('week'))
   const query = useOwnPlan(askedWeek)
-  const states = useSessionStates(askedWeek).data?.sessions
+  const statesQuery = useSessionStates(askedWeek)
+  const states = statesQuery.data?.sessions
   const plan = query.data
   const acknowledge = useAcknowledgePlan()
   const acknowledged = useRef(false)
@@ -145,7 +146,12 @@ export function ClientPlanPage() {
               })}
             </p>
           )}
-          <WeekStrip week={week} sessions={plan.sessions} states={states} />
+          <WeekStrip
+            week={week}
+            sessions={plan.sessions}
+            states={states}
+            today={statesQuery.data?.today}
+          />
         </>
       )}
     </div>

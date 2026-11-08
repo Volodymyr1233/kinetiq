@@ -12,11 +12,14 @@ export function WeekStrip({
   week,
   sessions,
   states,
+  today,
 }: {
   week: Week
   sessions: OwnPlan['sessions']
-  // missing while they load and when they cannot be read: no badges then
+  // missing while they load and when they cannot be read: no badges and no way to a log then
   states?: SessionStateEntry[]
+  // the client's local date, from the same answer as the states
+  today?: string
 }) {
   const { t, i18n } = useTranslation()
   const [year, month, day] = week.startsOn.split('-').map(Number)
@@ -49,6 +52,15 @@ export function WeekStrip({
                   session={session}
                   state={entry?.state}
                   summaryId={entry?.sessionLogId}
+                  pastLog={
+                    // plain ISO dates compare as text; today's session is reached from Today
+                    entry?.sessionLogId !== undefined &&
+                    entry.startedAt !== undefined &&
+                    today !== undefined &&
+                    entry.date < today
+                      ? { id: entry.sessionLogId, startedAt: entry.startedAt }
+                      : undefined
+                  }
                 />
               ) : (
                 <p className="text-muted-foreground flex min-h-12 items-center rounded-xl border border-dashed px-4 text-sm">

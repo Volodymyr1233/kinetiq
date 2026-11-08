@@ -13,6 +13,12 @@ public interface LogSessionUseCase {
     StartedSession start(AccountId client);
 
     /**
+     * The client's own session log, of any day, with what showing it needs; nothing is started. A session that is not the
+     * client's is {@code SessionLogNotFoundException}, the same as one that does not exist.
+     */
+    StartedSession find(AccountId client, SessionLogId id);
+
+    /**
      * Logs a set into the client's own session, or changes it when the id was logged already. A session that is not the
      * client's is {@code SessionLogNotFoundException}, and so is a set id that belongs to another session. From 24 hours
      * after the session started, a new set or a change is {@code SessionLogLockedException}.

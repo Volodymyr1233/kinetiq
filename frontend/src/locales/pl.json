@@ -735,6 +735,7 @@
     "loading": "Wczytywanie sesji",
     "retry": "Spróbuj ponownie",
     "back": "Dzisiaj",
+    "backToPlan": "Plan",
     "locked": {
       "title": "Sesja zablokowana",
       "text": "Serie można zapisywać i zmieniać przez 24 godziny od rozpoczęcia sesji."
@@ -912,7 +913,9 @@
       "weekDone_few": "Zrobione sesje: {{done, number}} z {{count, number}}",
       "weekDone_many": "Zrobione sesje: {{done, number}} z {{count, number}}",
       "weekDone_other": "Zrobione sesje: {{done, number}} z {{count, number}}",
-      "viewSummary": "Zobacz podsumowanie"
+      "viewSummary": "Zobacz podsumowanie",
+      "editLog": "Popraw log",
+      "viewLog": "Zobacz log"
     },
     "loading": "Wczytywanie planu",
     "retry": "Spróbuj ponownie",

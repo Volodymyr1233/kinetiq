@@ -16,9 +16,9 @@ A repeat of a logged set with the same place and values still answers `200` as t
 
 Unchanged. `startedAt` is what the logger counts the 24 hours from.
 
-## GET /api/v1/session-logs?date={date} (#256)
+## GET /api/v1/session-logs/{id} (#256)
 
-The signed-in client's session log of `date` (`YYYY-MM-DD`, the client's local date), without starting anything.
+The signed-in client's own session log, without starting anything.
 
 `200` answer: `SessionLogResponse`, as from `POST /api/v1/session-logs`.
 
@@ -26,8 +26,15 @@ Errors:
 
 | Status | `code` | When |
 |---|---|---|
-| 404 | `session-log.not-found` | No session log of the client on that date |
-| 400 | `request.invalid` | `date` is missing or not a date |
+| 404 | `session-log.not-found` | The session log is another client's or does not exist; the two look the same |
+
+## GET /api/v1/session-states (#256)
+
+As spec `98-finish-session` describes it, with one more field on each session:
+
+| Field | Type | Notes |
+|---|---|---|
+| `startedAt` | instant | when its session log started; left out when the session was never started, like `sessionLogId` |
 
 ## Access
 

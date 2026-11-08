@@ -50,6 +50,15 @@ class SessionLogController {
     }
 
     /**
+     * The client's own session log of any day, without starting anything. {@code 404} with {@code session-log.not-found}
+     * for a session that is not the client's, the same as for one that does not exist.
+     */
+    @GetMapping("/{id}")
+    SessionLogResponse find(@PathVariable UUID id, Locale locale, Authentication authentication) {
+        return mapper.toResponse(sessions.find(signedIn(authentication), new SessionLogId(id)), locale);
+    }
+
+    /**
      * Finishes the client's own session and answers with its summary; a repeat answers as the first time and changes
      * nothing. {@code 404} with {@code session-log.not-found} for a session that is not the client's, {@code 409} with
      * {@code session-log.locked} for an unfinished one from 24 hours after the start, with
