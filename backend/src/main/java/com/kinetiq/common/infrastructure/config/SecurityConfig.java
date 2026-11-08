@@ -67,7 +67,8 @@ public class SecurityConfig {
                                 "/api/v1/plan/**",
                                 "/api/v1/today/**",
                                 "/api/v1/session-logs/**",
-                                "/api/v1/session-states/**")
+                                "/api/v1/session-states/**",
+                                "/api/v1/check-ins/**")
                         .hasRole("CLIENT")
                         .requestMatchers("/api/**")
                         .authenticated()

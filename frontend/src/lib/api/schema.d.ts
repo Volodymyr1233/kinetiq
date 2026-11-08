@@ -84,6 +84,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/check-ins/today": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getTodayCheckIn"];
+        put: operations["saveTodayCheckIn"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/me/time-zone": {
         parameters: {
             query?: never;
@@ -793,6 +809,34 @@ export interface components {
             day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
             entries: components["schemas"]["EntryResponse"][];
         };
+        SaveCheckInRequest: {
+            /** Format: int32 */
+            sleep: number;
+            /** Format: int32 */
+            soreness: number;
+            /** Format: int32 */
+            stress: number;
+        };
+        CheckInResponse: {
+            /** Format: int32 */
+            sleep: number;
+            /** Format: int32 */
+            soreness: number;
+            /** Format: int32 */
+            stress: number;
+            /** Format: int32 */
+            score: number;
+            /** @enum {string} */
+            band: "READY" | "TAKE_IT_EASIER" | "RECOVERY_DAY";
+            /** Format: date-time */
+            savedAt: string;
+        };
+        TodayCheckInResponse: {
+            /** Format: date */
+            date: string;
+            open: boolean;
+            checkIn?: components["schemas"]["CheckInResponse"];
+        };
         TimeZoneRequest: {
             timeZone: string;
         };
@@ -1330,6 +1374,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PlanResponse"];
+                };
+            };
+        };
+    };
+    getTodayCheckIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TodayCheckInResponse"];
+                };
+            };
+        };
+    };
+    saveTodayCheckIn: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["SaveCheckInRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TodayCheckInResponse"];
                 };
             };
         };
