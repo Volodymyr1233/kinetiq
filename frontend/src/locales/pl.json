@@ -113,7 +113,7 @@
       "too-many-exercises": "Sesja może mieć najwyżej 30 ćwiczeń.",
       "sets-out-of-range": "Wpisz od 1 do 20 serii.",
       "amount-out-of-range": "Wpisz od 1 do 3600.",
-      "load-out-of-range": "Zostaw obciążenie puste lub wpisz liczbę większą od 0.",
+      "load-out-of-range": "Zostaw obciążenie puste albo wpisz od 0,1 do 999,9 kg, najwyżej z jedną cyfrą po przecinku.",
       "rpe-out-of-range": "Wpisz RPE od 5 do 10, w pełnych krokach.",
       "rest-out-of-range": "Wpisz od 0 do 600 sekund.",
       "already-published": "Ten plan jest już opublikowany. Odśwież stronę, aby go zobaczyć.",
@@ -762,7 +762,7 @@
       "loadField": "Obciążenie w {{unit}}, seria {{number}}: {{exercise}}",
       "loadMore": "Większe obciążenie, seria {{number}}: {{exercise}}",
       "loadLess": "Mniejsze obciążenie, seria {{number}}: {{exercise}}",
-      "loadProblem": "Zostaw obciążenie puste albo wpisz liczbę większą od 0.",
+      "loadProblem": "Zostaw obciążenie puste albo wpisz od {{min, number}} do {{max, number}} {{unit}}, najwyżej z jedną cyfrą po przecinku.",
       "amount": {
         "REPS": "Powtórzenia",
         "SECONDS": "Sekundy"
@@ -1046,7 +1046,7 @@
       "inSession": "{{session}}: {{problem}}",
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Dodaj co najmniej 1 ćwiczenie do sesji {{session}}.",
-      "load": "Zostaw obciążenie puste lub wpisz liczbę większą od 0, do {{max, number}} {{unit}}."
+      "load": "Zostaw obciążenie puste albo wpisz od {{min, number}} do {{max, number}} {{unit}}, najwyżej z jedną cyfrą po przecinku."
     },
     "state": {
       "DONE": "Zrobiona",

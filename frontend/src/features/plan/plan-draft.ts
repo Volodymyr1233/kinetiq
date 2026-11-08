@@ -32,6 +32,8 @@ export const DAYS = Object.keys(DAY_ORDER) as Day[]
 export const MAX_SESSIONS = 6
 export const MAX_EXERCISES = 30
 export const NAME_MAX_LENGTH = 60
+// the smallest load above 0 at the stored precision of 0.1 kg
+const MIN_LOAD_KG = 0.1
 const MAX_LOAD_KG = 999.9
 
 const NEW_PLAN_WEEKS = 12
@@ -291,7 +293,11 @@ function entryProblems(
       'load',
       validLoad(entry, unit),
       'plan.problems.load',
-      { max: fromKg(MAX_LOAD_KG, unit), unit: unit.toLowerCase() },
+      {
+        min: fromKg(MIN_LOAD_KG, unit),
+        max: fromKg(MAX_LOAD_KG, unit),
+        unit: unit.toLowerCase(),
+      },
     ],
     ['rpe', inRange(entry.rpe, 5, 10), 'errors.plan.rpe-out-of-range'],
     ['rest', inRange(entry.rest, 0, 600), 'errors.plan.rest-out-of-range'],

@@ -6,8 +6,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import type { WeightUnit } from '@/lib/weight'
+import { fromKg, type WeightUnit } from '@/lib/weight'
 import {
+  MAX_LOAD_KG,
+  MIN_LOAD_KG,
   RPES,
   steppedAmount,
   steppedLoad,
@@ -101,7 +103,11 @@ export function EntryPanel({
         </div>
         {problems.load && (
           <p id={`${id}-load-problem`} className="text-destructive text-sm">
-            {t('sessionlog.panel.loadProblem')}
+            {t('sessionlog.panel.loadProblem', {
+              min: fromKg(MIN_LOAD_KG, unit),
+              max: fromKg(MAX_LOAD_KG, unit),
+              unit: unitLabel,
+            })}
           </p>
         )}
       </div>
@@ -165,15 +171,17 @@ export function EntryPanel({
         )}
       </div>
 
-      <div className="flex flex-col gap-2">
+      <div className="@container flex flex-col gap-2">
         <span id={`${id}-rpe`} className="text-sm font-medium">
           {t('sessionlog.panel.rpe')}
         </span>
         <ToggleGroup
           type="single"
           variant="outline"
+          spacing={1}
           aria-labelledby={`${id}-rpe`}
-          className="flex w-full flex-wrap gap-2"
+          // one row when six 48 px chips fit, else two even rows of three
+          className="grid w-full grid-cols-3 @min-[19.25rem]:grid-cols-6"
           value={String(values.rpe)}
           // a chip stays chosen when it is pressed again: a set always has an RPE
           onValueChange={(rpe) =>
@@ -185,7 +193,7 @@ export function EntryPanel({
               key={rpe}
               value={String(rpe)}
               aria-label={t('sessionlog.panel.rpeOption', { rpe, ...which })}
-              className="num data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary size-12 min-w-12"
+              className="num data-[state=on]:bg-primary data-[state=on]:text-primary-foreground data-[state=on]:border-primary data-[state=on]:hover:bg-primary data-[state=on]:hover:text-primary-foreground h-12 w-full min-w-12"
             >
               {rpe}
             </ToggleGroupItem>

@@ -634,7 +634,7 @@ describe('PlanEditor', () => {
       await user.tab()
 
       expect(load).toHaveAccessibleDescription(
-        'Leave the load empty or enter a number above 0, up to 2204.4 lb.',
+        'Leave the load empty or enter 0.2 to 2204.4 lb, one decimal at most.',
       )
       await retype(user, load, '2204.4')
       expect(load).toHaveAttribute('aria-invalid', 'false')
