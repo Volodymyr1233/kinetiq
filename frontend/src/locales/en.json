@@ -722,6 +722,23 @@
     "retry": "Try again",
     "back": "Today",
     "backToPlan": "Plan",
+    "overview": {
+      "thisWeek": "This week",
+      "recentSessions": "Recent sessions",
+      "quizAnswers": "Quiz answers",
+      "allLogs": "All logs",
+      "sessionDay": "{{name}} · {{day}}",
+      "dayState": "{{name}}, {{state}}",
+      "restDay": "Rest day",
+      "rpe": "RPE {{value}}",
+      "sets": "{{logged}}/{{planned}} sets",
+      "setsAndRpe": "{{logged}}/{{planned}} sets · RPE {{value}}",
+      "noPlan": "No published plan yet.",
+      "finished": "The plan has finished.",
+      "noSessions": "No sessions yet.",
+      "noAnswers": "No quiz answers yet.",
+      "loading": "Loading the overview"
+    },
     "locked": {
       "title": "Session locked",
       "text": "Sets can be logged and changed for 24 hours after a session starts."
@@ -1015,6 +1032,7 @@
     },
     "state": {
       "DONE": "Done",
+      "LOCKED": "Locked",
       "IN_PROGRESS": "In progress",
       "MISSED": "Missed",
       "TODAY": "Today",

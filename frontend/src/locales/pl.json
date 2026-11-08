@@ -740,6 +740,23 @@
     "retry": "Spróbuj ponownie",
     "back": "Dzisiaj",
     "backToPlan": "Plan",
+    "overview": {
+      "thisWeek": "Ten tydzień",
+      "recentSessions": "Ostatnie sesje",
+      "quizAnswers": "Odpowiedzi z quizu",
+      "allLogs": "Wszystkie logi",
+      "sessionDay": "{{name}} · {{day}}",
+      "dayState": "{{name}}, {{state}}",
+      "restDay": "Dzień odpoczynku",
+      "rpe": "RPE {{value}}",
+      "sets": "Serie: {{logged}}/{{planned}}",
+      "setsAndRpe": "Serie: {{logged}}/{{planned}} · RPE {{value}}",
+      "noPlan": "Brak opublikowanego planu.",
+      "finished": "Plan się zakończył.",
+      "noSessions": "Brak sesji.",
+      "noAnswers": "Brak odpowiedzi z quizu.",
+      "loading": "Wczytywanie przeglądu"
+    },
     "locked": {
       "title": "Sesja zablokowana",
       "text": "Serie można zapisywać i zmieniać przez 24 godziny od rozpoczęcia sesji."
@@ -1056,6 +1073,7 @@
     },
     "state": {
       "DONE": "Zrobiona",
+      "LOCKED": "Zablokowana",
       "IN_PROGRESS": "W trakcie",
       "MISSED": "Opuszczona",
       "TODAY": "Dziś",

@@ -1,6 +1,7 @@
 import { CircleAlertIcon, RefreshCwIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { QuizAnswersList } from '@/components/quiz-answers'
 import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -14,9 +15,8 @@ import { Separator } from '@/components/ui/separator'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { cn } from '@/lib/utils'
-import { fromKg, useWeightUnit } from '@/lib/weight'
 import { useBuildPlanAgain, type Plan } from '../api/plans'
-import { useQuizAnswers, type QuizAnswers } from '../api/quiz-answers'
+import { useQuizAnswers } from '../api/quiz-answers'
 import { BuildAgainDialog } from './build-again-dialog'
 
 // the 429 carries when the next build is allowed
@@ -27,54 +27,6 @@ function availableAt(error: unknown) {
     typeof error.availableAt === 'string'
     ? error.availableAt
     : undefined
-}
-
-function Answers({ answers, name }: { answers: QuizAnswers; name: string }) {
-  const { t, i18n } = useTranslation()
-  const unit = useWeightUnit()
-  const rows = [
-    ['goal', t(`quiz.goal.options.${answers.goal}.title`)],
-    ['experience', t(`quiz.experience.options.${answers.experience}.title`)],
-    ['level', t(`quiz.level.options.${answers.level}.title`)],
-    ['age', t('plan.panel.ageValue', { count: answers.age })],
-    ['height', t('plan.panel.heightValue', { height: answers.heightCm })],
-    [
-      'weight',
-      t('plan.panel.weightValue', {
-        weight: fromKg(answers.weightKg, unit),
-        unit: t(`plan.units.${unit}`),
-      }),
-    ],
-    [
-      'likes',
-      new Intl.ListFormat(i18n.language).format(
-        answers.likes.map((like) => t(`quiz.likes.options.${like}.title`)),
-      ),
-    ],
-    ['days', t('plan.panel.daysValue', { count: answers.daysPerWeek })],
-  ] as const
-  return (
-    <>
-      <dl className="flex flex-col gap-2 text-sm">
-        {rows.map(([key, value]) => (
-          <div key={key} className="flex justify-between gap-4">
-            <dt className="text-muted-foreground shrink-0">
-              {t(`plan.panel.${key}`)}
-            </dt>
-            <dd className="text-right font-medium">{value}</dd>
-          </div>
-        ))}
-      </dl>
-      <Separator />
-      <div className="flex flex-col gap-1 text-sm">
-        <p className="text-muted-foreground">{t('plan.panel.notes')}</p>
-        {/* as the client typed it, never as markup */}
-        <p className="wrap-anywhere whitespace-pre-wrap">
-          {answers.notes ?? t('plan.panel.noNotes', { name })}
-        </p>
-      </div>
-    </>
-  )
 }
 
 /**
@@ -140,7 +92,7 @@ export function DraftPanel({
             ))}
           </div>
         ) : answers.data ? (
-          <Answers answers={answers.data} name={client.name} />
+          <QuizAnswersList answers={answers.data} name={client.name} />
         ) : (
           <p className="text-muted-foreground text-sm">
             {t('plan.panel.unavailable', { name: client.name })}
