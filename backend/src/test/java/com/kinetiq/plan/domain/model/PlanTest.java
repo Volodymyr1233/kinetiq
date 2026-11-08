@@ -419,6 +419,23 @@ class PlanTest {
         }
 
         @Test
+        void shouldRecordTheDayItWasPublishedOn_notTheMonday() {
+            LocalDate wednesday = LocalDate.parse("2026-11-04");
+
+            Plan published = draft(12, COMPLETE).publish(wednesday);
+
+            assertThat(published.getPublishedOn()).contains(wednesday);
+            assertThat(published.getFirstWeek()).contains(LocalDate.parse("2026-11-02"));
+            assertThat(published.edit(Goal.LOSE_FAT, 12, COMPLETE, wednesday).getPublishedOn())
+                    .contains(wednesday);
+        }
+
+        @Test
+        void shouldHaveNoPublishedDay_whenItIsADraft() {
+            assertThat(draft(12, COMPLETE).getPublishedOn()).isEmpty();
+        }
+
+        @Test
         void shouldRefuse_whenTheDraftIsNotComplete() {
             Plan draft = draft(12, List.of(session(DayOfWeek.MONDAY)));
 

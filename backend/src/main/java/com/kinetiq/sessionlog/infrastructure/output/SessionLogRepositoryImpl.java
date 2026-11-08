@@ -1,18 +1,22 @@
 package com.kinetiq.sessionlog.infrastructure.output;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.sessionlog.domain.exception.SessionLogChangedException;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetLogId;
 import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -38,11 +42,27 @@ class SessionLogRepositoryImpl implements SessionLogRepository {
     }
 
     @Override
+    public List<SessionLogHeader> headersBetween(AccountId client, LocalDate from, LocalDate to) {
+        return jpa.findHeaders(client.value(), from, to).stream()
+                .map(row -> new SessionLogHeader(
+                        new SessionLogId(row.id()), row.logDate(), row.startedAt(), row.finishedAt()))
+                .toList();
+    }
+
+    @Override
     public SessionLog save(SessionLog log) {
-        // a new session is flushed alone first: Hibernate writes its entries after the set logs it is given with
-        SessionLogEntity entity = jpa.findById(log.getId().value()).orElseGet(() -> jpa.saveAndFlush(insert(log)));
-        syncSetLogs(log, entity);
-        return mapper.toDomain(jpa.saveAndFlush(entity));
+        try {
+            // a new session is flushed alone first: Hibernate writes its entries after the set logs it is given with
+            SessionLogEntity entity = jpa.findById(log.getId().value()).orElseGet(() -> jpa.saveAndFlush(insert(log)));
+            if (entity.getVersion() != log.getVersion()) {
+                throw new SessionLogChangedException();
+            }
+            syncSetLogs(log, entity);
+            entity.setFinishedAt(log.getFinishedAt().orElse(null));
+            return mapper.toDomain(jpa.saveAndFlush(entity));
+        } catch (ObjectOptimisticLockingFailureException exception) {
+            throw new SessionLogChangedException();
+        }
     }
 
     // entries never change after the start, so they are copied once

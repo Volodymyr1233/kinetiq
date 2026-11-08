@@ -116,6 +116,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/session-logs/{id}/finish": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["finish"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/quiz": {
         parameters: {
             query?: never;
@@ -380,6 +396,38 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getToday"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/session-states": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getStates"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/session-logs/{id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["summary"];
         put?: never;
         post?: never;
         delete?: never;
@@ -754,6 +802,8 @@ export interface components {
             name: string;
             /** Format: date-time */
             startedAt: string;
+            /** Format: date-time */
+            finishedAt?: string;
             entries: components["schemas"]["LoggedEntryResponse"][];
         };
         TargetResponse: {
@@ -762,6 +812,21 @@ export interface components {
             amount: number;
             /** Format: int32 */
             rpe: number;
+        };
+        SessionSummaryResponse: {
+            /** Format: uuid */
+            sessionLogId: string;
+            name: string;
+            /** Format: date */
+            date: string;
+            /** Format: int32 */
+            setsLogged: number;
+            /** Format: int32 */
+            setsPlanned: number;
+            volumeKg?: number;
+            averageRpe: number;
+            /** Format: int32 */
+            minutes: number;
         };
         SubmitQuizRequest: {
             /** @enum {string} */
@@ -882,6 +947,21 @@ export interface components {
             /** @enum {string} */
             state: "SESSION" | "REST" | "FINISHED";
             session?: components["schemas"]["SessionResponse"];
+        };
+        SessionStateResponse: {
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            /** Format: date */
+            date: string;
+            /** @enum {string} */
+            state?: "DONE" | "IN_PROGRESS" | "MISSED" | "TODAY" | "PLANNED";
+            /** Format: uuid */
+            sessionLogId?: string;
+        };
+        SessionStatesResponse: {
+            /** Format: date */
+            today: string;
+            sessions: components["schemas"]["SessionStateResponse"][];
         };
         ClientPlanResponse: {
             /** @enum {string} */
@@ -1186,6 +1266,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["SessionLogResponse"];
+                };
+            };
+        };
+    };
+    finish: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SessionSummaryResponse"];
                 };
             };
         };
@@ -1679,6 +1781,50 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["TodayResponse"];
+                };
+            };
+        };
+    };
+    getStates: {
+        parameters: {
+            query?: {
+                week?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SessionStatesResponse"];
+                };
+            };
+        };
+    };
+    summary: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["SessionSummaryResponse"];
                 };
             };
         };

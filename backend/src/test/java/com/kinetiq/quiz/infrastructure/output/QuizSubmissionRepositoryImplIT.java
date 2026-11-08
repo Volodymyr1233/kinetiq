@@ -195,11 +195,13 @@ class QuizSubmissionRepositoryImplIT {
     private void insertPlan(AccountId client, LocalDate firstWeek) {
         jdbc.update(
                 """
-                insert into plans (id, client_id, goal, weeks, first_week, created_at, updated_at, version)
-                values (?, ?, 'LOSE_FAT', 12, ?, now(), now(), 0)
+                insert into plans (id, client_id, goal, weeks, first_week, published_on, created_at, updated_at,
+                                   version)
+                values (?, ?, 'LOSE_FAT', 12, ?, ?, now(), now(), 0)
                 """,
                 UUID.randomUUID(),
                 client.value(),
+                firstWeek,
                 firstWeek);
     }
 

@@ -27,16 +27,21 @@ import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
+import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
+import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
 import com.kinetiq.sessionlog.domain.input.LogSetCommand;
+import com.kinetiq.sessionlog.domain.input.SessionSummaryView;
 import com.kinetiq.sessionlog.domain.input.StartedSession;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetLogId;
+import com.kinetiq.sessionlog.domain.model.SetValues;
 import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
 import java.math.BigDecimal;
 import java.time.Clock;
@@ -172,6 +177,17 @@ class SessionLogServiceTest {
                     .filter(log -> log.getSetLogs().stream().anyMatch(set -> set.id().equals(id)))
                     .map(SessionLog::getId)
                     .findFirst();
+        }
+
+        @Override
+        public List<SessionLogHeader> headersBetween(AccountId client, LocalDate from, LocalDate to) {
+            return stored.values().stream()
+                    .filter(log -> log.getClient().equals(client)
+                            && !log.getDate().isBefore(from)
+                            && !log.getDate().isAfter(to))
+                    .map(log -> new SessionLogHeader(
+                            log.getId(), log.getDate(), log.getStartedAt(), log.getFinishedAt().orElse(null)))
+                    .toList();
         }
 
         @Override
@@ -351,6 +367,90 @@ class SessionLogServiceTest {
 
             assertThatThrownBy(() -> service.logSet(command(CLIENT, theirs, newId(), 0, 1, 5, 8)))
                     .isInstanceOf(SessionLogNotFoundException.class);
+        }
+    }
+
+    @Nested
+    class Finish {
+
+        private SessionLogId withOneSet(AccountId client) {
+            SessionLogId session = service.start(client).log().getId();
+            service.logSet(command(client, session, newId(), 0, 1, 5, 8));
+            return session;
+        }
+
+        @Test
+        void shouldStoreTheFinishTimeAndAnswerTheSummary() {
+            SessionLogId session = withOneSet(CLIENT);
+
+            SessionSummaryView view = service.finish(CLIENT, session);
+
+            assertThat(stored.get(session).getFinishedAt()).contains(NOW);
+            assertThat(view.summary().setsLogged()).isEqualTo(1);
+            assertThat(view.summary().setsPlanned()).isEqualTo(3);
+            assertThat(view.summary().volumeKg()).hasValueSatisfying(v -> assertThat(v).isEqualByComparingTo("500.0"));
+            assertThat(view.summary().minutes()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAnswerTheSameSummary_whenFinishedTwice() {
+            SessionLogId session = withOneSet(CLIENT);
+
+            SessionSummaryView first = service.finish(CLIENT, session);
+            SessionSummaryView again = service.finish(CLIENT, session);
+
+            assertThat(again.summary()).isEqualTo(first.summary());
+            assertThat(again.log().getFinishedAt()).isEqualTo(first.log().getFinishedAt());
+        }
+
+        @Test
+        void shouldAnswerNotFoundAndChangeNothing_whenTheSessionIsAnotherClientsOrUnknown() {
+            SessionLogId theirs = withOneSet(OTHER_CLIENT);
+            SessionLogId lockedTheirs = startedAt(NOW.minus(Duration.ofHours(30)), OTHER_CLIENT);
+
+            for (SessionLogId id : List.of(theirs, lockedTheirs, SessionLogId.random())) {
+                assertThatThrownBy(() -> service.finish(CLIENT, id)).isInstanceOf(SessionLogNotFoundException.class);
+                assertThatThrownBy(() -> service.summary(CLIENT, id)).isInstanceOf(SessionLogNotFoundException.class);
+            }
+            assertThat(stored.get(theirs).getFinishedAt()).isEmpty();
+        }
+
+        @Test
+        void shouldRefuseWithNothingLogged_andWithLocked() {
+            SessionLogId empty = service.start(CLIENT).log().getId();
+            SessionLogId locked = startedAt(NOW.minus(Duration.ofHours(24)), CLIENT);
+
+            assertThatThrownBy(() -> service.finish(CLIENT, empty)).isInstanceOf(NothingLoggedException.class);
+            assertThatThrownBy(() -> service.finish(CLIENT, locked)).isInstanceOf(SessionLogLockedException.class);
+        }
+
+        @Test
+        void shouldRefuseTheSummary_whenTheSessionIsNotFinished() {
+            SessionLogId session = withOneSet(CLIENT);
+
+            assertThatThrownBy(() -> service.summary(CLIENT, session)).isInstanceOf(NotFinishedException.class);
+        }
+
+        @Test
+        void shouldAnswerAsTheFirstTime_whenFinishedAgainAfterTheLock() {
+            SessionLog log = new SessionLog(
+                    SessionLogId.random(),
+                    CLIENT,
+                    TODAY.minusDays(3),
+                    "Lower body",
+                    NOW.minus(Duration.ofHours(60)),
+                    NOW.minus(Duration.ofHours(59)),
+                    List.of(new LoggedEntry(SQUAT.getId(), 1, 5, new BigDecimal("100.0"), 8, 120)),
+                    List.of(new SetLog(
+                            newId(), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), new BigDecimal("100.0"), 5, 8,
+                            NOW.minus(Duration.ofHours(59)))),
+                    0);
+            logs.save(log);
+
+            SessionSummaryView view = service.finish(CLIENT, log.getId());
+
+            assertThat(view.log().getFinishedAt()).contains(NOW.minus(Duration.ofHours(59)));
+            assertThat(view.summary().setsLogged()).isEqualTo(1);
         }
     }
 }

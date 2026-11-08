@@ -1,3 +1,4 @@
+-- Every published plan here was published on the Monday of its first week, except Demo Client Daily's (see below).
 -- local profile only; Demo Client Draft has a draft, and Demo Client Published a plan of 16 weeks whose first week is 5
 -- weeks before the first run, so it starts in week 6 and shortening it below that can be tried. The client has not
 -- opened it yet, so the plan-ready screen shows. Demo Client Seen has opened a plan of 8 weeks, in week 3, and Demo
@@ -5,24 +6,27 @@
 -- Demo Client Failed an empty one that could not be. The three drafts wait for different times, so the approvals list
 -- has an order to show, and Demo Client Other is the second trainer's, so it never shows for the first. Demo Client
 -- Rebuilding has a built draft being built again; the sweep ends that drafting a few minutes after start, keeping it
-insert into plans (id, client_id, goal, weeks, first_week, client_seen_at, automatic_draft, created_at, updated_at,
-                   version)
-values ('00000000-0000-4000-9300-000000000001', '00000000-0000-4000-8000-000000000006', 'GET_STRONGER', 12, null,
+insert into plans (id, client_id, goal, weeks, first_week, published_on, client_seen_at, automatic_draft, created_at,
+                   updated_at, version)
+values ('00000000-0000-4000-9300-000000000001', '00000000-0000-4000-8000-000000000006', 'GET_STRONGER', 12, null, null,
         null, null, now() - interval '3 days', now(), 0),
        ('00000000-0000-4000-9300-000000000002', '00000000-0000-4000-8000-000000000007', 'LOSE_FAT', 16,
+        (date_trunc('week', current_date) - interval '5 weeks')::date,
         (date_trunc('week', current_date) - interval '5 weeks')::date, null, null, now(), now(), 0),
        ('00000000-0000-4000-9300-000000000003', '00000000-0000-4000-8000-000000000008', 'GENERAL_FITNESS', 8,
+        (date_trunc('week', current_date) - interval '2 weeks')::date,
         (date_trunc('week', current_date) - interval '2 weeks')::date, now(), null, now(), now(), 0),
        ('00000000-0000-4000-9300-000000000004', '00000000-0000-4000-8000-000000000009', 'MOVE_BETTER', 4,
+        (date_trunc('week', current_date) - interval '4 weeks')::date,
         (date_trunc('week', current_date) - interval '4 weeks')::date, now(), null, now(), now(), 0),
        ('00000000-0000-4000-9300-000000000005', '00000000-0000-4000-8000-000000000010', 'BUILD_MUSCLE', 12, null,
-        null, 'BUILT', now() - interval '3 hours', now(), 0),
+        null, null, 'BUILT', now() - interval '3 hours', now(), 0),
        ('00000000-0000-4000-9300-000000000006', '00000000-0000-4000-8000-000000000011', 'GENERAL_FITNESS', 12, null,
-        null, 'FAILED', now() - interval '26 hours', now(), 0),
+        null, null, 'FAILED', now() - interval '26 hours', now(), 0),
        ('00000000-0000-4000-9300-000000000020', '00000000-0000-4000-8000-000000000020', 'LOSE_FAT', 12, null,
-        null, 'BUILT', now() - interval '5 hours', now(), 0),
+        null, null, 'BUILT', now() - interval '5 hours', now(), 0),
        ('00000000-0000-4000-9300-000000000021', '00000000-0000-4000-8000-000000000021', 'GET_STRONGER', 12, null,
-        null, 'BUILT', now() - interval '8 hours', now(), 0)
+        null, null, 'BUILT', now() - interval '8 hours', now(), 0)
 on conflict do nothing;
 
 insert into plan_sessions (id, plan_id, name, day_of_week)
@@ -88,10 +92,12 @@ from generate_series(1, 9) as hour
 on conflict do nothing;
 
 -- Demo Client Daily has opened a plan with a session on Monday to Saturday, in week 3 of 8
-insert into plans (id, client_id, goal, weeks, first_week, client_seen_at, automatic_draft, created_at, updated_at,
-                   version)
+-- published on the Wednesday of its first week, so Monday and Tuesday of week 1 show no state
+insert into plans (id, client_id, goal, weeks, first_week, published_on, client_seen_at, automatic_draft, created_at,
+                   updated_at, version)
 values ('00000000-0000-4000-9300-000000000007', '00000000-0000-4000-8000-000000000012', 'GET_STRONGER', 8,
-        (date_trunc('week', current_date) - interval '2 weeks')::date, now(), null, now(), now(), 0)
+        (date_trunc('week', current_date) - interval '2 weeks')::date,
+        (date_trunc('week', current_date) - interval '2 weeks' + interval '2 days')::date, now(), null, now(), now(), 0)
 on conflict do nothing;
 
 insert into plan_sessions (id, plan_id, name, day_of_week)

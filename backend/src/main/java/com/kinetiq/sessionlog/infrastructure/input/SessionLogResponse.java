@@ -10,13 +10,17 @@ import java.util.List;
 import java.util.UUID;
 
 // @NotNull marks the fields required in the OpenAPI document; responses are never validated
-/** A session a client started: a copy of the planned session, with each planned set and the set logged for it. */
+/**
+ * A session a client started: a copy of the planned session, with each planned set and the set logged for it.
+ * {@code finishedAt} is left out until the session is finished.
+ */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record SessionLogResponse(
         @NotNull UUID id,
         @NotNull LocalDate date,
         @NotNull String name,
         @NotNull Instant startedAt,
+        Instant finishedAt,
         @NotNull List<LoggedEntryResponse> entries) {
 
     /** One exercise of the session, with its name in the language of the request. */

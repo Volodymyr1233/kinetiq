@@ -2,9 +2,11 @@ package com.kinetiq.sessionlog.domain.output;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SetLogId;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 
 public interface SessionLogRepository {
@@ -18,6 +20,12 @@ public interface SessionLogRepository {
     /** The session a set id is used in, whoever's it is, so an id of another session is never taken over. */
     Optional<SessionLogId> sessionOfSetLog(SetLogId id);
 
-    /** Inserts the session log or replaces the stored one with its set logs, and returns it as stored. */
+    /** The headers of the client's session logs dated {@code from} to {@code to}, both included. */
+    List<SessionLogHeader> headersBetween(AccountId client, LocalDate from, LocalDate to);
+
+    /**
+     * Inserts the session log or replaces the stored one with its set logs, and returns it as stored. A copy that was
+     * changed by another request since it was read is {@code SessionLogChangedException}.
+     */
     SessionLog save(SessionLog log);
 }

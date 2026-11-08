@@ -254,12 +254,14 @@ class ConversationDirectoryIT {
     private void insertPlan(AccountId client, Goal goal, LocalDate firstWeek) {
         jdbc.update(
                 """
-                insert into plans (id, client_id, goal, weeks, first_week, created_at, updated_at, version)
-                values (?, ?, ?, 8, ?::date, now(), now(), 0)
+                insert into plans (id, client_id, goal, weeks, first_week, published_on, created_at, updated_at,
+                                   version)
+                values (?, ?, ?, 8, ?::date, ?::date, now(), now(), 0)
                 """,
                 UUID.randomUUID(),
                 client.value(),
                 goal.name(),
+                firstWeek == null ? null : firstWeek.toString(),
                 firstWeek == null ? null : firstWeek.toString());
     }
 }

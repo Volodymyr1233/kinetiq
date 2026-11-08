@@ -19,15 +19,21 @@ import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
+import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
+import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
+import com.kinetiq.sessionlog.domain.exception.SessionLogChangedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
 import com.kinetiq.sessionlog.domain.input.LogSessionUseCase;
 import com.kinetiq.sessionlog.domain.input.LogSetCommand;
+import com.kinetiq.sessionlog.domain.input.SessionSummaryView;
 import com.kinetiq.sessionlog.domain.input.StartedSession;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogId;
+import com.kinetiq.sessionlog.domain.model.SessionSummary;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetLogId;
 import com.kinetiq.sessionlog.domain.model.SetValues;
@@ -36,6 +42,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -277,5 +284,94 @@ class SessionLogControllerTest {
                 HttpStatus.UNAUTHORIZED,
                 "request.unauthenticated");
         verifyNoInteractions(sessions);
+    }
+
+    private static final String FINISH = SESSIONS + "/" + SESSION_ID + "/finish";
+    private static final String SUMMARY = SESSIONS + "/" + SESSION_ID + "/summary";
+
+    private static SessionSummaryView summaryView(BigDecimal volume) {
+        SessionLog log = started(false, true).log();
+        return new SessionSummaryView(
+                log,
+                new SessionSummary(
+                        1, 2, Optional.ofNullable(volume), new BigDecimal("8.5"), 42));
+    }
+
+    @Test
+    void shouldAnswerTheSummary_whenTheSessionIsFinished() {
+        when(sessions.finish(CLIENT_ID, new SessionLogId(SESSION_ID))).thenReturn(summaryView(new BigDecimal("1512.5")));
+
+        var result = mvc.post().uri(FINISH).with(CLIENT).with(csrf()).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.sessionLogId").isEqualTo(SESSION_ID.toString());
+        assertThat(result).bodyJson().extractingPath("$.name").isEqualTo("Lower body");
+        assertThat(result).bodyJson().extractingPath("$.date").isEqualTo("2026-11-07");
+        assertThat(result).bodyJson().extractingPath("$.setsLogged").isEqualTo(1);
+        assertThat(result).bodyJson().extractingPath("$.setsPlanned").isEqualTo(2);
+        assertThat(result).bodyJson().extractingPath("$.volumeKg").isEqualTo(1512.5);
+        assertThat(result).bodyJson().extractingPath("$.averageRpe").isEqualTo(8.5);
+        assertThat(result).bodyJson().extractingPath("$.minutes").isEqualTo(42);
+    }
+
+    @Test
+    void shouldLeaveOutTheVolume_whenNoSetCounts() {
+        when(sessions.summary(CLIENT_ID, new SessionLogId(SESSION_ID))).thenReturn(summaryView(null));
+
+        var result = mvc.get().uri(SUMMARY).with(CLIENT).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().doesNotHavePath("$.volumeKg");
+        assertThat(result).bodyJson().extractingPath("$.minutes").isEqualTo(42);
+    }
+
+    @Test
+    void shouldMapTheRefusalsOfFinishAndSummary() {
+        for (var failure : List.of(
+                Map.entry(new SessionLogNotFoundException(), HttpStatus.NOT_FOUND),
+                Map.entry(new SessionLogLockedException(), HttpStatus.CONFLICT),
+                Map.entry(new NothingLoggedException(), HttpStatus.CONFLICT),
+                Map.entry(new NotFinishedException(), HttpStatus.CONFLICT),
+                Map.entry(new SessionLogChangedException(), HttpStatus.CONFLICT))) {
+            doThrow(failure.getKey()).when(sessions).finish(any(), any());
+            doThrow(failure.getKey()).when(sessions).summary(any(), any());
+            var finish = mvc.post().uri(FINISH).with(CLIENT).with(csrf()).exchange();
+            var summary = mvc.get().uri(SUMMARY).with(CLIENT).exchange();
+
+            assertRefused(finish, failure.getValue(), failure.getKey().code());
+            assertRefused(summary, failure.getValue(), failure.getKey().code());
+            // only the code is told, never the message of the exception
+            assertThat(finish).bodyText().doesNotContain(failure.getKey().getMessage());
+        }
+    }
+
+    @Test
+    void shouldRefuseAFinishWithoutTheCsrfToken() {
+        assertThat(mvc.post().uri(FINISH).with(CLIENT).exchange()).hasStatus(HttpStatus.FORBIDDEN);
+        verifyNoInteractions(sessions);
+    }
+
+    @Test
+    void shouldRefuseATrainerAndAVisitor_onFinishAndSummary() {
+        assertRefused(
+                mvc.post().uri(FINISH).with(TRAINER).with(csrf()).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(SUMMARY).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(
+                mvc.post().uri(FINISH).with(csrf()).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        assertRefused(mvc.get().uri(SUMMARY).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        verifyNoInteractions(sessions);
+    }
+
+    @Test
+    void shouldShowWhenTheSessionWasFinished_inTheStartedSession() {
+        SessionLog log = started(false, true).log();
+        SessionLog finished = new SessionLog(
+                log.getId(), CLIENT_ID, log.getDate(), log.getName(), NOW, NOW.plusSeconds(600), log.getEntries(),
+                log.getSetLogs(), 0);
+        when(sessions.start(CLIENT_ID)).thenReturn(new StartedSession(finished, Map.of(SQUAT.getId(), SQUAT), false));
+
+        var result = mvc.post().uri(SESSIONS).with(CLIENT).with(csrf()).exchange();
+
+        assertThat(result).bodyJson().extractingPath("$.finishedAt").isEqualTo("2026-11-07T10:10:00Z");
     }
 }

@@ -22,6 +22,7 @@ interface PlanMapper {
                 entity.getGoal(),
                 entity.getWeeks(),
                 entity.getFirstWeek(),
+                entity.getPublishedOn(),
                 entity.getSessions().stream().map(this::toDomain).toList(),
                 entity.getVersion(),
                 entity.getAutomaticDraft());

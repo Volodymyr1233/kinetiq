@@ -62,7 +62,12 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/exercises/**", "/api/v1/invites/**", "/api/v1/clients/**", "/api/v1/approvals/**")
                         .hasRole("TRAINER")
-                        .requestMatchers("/api/v1/quiz/**", "/api/v1/plan/**", "/api/v1/today/**", "/api/v1/session-logs/**")
+                        .requestMatchers(
+                                "/api/v1/quiz/**",
+                                "/api/v1/plan/**",
+                                "/api/v1/today/**",
+                                "/api/v1/session-logs/**",
+                                "/api/v1/session-states/**")
                         .hasRole("CLIENT")
                         .requestMatchers("/api/**")
                         .authenticated()

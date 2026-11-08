@@ -7,8 +7,10 @@ import static org.assertj.core.api.Assertions.catchThrowable;
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.sessionlog.domain.exception.SessionLogChangedException;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetLogId;
@@ -182,6 +184,65 @@ class SessionLogRepositoryImplIT {
         assertThat(changed.values().amount()).isEqualTo(6);
         assertThat(changed.loggedAt()).isEqualTo(NOW.plusSeconds(60));
         assertThat(changed.targetLoadKg()).isEqualByComparingTo("100.0");
+    }
+
+    @Test
+    void shouldReadTheHeadersOfTheRangeForTheClientOnly_bothBoundsIncluded() {
+        AccountId client = insertClient();
+        AccountId other = insertClient();
+        ExerciseId squat = insertExercise();
+        List<LoggedEntry> entries = List.of(new LoggedEntry(squat, 3, 5, new BigDecimal("100.0"), 8, 120));
+        SessionLog first = repository.save(start(client, DATE, entries));
+        SessionLog last = repository.save(start(client, DATE.plusDays(6), entries));
+        repository.save(start(client, DATE.minusDays(1), entries));
+        repository.save(start(client, DATE.plusDays(7), entries));
+        repository.save(start(other, DATE.plusDays(2), entries));
+        flushAndClear();
+
+        List<SessionLogHeader> headers = repository.headersBetween(client, DATE, DATE.plusDays(6));
+
+        assertThat(headers).extracting(SessionLogHeader::id).containsExactlyInAnyOrder(first.getId(), last.getId());
+        assertThat(headers.getFirst().startedAt()).isEqualTo(NOW);
+        assertThat(headers.getFirst().finished()).isEmpty();
+    }
+
+    @Test
+    void shouldStoreTheFinishTime() {
+        AccountId client = insertClient();
+        ExerciseId squat = insertExercise();
+        SessionLog log = start(client, DATE, List.of(new LoggedEntry(squat, 3, 5, new BigDecimal("100.0"), 8, 120)));
+        log.logSet(new SetLogId(UUID.randomUUID()), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+        repository.save(log);
+        flushAndClear();
+
+        SessionLog stored = repository.findByIdAndClient(log.getId(), client).orElseThrow();
+        stored.finish(NOW.plusSeconds(600));
+        repository.save(stored);
+        flushAndClear();
+
+        assertThat(repository.findByIdAndClient(log.getId(), client).orElseThrow().getFinishedAt())
+                .contains(NOW.plusSeconds(600));
+        assertThat(repository.headersBetween(client, DATE, DATE).getFirst().finished())
+                .contains(NOW.plusSeconds(600));
+    }
+
+    @Test
+    void shouldRefuseAsChanged_whenSavedFromAStaleCopy() {
+        AccountId client = insertClient();
+        ExerciseId squat = insertExercise();
+        SessionLog log = start(client, DATE, List.of(new LoggedEntry(squat, 3, 5, new BigDecimal("100.0"), 8, 120)));
+        log.logSet(new SetLogId(UUID.randomUUID()), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), NOW);
+        repository.save(log);
+        flushAndClear();
+        SessionLog stale = repository.findByIdAndClient(log.getId(), client).orElseThrow();
+        SessionLog current = repository.findByIdAndClient(log.getId(), client).orElseThrow();
+        current.finish(NOW.plusSeconds(60));
+        repository.save(current);
+        flushAndClear();
+
+        stale.finish(NOW.plusSeconds(120));
+
+        assertThatThrownBy(() -> repository.save(stale)).isInstanceOf(SessionLogChangedException.class);
     }
 
     @Test

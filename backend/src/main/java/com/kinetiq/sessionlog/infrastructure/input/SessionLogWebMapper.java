@@ -1,9 +1,13 @@
 package com.kinetiq.sessionlog.infrastructure.input;
 
 import com.kinetiq.exercise.domain.model.Exercise;
+import com.kinetiq.sessionlog.domain.input.SessionStates;
+import com.kinetiq.sessionlog.domain.input.SessionSummaryView;
 import com.kinetiq.sessionlog.domain.input.StartedSession;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogId;
+import com.kinetiq.sessionlog.domain.model.SessionSummary;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import java.util.List;
 import java.util.Locale;
@@ -22,6 +26,7 @@ class SessionLogWebMapper {
                 log.getDate(),
                 log.getName(),
                 log.getStartedAt(),
+                log.getFinishedAt().orElse(null),
                 IntStream.range(0, entries.size())
                         .mapToObj(position -> toResponse(
                                 position,
@@ -63,6 +68,32 @@ class SessionLogWebMapper {
                 set.values().amount(),
                 set.values().rpe(),
                 set.loggedAt());
+    }
+
+    SessionSummaryResponse toResponse(SessionSummaryView view) {
+        SessionLog log = view.log();
+        SessionSummary summary = view.summary();
+        return new SessionSummaryResponse(
+                log.getId().value(),
+                log.getName(),
+                log.getDate(),
+                summary.setsLogged(),
+                summary.setsPlanned(),
+                summary.volumeKg().orElse(null),
+                summary.averageRpe(),
+                summary.minutes());
+    }
+
+    SessionStatesResponse toResponse(SessionStates states) {
+        return new SessionStatesResponse(
+                states.today(),
+                states.sessions().stream()
+                        .map(entry -> new SessionStatesResponse.SessionStateResponse(
+                                entry.day(),
+                                entry.date(),
+                                entry.state().orElse(null),
+                                entry.sessionLogId().map(SessionLogId::value).orElse(null)))
+                        .toList());
     }
 
     SetLogResponse toResponse(SetLog set) {

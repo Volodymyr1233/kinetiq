@@ -177,6 +177,26 @@ class PlanRepositoryImplIT {
     }
 
     @Test
+    void shouldKeepThePublishedDay_whenPublished() {
+        AccountId client = insertClient();
+        LocalDate wednesday = LocalDate.parse("2026-10-28");
+        repository.save(
+                new Plan(PlanId.random(), client, Goal.LOSE_FAT, 8, LocalDate.parse("2026-10-26"), wednesday, List.of(), 0, null));
+        flushAndClear();
+
+        assertThat(repository.findByClient(client).orElseThrow().getPublishedOn()).contains(wednesday);
+    }
+
+    @Test
+    void shouldStoreNoPublishedDay_whenItIsADraft() {
+        AccountId client = insertClient();
+        repository.save(draft(client, List.of()));
+        flushAndClear();
+
+        assertThat(repository.findByClient(client).orElseThrow().getPublishedOn()).isEmpty();
+    }
+
+    @Test
     void shouldRefuseAsChanged_whenTheClientAlreadyHasAPlan() {
         AccountId client = insertClient();
         repository.save(draft(client, List.of()));

@@ -1,14 +1,17 @@
 package com.kinetiq.sessionlog.domain.model;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
-import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.AccessLevel;
@@ -21,9 +24,6 @@ import lombok.Getter;
 @Getter
 public class SessionLog {
 
-    // counted from the start, whether or not the session was finished
-    private static final Duration EDIT_WINDOW = Duration.ofHours(24);
-
     private final SessionLogId id;
     private final AccountId client;
     private final LocalDate date;
@@ -31,7 +31,7 @@ public class SessionLog {
     private final Instant startedAt;
 
     @Getter(AccessLevel.NONE)
-    private final Instant finishedAt;
+    private Instant finishedAt;
 
     private final List<LoggedEntry> entries;
     private final List<SetLog> setLogs;
@@ -95,6 +95,27 @@ public class SessionLog {
         return logged;
     }
 
+    /**
+     * Finishes the session. A repeat changes nothing, also after the lock, so a send that is repeated is safe. Otherwise
+     * the session must still be open ({@code SessionLogLockedException}) and have a logged set
+     * ({@code NothingLoggedException}).
+     */
+    public void finish(Instant now) {
+        if (finishedAt != null) {
+            return;
+        }
+        requireOpen(now);
+        if (setLogs.isEmpty()) {
+            throw new NothingLoggedException();
+        }
+        finishedAt = now;
+    }
+
+    /** The summary of this finished session, as its sets are now; {@code measures} gives each exercise its measure. */
+    public SessionSummary summary(Map<ExerciseId, Measure> measures) {
+        return SessionSummary.of(this, measures);
+    }
+
     private LoggedEntry plannedEntry(int entryPosition, int setNumber) {
         if (entryPosition < 0 || entryPosition >= entries.size()) {
             throw new SetValuesInvalidException("place");
@@ -120,7 +141,7 @@ public class SessionLog {
     }
 
     private void requireOpen(Instant now) {
-        if (!now.isBefore(startedAt.plus(EDIT_WINDOW))) {
+        if (!EditWindow.isOpen(startedAt, now)) {
             throw new SessionLogLockedException();
         }
     }
