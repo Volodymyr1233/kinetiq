@@ -319,8 +319,9 @@ describe('ClientPlanPage', () => {
     openPlan(servePlanWithStates)
 
     const days = await screen.findAllByRole('listitem')
-    expect(await within(days[0]).findByText('Done')).toBeInTheDocument()
-    expect(within(days[3]).getByText('Missed')).toBeInTheDocument()
+    // the mark names the state for assistive technology, and the card's badge shows it
+    expect(await within(days[0]).findAllByText('Done')).toHaveLength(2)
+    expect(within(days[3]).getAllByText('Missed')).toHaveLength(2)
     expect(within(days[1]).queryByText(/Done|Missed|Today/)).toBeNull()
   })
 

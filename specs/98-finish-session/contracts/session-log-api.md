@@ -37,6 +37,7 @@ The summary of the client's own finished session, as the figures are now.
 | `sessionLogId` | uuid | required |
 | `name` | string | the session's name, as copied at the start; required |
 | `date` | date | required |
+| `startedAt` | instant | when the session started; the screen tells from it when the note locks; required |
 | `setsLogged` | int | required |
 | `setsPlanned` | int | required |
 | `volumeKg` | number | left out when no logged set counts (time-measured or without a load); one decimal |
