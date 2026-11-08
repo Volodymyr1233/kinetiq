@@ -101,8 +101,14 @@ _Avoid_: Survey, questionnaire, onboarding form
 What a client actually did in a set: load, repetitions or seconds, and RPE.
 _Avoid_: Track, record, entry
 
+**Session state**:
+Where one planned session stands: Done, In progress, Missed, Today or Planned. Derived from the calendar and the session log, never stored.
+
+**Session summary**:
+The sets logged, total volume and average RPE of a finished session, as its sets are now.
+
 **Missed session**:
-A session whose day has passed without the client finishing it.
+A planned session that was never started, or was started and not finished before it locked, whose day has passed and is on or after the day the plan was published.
 _Avoid_: Skipped session
 
 **Locked**:

@@ -59,12 +59,13 @@ class JdbcDraftedPlanDirectoryIT {
     private UUID insertPlan(UUID id, AccountId client, String mark, LocalDate firstWeek, Instant createdAt) {
         jdbc.update(
                 """
-                insert into plans (id, client_id, goal, weeks, first_week, automatic_draft, created_at, updated_at,
-                                   version)
-                values (?, ?, 'LOSE_FAT', 10, ?, ?, ?, now(), 0)
+                insert into plans (id, client_id, goal, weeks, first_week, published_on, automatic_draft, created_at,
+                                   updated_at, version)
+                values (?, ?, 'LOSE_FAT', 10, ?, ?, ?, ?, now(), 0)
                 """,
                 id,
                 client.value(),
+                firstWeek,
                 firstWeek,
                 mark,
                 Timestamp.from(createdAt));

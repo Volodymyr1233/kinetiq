@@ -5,6 +5,7 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
@@ -13,9 +14,11 @@ import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.LogSessionUseCase;
 import com.kinetiq.sessionlog.domain.input.LogSetCommand;
+import com.kinetiq.sessionlog.domain.input.SessionSummaryView;
 import com.kinetiq.sessionlog.domain.input.StartedSession;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
+import com.kinetiq.sessionlog.domain.model.SessionLogId;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetValues;
 import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
@@ -81,6 +84,28 @@ public class SessionLogService implements LogSessionUseCase {
                 clock.instant());
         logs.save(log);
         return logged;
+    }
+
+    @Override
+    public SessionSummaryView finish(AccountId client, SessionLogId id) {
+        SessionLog log = ownLog(client, id);
+        log.finish(clock.instant());
+        return view(logs.save(log), client);
+    }
+
+    @Override
+    public SessionSummaryView summary(AccountId client, SessionLogId id) {
+        return view(ownLog(client, id), client);
+    }
+
+    private SessionLog ownLog(AccountId client, SessionLogId id) {
+        return logs.findByIdAndClient(id, client).orElseThrow(SessionLogNotFoundException::new);
+    }
+
+    private SessionSummaryView view(SessionLog log, AccountId client) {
+        Map<ExerciseId, Measure> measures = library(client).entrySet().stream()
+                .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getMeasure()));
+        return new SessionSummaryView(log, log.summary(measures));
     }
 
     private Map<ExerciseId, Exercise> library(AccountId client) {

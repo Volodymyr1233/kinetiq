@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -45,6 +46,28 @@ class SessionLogController {
         StartedSession started = sessions.start(signedIn(authentication));
         return ResponseEntity.status(started.created() ? HttpStatus.CREATED : HttpStatus.OK)
                 .body(mapper.toResponse(started, locale));
+    }
+
+    /**
+     * Finishes the client's own session and answers with its summary; a repeat answers as the first time and changes
+     * nothing. {@code 404} with {@code session-log.not-found} for a session that is not the client's, {@code 409} with
+     * {@code session-log.locked} for an unfinished one from 24 hours after the start, with
+     * {@code session-log.nothing-logged} while no set is logged, and with {@code session-log.changed} when another
+     * request changed the session at the same moment.
+     */
+    @PostMapping("/{id}/finish")
+    SessionSummaryResponse finish(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(sessions.finish(signedIn(authentication), new SessionLogId(id)));
+    }
+
+    /**
+     * The summary of the client's own finished session, as its sets are now. {@code 404} with
+     * {@code session-log.not-found} for a session that is not the client's, {@code 409} with
+     * {@code session-log.not-finished} while it is not finished.
+     */
+    @GetMapping("/{id}/summary")
+    SessionSummaryResponse summary(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(sessions.summary(signedIn(authentication), new SessionLogId(id)));
     }
 
     /**

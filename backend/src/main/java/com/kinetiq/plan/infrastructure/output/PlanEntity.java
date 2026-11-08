@@ -34,6 +34,7 @@ class PlanEntity extends BaseEntity {
 
     private int weeks;
     private LocalDate firstWeek;
+    private LocalDate publishedOn;
     private Instant clientSeenAt;
 
     @Enumerated(EnumType.STRING)

@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.common.domain.exception.DomainException;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
@@ -202,6 +203,85 @@ class SessionLogTest {
             SetLog logged = finished.logSet(newId(), 0, 1, asPlanned(), LOCKS_AT.minusNanos(1));
 
             assertThat(finished.getSetLogs()).containsExactly(logged);
+        }
+    }
+
+    @Nested
+    class Finish {
+
+        private SessionLog withOneSet() {
+            SessionLog log = started();
+            log.logSet(newId(), 0, 1, asPlanned(), NOW);
+            return log;
+        }
+
+        @Test
+        void shouldRecordTheMoment_whenASetIsLogged() {
+            SessionLog log = withOneSet();
+
+            log.finish(LATER);
+
+            assertThat(log.getFinishedAt()).contains(LATER);
+        }
+
+        @Test
+        void shouldKeepTheFirstFinishTime_whenFinishedAgain() {
+            SessionLog log = withOneSet();
+            log.finish(LATER);
+
+            log.finish(LATER.plusSeconds(60));
+
+            assertThat(log.getFinishedAt()).contains(LATER);
+        }
+
+        @Test
+        void shouldAnswerUnchanged_whenFinishedAgainAfterTheLock() {
+            SessionLog log = withOneSet();
+            log.finish(LATER);
+
+            log.finish(LOCKS_AT.plusSeconds(3600));
+
+            assertThat(log.getFinishedAt()).contains(LATER);
+        }
+
+        @Test
+        void shouldFinishOneNanosecondBeforeTheLock_andRefuseAtIt() {
+            SessionLog open = withOneSet();
+            SessionLog locked = withOneSet();
+
+            open.finish(LOCKS_AT.minusNanos(1));
+
+            assertThat(open.getFinishedAt()).isPresent();
+            assertThatThrownBy(() -> locked.finish(LOCKS_AT)).isInstanceOf(SessionLogLockedException.class);
+            assertThat(locked.getFinishedAt()).isEmpty();
+        }
+
+        @Test
+        void shouldRefuse_whenNoSetIsLogged() {
+            SessionLog log = started();
+
+            assertThatThrownBy(() -> log.finish(LATER))
+                    .isInstanceOf(NothingLoggedException.class)
+                    .extracting(error -> ((DomainException) error).code())
+                    .isEqualTo("session-log.nothing-logged");
+            assertThat(log.getFinishedAt()).isEmpty();
+        }
+
+        @Test
+        void shouldAnswerLocked_whenALockedSessionHasNoSets() {
+            SessionLog log = started();
+
+            assertThatThrownBy(() -> log.finish(LOCKS_AT)).isInstanceOf(SessionLogLockedException.class);
+        }
+
+        @Test
+        void shouldStillTakeSets_afterFinishingBeforeTheLock() {
+            SessionLog log = withOneSet();
+            log.finish(LATER);
+
+            SetLog second = log.logSet(newId(), 0, 2, asPlanned(), LATER.plusSeconds(60));
+
+            assertThat(log.getSetLogs()).contains(second).hasSize(2);
         }
     }
 

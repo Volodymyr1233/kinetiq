@@ -70,12 +70,14 @@ class JdbcClientDirectoryIT {
     private void insertPlan(AccountId client, Goal goal, LocalDate firstWeek) {
         jdbc.update(
                 """
-                insert into plans (id, client_id, goal, weeks, first_week, created_at, updated_at, version)
-                values (?, ?, ?, 12, ?, now(), now(), 0)
+                insert into plans (id, client_id, goal, weeks, first_week, published_on, created_at, updated_at,
+                                   version)
+                values (?, ?, ?, 12, ?, ?, now(), now(), 0)
                 """,
                 UUID.randomUUID(),
                 client.value(),
                 goal.name(),
+                firstWeek,
                 firstWeek);
     }
 

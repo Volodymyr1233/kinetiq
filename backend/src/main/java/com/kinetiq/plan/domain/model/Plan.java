@@ -39,13 +39,20 @@ public class Plan {
     @Getter(AccessLevel.NONE)
     private final LocalDate firstWeek;
 
+    // the client's local date it was published on, which may be after the Monday of that week
+    @Getter(AccessLevel.NONE)
+    private final LocalDate publishedOn;
+
     private final List<Session> sessions;
     private final long version;
 
     @Getter(AccessLevel.NONE)
     private final AutomaticDraft automaticDraft;
 
-    /** Rebuilds a stored plan without a mark; {@code firstWeek} is {@code null} for a draft. */
+    /**
+     * Rebuilds a stored plan without a mark; {@code firstWeek} is {@code null} for a draft. A published plan is taken to
+     * have been published on its first week's Monday, the earliest day it can have been.
+     */
     public Plan(
             PlanId id,
             AccountId client,
@@ -54,16 +61,20 @@ public class Plan {
             LocalDate firstWeek,
             List<Session> sessions,
             long version) {
-        this(id, client, goal, weeks, firstWeek, sessions, version, null);
+        this(id, client, goal, weeks, firstWeek, firstWeek, sessions, version, null);
     }
 
-    /** Rebuilds a stored plan; {@code firstWeek} and {@code automaticDraft} may be {@code null}. */
+    /**
+     * Rebuilds a stored plan; {@code firstWeek}, {@code publishedOn} and {@code automaticDraft} may be {@code null}, the
+     * first two together.
+     */
     public Plan(
             PlanId id,
             AccountId client,
             Goal goal,
             int weeks,
             LocalDate firstWeek,
+            LocalDate publishedOn,
             List<Session> sessions,
             long version,
             AutomaticDraft automaticDraft) {
@@ -81,6 +92,7 @@ public class Plan {
         this.goal = Objects.requireNonNull(goal);
         this.weeks = weeks;
         this.firstWeek = firstWeek;
+        this.publishedOn = publishedOn;
         this.sessions = sessions.stream().sorted(Comparator.comparing(Session::day)).toList();
         this.version = version;
         this.automaticDraft = automaticDraft;
@@ -88,19 +100,19 @@ public class Plan {
 
     /** Starts a new draft, which has no version until it is stored. */
     public static Plan draft(AccountId client, Goal goal, int weeks, List<Session> sessions) {
-        return new Plan(PlanId.random(), client, goal, weeks, null, sessions, 0);
+        return new Plan(PlanId.random(), client, goal, weeks, null, null, sessions, 0, null);
     }
 
     /** Starts a draft built automatically, which must be complete. */
     public static Plan built(AccountId client, Goal goal, int weeks, List<Session> sessions) {
-        Plan plan = new Plan(PlanId.random(), client, goal, weeks, null, sessions, 0, AutomaticDraft.BUILT);
+        Plan plan = new Plan(PlanId.random(), client, goal, weeks, null, null, sessions, 0, AutomaticDraft.BUILT);
         plan.requireComplete();
         return plan;
     }
 
     /** Starts the empty draft that stands for a drafting that failed. */
     public static Plan failed(AccountId client, Goal goal, int weeks) {
-        return new Plan(PlanId.random(), client, goal, weeks, null, List.of(), 0, AutomaticDraft.FAILED);
+        return new Plan(PlanId.random(), client, goal, weeks, null, null, List.of(), 0, AutomaticDraft.FAILED);
     }
 
     /** What the system did with this draft; empty once the trainer has saved it, and for any published plan. */
@@ -110,6 +122,11 @@ public class Plan {
 
     public Optional<LocalDate> getFirstWeek() {
         return Optional.ofNullable(firstWeek);
+    }
+
+    /** The day the plan was published, in the client's time zone; empty for a draft. */
+    public Optional<LocalDate> getPublishedOn() {
+        return Optional.ofNullable(publishedOn);
     }
 
     public boolean isPublished() {
@@ -135,7 +152,7 @@ public class Plan {
         if (isPublished()) {
             throw new PlanAlreadyPublishedException();
         }
-        Plan rebuilt = new Plan(id, client, goal, weeks, null, sessions, version, AutomaticDraft.BUILT);
+        Plan rebuilt = new Plan(id, client, goal, weeks, null, null, sessions, version, AutomaticDraft.BUILT);
         rebuilt.requireComplete();
         return rebuilt;
     }
@@ -147,7 +164,7 @@ public class Plan {
      * {@code today} is the date in the client's time zone.
      */
     public Plan edit(Goal goal, int weeks, List<Session> sessions, LocalDate today) {
-        Plan edited = new Plan(id, client, goal, weeks, firstWeek, sessions, version);
+        Plan edited = new Plan(id, client, goal, weeks, firstWeek, publishedOn, sessions, version, null);
         if (isPublished()) {
             edited.requireComplete();
             int currentWeek = weeksSinceFirst(today);
@@ -168,7 +185,7 @@ public class Plan {
         }
         requireComplete();
         LocalDate monday = today.with(TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY));
-        return new Plan(id, client, goal, weeks, monday, sessions, version);
+        return new Plan(id, client, goal, weeks, monday, today, sessions, version, null);
     }
 
     /**
