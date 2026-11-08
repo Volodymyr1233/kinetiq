@@ -43,3 +43,9 @@ on conflict do nothing;
 insert into quiz_submission_likes (submission_id, like_code)
 values ('00000000-0000-4000-8000-000000000308', 'WEIGHTS')
 on conflict do nothing;
+
+insert into quiz_submissions (id, client_id, goal, experience, level, age, height_cm, weight_kg, days_per_week, notes,
+                              submitted_at, created_at, updated_at, version)
+values ('00000000-0000-4000-8000-000000000309', '00000000-0000-4000-8000-000000000013', 'GENERAL_FITNESS',
+        'YEARS_2_TO_5', 'INTERMEDIATE', 35, 170, 70.0, 2, null, now(), now(), now(), 0)
+on conflict do nothing;

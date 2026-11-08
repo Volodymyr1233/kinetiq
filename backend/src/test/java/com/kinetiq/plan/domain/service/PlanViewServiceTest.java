@@ -289,6 +289,51 @@ class PlanViewServiceTest {
         }
 
         @Test
+        void shouldGiveTheNextSessionLaterThisWeek_onARestDay() {
+            storePublished(12, FIRST_WEEK);
+
+            // Tuesday of plan week 6
+            TodayView today = serviceAt(Instant.parse("2026-11-03T11:00:00Z")).today(CLIENT);
+
+            assertThat(today.state()).isEqualTo(TodayView.State.REST);
+            assertThat(today.next().session().name()).isEqualTo("Lower");
+            assertThat(today.next().date()).isEqualTo(LocalDate.parse("2026-11-05"));
+            assertThat(today.library()).containsKey(OWN_EXERCISE.getId());
+        }
+
+        @Test
+        void shouldGiveTheNextSessionOfTheFollowingWeek_whenThisWeeksSessionsHavePassed() {
+            storePublished(12, FIRST_WEEK);
+
+            // Friday of plan week 6
+            TodayView today = serviceAt(Instant.parse("2026-11-06T11:00:00Z")).today(CLIENT);
+
+            assertThat(today.next().session().name()).isEqualTo("Upper");
+            assertThat(today.next().date()).isEqualTo(LocalDate.parse("2026-11-09"));
+        }
+
+        @Test
+        void shouldGiveNoNextSession_whenThePlanHasNoneLeft() {
+            storePublished(5, FIRST_WEEK);
+
+            // Friday and Sunday of the last week; the Monday after is outside the plan
+            assertThat(serviceAt(Instant.parse("2026-10-30T11:00:00Z")).today(CLIENT).next())
+                    .isNull();
+            assertThat(serviceAt(Instant.parse("2026-11-01T11:00:00Z")).today(CLIENT).next())
+                    .isNull();
+        }
+
+        @Test
+        void shouldGiveNoNextSession_onASessionDayAndOnceThePlanHasFinished() {
+            storePublished(5, FIRST_WEEK);
+
+            assertThat(serviceAt(Instant.parse("2026-10-29T11:00:00Z")).today(CLIENT).next())
+                    .isNull();
+            assertThat(serviceAt(Instant.parse("2026-11-02T11:00:00Z")).today(CLIENT).next())
+                    .isNull();
+        }
+
+        @Test
         void shouldAnswerFinished_whenThePlanIsPastItsLastWeek() {
             storePublished(4, FIRST_WEEK);
 

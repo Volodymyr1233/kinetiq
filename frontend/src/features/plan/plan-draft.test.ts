@@ -14,6 +14,7 @@ import {
   problemsFromServer,
   removeSession,
   requestFromDraft,
+  estimatedMinutes,
   sessionTotals,
   target,
   updateSession,
@@ -161,6 +162,20 @@ describe('entryFromExercise', () => {
       rpe: '8',
       rest: '60',
     })
+  })
+})
+
+describe('estimatedMinutes', () => {
+  it('gives the same minutes as the plan editor shows for the same entries', () => {
+    const [session] = draftFromPlan(PLAN, 'KG', 'en').sessions
+    const entries = session.entries.map((entry) => ({
+      measure: entry.measure,
+      sets: Number(entry.sets),
+      amount: Number(entry.amount),
+      rest: Number(entry.rest),
+    }))
+
+    expect(estimatedMinutes(entries)).toBe(sessionTotals(session).minutes)
   })
 })
 

@@ -41,6 +41,40 @@ const sessionDay: Reply = (request) =>
     ? json({ today: '2026-11-05', sessions: [] })
     : json({ date: '2026-11-05', state: 'SESSION', session: SESSION })
 
+const NEXT = {
+  date: '2026-11-09',
+  session: {
+    ...SESSION,
+    name: 'Lower body',
+    day: 'MONDAY',
+    entries: [
+      { ...SESSION.entries[0], amount: 8, sets: 3 },
+      SESSION.entries[1],
+    ],
+  },
+}
+
+// the states and the plan answer beside Today, as the rest-day card reads them
+const restDay =
+  (next?: typeof NEXT, state?: string): Reply =>
+  (request) => {
+    const path = new URL(request.url).pathname
+    if (path === '/api/v1/session-states') {
+      return json({
+        today: '2026-11-06',
+        sessions: [
+          { day: 'MONDAY', date: '2026-11-02', state },
+          { day: 'TUESDAY', date: '2026-11-03' },
+          { day: 'THURSDAY', date: '2026-11-05' },
+        ],
+      })
+    }
+    if (path === '/api/v1/plan') {
+      return json({ sessions: [{}, {}, {}] })
+    }
+    return json({ date: '2026-11-06', state: 'REST', next })
+  }
+
 function openToday(
   reply: Reply,
   unit: WeightUnit = 'KG',
@@ -103,16 +137,91 @@ describe('TodayPage', () => {
   })
 
   it('says it is a rest day, with no session and no Start session', async () => {
-    openToday(() => json({ date: '2026-11-06', state: 'REST' }))
+    openToday(restDay())
 
     expect(
       await screen.findByRole('heading', { name: 'Rest day' }),
     ).toBeInTheDocument()
+    expect(screen.getByText('Rest')).toBeInTheDocument()
     expect(screen.getByText('Friday, November 6')).toBeInTheDocument()
+    expect(
+      screen.getByText('No session today. No check-in either.'),
+    ).toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'Start session' }),
     ).not.toBeInTheDocument()
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
+  })
+
+  it('shows the next session by name, date and estimated time, and the way to the week', async () => {
+    openToday(restDay(NEXT))
+
+    // 3 × (120 + 8 × 4) + 3 × (60 + 45) = 771 seconds, the plan editor's way
+    expect(
+      await screen.findByText('Next: Lower body · Mon, Nov 9 · 13 min'),
+    ).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'See this week' })).toHaveAttribute(
+      'href',
+      '/app/plan',
+    )
+  })
+
+  it('leaves out the next session when the plan has none left', async () => {
+    openToday(restDay())
+
+    await screen.findByRole('heading', { name: 'Rest day' })
+    expect(screen.queryByText(/^Next:/)).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'See this week' }),
+    ).toBeInTheDocument()
+  })
+
+  it('counts the done sessions of the week under the card', async () => {
+    openToday(restDay(NEXT, 'DONE'))
+
+    expect(
+      await screen.findByText('1 of 3 sessions done this week'),
+    ).toBeInTheDocument()
+  })
+
+  it('leaves out the count when the states cannot be read', async () => {
+    openToday((request) =>
+      new URL(request.url).pathname === '/api/v1/session-states'
+        ? problem(500, { status: 500, code: 'internal.error' })
+        : restDay(NEXT)(request),
+    )
+
+    await screen.findByRole('heading', { name: 'Rest day' })
+    expect(
+      screen.queryByText(/sessions done this week/),
+    ).not.toBeInTheDocument()
+    expect(screen.getByText(/^Next:/)).toBeInTheDocument()
+  })
+
+  it('speaks Polish on a rest day', async () => {
+    await i18n.changeLanguage('pl')
+    openToday(restDay(NEXT, 'DONE'))
+
+    expect(
+      await screen.findByText('Następna: Lower body · pon., 9 lis · 13 min'),
+    ).toBeInTheDocument()
+    expect(screen.getByText('Odpoczynek')).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Zobacz ten tydzień' }),
+    ).toBeInTheDocument()
+    expect(
+      await screen.findByText('Zrobione sesje w tym tygodniu: 1 z 3'),
+    ).toBeInTheDocument()
+  })
+
+  it('shows none of the rest-day elements on a session day', async () => {
+    openToday(sessionDay)
+
+    await screen.findByRole('heading', { name: 'Upper body' })
+    expect(
+      screen.queryByRole('link', { name: 'See this week' }),
+    ).not.toBeInTheDocument()
+    expect(screen.queryByText('Rest')).not.toBeInTheDocument()
   })
 
   it('says the trainer is preparing the next plan when the plan has finished', async () => {

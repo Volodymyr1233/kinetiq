@@ -3,13 +3,16 @@ import { Link } from 'react-router'
 import { useId, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
-import { useSessionStates } from '../api/session-states'
+import { useOwnPlan } from '../api/client-plan'
+import { useSessionStates, type SessionStateEntry } from '../api/session-states'
 import { useToday } from '../api/today'
 import { EntryRow } from '../components/entry-row'
 import { SessionStateBadge } from '../components/session-state-badge'
+import { estimatedMinutes } from '../plan-draft'
 
 /**
  * The client's Today tab: the session their plan has for today, a rest day, or the end of the plan. `beforeSession` is
@@ -58,13 +61,18 @@ export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
   }
 
   // a plain date, read in UTC so no time zone can move the day
-  const [year, month, day] = today.date.split('-').map(Number)
-  const date = new Intl.DateTimeFormat(i18n.language, {
+  const format = (isoDate: string, options: Intl.DateTimeFormatOptions) => {
+    const [year, month, day] = isoDate.split('-').map(Number)
+    return new Intl.DateTimeFormat(i18n.language, {
+      ...options,
+      timeZone: 'UTC',
+    }).format(new Date(Date.UTC(year, month - 1, day)))
+  }
+  const date = format(today.date, {
     weekday: 'long',
     day: 'numeric',
     month: 'long',
-    timeZone: 'UTC',
-  }).format(new Date(Date.UTC(year, month - 1, day)))
+  })
 
   // the states are for the week, so today's is found by its date
   const entry = states?.find((e) => e.date === today.date)
@@ -122,12 +130,7 @@ export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
       )}
 
       {today.state === 'REST' && (
-        <section className="flex flex-col gap-1 rounded-xl border border-dashed p-4">
-          <h2 className="font-heading text-lg font-semibold">
-            {t('plan.today.restDay')}
-          </h2>
-          <p className="text-muted-foreground">{t('plan.today.restText')}</p>
-        </section>
+        <RestDay next={today.next} states={states} format={format} />
       )}
 
       {today.state === 'FINISHED' && (
@@ -138,5 +141,65 @@ export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
         </section>
       )}
     </div>
+  )
+}
+
+type Format = (isoDate: string, options: Intl.DateTimeFormatOptions) => string
+
+/** The rest-day card: what comes next and how the week is going. */
+function RestDay({
+  next,
+  states,
+  format,
+}: {
+  next: NonNullable<ReturnType<typeof useToday>['data']>['next']
+  states: SessionStateEntry[] | undefined
+  format: Format
+}) {
+  const { t } = useTranslation()
+  // how many sessions the plan has in a week
+  const planned = useOwnPlan().data?.sessions.length
+
+  return (
+    <>
+      <section className="flex flex-col gap-3 rounded-xl border border-dashed p-4">
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <h2 className="font-heading text-lg font-semibold">
+            {t('plan.today.restDay')}
+          </h2>
+          <Badge variant="secondary">{t('plan.today.restBadge')}</Badge>
+        </div>
+        <p className="text-muted-foreground">{t('plan.today.restText')}</p>
+        {next && (
+          <p className="font-medium break-words">
+            {t('plan.today.next', {
+              name: next.session.name,
+              date: format(next.date, {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+              }),
+              minutes: estimatedMinutes(
+                next.session.entries.map((e) => ({
+                  ...e,
+                  rest: e.restSeconds,
+                })),
+              ),
+            })}
+          </p>
+        )}
+        <Button variant="outline" size="touch" asChild>
+          <Link to="/app/plan">{t('plan.today.seeWeek')}</Link>
+        </Button>
+      </section>
+      {states !== undefined && planned !== undefined && (
+        <p className="text-muted-foreground text-sm">
+          {t('plan.today.weekDone', {
+            done: states.filter((s) => s.state === 'DONE').length,
+            count: planned,
+          })}
+        </p>
+      )}
+    </>
   )
 }

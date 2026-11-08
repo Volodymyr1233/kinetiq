@@ -57,7 +57,11 @@ interface PlanWebMapper {
         return new TodayResponse(
                 view.date(),
                 view.state(),
-                view.session() == null ? null : toResponse(view.session(), view.library(), locale));
+                view.session() == null ? null : toResponse(view.session(), view.library(), locale),
+                view.next() == null
+                        ? null
+                        : new TodayResponse.NextResponse(
+                                view.next().date(), toResponse(view.next().session(), view.library(), locale)));
     }
 
     private PlanResponse.SessionResponse toResponse(

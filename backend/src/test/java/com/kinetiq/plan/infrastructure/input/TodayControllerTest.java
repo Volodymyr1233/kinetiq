@@ -98,11 +98,35 @@ class TodayControllerTest {
         assertThat(rest).hasStatus(HttpStatus.OK);
         assertThat(rest).bodyJson().extractingPath("$.state").isEqualTo("REST");
         assertThat(rest).bodyJson().doesNotHavePath("$.session");
+        assertThat(rest).bodyJson().doesNotHavePath("$.next");
 
         when(plans.today(CLIENT_ID)).thenReturn(new TodayView(DATE, TodayView.State.FINISHED, null, Map.of()));
         var finished = mvc.get().uri(ADDRESS).with(CLIENT).exchange();
         assertThat(finished).bodyJson().extractingPath("$.state").isEqualTo("FINISHED");
         assertThat(finished).bodyJson().doesNotHavePath("$.session");
+        assertThat(finished).bodyJson().doesNotHavePath("$.next");
+    }
+
+    @Test
+    void shouldGiveTheNextSession_onARestDay() {
+        Session session = new Session(
+                "Core", DayOfWeek.FRIDAY, List.of(new ExerciseEntry(PLANK.getId(), 3, 45, null, 8, 60)));
+        LocalDate friday = DATE.plusDays(1);
+        when(plans.today(CLIENT_ID))
+                .thenReturn(new TodayView(
+                        DATE,
+                        TodayView.State.REST,
+                        null,
+                        new TodayView.Next(friday, session),
+                        Map.of(PLANK.getId(), PLANK)));
+
+        var result = mvc.get().uri(ADDRESS).with(CLIENT).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.state").isEqualTo("REST");
+        assertThat(result).bodyJson().extractingPath("$.next.date").isEqualTo(friday.toString());
+        assertThat(result).bodyJson().extractingPath("$.next.session.name").isEqualTo("Core");
+        assertThat(result).bodyJson().extractingPath("$.next.session.entries[0].exerciseName").isEqualTo("Plank");
     }
 
     @Test
