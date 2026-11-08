@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.common.domain.exception.DomainException;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
 import java.math.BigDecimal;
@@ -20,6 +21,7 @@ class SessionLogTest {
 
     private static final Instant NOW = Instant.parse("2026-11-07T10:00:00Z");
     private static final Instant LATER = Instant.parse("2026-11-07T10:05:00Z");
+    private static final Instant LOCKS_AT = Instant.parse("2026-11-08T10:00:00Z");
     private static final LoggedEntry SQUAT =
             new LoggedEntry(ExerciseId.random(), 3, 5, new BigDecimal("100.0"), 8, 120);
     private static final LoggedEntry PLANK = new LoggedEntry(ExerciseId.random(), 2, 45, null, 7, 60);
@@ -138,6 +140,68 @@ class SessionLogTest {
                     .extracting(error -> ((DomainException) error).code())
                     .isEqualTo("set-log.place-taken");
             assertThat(log.getSetLogs()).hasSize(1);
+        }
+    }
+
+    @Nested
+    class Lock {
+
+        @Test
+        void shouldTakeANewSetAndAChange_whenTheSessionLocksANanosecondLater() {
+            SessionLog log = started();
+            SetLogId id = newId();
+            log.logSet(id, 0, 1, asPlanned(), NOW);
+            Instant last = LOCKS_AT.minusNanos(1);
+
+            SetLog changed = log.logSet(id, 0, 1, new SetValues(new BigDecimal("102.5"), 5, 8), last);
+            SetLog added = log.logSet(newId(), 0, 2, asPlanned(), last);
+
+            assertThat(log.getSetLogs()).containsExactly(changed, added);
+        }
+
+        @Test
+        void shouldRefuseANewSetAndAChange_andKeepTheSet_whenTheSessionHasLocked() {
+            SessionLog log = started();
+            SetLogId id = newId();
+            SetLog logged = log.logSet(id, 0, 1, asPlanned(), NOW);
+
+            assertThatThrownBy(() -> log.logSet(id, 0, 1, new SetValues(new BigDecimal("102.5"), 5, 8), LOCKS_AT))
+                    .isInstanceOf(SessionLogLockedException.class)
+                    .extracting(error -> ((DomainException) error).code())
+                    .isEqualTo("session-log.locked");
+            assertThatThrownBy(() -> log.logSet(newId(), 0, 2, asPlanned(), LOCKS_AT))
+                    .isInstanceOf(SessionLogLockedException.class);
+
+            assertThat(log.getSetLogs()).containsExactly(logged);
+        }
+
+        @Test
+        void shouldAnswerARepeatAsTheFirstTime_whenTheSessionHasLocked() {
+            SessionLog log = started();
+            SetLogId id = newId();
+            SetLog logged = log.logSet(id, 0, 1, asPlanned(), NOW);
+
+            assertThat(log.logSet(id, 0, 1, asPlanned(), LOCKS_AT)).isEqualTo(logged);
+            assertThat(log.logSet(id, 0, 1, asPlanned(), LOCKS_AT.plusSeconds(3600))).isEqualTo(logged);
+            assertThat(log.getSetLogs()).containsExactly(logged);
+        }
+
+        @Test
+        void shouldTakeAChange_whenTheSessionWasFinishedButHasNotLocked() {
+            SessionLog finished = new SessionLog(
+                    SessionLogId.random(),
+                    AccountId.random(),
+                    LocalDate.parse("2026-11-07"),
+                    "Lower body",
+                    NOW,
+                    LATER,
+                    List.of(SQUAT, PLANK),
+                    List.of(),
+                    0);
+
+            SetLog logged = finished.logSet(newId(), 0, 1, asPlanned(), LOCKS_AT.minusNanos(1));
+
+            assertThat(finished.getSetLogs()).containsExactly(logged);
         }
     }
 

@@ -1,8 +1,10 @@
 package com.kinetiq.sessionlog.domain.model;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,6 +20,9 @@ import lombok.Getter;
  */
 @Getter
 public class SessionLog {
+
+    // counted from the start, whether or not the session was finished
+    private static final Duration EDIT_WINDOW = Duration.ofHours(24);
 
     private final SessionLogId id;
     private final AccountId client;
@@ -70,8 +75,9 @@ public class SessionLog {
 
     /**
      * Logs a set, or changes it. The same id with the same values changes nothing, so a send that is repeated stores one
-     * set. The place must be a planned set of the session; an id never moves to another place, and a place is logged
-     * under one id only.
+     * set, even once the session is locked. The place must be a planned set of the session; an id never moves to another
+     * place, and a place is logged under one id only. From 24 hours after the start a new set or a change is
+     * {@code SessionLogLockedException}.
      */
     public SetLog logSet(SetLogId setLogId, int entryPosition, int setNumber, SetValues values, Instant now) {
         LoggedEntry entry = plannedEntry(entryPosition, setNumber);
@@ -79,6 +85,7 @@ public class SessionLog {
         if (known.isPresent()) {
             return change(known.get(), entryPosition, setNumber, values, now);
         }
+        requireOpen(now);
         if (setLogs.stream().anyMatch(s -> s.entryPosition() == entryPosition && s.setNumber() == setNumber)) {
             throw SetLogConflictException.placeTaken();
         }
@@ -106,8 +113,15 @@ public class SessionLog {
         if (stored.values().equals(values)) {
             return stored;
         }
+        requireOpen(now);
         SetLog changed = stored.withValues(values, now);
         setLogs.set(setLogs.indexOf(stored), changed);
         return changed;
+    }
+
+    private void requireOpen(Instant now) {
+        if (!now.isBefore(startedAt.plus(EDIT_WINDOW))) {
+            throw new SessionLogLockedException();
+        }
     }
 }

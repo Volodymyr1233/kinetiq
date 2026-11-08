@@ -105,6 +105,10 @@ _Avoid_: Track, record, entry
 A session whose day has passed without the client finishing it.
 _Avoid_: Skipped session
 
+**Locked**:
+A started session whose first 24 hours have passed: its sets can be read but no longer logged or changed, whether or not it was finished.
+_Avoid_: Closed, frozen
+
 **RPE**:
 Rate of perceived exertion: how hard a set felt on a 1–10 scale. 1–6 is easy, 7–8 is the usual target, 9–10 is hard.
 
