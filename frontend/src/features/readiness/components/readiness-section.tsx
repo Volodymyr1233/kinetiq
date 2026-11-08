@@ -1,14 +1,15 @@
-import { CircleAlertIcon } from 'lucide-react'
-import { useEffect, useRef, useState } from 'react'
+import { CircleAlertIcon, InfoIcon } from 'lucide-react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import { Skeleton } from '@/components/ui/skeleton'
-import { errorMessageKey } from '@/lib/api/problem'
-import { useCheckIn, useSaveCheckIn, type CheckIn } from '../api/check-in'
+import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import { useCheckIn, useSaveCheckIn, type Answers } from '../api/check-in'
 import { isSkipped, skip, unskip } from '../skip'
 import { CheckInCard } from './check-in-card'
+import { ReadinessCard } from './readiness-card'
 
 // where focus goes after a switch the client caused; on first load it is left alone
 type Focus = 'checkIn' | 'skipped' | 'card'
@@ -19,6 +20,7 @@ export function ReadinessSection() {
   const query = useCheckIn()
   const save = useSaveCheckIn()
   const [skippedHere, setSkippedHere] = useState<boolean>()
+  const [changing, setChanging] = useState(false)
   const [focus, setFocus] = useState<Focus>()
   const today = query.data
 
@@ -27,30 +29,77 @@ export function ReadinessSection() {
       return <Skeleton aria-hidden className="h-80 w-full rounded-xl" />
     }
     return (
-      <Alert variant="destructive">
-        <CircleAlertIcon aria-hidden />
-        <AlertDescription>{t(errorMessageKey(query.error))}</AlertDescription>
-        <AlertAction>
-          <Button variant="outline" onClick={() => void query.refetch()}>
-            {t('readiness.checkIn.retry')}
-          </Button>
-        </AlertAction>
-      </Alert>
+      <div className="flex flex-col gap-2">
+        <Alert variant="destructive">
+          <CircleAlertIcon aria-hidden />
+          <AlertDescription>{t(errorMessageKey(query.error))}</AlertDescription>
+        </Alert>
+        <Button
+          variant="outline"
+          size="touch"
+          onClick={() => void query.refetch()}
+        >
+          {t('readiness.checkIn.retry')}
+        </Button>
+      </div>
     )
   }
 
-  if (today.checkIn) {
-    return (
-      <ReadinessSummary
-        checkIn={today.checkIn}
-        focusHeading={focus === 'card'}
+  const saveAnswers = (answers: Answers, after?: () => void) => {
+    // set before saving, so the card that replaces the check-in takes focus when it appears
+    setFocus('card')
+    save.mutate(answers, { onSuccess: after })
+  }
+
+  // a set was logged meanwhile: the refetched card says the answers are fixed, and this says why the save failed
+  const trainingStarted =
+    problemCode(save.error) === 'check-in.training-started'
+
+  const checkIn = today.checkIn
+  let content: ReactNode = null
+  if (checkIn && changing && today.open) {
+    content = (
+      <CheckInCard
+        change={{
+          initial: {
+            sleep: checkIn.sleep,
+            soreness: checkIn.soreness,
+            stress: checkIn.stress,
+          },
+          onCancel: () => {
+            save.reset()
+            setChanging(false)
+            setFocus('card')
+          },
+        }}
+        saving={save.isPending}
+        error={trainingStarted ? null : save.error}
+        focusTitle={focus === 'checkIn'}
+        onComplete={(answers) => {
+          if (sameAnswers(answers, checkIn)) {
+            setChanging(false)
+            setFocus('card')
+          } else {
+            saveAnswers(answers, () => setChanging(false))
+          }
+        }}
       />
     )
-  }
-  if (!today.open) return null
-
-  if (skippedHere ?? isSkipped(today.date)) {
-    return (
+  } else if (checkIn) {
+    content = (
+      <ReadinessCard
+        checkIn={checkIn}
+        open={today.open}
+        focusHeading={focus === 'card'}
+        onChangeAnswers={() => {
+          save.reset()
+          setChanging(true)
+          setFocus('checkIn')
+        }}
+      />
+    )
+  } else if (today.open && (skippedHere ?? isSkipped(today.date))) {
+    content = (
       <SkippedLine
         focusAction={focus === 'skipped'}
         onCheckIn={() => {
@@ -60,25 +109,72 @@ export function ReadinessSection() {
         }}
       />
     )
+  } else if (today.open) {
+    content = (
+      <CheckInCard
+        saving={save.isPending}
+        error={trainingStarted ? null : save.error}
+        focusTitle={focus === 'checkIn'}
+        onComplete={(answers) => saveAnswers(answers)}
+        onSkip={() => {
+          skip(today.date)
+          save.reset()
+          setSkippedHere(true)
+          setFocus('skipped')
+        }}
+      />
+    )
   }
 
+  if (content === null && !trainingStarted) return null
+
   return (
-    <CheckInCard
-      saving={save.isPending}
-      error={save.error}
-      focusTitle={focus === 'checkIn'}
-      onComplete={(answers) => {
-        // set before saving, so the card that replaces the check-in takes focus when it appears
-        setFocus('card')
-        save.mutate(answers)
-      }}
-      onSkip={() => {
-        skip(today.date)
-        save.reset()
-        setSkippedHere(true)
-        setFocus('skipped')
-      }}
-    />
+    <>
+      {trainingStarted && (
+        <TrainingStartedNotice
+          message={t(errorMessageKey(save.error))}
+          // the check-in the client answered is gone and no card replaces it, so the notice takes focus
+          focus={content === null}
+        />
+      )}
+      {content}
+      {/* always present, so a score that appears is read out */}
+      <p role="status" className="sr-only">
+        {checkIn &&
+          focus === 'card' &&
+          t('readiness.card.announcement', {
+            score: checkIn.score,
+            band: t(`readiness.card.band.${checkIn.band}.name`),
+          })}
+      </p>
+    </>
+  )
+}
+
+function TrainingStartedNotice({
+  message,
+  focus,
+}: {
+  message: string
+  focus: boolean
+}) {
+  const notice = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (focus) notice.current?.focus()
+  }, [focus])
+
+  return (
+    <Alert ref={notice} tabIndex={-1} className="outline-none">
+      <InfoIcon aria-hidden />
+      <AlertDescription>{message}</AlertDescription>
+    </Alert>
+  )
+}
+
+function sameAnswers(a: Answers, b: Answers) {
+  return (
+    a.sleep === b.sleep && a.soreness === b.soreness && a.stress === b.stress
   )
 }
 
@@ -112,42 +208,6 @@ function SkippedLine({
         >
           {t('readiness.checkIn.checkIn')}
         </Button>
-      </CardContent>
-    </Card>
-  )
-}
-
-// replaced by the readiness card of task #113
-function ReadinessSummary({
-  checkIn,
-  focusHeading,
-}: {
-  checkIn: CheckIn
-  focusHeading: boolean
-}) {
-  const { t } = useTranslation()
-  const heading = useRef<HTMLHeadingElement>(null)
-
-  useEffect(() => {
-    if (focusHeading) heading.current?.focus()
-  }, [focusHeading])
-
-  return (
-    <Card aria-live="polite">
-      <CardContent>
-        <h2
-          ref={heading}
-          tabIndex={-1}
-          className="font-heading text-lg font-semibold outline-none"
-        >
-          {t('readiness.card.summary', {
-            score: checkIn.score,
-            band: t(`readiness.card.band.${checkIn.band}.name`),
-          })}
-        </h2>
-        <p className="text-muted-foreground">
-          {t('readiness.card.answers', checkIn)}
-        </p>
       </CardContent>
     </Card>
   )

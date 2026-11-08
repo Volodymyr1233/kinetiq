@@ -1124,16 +1124,31 @@
       "saving": "Zapisywanie…",
       "retry": "Spróbuj ponownie",
       "skipped": "Pominięto ocenę samopoczucia. Sesja jest zgodna z planem.",
-      "checkIn": "Oceń samopoczucie"
+      "checkIn": "Oceń samopoczucie",
+      "done": "Gotowe",
+      "cancel": "Anuluj"
     },
     "card": {
-      "summary": "Gotowość {{score, number}}: {{band}}",
+      "label": "Gotowość",
+      "change": "Zmień odpowiedzi",
+      "score": "{{score, number}}",
+      "announcement": "Gotowość {{score, number}}: {{band}}",
       "band": {
-        "READY": { "name": "Pełna gotowość" },
-        "TAKE_IT_EASIER": { "name": "Trochę lżej" },
-        "RECOVERY_DAY": { "name": "Dzień regeneracji" }
+        "READY": {
+          "name": "Pełna gotowość",
+          "line": "Trenuj zgodnie z planem."
+        },
+        "TAKE_IT_EASIER": {
+          "name": "Trochę lżej",
+          "line": "Ten sam plan. Kończ serię o powtórzenie wcześniej."
+        },
+        "RECOVERY_DAY": {
+          "name": "Dzień regeneracji",
+          "line": "Ten sam plan. Kończ serię dwa powtórzenia wcześniej."
+        }
       },
-      "answers": "Sen {{sleep, number}} · bolesność {{soreness, number}} · stres {{stress, number}}"
+      "answers": "Sen {{sleep, number}} · bolesność {{soreness, number}} · stres {{stress, number}}",
+      "fixed": "Po rozpoczęciu treningu odpowiedzi są już stałe."
     }
   }
 }

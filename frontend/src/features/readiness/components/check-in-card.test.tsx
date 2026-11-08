@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from 'vitest'
 import '@/lib/i18n'
 import { CheckInCard } from './check-in-card'
 
-function renderCard(props: Partial<Parameters<typeof CheckInCard>[0]> = {}) {
+function renderCard() {
   const onComplete = vi.fn()
   const onSkip = vi.fn()
   const view = render(
@@ -14,7 +14,6 @@ function renderCard(props: Partial<Parameters<typeof CheckInCard>[0]> = {}) {
       saving={false}
       error={null}
       focusTitle={false}
-      {...props}
     />,
   )
   return { onComplete, onSkip, ...view }
