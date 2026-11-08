@@ -51,6 +51,7 @@ class SessionLogWebMapper {
                 log.getStartedAt(),
                 log.getFinishedAt().orElse(null),
                 log.minutes().orElse(null),
+                log.getNote().orElse(null),
                 entries(log, read.library(), locale));
     }
 

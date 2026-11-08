@@ -73,10 +73,10 @@ description: "Tasks for story #104, Trainer sees a client's training (tasks #105
 
 **Goal**: the chosen session shows the note its client wrote for the trainer (spec FR-012; spec 98, FR-013a).
 
-- [ ] T032 [US2] Backend: `note` in the session log answer of T025, left out when there is none; a controller test for both
-- [ ] T033 Regenerate `F/lib/api/schema.d.ts` and run `npm run check`
-- [ ] T034 [US2] `F/features/sessionlog/pages/client-logs-tab.tsx`: "Note from {client}" with the note as plain text (`whitespace-pre-wrap`, never as markup) for a session that has one, nothing otherwise; strings in both locales; tests in `client-logs-tab.test.tsx` for both cases
-- [ ] T035 `./gradlew check` and `npm run check` pass; follow `quickstart.md` section 3, step 5; commit `feat: show the client's note in the logs tab`
+- [X] T032 [US2] Backend: `note` in `ClientSessionLogResponse` (T025), from `SessionLog.getNote()`, left out when there is none, and its mapping in `SessionLogWebMapper.java`; a controller test for both
+- [X] T033 Regenerate `F/lib/api/schema.d.ts` and run `npm run check`
+- [X] T034 [US2] `F/features/sessionlog/pages/client-logs-tab.tsx`: "Note from {client}" (the client's first name, as the line until when logs can change) with the note as plain text (`wrap-anywhere whitespace-pre-wrap`, as the quiz answers' notes, never as markup), in a muted block between the chosen session's figures and its table, for a session that has one, nothing otherwise; the board has no note, so the look follows the design system; strings `sessionlog.logs.noteFrom` in both locales; tests in `client-logs-tab.test.tsx` for both cases
+- [X] T035 `./gradlew check` and `npm run check` pass; follow `quickstart.md` section 3, step 5; commit `feat: show the client's note in the logs tab`
 
 ## Phase 6: task #108, progress section in the client overview (US4)
 

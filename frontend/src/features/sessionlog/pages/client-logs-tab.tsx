@@ -225,6 +225,17 @@ function ChosenSession({
           </>
         ) : (
           <>
+            {log.note !== undefined && (
+              <div className="bg-muted flex flex-col gap-1 rounded-md p-3 text-sm">
+                <p className="text-muted-foreground">
+                  {t('sessionlog.logs.noteFrom', {
+                    name: firstName(client.name),
+                  })}
+                </p>
+                {/* as the client typed it, never as markup */}
+                <p className="wrap-anywhere whitespace-pre-wrap">{log.note}</p>
+              </div>
+            )}
             <SessionLogTable entries={log.entries} />
             {!log.locked && (
               <p className="text-muted-foreground text-sm">

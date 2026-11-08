@@ -779,6 +779,7 @@
       "notLogged": "Nie zapisano",
       "notStarted": "Nie rozpoczęto",
       "changeable": "{{name}} może jeszcze zmieniać te logi do {{time}}.",
+      "noteFrom": "Notatka od: {{name}}",
       "loading": "Wczytywanie logów",
       "loadingSession": "Wczytywanie sesji"
     },
