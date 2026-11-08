@@ -107,6 +107,7 @@ const DETAILS: Record<string, ClientSessionLog> = {
     startedAt: '2026-11-02T17:00:00Z',
     finishedAt: '2026-11-02T17:48:00Z',
     minutes: 48,
+    note: 'Knee felt fine.\n<b>Last set</b> was hard.',
     entries: [
       squat([
         {
@@ -234,6 +235,26 @@ describe('ClientLogsTab', () => {
     expect(screen.getAllByRole('row').at(-1)).toHaveTextContent(
       'Plank145 s–No load50 s7',
     )
+  })
+
+  it('shows the note the client wrote as plain text, and nothing for a session without one', async () => {
+    const user = userEvent.setup()
+    openLogs()
+
+    expect(
+      await screen.findByText('1 of 2 sets · average RPE 9.0'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/^Note from/)).not.toBeInTheDocument()
+
+    await user.click(
+      (await sessionList()).getByRole('button', { name: /Upper body/ }),
+    )
+
+    expect(await screen.findByText('Note from Anna')).toBeInTheDocument()
+    // the client's text is shown as typed, markup included, never as markup
+    const note = screen.getByText(/Knee felt fine\./)
+    expect(note.textContent).toBe('Knee felt fine.\n<b>Last set</b> was hard.')
+    expect(note.querySelector('b')).toBeNull()
   })
 
   it('says nothing about changes once a log is locked', async () => {

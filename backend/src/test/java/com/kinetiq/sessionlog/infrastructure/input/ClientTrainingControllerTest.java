@@ -289,6 +289,20 @@ class ClientTrainingControllerTest {
             assertThat(result).bodyJson().extractingPath("$.entries[0].sets[0].log.rpe").isEqualTo(9);
             assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].number").isEqualTo(2);
             assertThat(result).bodyJson().doesNotHavePath("$.entries[0].sets[1].log");
+            assertThat(result).bodyJson().doesNotHavePath("$.note");
+        }
+
+        @Test
+        void shouldAnswerTheNoteTheClientWroteForTheirTrainer() {
+            SessionLog log = upperBody(STARTED.plusSeconds(48 * 60));
+            log.writeNote("Knee felt fine.\nLast set was hard.", STARTED.plusSeconds(50 * 60));
+            when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
+                    .thenReturn(new ClientSessionLog(log, done(), Map.of(SQUAT.getId(), SQUAT)));
+
+            var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
+
+            assertThat(result).hasStatus(HttpStatus.OK);
+            assertThat(result).bodyJson().extractingPath("$.note").isEqualTo("Knee felt fine.\nLast set was hard.");
         }
 
         @Test

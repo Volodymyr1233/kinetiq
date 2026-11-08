@@ -14,7 +14,8 @@ import java.util.UUID;
 /**
  * One session log of a client as their trainer reads it: the session as the lists show it, and each planned set with
  * its target and, once logged, its log. {@code averageRpe} is left out while no set is logged, {@code finishedAt} and
- * {@code minutes} until the session is finished. The log locks 24 hours after {@code startedAt}.
+ * {@code minutes} until the session is finished, and {@code note}, what the client wrote for their trainer, when there
+ * is none. The log locks 24 hours after {@code startedAt}.
  */
 @JsonInclude(JsonInclude.Include.NON_NULL)
 record ClientSessionLogResponse(
@@ -30,4 +31,5 @@ record ClientSessionLogResponse(
         @NotNull Instant startedAt,
         Instant finishedAt,
         Integer minutes,
+        String note,
         @NotNull List<SessionLogResponse.LoggedEntryResponse> entries) {}

@@ -1219,6 +1219,7 @@ export interface components {
             finishedAt?: string;
             /** Format: int32 */
             minutes?: number;
+            note?: string;
             entries: components["schemas"]["LoggedEntryResponse"][];
         };
         QuizAnswersResponse: {
