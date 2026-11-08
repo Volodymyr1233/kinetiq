@@ -680,12 +680,17 @@
     "loading": "Loading session",
     "retry": "Try again",
     "back": "Today",
+    "locked": {
+      "title": "Session locked",
+      "text": "Sets can be logged and changed for 24 hours after a session starts."
+    },
     "row": {
       "amount": "{{amount, number}} {{unit}}",
       "load": "{{load, number}} {{unit}}",
       "noLoad": "No load",
       "rpe": "RPE {{rpe, number}}",
       "logged": "Logged",
+      "notLogged": "Not logged",
       "planned": "Planned",
       "open": "Choose set {{number}} of {{exercise}}",
       "edit": "Change set {{number}} of {{exercise}}",

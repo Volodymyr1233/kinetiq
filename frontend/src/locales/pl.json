@@ -701,12 +701,17 @@
     "loading": "Wczytywanie sesji",
     "retry": "Spróbuj ponownie",
     "back": "Dzisiaj",
+    "locked": {
+      "title": "Sesja zablokowana",
+      "text": "Serie można zapisywać i zmieniać przez 24 godziny od rozpoczęcia sesji."
+    },
     "row": {
       "amount": "{{amount, number}} {{unit}}",
       "load": "{{load, number}} {{unit}}",
       "noLoad": "Bez obciążenia",
       "rpe": "RPE {{rpe, number}}",
       "logged": "Zapisano",
+      "notLogged": "Nie zapisano",
       "planned": "Zaplanowano",
       "open": "Wybierz serię {{number}}: {{exercise}}",
       "edit": "Zmień serię {{number}}: {{exercise}}",

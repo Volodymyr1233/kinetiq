@@ -1,27 +1,31 @@
-import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react'
-import { useState } from 'react'
+import { ArrowLeftIcon, CircleAlertIcon, LockIcon } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, Navigate } from 'react-router'
-import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
-import { useSession } from '../api/session-log'
+import { useSession, type SessionLog } from '../api/session-log'
 import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
 
 // a rest day, a finished plan and no plan leave nothing to log: the client goes back to Today
 const NOTHING_TO_LOG = ['session-log.no-session-today', 'plan.not-found']
 
+// the backend's rule (session-log.locked); the screen follows it, and the server still decides
+const EDIT_WINDOW_MS = 24 * 60 * 60 * 1000
+
 /** The session logger: today's session with one row for each planned set. */
 export function LoggerPage() {
-  const { t, i18n } = useTranslation()
+  const { t } = useTranslation()
   const query = useSession()
   const session = query.data
-  // one entry panel is open at a time
-  const [openSet, setOpenSet] = useState<string | null>(null)
-  // when the rest after the last logged set ends; not kept, so a reload shows none
-  const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
 
   if (session === undefined) {
     if (query.isPending) {
@@ -57,6 +61,28 @@ export function LoggerPage() {
     )
   }
 
+  // keyed, so another session starts with its own lock and panels
+  return <Session key={session.id} session={session} />
+}
+
+function Session({ session }: { session: SessionLog }) {
+  const { t, i18n } = useTranslation()
+  // one entry panel is open at a time
+  const [openSet, setOpenSet] = useState<string | null>(null)
+  // when the rest after the last logged set ends; not kept, so a reload shows none
+  const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
+  const locksAt = Date.parse(session.startedAt) + EDIT_WINDOW_MS
+  const [lockedOnArrival] = useState(() => Date.now() >= locksAt)
+  // locked while the page is open, by its timer or by the server; only this is announced
+  const [lockedHere, setLockedHere] = useState(false)
+  const locked = lockedOnArrival || lockedHere
+
+  useEffect(() => {
+    if (locked) return
+    const timer = setTimeout(() => setLockedHere(true), locksAt - Date.now())
+    return () => clearTimeout(timer)
+  }, [locked, locksAt])
+
   // a plain date, read in UTC so no time zone can move the day
   const [year, month, day] = session.date.split('-').map(Number)
   const date = new Intl.DateTimeFormat(i18n.language, {
@@ -80,6 +106,17 @@ export function LoggerPage() {
         </h1>
         <p className="text-muted-foreground">{date}</p>
       </header>
+      {locked && (
+        // not an alert: the switch is announced once by the status below, and on arrival it is just read
+        <Alert variant="info" role={undefined}>
+          <LockIcon aria-hidden />
+          <AlertTitle>{t('sessionlog.locked.title')}</AlertTitle>
+          <AlertDescription>{t('sessionlog.locked.text')}</AlertDescription>
+        </Alert>
+      )}
+      <p role="status" className="sr-only">
+        {lockedHere ? t('sessionlog.locked.title') : ''}
+      </p>
       {session.entries.map((entry) => (
         // the same exercise can appear twice in a session, so its place is its key
         <section
@@ -103,19 +140,21 @@ export function LoggerPage() {
                   entry={entry}
                   set={set}
                   open={openSet === key}
+                  locked={locked}
                   onToggle={() => setOpenSet(openSet === key ? null : key)}
                   onLogged={(restSeconds) =>
                     setRestEndsAt(
                       restSeconds > 0 ? Date.now() + restSeconds * 1000 : null,
                     )
                   }
+                  onLocked={() => setLockedHere(true)}
                 />
               )
             })}
           </ol>
         </section>
       ))}
-      {restEndsAt !== null && (
+      {!locked && restEndsAt !== null && (
         <RestTimer
           key={restEndsAt}
           endsAt={restEndsAt}
