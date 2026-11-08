@@ -11,7 +11,13 @@ import {
   type LoggedEntry,
   type PlannedSet,
 } from '../api/session-log'
-import { bodyOf, problemsOf, valuesOf, type Values } from '../set-values'
+import {
+  bodyOf,
+  problemsOf,
+  sameValues,
+  valuesOf,
+  type Values,
+} from '../set-values'
 import { EntryPanel } from './entry-panel'
 
 /**
@@ -52,6 +58,11 @@ export function SetRow({
   const shown = set.log ?? set.target
   const values = edited ?? valuesOf(shown, unit)
   const problems = problemsOf(values, unit)
+  // a logged set that still holds what was logged has nothing to update
+  const unchanged =
+    set.log !== undefined &&
+    Object.keys(problems).length === 0 &&
+    sameValues(values, valuesOf(set.log, unit), unit)
   const measure = t(`plan.entries.measures.${entry.measure}`)
   const which = { exercise: entry.exerciseName, number: set.number }
 
@@ -190,6 +201,7 @@ export function SetRow({
           values={values}
           problems={tried ? problems : {}}
           logged={logged}
+          unchanged={unchanged}
           pending={log.isPending}
           onChange={setEdited}
           onSubmit={() => submit(values)}

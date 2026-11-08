@@ -31,6 +31,7 @@ export function EntryPanel({
   values,
   problems,
   logged,
+  unchanged,
   pending,
   onChange,
   onSubmit,
@@ -42,6 +43,7 @@ export function EntryPanel({
   values: Values
   problems: Problems
   logged: boolean
+  unchanged: boolean
   pending: boolean
   onChange: (values: Values) => void
   onSubmit: () => void
@@ -204,8 +206,13 @@ export function EntryPanel({
       <Button
         type="button"
         size="touch"
-        className="bg-brand text-brand-foreground hover:bg-brand/80"
-        disabled={pending}
+        variant={unchanged ? 'secondary' : 'default'}
+        className={
+          unchanged
+            ? undefined
+            : 'bg-brand text-brand-foreground hover:bg-brand/80'
+        }
+        disabled={pending || unchanged}
         aria-busy={pending}
         onClick={onSubmit}
       >

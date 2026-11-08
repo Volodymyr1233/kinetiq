@@ -85,3 +85,11 @@ export function bodyOf(
     rpe: values.rpe,
   }
 }
+
+/** Whether two entries mean the same set: the same load, amount and RPE, however the load was typed. */
+export function sameValues(a: Values, b: Values, unit: WeightUnit) {
+  const place = { entryPosition: 0, setNumber: 0 }
+  const x = bodyOf(a, unit, place)
+  const y = bodyOf(b, unit, place)
+  return x.loadKg === y.loadKg && x.amount === y.amount && x.rpe === y.rpe
+}
