@@ -48,7 +48,7 @@ When the plan has no session for today, Today says it is a rest day. When the pl
 
 ### User Story 3 - Client can start the session (Priority: P2)
 
-A day with a session shows "Start session". Starting and logging sets is story #92, so until the logger exists the action is shown but cannot be used.
+A day with a session shows "Start session", which opens the session logger of story #92 (task #262).
 
 **Why this priority**: The story's acceptance criterion names it, but the logger belongs to story #92; this story provides the place for it, and a follow-up task under #89 turns it on.
 
@@ -57,8 +57,7 @@ A day with a session shows "Start session". Starting and logging sets is story #
 **Acceptance Scenarios**:
 
 1. **Given** a day with a session, **When** Today is shown, **Then** "Start session" is shown once, as the one forward action of the screen, large enough to tap on a phone.
-2. **Given** the logger does not exist yet, **When** the client looks at "Start session", **Then** it is disabled and says, in words, that starting arrives with logging; it does not lead to a blank or missing page.
-3. **Given** the logger exists, **When** the client chooses "Start session", **Then** the logger opens (a task under #89, blocked by #94 and #95, adds this link; this story leaves the place and the label ready).
+2. **Given** a day with a session, **When** the client chooses "Start session", **Then** the logger opens for today's session.
 
 ---
 
@@ -107,7 +106,7 @@ A client sees only their own session; a draft and a missing plan show nothing of
 
 - **FR-009**: The Today tab of the client area MUST show the date and, by state: the session card (name, exercises with targets, "Start session"), a rest-day message, or the finished-plan message.
 - **FR-010**: Loads MUST show in the client's own unit, an exercise measured in seconds MUST show its amount in seconds, and an exercise without a load MUST say so in words.
-- **FR-011**: "Start session" MUST be shown for a session day only, once, as the one forward action of the screen, with a touch target of 48 px; until the logger exists it MUST be disabled and say why, in words.
+- **FR-011**: "Start session" MUST be shown for a session day only, once, as the one forward action of the screen, with a touch target of 48 px; it MUST open the session logger (task #262).
 - **FR-012**: While Today loads, the screen MUST show a skeleton of its layout; on failure a translated message and "Try again"; when the client has no published plan, the area's routing decides what they see, not an error on this tab.
 - **FR-013**: The screen MUST be built from Kinetiq tokens and shadcn components, designed at 375 px, in light and dark, with visible focus and keyboard use; at 375 px and at 320 px (200% zoom) the page MUST NOT scroll sideways.
 

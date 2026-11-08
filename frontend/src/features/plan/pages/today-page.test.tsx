@@ -95,14 +95,11 @@ describe('TodayPage', () => {
     expect(await screen.findByText('110.2 lb')).toBeInTheDocument()
   })
 
-  it('offers Start session on a session day, disabled, with the reason beside it', async () => {
+  it('offers Start session on a session day, linking to the logger', async () => {
     openToday(sessionDay)
 
-    const start = await screen.findByRole('button', { name: 'Start session' })
-    expect(start).toBeDisabled()
-    expect(start).toHaveAccessibleDescription(
-      'Starting a session arrives with logging.',
-    )
+    const start = await screen.findByRole('link', { name: 'Start session' })
+    expect(start).toHaveAttribute('href', '/app/session')
   })
 
   it('says it is a rest day, with no session and no Start session', async () => {
@@ -113,7 +110,7 @@ describe('TodayPage', () => {
     ).toBeInTheDocument()
     expect(screen.getByText('Friday, November 6')).toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Start session' }),
+      screen.queryByRole('link', { name: 'Start session' }),
     ).not.toBeInTheDocument()
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
   })
@@ -127,7 +124,7 @@ describe('TodayPage', () => {
       }),
     ).toBeInTheDocument()
     expect(
-      screen.queryByRole('button', { name: 'Start session' }),
+      screen.queryByRole('link', { name: 'Start session' }),
     ).not.toBeInTheDocument()
     expect(screen.queryByRole('list')).not.toBeInTheDocument()
   })
@@ -165,8 +162,8 @@ describe('TodayPage', () => {
 
     expect(await screen.findByText('czwartek, 5 listopada')).toBeInTheDocument()
     expect(
-      screen.getByRole('button', { name: 'Rozpocznij sesję' }),
-    ).toBeDisabled()
+      screen.getByRole('link', { name: 'Rozpocznij sesję' }),
+    ).toHaveAttribute('href', '/app/session')
     expect(screen.getByText('4 × 8 powt.')).toBeInTheDocument()
   })
 
@@ -199,15 +196,15 @@ describe('TodayPage', () => {
       '/app/summary/log-1',
     )
     expect(
-      screen.queryByRole('button', { name: 'Start session' }),
+      screen.queryByRole('link', { name: 'Start session' }),
     ).not.toBeInTheDocument()
   })
 
-  it('keeps the disabled start action when the session is not done', async () => {
+  it('keeps the start action when the session is not done', async () => {
     openToday(withStates('IN_PROGRESS'))
 
     expect(await screen.findByText('In progress')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Start session' })).toBeDisabled()
+    expect(screen.getByRole('link', { name: 'Start session' })).toBeEnabled()
     expect(
       screen.queryByRole('link', { name: 'View summary' }),
     ).not.toBeInTheDocument()
@@ -223,7 +220,7 @@ describe('TodayPage', () => {
     expect(
       await screen.findByRole('heading', { name: 'Upper body' }),
     ).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Start session' })).toBeDisabled()
+    expect(screen.getByRole('link', { name: 'Start session' })).toBeEnabled()
   })
 
   it('shows what comes before the session only on a day with a session', async () => {
