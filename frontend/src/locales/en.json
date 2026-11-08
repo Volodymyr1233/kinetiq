@@ -111,7 +111,7 @@
       "too-many-exercises": "Keep each session to 30 exercises.",
       "sets-out-of-range": "Enter 1 to 20 sets.",
       "amount-out-of-range": "Enter 1 to 3600.",
-      "load-out-of-range": "Leave the load empty or enter a number above 0.",
+      "load-out-of-range": "Leave the load empty or enter 0.1 to 999.9 kg, one decimal at most.",
       "rpe-out-of-range": "Enter an RPE from 5 to 10, in whole steps.",
       "rest-out-of-range": "Enter 0 to 600 seconds.",
       "already-published": "This plan is already published. Reload the page to see it.",
@@ -744,7 +744,7 @@
       "loadField": "Load in {{unit}} for set {{number}} of {{exercise}}",
       "loadMore": "More load for set {{number}} of {{exercise}}",
       "loadLess": "Less load for set {{number}} of {{exercise}}",
-      "loadProblem": "Leave the load empty or enter a number above 0.",
+      "loadProblem": "Leave the load empty or enter {{min, number}} to {{max, number}} {{unit}}, one decimal at most.",
       "amount": {
         "REPS": "Repetitions",
         "SECONDS": "Seconds"
@@ -1007,7 +1007,7 @@
       "inSession": "{{session}}: {{problem}}",
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Add at least 1 exercise to {{session}}.",
-      "load": "Leave the load empty or enter a number above 0, up to {{max, number}} {{unit}}."
+      "load": "Leave the load empty or enter {{min, number}} to {{max, number}} {{unit}}, one decimal at most."
     },
     "state": {
       "DONE": "Done",
