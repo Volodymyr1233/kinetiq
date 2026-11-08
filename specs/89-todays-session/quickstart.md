@@ -4,7 +4,7 @@ Every demo account uses the password `Kinetiq-demo-1`. Start the backend (`./gra
 
 ## 1. A session today (#91)
 
-Sign in as `demo.client.daily@example.com` (a session Monday to Saturday; on a Sunday it shows a rest day). On the Today tab: the date, the session's name and every exercise with sets, repetitions or seconds, load (in your unit) or "No load", RPE and rest. "Start session" is shown, disabled, with a line saying starting arrives with logging.
+Sign in as `demo.client.daily@example.com` (a session Monday to Saturday; on a Sunday it shows a rest day). On the Today tab: the date, the session's name and every exercise with sets, repetitions or seconds, load (in your unit) or "No load", RPE and rest. "Start session" is shown and opens the logger.
 
 ## 2. A rest day
 

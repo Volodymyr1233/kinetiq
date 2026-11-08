@@ -1,9 +1,16 @@
 spring:
   application:
     name: kinetiq-backend
+  autoconfigure:
+    # sign-in is the account feature's own; without this Boot adds an unused in-memory user and logs its password
+    exclude: org.springframework.boot.security.autoconfigure.UserDetailsServiceAutoConfiguration
   threads:
     virtual:
       enabled: true
+  jackson:
+    deserialization:
+      # 2.5 for a whole number is refused as an unreadable body, not cut to 2
+      accept-float-as-int: false
   jpa:
     open-in-view: false
     hibernate:

@@ -111,7 +111,7 @@
       "too-many-exercises": "Keep each session to 30 exercises.",
       "sets-out-of-range": "Enter 1 to 20 sets.",
       "amount-out-of-range": "Enter 1 to 3600.",
-      "load-out-of-range": "Leave the load empty or enter a number above 0.",
+      "load-out-of-range": "Leave the load empty or enter 0.1 to 999.9 kg, one decimal at most.",
       "rpe-out-of-range": "Enter an RPE from 5 to 10, in whole steps.",
       "rest-out-of-range": "Enter 0 to 600 seconds.",
       "already-published": "This plan is already published. Reload the page to see it.",
@@ -126,6 +126,10 @@
       "not-finished": "Finish the session first.",
       "changed": "The session changed at the same moment. Try again.",
       "note-invalid": "A note can have up to 500 characters. Shorten it and save again."
+    },
+    "check-in": {
+      "training-started": "Training has started, so today’s answers can no longer change.",
+      "no-session-today": "There is no session today, so there is no check-in to give."
     }
   },
   "account": {
@@ -757,7 +761,7 @@
       "loadField": "Load in {{unit}} for set {{number}} of {{exercise}}",
       "loadMore": "More load for set {{number}} of {{exercise}}",
       "loadLess": "Less load for set {{number}} of {{exercise}}",
-      "loadProblem": "Leave the load empty or enter a number above 0.",
+      "loadProblem": "Leave the load empty or enter {{min, number}} to {{max, number}} {{unit}}, one decimal at most.",
       "amount": {
         "REPS": "Repetitions",
         "SECONDS": "Seconds"
@@ -852,9 +856,13 @@
     },
     "today": {
       "restDay": "Rest day",
-      "restText": "Nothing is planned for today.",
+      "restBadge": "Rest",
+      "restText": "No session today. No check-in either.",
+      "next": "Next: {{name}} · {{date}} · {{minutes, number}} min",
+      "seeWeek": "See this week",
+      "weekDone_one": "{{done, number}} of {{count, number}} session done this week",
+      "weekDone_other": "{{done, number}} of {{count, number}} sessions done this week",
       "start": "Start session",
-      "startSoon": "Starting a session arrives with logging.",
       "done": "Session done"
     },
     "client": {
@@ -1020,7 +1028,7 @@
       "inSession": "{{session}}: {{problem}}",
       "inEntry": "{{session}}, {{exercise}}: {{problem}}",
       "emptySession": "Add at least 1 exercise to {{session}}.",
-      "load": "Leave the load empty or enter a number above 0, up to {{max, number}} {{unit}}."
+      "load": "Leave the load empty or enter {{min, number}} to {{max, number}} {{unit}}, one decimal at most."
     },
     "state": {
       "DONE": "Done",
@@ -1081,6 +1089,41 @@
     "errors": {
       "retry": "Try again",
       "loadEarlier": "Earlier messages did not load. Try again."
+    }
+  },
+  "readiness": {
+    "checkIn": {
+      "title": "How do you feel today?",
+      "sleep": { "label": "Sleep", "scale": "1 bad · 5 great" },
+      "soreness": { "label": "Soreness", "scale": "1 none · 5 very sore" },
+      "stress": { "label": "Stress", "scale": "1 calm · 5 high" },
+      "skip": "Skip",
+      "savesAfterThird": "Saves after the third answer",
+      "saving": "Saving…",
+      "retry": "Try again",
+      "skipped": "Check-in skipped. Your session is as planned.",
+      "checkIn": "Check in",
+      "done": "Done",
+      "cancel": "Cancel"
+    },
+    "card": {
+      "label": "Readiness",
+      "change": "Change answers",
+      "score": "{{score, number}}",
+      "announcement": "Readiness {{score, number}}: {{band}}",
+      "band": {
+        "READY": { "name": "Ready", "line": "Train as planned." },
+        "TAKE_IT_EASIER": {
+          "name": "Take it easier",
+          "line": "Same plan. Stop a rep earlier."
+        },
+        "RECOVERY_DAY": {
+          "name": "Recovery day",
+          "line": "Same plan. Stop two reps earlier."
+        }
+      },
+      "answers": "Sleep {{sleep, number}} · soreness {{soreness, number}} · stress {{stress, number}}",
+      "fixed": "Answers are fixed once training has started."
     }
   }
 }

@@ -16,8 +16,10 @@ import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import java.time.Clock;
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -58,7 +60,31 @@ public class PlanViewService implements ViewOwnPlanUseCase {
                 .filter(session -> session.day() == today.getDayOfWeek())
                 .findFirst()
                 .map(session -> new TodayView(today, TodayView.State.SESSION, session, library(account)))
-                .orElseGet(() -> new TodayView(today, TodayView.State.REST, null, Map.of()));
+                .orElseGet(() -> rest(plan, today, account));
+    }
+
+    private TodayView rest(Plan plan, LocalDate today, Account account) {
+        TodayView.Next next = nextSession(plan, today);
+        return new TodayView(today, TodayView.State.REST, null, next, next == null ? Map.of() : library(account));
+    }
+
+    // the first session after today, up to the last Sunday of the plan
+    private static TodayView.Next nextSession(Plan plan, LocalDate today) {
+        LocalDate first = plan.getFirstWeek().orElseThrow();
+        LocalDate last = first.plusWeeks(plan.getWeeks()).minusDays(1);
+        // a client behind the time zone of publishing can still be before week 1
+        for (LocalDate day = today.plusDays(1).isBefore(first) ? first : today.plusDays(1);
+                !day.isAfter(last);
+                day = day.plusDays(1)) {
+            DayOfWeek weekday = day.getDayOfWeek();
+            LocalDate date = day;
+            Optional<Session> session =
+                    plan.getSessions().stream().filter(s -> s.day() == weekday).findFirst();
+            if (session.isPresent()) {
+                return new TodayView.Next(date, session.get());
+            }
+        }
+        return null;
     }
 
     @Override

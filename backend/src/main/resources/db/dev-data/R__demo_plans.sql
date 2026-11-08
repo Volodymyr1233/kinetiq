@@ -123,3 +123,21 @@ from (values
 ) as entry (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
 join plan_sessions session on session.id = entry.session_id::uuid
 on conflict do nothing;
+
+-- Demo Client Closing is in week 4 of 4 with a session on Monday only: from Tuesday no session is left in the plan
+insert into plans (id, client_id, goal, weeks, first_week, published_on, client_seen_at, automatic_draft, created_at,
+                   updated_at, version)
+values ('00000000-0000-4000-9300-000000000008', '00000000-0000-4000-8000-000000000013', 'GENERAL_FITNESS', 4,
+        (date_trunc('week', current_date) - interval '3 weeks')::date,
+        (date_trunc('week', current_date) - interval '3 weeks')::date, now(), null, now(), now(), 0)
+on conflict do nothing;
+
+insert into plan_sessions (id, plan_id, name, day_of_week)
+values ('00000000-0000-4000-9400-000000000031', '00000000-0000-4000-9300-000000000008', 'Full body', 'MONDAY')
+on conflict do nothing;
+
+insert into plan_session_entries (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
+select '00000000-0000-4000-9400-000000000031'::uuid, 0, '00000000-0000-4000-9100-000000000011'::uuid, 3, 8, 40.0, 7, 90
+where exists (select 1 from plan_sessions where id = '00000000-0000-4000-9400-000000000031')
+  and not exists (select 1 from plan_session_entries where session_id = '00000000-0000-4000-9400-000000000031')
+on conflict do nothing;

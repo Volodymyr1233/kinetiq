@@ -32,6 +32,8 @@ export const DAYS = Object.keys(DAY_ORDER) as Day[]
 export const MAX_SESSIONS = 6
 export const MAX_EXERCISES = 30
 export const NAME_MAX_LENGTH = 60
+// the smallest load above 0 at the stored precision of 0.1 kg
+const MIN_LOAD_KG = 0.1
 const MAX_LOAD_KG = 999.9
 
 const NEW_PLAN_WEEKS = 12
@@ -207,20 +209,36 @@ export function moveEntry(
 const wholeNumber = (text: string) =>
   /^\d+$/.test(text.trim()) ? Number(text.trim()) : 0
 
+/** The estimated time of a session in whole minutes: per set, its rest plus the work (seconds, or repetitions at a fixed pace). */
+export function estimatedMinutes(
+  entries: { measure: Measure; sets: number; amount: number; rest: number }[],
+) {
+  const seconds = entries.reduce((sum, entry) => {
+    const work =
+      entry.measure === 'SECONDS'
+        ? entry.amount
+        : entry.amount * SECONDS_PER_REP
+    return sum + entry.sets * (entry.rest + work)
+  }, 0)
+  return Math.round(seconds / 60)
+}
+
 /** The session's exercises, total sets and estimated time in whole minutes; a value that is no number counts as 0. */
 export function sessionTotals(session: DraftSession) {
-  const seconds = session.entries.reduce((sum, entry) => {
-    const amount = wholeNumber(entry.amount)
-    const work = entry.measure === 'SECONDS' ? amount : amount * SECONDS_PER_REP
-    return sum + wholeNumber(entry.sets) * (wholeNumber(entry.rest) + work)
-  }, 0)
   return {
     exercises: session.entries.length,
     sets: session.entries.reduce(
       (sum, entry) => sum + wholeNumber(entry.sets),
       0,
     ),
-    minutes: Math.round(seconds / 60),
+    minutes: estimatedMinutes(
+      session.entries.map((entry) => ({
+        measure: entry.measure,
+        sets: wholeNumber(entry.sets),
+        amount: wholeNumber(entry.amount),
+        rest: wholeNumber(entry.rest),
+      })),
+    ),
   }
 }
 
@@ -291,7 +309,11 @@ function entryProblems(
       'load',
       validLoad(entry, unit),
       'plan.problems.load',
-      { max: fromKg(MAX_LOAD_KG, unit), unit: unit.toLowerCase() },
+      {
+        min: fromKg(MIN_LOAD_KG, unit),
+        max: fromKg(MAX_LOAD_KG, unit),
+        unit: unit.toLowerCase(),
+      },
     ],
     ['rpe', inRange(entry.rpe, 5, 10), 'errors.plan.rpe-out-of-range'],
     ['rest', inRange(entry.rest, 0, 600), 'errors.plan.rest-out-of-range'],

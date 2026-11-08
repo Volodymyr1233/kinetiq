@@ -47,7 +47,7 @@ There is no CI. Run the quality gate of every side you touched before committing
 4. Spec Kit is recommended for stories with domain logic, not required. Whoever starts such a story may write its spec in the first pull request of the story, in `specs/<story>-<slug>`; later tasks of the story build on it.
    - Substantial story: `/speckit-specify` → `/speckit-clarify` → `/speckit-plan` → `/speckit-checklist` → `/speckit-tasks` → `/speckit-analyze` → `/speckit-implement` → `/speckit-converge`
    - Small story: `/speckit-specify` → `/speckit-plan` → `/speckit-tasks` → `/speckit-implement` → `/speckit-converge`
-   - Spec Kit does not create branches here, and `/speckit-taskstoissues` is not used: issues are written by people.
+   - Spec Kit does not create branches here, and `/speckit-taskstoissues` is not used: issues come first and are written with the issue forms, by hand or with `gh`.
 5. Work found during a task that is out of its scope becomes a new task under the same story (`task` issue form), not a bigger pull request.
 
 ## Definition of Done

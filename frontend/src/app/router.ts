@@ -251,8 +251,7 @@ export const createRoutes = (): RouteObject[] => [
       {
         path: 'today',
         lazy: {
-          Component: async () =>
-            (await import('@/features/plan/pages/today-page')).TodayPage,
+          Component: async () => (await import('@/app/today-route')).TodayRoute,
         },
       },
       {

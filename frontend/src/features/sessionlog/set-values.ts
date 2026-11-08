@@ -3,6 +3,8 @@ import type { PlannedSet } from './api/session-log'
 
 export const MIN_AMOUNT = 1
 export const MAX_AMOUNT = 3600
+// the smallest load above 0 at the stored precision of 0.1 kg
+export const MIN_LOAD_KG = 0.1
 export const MAX_LOAD_KG = 999.9
 export const RPES = [5, 6, 7, 8, 9, 10] as const
 

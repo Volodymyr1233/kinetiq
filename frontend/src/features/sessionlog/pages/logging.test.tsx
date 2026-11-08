@@ -213,6 +213,26 @@ describe('logging a set', () => {
     expect(puts).toHaveLength(0)
   })
 
+  it('names the whole load rule in the person’s unit when a load is too heavy', async () => {
+    const user = userEvent.setup()
+    const { reply, puts } = server()
+    openLogger(reply, 'LB')
+
+    await screen.findByRole('region', { name: 'Back squat' })
+    await choose(user)
+    const load = screen.getByRole('textbox', {
+      name: 'Load in lb for set 1 of Back squat',
+    })
+    await user.clear(load)
+    await user.type(load, '2205')
+    await user.click(screen.getByRole('button', { name: 'Log set' }))
+
+    expect(load).toHaveAccessibleDescription(
+      'Leave the load empty or enter 0.2 to 2204.4 lb, one decimal at most.',
+    )
+    expect(puts).toHaveLength(0)
+  })
+
   it('changes a logged set with the id it was logged with, and updates the row', async () => {
     const user = userEvent.setup()
     const { reply, puts } = server()
