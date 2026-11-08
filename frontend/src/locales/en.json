@@ -1080,16 +1080,28 @@
       "saving": "Saving…",
       "retry": "Try again",
       "skipped": "Check-in skipped. Your session is as planned.",
-      "checkIn": "Check in"
+      "checkIn": "Check in",
+      "done": "Done",
+      "cancel": "Cancel"
     },
     "card": {
-      "summary": "Readiness {{score, number}}: {{band}}",
+      "label": "Readiness",
+      "change": "Change answers",
+      "score": "{{score, number}}",
+      "announcement": "Readiness {{score, number}}: {{band}}",
       "band": {
-        "READY": { "name": "Ready" },
-        "TAKE_IT_EASIER": { "name": "Take it easier" },
-        "RECOVERY_DAY": { "name": "Recovery day" }
+        "READY": { "name": "Ready", "line": "Train as planned." },
+        "TAKE_IT_EASIER": {
+          "name": "Take it easier",
+          "line": "Same plan. Stop a rep earlier."
+        },
+        "RECOVERY_DAY": {
+          "name": "Recovery day",
+          "line": "Same plan. Stop two reps earlier."
+        }
       },
-      "answers": "Sleep {{sleep, number}} · soreness {{soreness, number}} · stress {{stress, number}}"
+      "answers": "Sleep {{sleep, number}} · soreness {{soreness, number}} · stress {{stress, number}}",
+      "fixed": "Answers are fixed once training has started."
     }
   }
 }
