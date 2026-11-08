@@ -209,20 +209,36 @@ export function moveEntry(
 const wholeNumber = (text: string) =>
   /^\d+$/.test(text.trim()) ? Number(text.trim()) : 0
 
+/** The estimated time of a session in whole minutes: per set, its rest plus the work (seconds, or repetitions at a fixed pace). */
+export function estimatedMinutes(
+  entries: { measure: Measure; sets: number; amount: number; rest: number }[],
+) {
+  const seconds = entries.reduce((sum, entry) => {
+    const work =
+      entry.measure === 'SECONDS'
+        ? entry.amount
+        : entry.amount * SECONDS_PER_REP
+    return sum + entry.sets * (entry.rest + work)
+  }, 0)
+  return Math.round(seconds / 60)
+}
+
 /** The session's exercises, total sets and estimated time in whole minutes; a value that is no number counts as 0. */
 export function sessionTotals(session: DraftSession) {
-  const seconds = session.entries.reduce((sum, entry) => {
-    const amount = wholeNumber(entry.amount)
-    const work = entry.measure === 'SECONDS' ? amount : amount * SECONDS_PER_REP
-    return sum + wholeNumber(entry.sets) * (wholeNumber(entry.rest) + work)
-  }, 0)
   return {
     exercises: session.entries.length,
     sets: session.entries.reduce(
       (sum, entry) => sum + wholeNumber(entry.sets),
       0,
     ),
-    minutes: Math.round(seconds / 60),
+    minutes: estimatedMinutes(
+      session.entries.map((entry) => ({
+        measure: entry.measure,
+        sets: wholeNumber(entry.sets),
+        amount: wholeNumber(entry.amount),
+        rest: wholeNumber(entry.rest),
+      })),
+    ),
   }
 }
 

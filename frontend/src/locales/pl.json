@@ -866,7 +866,14 @@
     },
     "today": {
       "restDay": "Dzień odpoczynku",
-      "restText": "Na dziś nic nie zaplanowano.",
+      "restBadge": "Odpoczynek",
+      "restText": "Dziś nie ma sesji. Check-inu też nie.",
+      "next": "Następna: {{name}} · {{date}} · {{minutes, number}} min",
+      "seeWeek": "Zobacz ten tydzień",
+      "weekDone_one": "Zrobione sesje w tym tygodniu: {{done, number}} z {{count, number}}",
+      "weekDone_few": "Zrobione sesje w tym tygodniu: {{done, number}} z {{count, number}}",
+      "weekDone_many": "Zrobione sesje w tym tygodniu: {{done, number}} z {{count, number}}",
+      "weekDone_other": "Zrobione sesje w tym tygodniu: {{done, number}} z {{count, number}}",
       "start": "Rozpocznij sesję",
       "done": "Sesja zakończona"
     },

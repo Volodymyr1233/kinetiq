@@ -61,3 +61,11 @@ values ('00000000-0000-4000-8000-000000000012', 'Demo Client Daily', 'demo.clien
         '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
         'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
 on conflict do nothing;
+
+-- a plan in its last week with a session on Monday only, so from Tuesday on Today shows a rest day with nothing next
+insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone, email_confirmed,
+                      health_data_consent_at, created_at, updated_at, version)
+values ('00000000-0000-4000-8000-000000000013', 'Demo Client Closing', 'demo.client.closing@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
+on conflict do nothing;

@@ -1039,12 +1039,18 @@ export interface components {
             language?: string;
             theme?: string;
         };
+        NextResponse: {
+            /** Format: date */
+            date: string;
+            session: components["schemas"]["SessionResponse"];
+        };
         TodayResponse: {
             /** Format: date */
             date: string;
             /** @enum {string} */
             state: "SESSION" | "REST" | "FINISHED";
             session?: components["schemas"]["SessionResponse"];
+            next?: components["schemas"]["NextResponse"];
         };
         SessionStateResponse: {
             /** @enum {string} */

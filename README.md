@@ -33,6 +33,7 @@ The `local` profile adds demo data. Every account uses the password `Kinetiq-dem
 | `demo.client.seen@example.com` | Client, email confirmed, quiz submitted, plan published and already opened, week 3 of 8 |
 | `demo.client.finished@example.com` | Client, email confirmed, quiz submitted, plan published and finished after week 4 |
 | `demo.client.daily@example.com` | Client, email confirmed, quiz submitted, plan published and opened, a session Monday to Saturday (week 3 of 8), check-ins on the three days before the first run (one per readiness band) and none today |
+| `demo.client.closing@example.com` | Client, email confirmed, quiz submitted, plan published and opened, a session on Monday only (week 4 of 4), so no session is left from Tuesday |
 | `demo.client.built@example.com` | Client, email confirmed, quiz submitted, plan drafted automatically 3 hours ago and not reviewed yet |
 | `demo.client.failed@example.com` | Client, email confirmed, quiz submitted, automatic drafting failed 26 hours ago: an empty draft |
 | `demo.trainer2@example.com` | Trainer, email confirmed, second trainer for isolation checks; 9 of 10 automatic builds of the last 24 hours used |
