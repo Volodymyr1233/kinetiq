@@ -233,6 +233,36 @@ describe('logging a set', () => {
     expect(puts).toHaveLength(0)
   })
 
+  it('keeps Update set grey until something differs from what was logged', async () => {
+    const user = userEvent.setup()
+    const { reply } = server()
+    openLogger(reply)
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Log set 1 of Back squat as planned',
+      }),
+    )
+    await within(firstRow()).findByText('Logged')
+    await user.click(
+      screen.getByRole('button', { name: /^Change set 1 of Back squat/ }),
+    )
+    const update = screen.getByRole('button', { name: 'Update set' })
+    expect(update).toBeDisabled()
+
+    const more = screen.getByRole('button', {
+      name: 'More: Repetitions, set 1 of Back squat',
+    })
+    await user.click(more)
+    expect(update).toBeEnabled()
+
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Fewer: Repetitions, set 1 of Back squat',
+      }),
+    )
+    expect(update).toBeDisabled()
+  })
+
   it('changes a logged set with the id it was logged with, and updates the row', async () => {
     const user = userEvent.setup()
     const { reply, puts } = server()
