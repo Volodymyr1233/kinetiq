@@ -4,7 +4,7 @@ Scope: the story stores only which weeks a client was checked for. The plan chan
 
 ## Table
 
-### weekly_checks (V22)
+### weekly_checks (V23)
 
 One row per client and week the client was checked for.
 
