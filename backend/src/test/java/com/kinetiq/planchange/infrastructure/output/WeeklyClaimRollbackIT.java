@@ -8,6 +8,7 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.common.infrastructure.config.TransactionConfig;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.model.ScheduledClient;
+import com.kinetiq.planchange.domain.model.WeekTraining;
 import com.kinetiq.planchange.domain.output.TrainingHistory;
 import com.kinetiq.planchange.domain.service.PlanChangeDetectionService;
 import java.time.Clock;
@@ -98,7 +99,7 @@ class WeeklyClaimRollbackIT {
 
         @Bean
         DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history) {
-            return new PlanChangeDetectionService(new FailsAfterClaim(history), Clock.fixed(NOW, ZoneOffset.UTC));
+            return new PlanChangeDetectionService(new FailsAfterClaim(history), List.of(), Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }
 
@@ -113,6 +114,11 @@ class WeeklyClaimRollbackIT {
         @Override
         public Optional<ScheduledClient> scheduledClient(AccountId client) {
             return real.scheduledClient(client);
+        }
+
+        @Override
+        public List<WeekTraining> weeks(AccountId client, LocalDate firstMonday, int count) {
+            return real.weeks(client, firstMonday, count);
         }
 
         @Override
