@@ -23,20 +23,28 @@ record SessionLogResponse(
         Instant finishedAt,
         @NotNull List<LoggedEntryResponse> entries) {
 
-    /** One exercise of the session, with its name in the language of the request. */
+    /**
+     * One exercise of the session, with its name in the language of the request. {@code planned} holds the planned
+     * targets only when the targets in use differ from them, which happens on a recovery day.
+     */
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     record LoggedEntryResponse(
             @NotNull int position,
             @NotNull UUID exerciseId,
             @NotNull String exerciseName,
             @NotNull Measure measure,
             @NotNull int restSeconds,
+            TargetResponse planned,
             @NotNull List<PlannedSetResponse> sets) {}
 
-    /** A planned set; {@code log} is left out until the set is logged. */
+    /**
+     * A planned set: its target in use, or for a logged set the copy it was logged against. {@code log} is left out until
+     * the set is logged.
+     */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     record PlannedSetResponse(@NotNull int number, @NotNull TargetResponse target, LoggedSetResponse log) {}
 
-    /** What the plan asked for in a set; {@code loadKg} is left out when there is no added weight. */
+    /** What a set asks for; {@code loadKg} is left out when there is no added weight. */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     record TargetResponse(BigDecimal loadKg, @NotNull int amount, @NotNull int rpe) {}
 

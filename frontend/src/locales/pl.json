@@ -131,7 +131,8 @@
     },
     "check-in": {
       "training-started": "Trening już się zaczął, więc dzisiejszych odpowiedzi nie można zmienić.",
-      "no-session-today": "Dziś nie masz sesji, więc nie ma czego oceniać."
+      "no-session-today": "Dziś nie masz sesji, więc nie ma czego oceniać.",
+      "no-adjustment": "Dzisiejsze cele są zgodne z planem, więc nie ma czego przełączać."
     }
   },
   "account": {

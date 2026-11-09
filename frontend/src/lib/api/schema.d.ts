@@ -100,6 +100,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/check-ins/today/targets": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put: operations["chooseTodayTargets"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/me/time-zone": {
         parameters: {
             query?: never;
@@ -849,6 +865,20 @@ export interface components {
             /** Format: int32 */
             stress: number;
         };
+        AdjustedTargetResponse: {
+            /** Format: int32 */
+            position: number;
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            rpe: number;
+        };
+        AdjustmentResponse: {
+            inUse: boolean;
+            causes: ("SLEEP" | "SORENESS" | "STRESS")[];
+            entries: components["schemas"]["AdjustedTargetResponse"][];
+        };
         CheckInResponse: {
             /** Format: int32 */
             sleep: number;
@@ -862,12 +892,17 @@ export interface components {
             band: "READY" | "TAKE_IT_EASIER" | "RECOVERY_DAY";
             /** Format: date-time */
             savedAt: string;
+            adjustment?: components["schemas"]["AdjustmentResponse"];
         };
         TodayCheckInResponse: {
             /** Format: date */
             date: string;
             open: boolean;
             checkIn?: components["schemas"]["CheckInResponse"];
+        };
+        ChooseTargetsRequest: {
+            /** @enum {string} */
+            choice: "LIGHTER" | "ORIGINAL";
         };
         TimeZoneRequest: {
             timeZone: string;
@@ -902,6 +937,7 @@ export interface components {
             measure: "REPS" | "SECONDS";
             /** Format: int32 */
             restSeconds: number;
+            planned?: components["schemas"]["TargetResponse"];
             sets: components["schemas"]["PlannedSetResponse"][];
         };
         LoggedSetResponse: {
@@ -1474,6 +1510,30 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["SaveCheckInRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["TodayCheckInResponse"];
+                };
+            };
+        };
+    };
+    chooseTodayTargets: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChooseTargetsRequest"];
             };
         };
         responses: {

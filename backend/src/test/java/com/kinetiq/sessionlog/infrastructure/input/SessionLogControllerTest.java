@@ -18,6 +18,9 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Cause;
+import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
 import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
 import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
@@ -117,7 +120,7 @@ class SessionLogControllerTest {
                                 NOW))
                         : List.of(),
                 0);
-        return new StartedSession(log, Map.of(SQUAT.getId(), SQUAT), created);
+        return new StartedSession(log, Map.of(SQUAT.getId(), SQUAT), null, created);
     }
 
     private void assertRefused(MvcTestResult result, HttpStatus status, String code) {
@@ -156,6 +159,46 @@ class SessionLogControllerTest {
         assertThat(result).bodyJson().extractingPath(entry + ".sets[0].target.amount").isEqualTo(5);
         assertThat(result).bodyJson().extractingPath(entry + ".sets[0].target.rpe").isEqualTo(8);
         assertThat(result).bodyJson().doesNotHavePath(entry + ".sets[0].log");
+    }
+
+    @Test
+    void shouldAnswerTheLighterTargetsAndThePlannedOnes_onARecoveryDay() {
+        StartedSession planned = started(false, true);
+        when(sessions.start(CLIENT_ID))
+                .thenReturn(new StartedSession(
+                        planned.log(),
+                        planned.library(),
+                        new Adjustment(
+                                List.of(new Target(new BigDecimal("90.0"), 5, 7)), List.of(Cause.SLEEP), true),
+                        false));
+
+        var result = mvc.post().uri(SESSIONS).with(CLIENT).with(csrf()).exchange();
+
+        String entry = "$.entries[0]";
+        assertThat(result).bodyJson().extractingPath(entry + ".planned")
+                .isEqualTo(Map.of("loadKg", 100.0, "amount", 5, "rpe", 8));
+        // the unlogged set asks for the lighter targets, the logged one keeps the copy it was logged against
+        assertThat(result).bodyJson().extractingPath(entry + ".sets[1].target")
+                .isEqualTo(Map.of("loadKg", 90.0, "amount", 5, "rpe", 7));
+        assertThat(result).bodyJson().extractingPath(entry + ".sets[0].target")
+                .isEqualTo(Map.of("loadKg", 100.0, "amount", 5, "rpe", 8));
+    }
+
+    @Test
+    void shouldLeaveThePlannedTargetsOut_whenTheTargetsInUseAreThePlannedOnes() {
+        StartedSession planned = started(true, false);
+        when(sessions.start(CLIENT_ID))
+                .thenReturn(new StartedSession(
+                        planned.log(),
+                        planned.library(),
+                        new Adjustment(
+                                List.of(new Target(new BigDecimal("90.0"), 5, 7)), List.of(Cause.SLEEP), false),
+                        true));
+
+        var result = mvc.post().uri(SESSIONS).with(CLIENT).with(csrf()).exchange();
+
+        assertThat(result).bodyJson().doesNotHavePath("$.entries[0].planned");
+        assertThat(result).bodyJson().extractingPath("$.entries[0].sets[0].target.loadKg").isEqualTo(100.0);
     }
 
     @Test
@@ -395,7 +438,7 @@ class SessionLogControllerTest {
         SessionLog finished = new SessionLog(
                 log.getId(), CLIENT_ID, log.getDate(), log.getName(), NOW, NOW.plusSeconds(600), log.getEntries(),
                 log.getSetLogs(), 0);
-        when(sessions.start(CLIENT_ID)).thenReturn(new StartedSession(finished, Map.of(SQUAT.getId(), SQUAT), false));
+        when(sessions.start(CLIENT_ID)).thenReturn(new StartedSession(finished, Map.of(SQUAT.getId(), SQUAT), null, false));
 
         var result = mvc.post().uri(SESSIONS).with(CLIENT).with(csrf()).exchange();
 

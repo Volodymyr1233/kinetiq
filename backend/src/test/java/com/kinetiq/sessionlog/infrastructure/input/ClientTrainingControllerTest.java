@@ -20,6 +20,7 @@ import com.kinetiq.quiz.domain.model.Level;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
+import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
@@ -290,6 +291,26 @@ class ClientTrainingControllerTest {
             assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].number").isEqualTo(2);
             assertThat(result).bodyJson().doesNotHavePath("$.entries[0].sets[1].log");
             assertThat(result).bodyJson().doesNotHavePath("$.note");
+        }
+
+        @Test
+        void shouldAnswerALoggedSetsOwnCopyOfItsTargets() {
+            SessionLog log = upperBody(STARTED.plusSeconds(48 * 60));
+            log.logSet(
+                    new SetLogId(UUID.randomUUID()),
+                    0,
+                    2,
+                    new SetValues(new BigDecimal("90.0"), 5, 7),
+                    new Target(new BigDecimal("90.0"), 5, 7),
+                    STARTED);
+            when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
+                    .thenReturn(new ClientSessionLog(log, done(), Map.of(SQUAT.getId(), SQUAT)));
+
+            var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
+
+            assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].target.loadKg").isEqualTo(90.0);
+            assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].target.rpe").isEqualTo(7);
+            assertThat(result).bodyJson().doesNotHavePath("$.entries[0].planned");
         }
 
         @Test

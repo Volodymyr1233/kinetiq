@@ -18,28 +18,45 @@ public class CheckIn {
     private final LocalDate date;
     private Answers answers;
     private Instant savedAt;
+    private TargetChoice targetChoice;
 
     /** Rebuilds a stored check-in. */
-    public CheckIn(CheckInId id, AccountId client, LocalDate date, Answers answers, Instant savedAt) {
+    public CheckIn(
+            CheckInId id,
+            AccountId client,
+            LocalDate date,
+            Answers answers,
+            Instant savedAt,
+            TargetChoice targetChoice) {
         this.id = Objects.requireNonNull(id);
         this.client = Objects.requireNonNull(client);
         this.date = Objects.requireNonNull(date);
         this.answers = Objects.requireNonNull(answers);
         this.savedAt = Objects.requireNonNull(savedAt);
+        this.targetChoice = Objects.requireNonNull(targetChoice);
     }
 
-    /** A new check-in of the client for {@code date}. */
+    /** A new check-in of the client for {@code date}, with the lighter targets in use if it calls for them. */
     public static CheckIn give(AccountId client, LocalDate date, Answers answers, Instant now) {
-        return new CheckIn(CheckInId.random(), client, date, answers, now);
+        return new CheckIn(CheckInId.random(), client, date, answers, now, TargetChoice.LIGHTER);
     }
 
-    /** Replaces the answers; the same answers change nothing, so a repeated save gives the same result. */
+    /**
+     * Replaces the answers; the same answers change nothing, so a repeated save gives the same result. Different answers
+     * are a new reading, so they also bring the lighter targets back.
+     */
     public void change(Answers answers, Instant now) {
         if (this.answers.equals(Objects.requireNonNull(answers))) {
             return;
         }
         this.answers = answers;
         this.savedAt = now;
+        this.targetChoice = TargetChoice.LIGHTER;
+    }
+
+    /** Chooses which targets the client trains with today; the choice in use changes nothing. */
+    public void choose(TargetChoice choice) {
+        this.targetChoice = Objects.requireNonNull(choice);
     }
 
     public Readiness readiness() {

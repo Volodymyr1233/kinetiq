@@ -5,6 +5,7 @@ import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
 import com.kinetiq.sessionlog.domain.input.LogSessionUseCase;
 import com.kinetiq.sessionlog.domain.input.ViewClientTrainingUseCase;
 import com.kinetiq.sessionlog.domain.input.ViewSessionStatesUseCase;
@@ -24,8 +25,9 @@ class SessionLogConfig {
             ViewOwnPlanUseCase plan,
             CurrentAccountUseCase accounts,
             ListExercisesUseCase exercises,
-            SessionLogRepository logs) {
-        return new SessionLogService(plan, accounts, exercises, logs, Clock.systemUTC());
+            SessionLogRepository logs,
+            CheckInUseCase checkIns) {
+        return new SessionLogService(plan, accounts, exercises, logs, checkIns, Clock.systemUTC());
     }
 
     @Bean

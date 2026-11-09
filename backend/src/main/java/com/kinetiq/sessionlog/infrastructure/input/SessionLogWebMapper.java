@@ -3,6 +3,8 @@ package com.kinetiq.sessionlog.infrastructure.input;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
 import com.kinetiq.sessionlog.domain.input.ClientSessionLog;
@@ -32,7 +34,7 @@ class SessionLogWebMapper {
                 log.getName(),
                 log.getStartedAt(),
                 log.getFinishedAt().orElse(null),
-                entries(log, started.library(), locale));
+                entries(log, started.library(), started.adjustment(), locale));
     }
 
     ClientSessionLogResponse toResponse(ClientSessionLog read, Locale locale) {
@@ -52,7 +54,8 @@ class SessionLogWebMapper {
                 log.getFinishedAt().orElse(null),
                 log.minutes().orElse(null),
                 log.getNote().orElse(null),
-                entries(log, read.library(), locale));
+                // the trainer's view of an adjustment is story #122; logged sets still show their own copy
+                entries(log, read.library(), null, locale));
     }
 
     ClientSessionsResponse toResponse(List<ClientSession> sessions) {
@@ -60,30 +63,47 @@ class SessionLogWebMapper {
     }
 
     private List<SessionLogResponse.LoggedEntryResponse> entries(
-            SessionLog log, Map<ExerciseId, Exercise> library, Locale locale) {
+            SessionLog log, Map<ExerciseId, Exercise> library, Adjustment adjustment, Locale locale) {
         List<LoggedEntry> entries = log.getEntries();
         return IntStream.range(0, entries.size())
                 .mapToObj(position -> toResponse(
-                        position, entries.get(position), library.get(entries.get(position).exercise()), log, locale))
+                        position,
+                        entries.get(position),
+                        library.get(entries.get(position).exercise()),
+                        log,
+                        adjustment,
+                        locale))
                 .toList();
     }
 
     private SessionLogResponse.LoggedEntryResponse toResponse(
-            int position, LoggedEntry entry, Exercise exercise, SessionLog log, Locale locale) {
+            int position, LoggedEntry entry, Exercise exercise, SessionLog log, Adjustment adjustment, Locale locale) {
+        Target planned = new Target(entry.loadKg(), entry.amount(), entry.rpe());
+        Target inUse = adjustment == null ? planned : adjustment.inUse(position, planned);
         return new SessionLogResponse.LoggedEntryResponse(
                 position,
                 entry.exercise().value(),
                 exercise.getName().in(locale),
                 exercise.getMeasure(),
                 entry.restSeconds(),
+                inUse.equals(planned) ? null : toResponse(planned),
                 IntStream.rangeClosed(1, entry.sets())
-                        .mapToObj(number -> new SessionLogResponse.PlannedSetResponse(
-                                number,
-                                new SessionLogResponse.TargetResponse(entry.loadKg(), entry.amount(), entry.rpe()),
-                                loggedAt(log, position, number)
-                                        .map(this::toLogged)
-                                        .orElse(null)))
+                        .mapToObj(number -> {
+                            Optional<SetLog> logged = loggedAt(log, position, number);
+                            return new SessionLogResponse.PlannedSetResponse(
+                                    number,
+                                    logged.map(this::copiedTarget).orElseGet(() -> toResponse(inUse)),
+                                    logged.map(this::toLogged).orElse(null));
+                        })
                         .toList());
+    }
+
+    private SessionLogResponse.TargetResponse toResponse(Target target) {
+        return new SessionLogResponse.TargetResponse(target.loadKg(), target.amount(), target.rpe());
+    }
+
+    private SessionLogResponse.TargetResponse copiedTarget(SetLog set) {
+        return new SessionLogResponse.TargetResponse(set.targetLoadKg(), set.targetAmount(), set.targetRpe());
     }
 
     private Optional<SetLog> loggedAt(SessionLog log, int position, int number) {

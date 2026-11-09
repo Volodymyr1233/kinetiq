@@ -3,6 +3,7 @@ package com.kinetiq.sessionlog.domain.model;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.exception.NoteInvalidException;
 import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
 import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
@@ -111,13 +112,30 @@ public class SessionLog {
     }
 
     /**
-     * Logs a set, or changes it. The same id with the same values changes nothing, so a send that is repeated stores one
-     * set, even once the session is locked. The place must be a planned set of the session; an id never moves to another
-     * place, and a place is logged under one id only. From 24 hours after the start a new set or a change is
-     * {@code SessionLogLockedException}.
+     * Logs a set, or changes it, as {@link #logSet(SetLogId, int, int, SetValues, Target, Instant)} with the planned
+     * targets.
      */
     public SetLog logSet(SetLogId setLogId, int entryPosition, int setNumber, SetValues values, Instant now) {
         LoggedEntry entry = plannedEntry(entryPosition, setNumber);
+        return logSet(
+                setLogId,
+                entryPosition,
+                setNumber,
+                values,
+                new Target(entry.loadKg(), entry.amount(), entry.rpe()),
+                now);
+    }
+
+    /**
+     * Logs a set, or changes it. A new set keeps a copy of {@code targets}, the targets in use for its place, which are
+     * lighter on a recovery day; a change keeps the copy it has. The same id with the same values changes nothing, so a
+     * send that is repeated stores one set, even once the session is locked. The place must be a planned set of the
+     * session; an id never moves to another place, and a place is logged under one id only. From 24 hours after the
+     * start a new set or a change is {@code SessionLogLockedException}.
+     */
+    public SetLog logSet(
+            SetLogId setLogId, int entryPosition, int setNumber, SetValues values, Target targets, Instant now) {
+        plannedEntry(entryPosition, setNumber);
         Optional<SetLog> known = setLogs.stream().filter(s -> s.id().equals(setLogId)).findFirst();
         if (known.isPresent()) {
             return change(known.get(), entryPosition, setNumber, values, now);
@@ -127,7 +145,7 @@ public class SessionLog {
             throw SetLogConflictException.placeTaken();
         }
         SetLog logged = new SetLog(
-                setLogId, entryPosition, setNumber, values, entry.loadKg(), entry.amount(), entry.rpe(), now);
+                setLogId, entryPosition, setNumber, values, targets.loadKg(), targets.amount(), targets.rpe(), now);
         setLogs.add(logged);
         return logged;
     }

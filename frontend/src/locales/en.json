@@ -129,7 +129,8 @@
     },
     "check-in": {
       "training-started": "Training has started, so today’s answers can no longer change.",
-      "no-session-today": "There is no session today, so there is no check-in to give."
+      "no-session-today": "There is no session today, so there is no check-in to give.",
+      "no-adjustment": "Today’s targets are as planned, so there is nothing to switch."
     }
   },
   "account": {
