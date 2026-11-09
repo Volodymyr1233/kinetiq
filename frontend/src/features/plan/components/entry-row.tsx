@@ -1,5 +1,6 @@
 import { useTranslation } from 'react-i18next'
 import { TargetChange } from '@/components/target-change'
+import { ValueList } from '@/components/value-list'
 import type { components } from '@/lib/api/schema'
 import { fromKg, useWeightUnit } from '@/lib/weight'
 import type { OwnPlan } from '../api/client-plan'
@@ -33,7 +34,7 @@ export function EntryRow({ entry, today }: { entry: Entry; today?: Target }) {
   return (
     <li className="flex flex-col gap-1 px-4 py-3">
       <span className="font-medium break-words">{entry.exerciseName}</span>
-      <span className="text-muted-foreground flex flex-wrap gap-x-3 gap-y-0.5 text-sm">
+      <ValueList className="text-muted-foreground text-sm">
         <TargetChange
           planned={amount(entry.amount)}
           today={amount(today?.amount ?? entry.amount)}
@@ -49,7 +50,7 @@ export function EntryRow({ entry, today }: { entry: Entry; today?: Target }) {
         <span className="num">
           {t('plan.client.entry.rest', { seconds: entry.restSeconds })}
         </span>
-      </span>
+      </ValueList>
     </li>
   )
 }

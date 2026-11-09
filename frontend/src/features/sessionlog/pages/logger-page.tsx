@@ -9,6 +9,7 @@ import {
   AlertTitle,
 } from '@/components/ui/alert'
 import { TargetChange } from '@/components/target-change'
+import { ValueList } from '@/components/value-list'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
@@ -23,6 +24,10 @@ import {
 import { FinishFooter } from '../components/finish-footer'
 import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
+
+// when the rest after the last logged set ends, by session: kept while the app runs, so the timer outlives a change of
+// tab, but not a reload
+const restEnds = new Map<string, number>()
 
 // a rest day, a finished plan and no plan leave nothing to log: the client goes back to Today
 const NOTHING_TO_LOG = ['session-log.no-session-today', 'plan.not-found']
@@ -98,8 +103,14 @@ function Session({ session }: { session: SessionLog }) {
   const plan = planAddress(useLocation().state)
   // one entry panel is open at a time
   const [openSet, setOpenSet] = useState<string | null>(null)
-  // when the rest after the last logged set ends; not kept, so a reload shows none
-  const [restEndsAt, setRestEndsAt] = useState<number | null>(null)
+  const [restEndsAt, showRest] = useState(
+    () => restEnds.get(session.id) ?? null,
+  )
+  const setRestEndsAt = (endsAt: number | null) => {
+    if (endsAt === null) restEnds.delete(session.id)
+    else restEnds.set(session.id, endsAt)
+    showRest(endsAt)
+  }
   const locksAt = lockMoment(session.startedAt)
   const [lockedOnArrival] = useState(() => Date.now() >= locksAt)
   // locked while the page is open, by its timer or by the server; only this is announced
@@ -245,10 +256,12 @@ function LighterToday({
   ].filter(([before, after]) => before !== after)
 
   return (
-    <p className="text-muted-foreground -mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 pb-3 text-sm">
-      {changes.map(([before, after]) => (
-        <TargetChange key={before} planned={before} today={after} />
-      ))}
+    <p className="-mt-1 px-4 pb-3">
+      <ValueList className="text-muted-foreground text-sm">
+        {changes.map(([before, after]) => (
+          <TargetChange key={before} planned={before} today={after} />
+        ))}
+      </ValueList>
     </p>
   )
 }

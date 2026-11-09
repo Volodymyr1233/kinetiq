@@ -309,14 +309,28 @@ describe('TodayPage', () => {
     ).not.toBeInTheDocument()
   })
 
-  it('keeps the start action when the session is not done', async () => {
+  it('offers to continue a session in progress, linking to the logger', async () => {
     openToday(withStates('IN_PROGRESS'))
 
     expect(await screen.findByText('In progress')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Start session' })).toBeEnabled()
+    expect(
+      screen.getByRole('link', { name: 'Continue session' }),
+    ).toHaveAttribute('href', '/app/session')
+    expect(
+      screen.queryByRole('link', { name: 'Start session' }),
+    ).not.toBeInTheDocument()
     expect(
       screen.queryByRole('link', { name: 'View summary' }),
     ).not.toBeInTheDocument()
+  })
+
+  it('shows no Today chip on the Today tab, which already says it', async () => {
+    openToday(withStates('TODAY'))
+
+    expect(
+      await screen.findByRole('link', { name: 'Start session' }),
+    ).toBeEnabled()
+    expect(screen.queryByText('Today')).not.toBeInTheDocument()
   })
 
   it('shows the session as before when the states cannot be read', async () => {

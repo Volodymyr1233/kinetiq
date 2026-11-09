@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { ValueList } from '@/components/value-list'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { cn } from '@/lib/utils'
 import { fromKg, useWeightUnit } from '@/lib/weight'
@@ -92,7 +93,7 @@ export function SetRow({
   }
 
   const shownValues = (
-    <span className="flex min-w-0 flex-1 flex-wrap gap-x-3 gap-y-0.5">
+    <ValueList className="min-w-0 flex-1">
       <span className="num">
         {t('sessionlog.row.amount', {
           amount: shown.amount,
@@ -108,7 +109,7 @@ export function SetRow({
             })}
       </span>
       <span className="num">{t('sessionlog.row.rpe', { rpe: shown.rpe })}</span>
-    </span>
+    </ValueList>
   )
 
   // logged is told by an icon and by text, not by colour alone

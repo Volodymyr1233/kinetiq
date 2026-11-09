@@ -228,3 +228,18 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 - [X] T047 [US1] `S/domain/input/SessionStates.java`: `Entry` gains `boolean adjusted`. `S/domain/service/SessionStateService.java` takes `ListExercisesUseCase` and `CheckInUseCase`; a session on a day that has come is adjusted when `adjustmentOn` with the plan session's targets is present and in use. Wire both in `S/infrastructure/config/SessionLogConfig.java`; map `adjusted` in `SessionStatesResponse` and `SessionLogWebMapper`.
 - [X] T048 [US1] Tests: `ST/domain/service/SessionStateServiceTest.java` (a recovery day is marked, a Ready day and a day to come are not, nor a day with the original targets chosen); `ST/infrastructure/input/SessionStateControllerTest.java` (`adjusted` in the answer). Regenerate `F/lib/api/schema.d.ts`.
 - [X] T049 [US1] `F/features/plan/components/session-card.tsx`: an `adjusted` badge "Adjusted" / "Dostosowana" beside the state, passed from `week-strip.tsx`; tested in `client-plan-page.test.tsx`. Run both gates. Commit `feat: mark adjusted days in the plan week (#275)`.
+
+## Phase 9: bug #274, found while reviewing this story
+
+**Goal**: fix what the review of the adjusted Today found outside this story's tasks, in the same pull request, as its own commit.
+
+- [X] T050 `F/components/value-list.tsx`: values of one line apart by `aria-hidden` middle dots ("3 × 8 reps · 40 kg · RPE 7 · Rest 90 s"), used by `EntryRow` (Today and the Plan week), the logger's set rows and its planned → today line.
+- [X] T051 `F/features/plan/pages/today-page.tsx`: no "Today" chip on the Today tab (In progress, Done and Missed still show; the Plan week keeps it); "Continue session" while the session is In progress. Tested in `today-page.test.tsx`.
+- [X] T052 `F/features/sessionlog/pages/logger-page.tsx`: the running rest is kept by session while the app runs, so it survives a change of tab; tested in `rest.test.tsx`.
+- [X] T053 Band lines in EN and PL: "Same plan. Stop a rep earlier if you need to." and "Same plan. Stop two reps earlier if you need to." (spec 109 FR-016). Run both gates. Commit `fix(frontend): separate target values and clarify today's session state (#274)`.
+
+## Phase 10: Convergence
+
+- [X] T054 Add #275 (`S/domain/service/SessionStateService.java`, `SessionStatesResponse`, `F/features/plan/components/session-card.tsx`, `week-strip.tsx`) and #274 (`F/components/value-list.tsx`) to plan.md's Source Code tree and Phases, and extend its commit order to #275 and #274, per plan: Project Structure (partial)
+- [X] T055 Update quickstart.md: scenario 2 shows the "Original targets" mark and one Undo message that lasts 5 s and stays across tabs; scenario 5 shows one "Adjusted" mark beside the logger's date; add a Plan week scenario with the "Adjusted" chip, per FR-017, FR-020, FR-021, FR-028 (partial)
+- [X] T056 In `ST/domain/service/SessionStateServiceTest.java`, give Sunday (a day to come) Recovery day answers and assert it is not marked, so the test fails without the guard for days to come, per T048 / Constitution V (partial)

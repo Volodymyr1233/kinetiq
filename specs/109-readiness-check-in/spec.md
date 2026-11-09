@@ -49,7 +49,7 @@ After the check-in, Today shows a readiness card: the score from 0 to 100, its b
 
 1. **Given** answers sleep *s*, soreness *x* and stress *y*, **When** readiness is computed, **Then** the score is the mean of (*s* − 1) / 4, (5 − *x*) / 4 and (5 − *y*) / 4, times 100, rounded to a whole number: 2/4/3 gives 33, 4/2/1 gives 83, 5/1/1 gives 100 and 1/5/5 gives 0.
 2. **Given** a score, **When** its band is chosen, **Then** 70 and above is Ready, 45 to 69 is Take it easier, and below 45 is Recovery day.
-3. **Given** a saved check-in, **When** the readiness card is shown, **Then** it shows the label "Readiness", the score, the band's name, the band's line (Ready: "Train as planned."; Take it easier: "Same plan. Stop a rep earlier."; Recovery day: "Same plan. Stop two reps earlier."), and the answers: "Sleep 4 · soreness 2 · stress 1".
+3. **Given** a saved check-in, **When** the readiness card is shown, **Then** it shows the label "Readiness", the score, the band's name, the band's line (Ready: "Train as planned."; Take it easier: "Same plan. Stop a rep earlier if you need to."; Recovery day: "Same plan. Stop two reps earlier if you need to."), and the answers: "Sleep 4 · soreness 2 · stress 1".
 4. **Given** any band, **When** it is shown, **Then** it uses the readiness colour scale (high, mid, low) and never red; the band is also told by its name, not by colour alone.
 5. **Given** a saved check-in, **When** the client reloads Today or comes back to the tab later that day, **Then** they see the same readiness card, not the check-in.
 6. **Given** the readiness card, **When** it is shown, **Then** today's session is shown below it as planned, in every band.
@@ -151,7 +151,7 @@ A client reads and saves only their own check-in for their own today.
 **Readiness card** (task #113)
 
 - **FR-015**: With a check-in saved for today, on a day with a session, the Today tab MUST show the readiness card above today's session instead of the check-in: "Readiness", the score as a measured value, the band's name, the band's line (FR-016), and the answers ("Sleep 4 · soreness 2 · stress 1").
-- **FR-016**: Each band MUST have one line: Ready "Train as planned."; Take it easier "Same plan. Stop a rep earlier."; Recovery day "Same plan. Stop two reps earlier.".
+- **FR-016**: Each band MUST have one line: Ready "Train as planned."; Take it easier "Same plan. Stop a rep earlier if you need to."; Recovery day "Same plan. Stop two reps earlier if you need to." The advice is optional because the targets themselves do not change (bug #274).
 - **FR-017**: The band MUST be shown with the readiness colour scale (Ready high, Take it easier mid, Recovery day low), with its name in text, and never with red or an error style.
 - **FR-018**: While the check-in can be changed, the card MUST offer "Change answers", which opens the check-in with the saved answers picked and "Done" and "Cancel" in place of "Skip" and the line about saving. Picking values there MUST NOT save; "Done" saves the picked answers, replacing the check-in, with the saving and failure behaviour of FR-011; "Cancel" returns to the card unchanged. Once a set is logged, the card MUST NOT offer it and MUST say the answers are fixed once training has started.
 - **FR-019**: A newly shown score MUST be announced to assistive technology, and focus MUST NOT be lost when the check-in turns into the card or back, or while it saves: after a switch the client caused, focus moves to the new card's heading; on first load it is not moved.
