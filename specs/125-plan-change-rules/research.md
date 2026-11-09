@@ -37,7 +37,7 @@ No `NEEDS CLARIFICATION` remained after the spec session; these are the design d
 
 ## Cool-down and plan end
 
-- **Decision**: the earliest week a rule may look at is `max(first plan week, first Monday on or after the last end of a plan change)`. A rule fires only when its whole window (2 or 3 weeks) lies on or after that Monday, and its last week is not after the plan's last week. Because every rule's own window length must fit, each rule gets its own cool-down (2 and 3 weeks) from one earliest-week limit.
+- **Decision**: the earliest week a rule may look at is `max(first plan week, first Monday that begins at or after the last end of a plan change, in the client's zone)`. A rule fires only when its whole window (2 or 3 weeks) lies on or after that Monday, and its last week is not after the plan's last week. Because every rule's own window length must fit, each rule gets its own cool-down (2 and 3 weeks) from one earliest-week limit.
 - **Rationale**: implements FR-003 and FR-010 with one clip; an accepted plan change ends at the start of its effective week (clarification), a declined one when it was declined, an expired one at the start of its effective week.
 
 ## Concerned exercises

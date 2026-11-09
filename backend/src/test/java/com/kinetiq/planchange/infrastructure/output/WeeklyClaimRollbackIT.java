@@ -99,7 +99,8 @@ class WeeklyClaimRollbackIT {
 
         @Bean
         DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history) {
-            return new PlanChangeDetectionService(new FailsAfterClaim(history), List.of(), Clock.fixed(NOW, ZoneOffset.UTC));
+            return new PlanChangeDetectionService(
+                    new FailsAfterClaim(history), new LoggingPlanChangeRepository(), List.of(), Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }
 

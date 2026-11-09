@@ -1,6 +1,7 @@
 package com.kinetiq.planchange.infrastructure.config;
 
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
+import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.TrainingHistory;
 import com.kinetiq.planchange.domain.rule.HighRpeRule;
 import com.kinetiq.planchange.domain.rule.LowCompletionRule;
@@ -15,7 +16,11 @@ import org.springframework.context.annotation.Configuration;
 class PlanChangeConfig {
 
     @Bean
-    DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history) {
-        return new PlanChangeDetectionService(history, List.of(new LowCompletionRule(), new HighRpeRule(), new StalledWeightRule()), Clock.systemUTC());
+    DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history, PlanChangeRepository planChanges) {
+        return new PlanChangeDetectionService(
+                history,
+                planChanges,
+                List.of(new LowCompletionRule(), new HighRpeRule(), new StalledWeightRule()),
+                Clock.systemUTC());
     }
 }
