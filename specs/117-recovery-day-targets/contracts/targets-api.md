@@ -65,6 +65,10 @@ Request:
 
 Logged sets show their copy of the targets. Unlogged sets show the planned ones. There is no `planned` field: the trainer's view of the adjustment is story #122.
 
+## `GET /api/v1/session-states` (changed, task #275)
+
+Each session gains `adjusted` (boolean, always present): `true` when the lighter targets of that date's check-in are in use for it, computed with the plan's targets of that session. A day still to come is always `false`.
+
 ## Frontend error keys
 
 New key: `errors.check-in.no-adjustment`, in EN and PL. The others already exist.

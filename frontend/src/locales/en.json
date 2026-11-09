@@ -897,6 +897,7 @@
       "none": "You don't have a plan yet.",
       "previous": "Previous week",
       "next": "Next week",
+      "adjusted": "Adjusted",
       "currentWeek": "Back to current week",
       "restDay": "Rest day",
       "exercises_one": "{{count, number}} exercise",

@@ -926,6 +926,7 @@
       "none": "Nie masz jeszcze planu.",
       "previous": "Poprzedni tydzień",
       "next": "Następny tydzień",
+      "adjusted": "Dostosowana",
       "currentWeek": "Wróć do bieżącego tygodnia",
       "restDay": "Dzień odpoczynku",
       "exercises_one": "{{count, number}} ćwiczenie",

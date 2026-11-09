@@ -58,6 +58,7 @@ All other columns are unchanged (spec 109). The plan tables are never written by
 - `StartedSession` carries the `Adjustment` of the log's date, or `null`.
 - `SessionLog.logSet(…)` takes the targets in use for the place and copies them into the new `SetLog`; a change of a logged set keeps its copy.
 - `LoggedEntry` is unchanged: it is the planned copy taken at the start.
+- `SessionStates.Entry` gains `boolean adjusted` (task #275): `CheckInUseCase.adjustmentOn` for that date, with the plan session's targets and the library's measures, is present and in use.
 
 ## State
 

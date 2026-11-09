@@ -63,12 +63,18 @@ const weekAsked = (request: Request) => {
 
 const LOG = '00000000-0000-4000-a000-000000000001'
 
-// the states of week 6: Monday is done and Thursday is missed
+// the states of week 6: Monday is done on a recovery day's lighter targets and Thursday is missed
 const STATES = {
   today: '2026-11-06',
   sessions: [
-    { day: 'MONDAY', date: '2026-11-02', state: 'DONE', sessionLogId: LOG },
-    { day: 'THURSDAY', date: '2026-11-05', state: 'MISSED' },
+    {
+      day: 'MONDAY',
+      date: '2026-11-02',
+      state: 'DONE',
+      sessionLogId: LOG,
+      adjusted: true,
+    },
+    { day: 'THURSDAY', date: '2026-11-05', state: 'MISSED', adjusted: false },
   ],
 }
 
@@ -326,6 +332,14 @@ describe('ClientPlanPage', () => {
     expect(await within(days[0]).findAllByText('Done')).toHaveLength(2)
     expect(within(days[3]).getAllByText('Missed')).toHaveLength(2)
     expect(within(days[1]).queryByText(/Done|Missed|Today/)).toBeNull()
+  })
+
+  it('marks the sessions whose targets were adjusted', async () => {
+    openPlan(servePlanWithStates)
+
+    const days = await screen.findAllByRole('listitem')
+    expect(await within(days[0]).findByText('Adjusted')).toBeInTheDocument()
+    expect(within(days[3]).queryByText('Adjusted')).toBeNull()
   })
 
   it('counts the sessions done in the week shown', async () => {

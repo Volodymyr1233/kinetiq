@@ -51,6 +51,7 @@ export function WeekStrip({
                 <SessionCard
                   session={session}
                   state={entry?.state}
+                  adjusted={entry?.adjusted}
                   summaryId={entry?.sessionLogId}
                   pastLog={
                     // plain ISO dates compare as text; today's session is reached from Today

@@ -35,7 +35,7 @@ A client checks in and their readiness falls in Recovery day. Today's session th
 3. **Given** an exercise entry without a load, **When** it is adjusted, **Then** its target RPE is one lower but not below 5, and its amount is lower: one repetition fewer, or 10% fewer seconds rounded down; never below 1. Sets and rest are unchanged.
 4. **Given** an adjusted target, **When** it is shown, **Then** the planned value is shown struck through, then an arrow, then the new value; a target that did not change is shown once, as planned.
 5. **Given** the adjusted session, **When** it is shown, **Then** one sentence under its name names the answers that caused the adjustment (FR-008) and says today's targets are lighter, and the readiness card's line says "Today's targets are lighter." in place of the band's usual line.
-6. **Given** an adjusted day, **When** the client opens the Plan tab, the plan editor is opened by the trainer, or any later day comes, **Then** they show the plan's own targets; the adjustment exists for that client and that date only.
+6. **Given** an adjusted day, **When** the client opens the Plan tab, the plan editor is opened by the trainer, or any later day comes, **Then** they show the plan's own targets; the adjustment exists for that client and that date only. The client's Plan week marks that day's session "Adjusted" (FR-028).
 7. **Given** a check-in in the Ready or the Take it easier band, a skipped check-in, or no check-in, **When** Today is shown, **Then** the session shows its planned targets and nothing is marked as adjusted.
 
 ---
@@ -168,6 +168,10 @@ Only the client reads and switches their own targets for their own today.
 - **FR-023**: A switch MUST show the requested targets at once; if the system refuses it or cannot be reached, the screen MUST return to the stored targets and show a translated message, so that once the request ends it never shows a choice that was not stored.
 - **FR-024**: Once a set is logged, the session card MUST offer neither switch. On a day with an adjustment, the readiness card's line about fixed answers (spec `109-readiness-check-in`, FR-018) MUST read "Answers and targets are fixed once training has started." instead, so the rule is said once, in one place; on other days it is unchanged.
 
+**Plan week mark** (task #275)
+
+- **FR-028**: The client's Plan week MUST mark a session "Adjusted", next to its state, when the lighter targets of that date's check-in are in use for it; a session with the original targets chosen, without an adjustment, or on a day still to come is not marked. The opened card still lists the plan's own targets (FR-013). `GET /api/v1/session-states` gives the mark per session.
+
 **Quality**
 
 - **FR-025**: Every user-facing text MUST exist in English and Polish; numbers and units follow the UI language and the client's unit.
@@ -206,6 +210,7 @@ None. Every operation needs a signed-in client.
 | #117 | "Changing the check-in recomputes the adjustment" | Also resets "Use original targets" when the answers differ | A new reading starts from what it calls for; keeping a choice made for other answers would apply it to a day the client did not judge. |
 | #117, #121 | "Reverts in one tap with Undo" | Also "Use lighter targets" stays on the card | A message that closes on its own cannot be the only way back (WCAG 2.2.1 timing); the board draws the same control. |
 | #119 | "Store today's adjustment" | Only the client's choice is stored; the adjusted targets are derived | Stored targets would go stale when the trainer saves the plan or the client changes the answers or their unit before training; the set logs keep what was actually asked. |
+| Review | Adjusted days visible only by opening each day | The Plan week marks them (FR-028, task #275) | The client sees at a glance which days were lighter, without opening each one. |
 | — | Switching at any time | Switching only until the first set is logged | The answers are fixed from then on (spec `109-readiness-check-in`), and logged sets keep their targets; changing targets mid-session would make sets of one exercise disagree. |
 | Board | "You slept badly and you're sore" | "Poor sleep and high soreness, so today's targets are lighter." | Polish second-person past tense has a gender the system does not know; nouns read the same for everyone, and the per-target arrows already say how much. |
 | Board | "−10% · −1 RPE" beside each exercise | Not shown | It repeats the arrows, and is wrong when rounding, a floor or no load changes the result. |

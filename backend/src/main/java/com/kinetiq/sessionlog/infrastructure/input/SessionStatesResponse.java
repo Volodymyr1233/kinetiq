@@ -15,7 +15,8 @@ record SessionStatesResponse(@NotNull LocalDate today, @NotNull List<SessionStat
 
     /**
      * One planned session. {@code state} is left out before the plan was published, and {@code sessionLogId} and
-     * {@code startedAt} when the session was never started.
+     * {@code startedAt} when the session was never started. {@code adjusted} says a recovery day's lighter targets are
+     * in use for it.
      */
     @JsonInclude(JsonInclude.Include.NON_NULL)
     record SessionStateResponse(
@@ -23,5 +24,6 @@ record SessionStatesResponse(@NotNull LocalDate today, @NotNull List<SessionStat
             @NotNull LocalDate date,
             SessionState state,
             UUID sessionLogId,
-            Instant startedAt) {}
+            Instant startedAt,
+            @NotNull boolean adjusted) {}
 }

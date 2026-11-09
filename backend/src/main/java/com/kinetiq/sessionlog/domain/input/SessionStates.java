@@ -11,6 +11,7 @@ import java.util.Optional;
 /**
  * The planned sessions of one plan week, in week order. {@code today} is the client's local date. {@code state} is empty
  * before the plan was published, and {@code sessionLogId} and {@code startedAt} when the session was never started.
+ * {@code adjusted} says the lighter targets of a recovery day are in use for that session.
  */
 public record SessionStates(LocalDate today, List<Entry> sessions) {
 
@@ -23,5 +24,6 @@ public record SessionStates(LocalDate today, List<Entry> sessions) {
             LocalDate date,
             Optional<SessionState> state,
             Optional<SessionLogId> sessionLogId,
-            Optional<Instant> startedAt) {}
+            Optional<Instant> startedAt,
+            boolean adjusted) {}
 }

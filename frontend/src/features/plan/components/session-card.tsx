@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
 import { SessionStateBadge } from '@/components/session-state-badge'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Collapsible,
@@ -43,11 +44,14 @@ function PastLogLink({ id, startedAt }: { id: string; startedAt: string }) {
 export function SessionCard({
   session,
   state,
+  adjusted = false,
   summaryId,
   pastLog,
 }: {
   session: Session
   state?: SessionState
+  // a recovery day's lighter targets were in use for it; the card still lists the plan's own targets
+  adjusted?: boolean
   // the session log of a finished session, whose summary the opened card links to
   summaryId?: string
   // the session log of an earlier day, started, finished or not
@@ -63,6 +67,9 @@ export function SessionCard({
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="font-medium break-words">{session.name}</span>
             <SessionStateBadge state={state} />
+            {adjusted && (
+              <Badge variant="adjusted">{t('plan.client.adjusted')}</Badge>
+            )}
           </span>
           <span className="text-muted-foreground text-sm">
             {t('plan.client.exercises', { count: session.entries.length })}
