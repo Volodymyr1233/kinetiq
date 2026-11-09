@@ -8,6 +8,8 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import type { components } from '@/lib/api/schema'
+import { cn } from '@/lib/utils'
 import { useOwnPlan } from '../api/client-plan'
 import { useSessionStates, type SessionStateEntry } from '../api/session-states'
 import { useToday } from '../api/today'
@@ -15,11 +17,29 @@ import { EntryRow } from '../components/entry-row'
 import { estimatedMinutes } from '../plan-draft'
 
 /**
+ * What the app passes on a recovery day, from readiness: `mark` sits above the session's name, `reason` under it and
+ * `note` under the card's action. `targets` holds the lighter targets by position while they are in use; without it the
+ * session shows its planned targets.
+ */
+export type AdjustedSession = {
+  targets?: components['schemas']['AdjustedTargetResponse'][]
+  mark: ReactNode
+  reason?: ReactNode
+  note?: ReactNode
+}
+
+/**
  * The client's Today tab: the session their plan has for today, a rest day, or the end of the plan. `beforeSession` is
  * shown above the session, only on a day with one: the app puts today's check-in there, which belongs to another
- * feature.
+ * feature. `adjusted` shows the session lightened for today, also from that feature.
  */
-export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
+export function TodayPage({
+  beforeSession,
+  adjusted,
+}: {
+  beforeSession?: ReactNode
+  adjusted?: AdjustedSession
+}) {
   const { t, i18n } = useTranslation()
   const query = useToday()
   const states = useSessionStates().data?.sessions
@@ -86,21 +106,41 @@ export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
           {beforeSession}
           <section
             aria-labelledby={`${name}-name`}
-            className="bg-card text-card-foreground rounded-xl border"
+            className={cn(
+              'bg-card text-card-foreground rounded-xl border',
+              // the design system's amber border, mixed in oklab: oklch turns the hue through pink
+              adjusted?.targets &&
+                'border-[color-mix(in_oklab,var(--adjusted)_45%,var(--border))]',
+            )}
           >
+            {adjusted && (
+              <div className="flex flex-wrap items-center justify-between gap-x-2 px-4 pt-3">
+                {adjusted.mark}
+              </div>
+            )}
             <h2
               id={`${name}-name`}
-              className="font-heading px-4 pt-4 pb-3 text-lg font-semibold break-words"
+              className={cn(
+                'font-heading px-4 pb-3 text-lg font-semibold break-words',
+                adjusted ? 'pt-1' : 'pt-4',
+              )}
             >
               <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {today.session.name}
                 <SessionStateBadge state={entry?.state} />
               </span>
             </h2>
+            {adjusted?.reason && (
+              <div className="px-4 pb-3">{adjusted.reason}</div>
+            )}
             <ol className="flex flex-col divide-y border-t">
               {today.session.entries.map((entry, index) => (
                 // the same exercise can appear twice in a session, so its place is its key
-                <EntryRow key={index} entry={entry} />
+                <EntryRow
+                  key={index}
+                  entry={entry}
+                  today={adjusted?.targets?.[index]}
+                />
               ))}
             </ol>
           </section>
@@ -126,6 +166,7 @@ export function TodayPage({ beforeSession }: { beforeSession?: ReactNode }) {
               </Button>
             </div>
           )}
+          {adjusted?.note}
         </>
       )}
 

@@ -719,6 +719,7 @@
     "leave": "Leave"
   },
   "sessionlog": {
+    "adjusted": "Adjusted",
     "loading": "Loading session",
     "retry": "Try again",
     "back": "Today",
@@ -1150,7 +1151,20 @@
         }
       },
       "answers": "Sleep {{sleep, number}} · soreness {{soreness, number}} · stress {{stress, number}}",
-      "fixed": "Answers are fixed once training has started."
+      "fixed": "Answers are fixed once training has started.",
+      "lighter": "Today’s targets are lighter.",
+      "fixedWithTargets": "Answers and targets are fixed once training has started."
+    },
+    "adjustment": {
+      "badge": "Adjusted for today",
+      "reason": "{{causes}}, so today’s targets are lighter.",
+      "cause": {
+        "SLEEP": "poor sleep",
+        "SORENESS": "high soreness",
+        "STRESS": "high stress"
+      },
+      "planUnchanged": "Only today’s targets change. Your plan stays the same."
     }
-  }
+  },
+  "targetChange": "{{planned}}, today {{today}}"
 }

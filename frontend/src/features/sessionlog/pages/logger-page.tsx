@@ -8,11 +8,18 @@ import {
   AlertDescription,
   AlertTitle,
 } from '@/components/ui/alert'
+import { TargetChange } from '@/components/target-change'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { locksAt as lockMoment } from '@/lib/edit-window'
-import { useSession, type SessionLog } from '../api/session-log'
+import { fromKg, useWeightUnit } from '@/lib/weight'
+import {
+  useSession,
+  type LoggedEntry,
+  type SessionLog,
+} from '../api/session-log'
 import { FinishFooter } from '../components/finish-footer'
 import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
@@ -126,7 +133,13 @@ function Session({ session }: { session: SessionLog }) {
         <h1 className="font-heading text-2xl font-semibold break-words">
           {session.name}
         </h1>
-        <p className="text-muted-foreground">{date}</p>
+        <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+          <p className="text-muted-foreground">{date}</p>
+          {/* once for the session: on a recovery day every exercise with a load or an RPE gets lighter */}
+          {session.entries.some((entry) => entry.planned) && (
+            <Badge variant="adjusted">{t('sessionlog.adjusted')}</Badge>
+          )}
+        </div>
       </header>
       {locked && (
         // not an alert: the switch is announced once by the status below, and on arrival it is just read
@@ -152,6 +165,9 @@ function Session({ session }: { session: SessionLog }) {
           >
             {entry.exerciseName}
           </h2>
+          {entry.planned && (
+            <LighterToday planned={entry.planned} entry={entry} />
+          )}
           <ol className="flex flex-col divide-y border-t">
             {entry.sets.map((set) => {
               const key = `${entry.position}-${set.number}`
@@ -192,5 +208,47 @@ function Session({ session }: { session: SessionLog }) {
         />
       </div>
     </main>
+  )
+}
+
+/**
+ * On a recovery day, each target of the exercise that is lighter than planned, as planned → today; the sets below
+ * already suggest today's values.
+ */
+function LighterToday({
+  planned,
+  entry,
+}: {
+  planned: NonNullable<LoggedEntry['planned']>
+  entry: LoggedEntry
+}) {
+  const { t } = useTranslation()
+  const unit = useWeightUnit()
+  const today = entry.sets[0].target
+  const amount = (value: number) =>
+    t('sessionlog.row.amount', {
+      amount: value,
+      unit: t(`plan.entries.measures.${entry.measure}`),
+    })
+  const load = (loadKg: number | undefined) =>
+    loadKg === undefined
+      ? t('sessionlog.row.noLoad')
+      : t('sessionlog.row.load', {
+          load: fromKg(loadKg, unit),
+          unit: t(`plan.units.${unit}`),
+        })
+  const rpe = (value: number) => t('sessionlog.row.rpe', { rpe: value })
+  const changes = [
+    [amount(planned.amount), amount(today.amount)],
+    [load(planned.loadKg), load(today.loadKg)],
+    [rpe(planned.rpe), rpe(today.rpe)],
+  ].filter(([before, after]) => before !== after)
+
+  return (
+    <p className="text-muted-foreground -mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 px-4 pb-3 text-sm">
+      {changes.map(([before, after]) => (
+        <TargetChange key={before} planned={before} today={after} />
+      ))}
+    </p>
   )
 }

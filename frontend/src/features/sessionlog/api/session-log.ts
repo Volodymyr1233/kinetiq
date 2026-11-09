@@ -7,12 +7,11 @@ import {
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
+import { SESSION_LOGS_KEY as SESSION_LOGS } from '@/lib/query-keys'
 
 export type SessionLog = components['schemas']['SessionLogResponse']
 export type LoggedEntry = SessionLog['entries'][number]
 export type PlannedSet = LoggedEntry['sets'][number]
-
-const SESSION_LOGS = ['session-log']
 
 /**
  * Writes a change into every cached copy of the session: today's logger and an earlier session opened by its id can

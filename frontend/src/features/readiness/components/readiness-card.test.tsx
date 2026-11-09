@@ -70,4 +70,47 @@ describe('ReadinessCard', () => {
       screen.getByText('Answers are fixed once training has started.'),
     ).toBeInTheDocument()
   })
+
+  it("says today's targets are lighter while the lighter ones are in use", () => {
+    renderCard({
+      ...READY,
+      band: 'RECOVERY_DAY',
+      score: 33,
+      adjustment: { inUse: true, causes: ['SLEEP'], entries: [] },
+    })
+
+    expect(screen.getByText('Today’s targets are lighter.')).toBeInTheDocument()
+    expect(screen.queryByText('Same plan. Stop two reps earlier.')).toBeNull()
+  })
+
+  it('keeps the band line once the original targets are in use', () => {
+    renderCard({
+      ...READY,
+      band: 'RECOVERY_DAY',
+      score: 33,
+      adjustment: { inUse: false, causes: ['SLEEP'], entries: [] },
+    })
+
+    expect(
+      screen.getByText('Same plan. Stop two reps earlier.'),
+    ).toBeInTheDocument()
+  })
+
+  it('says the targets are fixed too once training started on an adjusted day', () => {
+    renderCard(
+      {
+        ...READY,
+        band: 'RECOVERY_DAY',
+        score: 33,
+        adjustment: { inUse: true, causes: ['SLEEP'], entries: [] },
+      },
+      false,
+    )
+
+    expect(
+      screen.getByText(
+        'Answers and targets are fixed once training has started.',
+      ),
+    ).toBeInTheDocument()
+  })
 })

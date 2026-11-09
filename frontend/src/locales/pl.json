@@ -737,6 +737,7 @@
     "leave": "Wyjdź"
   },
   "sessionlog": {
+    "adjusted": "Dostosowana",
     "loading": "Wczytywanie sesji",
     "retry": "Spróbuj ponownie",
     "back": "Dzisiaj",
@@ -1199,7 +1200,20 @@
         }
       },
       "answers": "Sen {{sleep, number}} · bolesność {{soreness, number}} · stres {{stress, number}}",
-      "fixed": "Po rozpoczęciu treningu odpowiedzi są już stałe."
+      "fixed": "Po rozpoczęciu treningu odpowiedzi są już stałe.",
+      "lighter": "Dzisiejsze cele są lżejsze.",
+      "fixedWithTargets": "Po rozpoczęciu treningu odpowiedzi i cele są już stałe."
+    },
+    "adjustment": {
+      "badge": "Dostosowane na dziś",
+      "reason": "{{causes}}, więc dzisiejsze cele są lżejsze.",
+      "cause": {
+        "SLEEP": "słaby sen",
+        "SORENESS": "duża bolesność mięśni",
+        "STRESS": "wysoki stres"
+      },
+      "planUnchanged": "Zmieniają się tylko dzisiejsze cele. Twój plan pozostaje bez zmian."
     }
-  }
+  },
+  "targetChange": "{{planned}}, dziś {{today}}"
 }

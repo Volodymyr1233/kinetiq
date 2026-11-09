@@ -110,9 +110,7 @@ frontend/src/
 ├── components/ui/badge.tsx                               # + variant adjusted (design system)
 ├── features/readiness/
 │   ├── api/check-in.ts                                   # + useChooseTargets (optimistic, rollback)
-│   ├── components/adjustment-mark.tsx (+ test)           # badge + Use original / Use lighter targets + Undo toast
-│   ├── components/adjustment-reason.tsx                  # reason sentence under the session name
-│   ├── components/adjustment-note.tsx                    # "Only today's targets change", bottom of the card
+│   ├── components/adjustment.tsx (+ test)                # mark (badge + switch + Undo), reason, note
 │   └── components/readiness-card.tsx                     # lighter line, fixed-with-targets line
 ├── features/plan/
 │   ├── pages/today-page.tsx (+ test)                     # + adjusted prop: mark, reason, targets
