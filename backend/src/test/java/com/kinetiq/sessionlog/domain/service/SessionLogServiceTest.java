@@ -26,6 +26,14 @@ import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Session;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
+import com.kinetiq.readiness.domain.input.ChooseTargetsCommand;
+import com.kinetiq.readiness.domain.input.SaveCheckInCommand;
+import com.kinetiq.readiness.domain.input.TodayCheckIn;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Answers;
+import com.kinetiq.readiness.domain.model.Planned;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
 import com.kinetiq.sessionlog.domain.exception.NotFinishedException;
 import com.kinetiq.sessionlog.domain.exception.NothingLoggedException;
@@ -51,6 +59,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -82,6 +91,9 @@ class SessionLogServiceTest {
     private TodayView today = sessionDay("Lower body");
     private RuntimeException planFailure;
     private final Map<SessionLogId, SessionLog> stored = new LinkedHashMap<>();
+    // the answers each client gave on a date, and whether they chose the lighter targets
+    private final Map<List<Object>, Answers> answers = new HashMap<>();
+    private boolean lighterInUse = true;
 
     private static TodayView sessionDay(String name) {
         Session session = new Session(
@@ -202,8 +214,32 @@ class SessionLogServiceTest {
         }
     };
 
+    // the real rule over the answers given here, so a set copies what the client was asked that day
+    private final CheckInUseCase checkIns = new CheckInUseCase() {
+        @Override
+        public TodayCheckIn today(AccountId client) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TodayCheckIn save(SaveCheckInCommand command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TodayCheckIn choose(ChooseTargetsCommand command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<Adjustment> adjustmentOn(AccountId client, LocalDate date, List<Planned> entries) {
+            return Optional.ofNullable(answers.get(List.of(client, date)))
+                    .flatMap(given -> Adjustment.of(given, lighterInUse, entries, WeightUnit.KG));
+        }
+    };
+
     private final SessionLogService service =
-            new SessionLogService(plan, accounts, exercises, logs, Clock.fixed(NOW, ZoneOffset.UTC));
+            new SessionLogService(plan, accounts, exercises, logs, checkIns, Clock.fixed(NOW, ZoneOffset.UTC));
 
     private static LogSetCommand command(
             AccountId client, SessionLogId session, SetLogId id, int position, int number, int amount, int rpe) {
@@ -302,6 +338,60 @@ class SessionLogServiceTest {
             assertThatThrownBy(() -> service.find(CLIENT, theirs)).isInstanceOf(SessionLogNotFoundException.class);
             assertThatThrownBy(() -> service.find(CLIENT, SessionLogId.random()))
                     .isInstanceOf(SessionLogNotFoundException.class);
+        }
+    }
+
+    @Nested
+    class OnARecoveryDay {
+
+        @Test
+        void shouldStartWithTheDaysAdjustment() {
+            answers.put(List.of(CLIENT, TODAY), new Answers(2, 4, 3));
+
+            StartedSession started = service.start(CLIENT);
+
+            assertThat(started.adjustment().inUse()).isTrue();
+        }
+
+        @Test
+        void shouldStartWithoutAnAdjustment_whenTheClientDidNotCheckIn() {
+            assertThat(service.start(CLIENT).adjustment()).isNull();
+        }
+
+        @Test
+        void shouldCopyTheLighterTargets_intoASetLoggedOnThatDay() {
+            answers.put(List.of(CLIENT, TODAY), new Answers(2, 4, 3));
+            SessionLogId session = service.start(CLIENT).log().getId();
+
+            SetLog logged = service.logSet(new LogSetCommand(
+                    CLIENT, session, newId(), 0, 1, new BigDecimal("90.0"), 5, 7));
+
+            assertThat(logged.targetLoadKg()).isEqualByComparingTo("90.0");
+            assertThat(logged.targetAmount()).isEqualTo(5);
+            assertThat(logged.targetRpe()).isEqualTo(7);
+            // the plan's copy in the session stays as planned
+            assertThat(stored.get(session).getEntries().getFirst().loadKg()).isEqualByComparingTo("100.0");
+            assertThat(stored.get(session).getEntries().getFirst().rpe()).isEqualTo(8);
+        }
+
+        @Test
+        void shouldAnswerNotFound_forAnotherClientsAdjustedSession() {
+            answers.put(List.of(OTHER_CLIENT, TODAY.minusDays(1)), new Answers(2, 4, 3));
+            SessionLogId theirs = startedAt(NOW.minus(Duration.ofHours(20)), OTHER_CLIENT);
+
+            assertThatThrownBy(() -> service.find(CLIENT, theirs)).isInstanceOf(SessionLogNotFoundException.class);
+        }
+
+        @Test
+        void shouldCopyThePlannedTargets_whenTheClientChoseTheOriginalOnes() {
+            answers.put(List.of(CLIENT, TODAY), new Answers(2, 4, 3));
+            lighterInUse = false;
+            SessionLogId session = service.start(CLIENT).log().getId();
+
+            SetLog logged = service.logSet(command(CLIENT, session, newId(), 0, 1, 5, 8));
+
+            assertThat(logged.targetLoadKg()).isEqualByComparingTo("100.0");
+            assertThat(logged.targetRpe()).isEqualTo(8);
         }
     }
 

@@ -16,7 +16,8 @@ class CheckInMapper {
                 new AccountId(entity.getClientId()),
                 entity.getCheckInDate(),
                 new Answers(entity.getSleep(), entity.getSoreness(), entity.getStress()),
-                entity.getSavedAt());
+                entity.getSavedAt(),
+                entity.getTargetChoice());
     }
 
     void copy(CheckIn checkIn, CheckInEntity entity) {
@@ -27,5 +28,6 @@ class CheckInMapper {
         entity.setSoreness((short) checkIn.getAnswers().soreness());
         entity.setStress((short) checkIn.getAnswers().stress());
         entity.setSavedAt(checkIn.getSavedAt());
+        entity.setTargetChoice(checkIn.getTargetChoice());
     }
 }

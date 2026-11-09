@@ -48,7 +48,8 @@ Request:
 | Status | `code` | When |
 |---|---|---|
 | `200` | — | Stored, or already so; the body is the `GET` answer |
-| `400` | `validation.failed` | `choice` missing or unknown |
+| `400` | `validation.failed` | `choice` missing |
+| `400` | `request.invalid` | `choice` not one of the two values, or a body that cannot be read |
 | `404` | `plan.not-found` | No published plan (a draft alike) |
 | `409` | `check-in.no-session-today` | A rest day or a finished plan |
 | `409` | `check-in.no-adjustment` | No check-in today, a band other than Recovery day, or nothing that changes |

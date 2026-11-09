@@ -2,7 +2,8 @@
 -- the done screen have something to show. All start more than 24 hours ago, so they are locked. Day 0 is the Monday of
 -- plan week 1: Wednesday and Thursday of week 1 and Monday, Tuesday, Thursday and Friday of week 2 are Done; Friday and
 -- Saturday of week 1 and Wednesday and Saturday of week 2 have no log, so they are Missed. Week 3 is left to be
--- trained live. Each log copies its planned session, with one logged set for every planned set.
+-- trained live. Each log copies its planned session, with one logged set for every planned set. Thursday of week 2
+-- (day 5) was a recovery day (R__demo_check_ins.sql): its sets were logged at, and copy, the lighter targets.
 insert into session_logs (id, client_id, log_date, session_name, started_at, finished_at, created_at, updated_at,
                           version)
 select ('00000000-0000-4000-9600-0000000000' || lpad(day.number::text, 2, '0'))::uuid,
@@ -40,12 +41,12 @@ select md5(entry.session_log_id::text || entry.position || '-' || set_number)::u
        entry.session_log_id,
        entry.position,
        set_number,
-       entry.load_kg,
-       entry.amount,
-       least(10, entry.rpe + (set_number - 1) % 2),
-       entry.load_kg,
-       entry.amount,
-       entry.rpe,
+       target.load_kg,
+       target.amount,
+       least(10, target.rpe + (set_number - 1) % 2),
+       target.load_kg,
+       target.amount,
+       target.rpe,
        log.started_at + make_interval(mins => entry.position * 12 + set_number * 3),
        now(),
        now(),
@@ -53,5 +54,12 @@ select md5(entry.session_log_id::text || entry.position || '-' || set_number)::u
 from session_log_entries entry
 join session_logs log on log.id = entry.session_log_id
 cross join lateral generate_series(1, entry.sets) as set_number
+-- the recovery day's lighter targets, by the rule: 10% less load to 0.5 kg with a half going lighter, RPE one lower
+cross join lateral (
+    select case when recovery then ceil(entry.load_kg * 0.9 * 2 - 0.5) / 2 else entry.load_kg end as load_kg,
+           entry.amount,
+           case when recovery then greatest(5, entry.rpe - 1) else entry.rpe end as rpe
+    from (select log.id = '00000000-0000-4000-9600-000000000005'::uuid and entry.load_kg is not null as recovery) day
+) as target
 where log.id::text like '00000000-0000-4000-9600-%'
 on conflict do nothing;

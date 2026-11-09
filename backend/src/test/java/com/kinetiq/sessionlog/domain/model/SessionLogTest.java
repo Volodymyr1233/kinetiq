@@ -12,6 +12,7 @@ import com.kinetiq.sessionlog.domain.exception.NoteInvalidException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogLockedException;
 import com.kinetiq.sessionlog.domain.exception.SetLogConflictException;
 import com.kinetiq.sessionlog.domain.exception.SetValuesInvalidException;
+import com.kinetiq.readiness.domain.model.Target;
 import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -69,6 +70,23 @@ class SessionLogTest {
             assertThat(logged.targetAmount()).isEqualTo(5);
             assertThat(logged.targetRpe()).isEqualTo(8);
             assertThat(logged.values().loadKg()).isEqualByComparingTo("105.0");
+        }
+
+        @Test
+        void shouldKeepTheTargetsInUse_whenTheyAreGiven() {
+            SessionLog log = started();
+            SetLogId id = newId();
+
+            SetLog logged = log.logSet(id, 0, 1, asPlanned(), new Target(new BigDecimal("90.0"), 5, 7), NOW);
+            SetLog changed = log.logSet(
+                    id, 0, 1, new SetValues(new BigDecimal("92.5"), 5, 8), new Target(new BigDecimal("100.0"), 5, 8), LATER);
+
+            assertThat(logged.targetLoadKg()).isEqualByComparingTo("90.0");
+            assertThat(logged.targetRpe()).isEqualTo(7);
+            // a change keeps the copy the set was first logged against
+            assertThat(changed.targetLoadKg()).isEqualByComparingTo("90.0");
+            assertThat(changed.targetRpe()).isEqualTo(7);
+            assertThat(log.getEntries().getFirst().loadKg()).isEqualByComparingTo("100.0");
         }
 
         @Test

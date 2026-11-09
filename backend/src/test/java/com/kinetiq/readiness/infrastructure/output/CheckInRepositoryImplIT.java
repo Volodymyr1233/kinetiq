@@ -7,6 +7,7 @@ import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.readiness.domain.model.Answers;
 import com.kinetiq.readiness.domain.model.CheckIn;
+import com.kinetiq.readiness.domain.model.TargetChoice;
 import jakarta.persistence.EntityManager;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -121,6 +122,38 @@ class CheckInRepositoryImplIT {
                         client.value(),
                         DATE,
                         answer))
+                .isInstanceOf(DataIntegrityViolationException.class);
+    }
+
+    @Test
+    void shouldKeepTheTargetChoice() {
+        AccountId client = insertClient();
+        CheckIn checkIn = CheckIn.give(client, DATE, new Answers(2, 4, 3), NOW);
+        assertThat(checkIn.getTargetChoice()).isEqualTo(TargetChoice.LIGHTER);
+        checkIn.choose(TargetChoice.ORIGINAL);
+        repository.save(checkIn);
+        flushAndClear();
+
+        assertThat(repository.findByClientAndDate(client, DATE).orElseThrow().getTargetChoice())
+                .isEqualTo(TargetChoice.ORIGINAL);
+    }
+
+    @Test
+    void shouldReadARowWithoutAChoiceAsLighter_andRefuseAnUnknownOne() {
+        AccountId client = insertClient();
+        jdbc.update(
+                """
+                insert into check_ins (id, client_id, check_in_date, sleep, soreness, stress, saved_at, created_at,
+                                       updated_at, version)
+                values (?, ?, ?, 2, 4, 3, now(), now(), now(), 0)
+                """,
+                UUID.randomUUID(),
+                client.value(),
+                DATE);
+
+        assertThat(repository.findByClientAndDate(client, DATE).orElseThrow().getTargetChoice())
+                .isEqualTo(TargetChoice.LIGHTER);
+        assertThatThrownBy(() -> jdbc.update("update check_ins set target_choice = 'HEAVIER'"))
                 .isInstanceOf(DataIntegrityViolationException.class);
     }
 }

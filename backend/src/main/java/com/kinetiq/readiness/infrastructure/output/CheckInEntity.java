@@ -1,7 +1,10 @@
 package com.kinetiq.readiness.infrastructure.output;
 
 import com.kinetiq.common.infrastructure.output.BaseEntity;
+import com.kinetiq.readiness.domain.model.TargetChoice;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
 import java.time.Instant;
@@ -25,4 +28,7 @@ class CheckInEntity extends BaseEntity {
     private short soreness;
     private short stress;
     private Instant savedAt;
+
+    @Enumerated(EnumType.STRING)
+    private TargetChoice targetChoice;
 }

@@ -66,7 +66,7 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 
 **Goal**: the choice stored on the check-in, today's adjustment in `GET /api/v1/check-ins/today`, `PUT /api/v1/check-ins/today/targets`, and logged sets copying the targets in use. Contract: `contracts/targets-api.md`.
 
-- [ ] T007 [US3] Migration `BR/db/migration/V22__add_check_in_target_choice.sql`:
+- [X] T007 [US3] Migration `BR/db/migration/V22__add_check_in_target_choice.sql`:
 
   ```sql
   alter table check_ins
@@ -75,20 +75,20 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
   ```
 
   A one-line comment says the adjusted targets are derived, so only the choice is stored.
-- [ ] T008 [US3] `B/infrastructure/output/CheckInEntity.java`: `@Enumerated(EnumType.STRING) TargetChoice targetChoice`. `CheckInMapper`: map it both ways.
-- [ ] T009 [US3] `B/domain/model/TargetChoice.java`: enum `LIGHTER, ORIGINAL`. `CheckIn`:
+- [X] T008 [US3] `B/infrastructure/output/CheckInEntity.java`: `@Enumerated(EnumType.STRING) TargetChoice targetChoice`. `CheckInMapper`: map it both ways.
+- [X] T009 [US3] `B/domain/model/TargetChoice.java`: enum `LIGHTER, ORIGINAL`. `CheckIn`:
   - New field `targetChoice`, set to `LIGHTER` by `give`, and a rebuild constructor that takes it.
   - `change(answers, now)` also sets `LIGHTER` when the answers differ; the same answers change nothing.
   - `choose(TargetChoice)`: the same choice changes nothing.
   - Update `Adjustment.of` to take `TargetChoice`.
   - `BT/domain/model/CheckInTest.java`: different answers reset `ORIGINAL` to `LIGHTER`; the same answers keep `ORIGINAL`.
-- [ ] T010 [US3] `B/domain/exception/NoAdjustmentException.java`: code `check-in.no-adjustment`, kind `CONFLICT`, following `TrainingStartedException`. The common handler maps `DomainException` by kind, so no handler change is needed; confirm it.
-- [ ] T011 [US1] `B/domain/input/`:
+- [X] T010 [US3] `B/domain/exception/NoAdjustmentException.java`: code `check-in.no-adjustment`, kind `CONFLICT`, following `TrainingStartedException`. The common handler maps `DomainException` by kind, so no handler change is needed; confirm it.
+- [X] T011 [US1] `B/domain/input/`:
   - `TodayCheckIn` gains `Adjustment adjustment`, `null` without one, documented like `checkIn`.
   - `ChooseTargetsCommand` record `(AccountId client, TargetChoice choice)`.
   - `CheckInUseCase` gains `TodayCheckIn choose(ChooseTargetsCommand)` and `Optional<Adjustment> adjustmentOn(AccountId client, LocalDate date, List<Planned> entries)`.
   - Javadoc lists the refusals: `PlanNotFoundException`, `NoSessionTodayException`, `TrainingStartedException`, `NoAdjustmentException`.
-- [ ] T012 [US1] `B/domain/service/CheckInService.java`: add `CurrentAccountUseCase accounts`; the unit comes from the account's settings.
+- [X] T012 [US1] `B/domain/service/CheckInService.java`: add `CurrentAccountUseCase accounts`; the unit comes from the account's settings.
   - `today` and `save`: when there is a check-in and the state is `SESSION`, build `List<Planned>` from `today.session().entries()`, with measures from `today.library()`, and set `adjustment = Adjustment.of(…)`. Both use one private helper, so that a saved check-in answers with its adjustment at once (SC-001).
   - `choose`, refusing in this order:
     1. No plan (passes through).
@@ -100,39 +100,39 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
   - `adjustmentOn`: the stored check-in of that date and `Adjustment.of` over the given entries, empty without a check-in.
   - Add a `// ponytail:` comment on a switch racing the first logged set (research R7).
   - Wire it in `B/infrastructure/config/ReadinessConfig.java`.
-- [ ] T013 [US3] `BT/domain/service/CheckInServiceTest.java`, with the existing fakes plus a fake `CurrentAccountUseCase`:
+- [X] T013 [US3] `BT/domain/service/CheckInServiceTest.java`, with the existing fakes plus a fake `CurrentAccountUseCase`:
   - `today`: carries the adjustment on 2/4/3 and none on 4/2/1; the lb client's lighter load is rounded in pounds.
   - `save`: saving 2/4/3 answers with the adjustment; saving 4/2/1 after it answers with none.
   - `choose`: `ORIGINAL` then `LIGHTER` is stored; a repeat gives the same result.
   - `choose` refusals: `check-in.no-adjustment` without a check-in and on 4/2/1; `check-in.training-started` after a logged set (choice unchanged); `check-in.no-session-today` on a rest day.
   - Changed answers reset the choice; the same answers keep it.
   - Client B's choice never changes A's.
-- [ ] T014 [US1] Web, `B/infrastructure/input/`:
+- [X] T014 [US1] Web, `B/infrastructure/input/`:
   - `ChooseTargetsRequest`: `@NotNull TargetChoice choice`.
   - `CheckInController`: `@PutMapping("/targets")`, answering `TodayCheckInResponse`, with Javadoc listing the codes of the contract.
   - `TodayCheckInResponse.CheckInResponse` gains `AdjustmentResponse adjustment`, left out when `null`, with `@NotNull boolean inUse`, `@NotNull List<Cause> causes` and `@NotNull List<AdjustedTargetResponse> entries`. Each entry has `@NotNull int position`, `BigDecimal loadKg` (left out when `null`), `@NotNull int amount`, `@NotNull int rpe`.
   - `CheckInWebMapper` maps it.
-- [ ] T015 [US5] `BT/infrastructure/input/CheckInControllerTest.java`: `PUT /targets` returns `200` with the body; `400 validation.failed` for a missing and for an unknown `choice`; `404 plan.not-found`; `409 check-in.no-session-today`, `check-in.no-adjustment` and `check-in.training-started`; refused without CSRF; `403` for a trainer, `401` for a visitor; `GET` shows `adjustment` when present and leaves it out otherwise.
-- [ ] T016 [US1] `BT/infrastructure/output/CheckInRepositoryImplIT.java`: `target_choice` is stored and read back; an existing row reads `LIGHTER`; the database refuses an unknown value.
-- [ ] T017 [US2] `S/domain/model/SessionLog.java`: `logSet` takes the targets in use for the place (`BigDecimal targetLoadKg, int targetAmount, int targetRpe`, or one small record of the sessionlog's own) and copies them into the new `SetLog`. A change of a logged set keeps its copy. Update the Javadoc. Update `ST/domain/model/SessionLogTest.java`: a new set copies the given targets; a change keeps the first copy.
-- [ ] T018 [US2] `S/domain/input/StartedSession.java`: add `Adjustment adjustment` (`null` without one, documented). `S/domain/service/SessionLogService.java`: add `CheckInUseCase checkIns`.
+- [X] T015 [US5] `BT/infrastructure/input/CheckInControllerTest.java`: `PUT /targets` returns `200` with the body; `400 validation.failed` for a missing and for an unknown `choice`; `404 plan.not-found`; `409 check-in.no-session-today`, `check-in.no-adjustment` and `check-in.training-started`; refused without CSRF; `403` for a trainer, `401` for a visitor; `GET` shows `adjustment` when present and leaves it out otherwise.
+- [X] T016 [US1] `BT/infrastructure/output/CheckInRepositoryImplIT.java`: `target_choice` is stored and read back; an existing row reads `LIGHTER`; the database refuses an unknown value.
+- [X] T017 [US2] `S/domain/model/SessionLog.java`: `logSet` takes the targets in use for the place (`BigDecimal targetLoadKg, int targetAmount, int targetRpe`, or one small record of the sessionlog's own) and copies them into the new `SetLog`. A change of a logged set keeps its copy. Update the Javadoc. Update `ST/domain/model/SessionLogTest.java`: a new set copies the given targets; a change keeps the first copy.
+- [X] T018 [US2] `S/domain/input/StartedSession.java`: add `Adjustment adjustment` (`null` without one, documented). `S/domain/service/SessionLogService.java`: add `CheckInUseCase checkIns`.
   - `start` and `find` set `adjustment = checkIns.adjustmentOn(client, log.getDate(), planned(log, library))`, where `planned` maps each `LoggedEntry` to `Planned(new Target(loadKg, amount, rpe), measure)`.
   - `logSet` computes the same adjustment and passes `adjustment.inUse(position, plannedTarget)` (or the planned target) to `SessionLog.logSet`.
   - Wire it in `S/infrastructure/config/SessionLogConfig.java`.
-- [ ] T019 [US2] `ST/domain/service/SessionLogServiceTest.java`, with a fake `CheckInUseCase`: on an adjusted date a set logged as planned stores the lighter targets as its copy; with `ORIGINAL`, the planned ones; `start` carries the adjustment; without a check-in nothing changes from today. FR-013: after an adjusted set is logged, the session log's `LoggedEntry` copy still holds the planned targets (the adjustment never writes the planned copy). The rest of FR-013 is structural: readiness has no port that writes a plan, and `HexagonalArchitectureTest` keeps it so.
-- [ ] T020 [US2] `S/infrastructure/input/SessionLogResponse.java`: `LoggedEntryResponse` gains `TargetResponse planned`, left out when `null`. `SessionLogWebMapper`:
+- [X] T019 [US2] `ST/domain/service/SessionLogServiceTest.java`, with a fake `CheckInUseCase`: on an adjusted date a set logged as planned stores the lighter targets as its copy; with `ORIGINAL`, the planned ones; `start` carries the adjustment; without a check-in nothing changes from today. FR-013: after an adjusted set is logged, the session log's `LoggedEntry` copy still holds the planned targets (the adjustment never writes the planned copy). The rest of FR-013 is structural: readiness has no port that writes a plan, and `HexagonalArchitectureTest` keeps it so.
+- [X] T020 [US2] `S/infrastructure/input/SessionLogResponse.java`: `LoggedEntryResponse` gains `TargetResponse planned`, left out when `null`. `SessionLogWebMapper`:
   - A logged set's `target` comes from its `SetLog` copy (`targetLoadKg`, `targetAmount`, `targetRpe`).
   - An unlogged set's `target` is the target in use (`StartedSession.adjustment`).
   - `planned` is set only when the target in use differs from the entry's planned one.
   - `ClientSessionLog` (trainer) has no adjustment: unlogged sets show planned targets and `planned` is never set.
 
   `ST/infrastructure/input/SessionLogControllerTest.java`: `planned` is present on an adjusted entry and absent otherwise. `ClientTrainingControllerTest`: a logged set shows its copy.
-- [ ] T021 [US5] Ownership test in `ST/infrastructure/input/SessionLogControllerTest.java` or `SessionLogServiceTest`: client B asking for A's adjusted session log by id gets `404 session-log.not-found`.
-- [ ] T022 Demo data:
+- [X] T021 [US5] Ownership test in `ST/infrastructure/input/SessionLogControllerTest.java` or `SessionLogServiceTest`: client B asking for A's adjusted session log by id gets `404 session-log.not-found`.
+- [X] T022 Demo data:
   - `BR/db/dev-data/R__demo_check_ins.sql`: Demo Client Daily keeps 2/4/3 on `current_date - 3`; add `target_choice` only if the insert lists columns that need it (the default is `LIGHTER`).
   - `BR/db/dev-data/R__demo_session_logs.sql`: give Demo Client Daily a finished session log on `current_date - 3`, the date of the 2/4/3 check-in, whatever its weekday. Copy its entries from one of the client's plan sessions, and log every set at the lighter values of the rule, with `set_logs.target_load_kg`, `target_amount` and `target_rpe` holding those lighter values. Use fixed ids in an unused range (check the other demo files), with `on conflict do nothing`. Today stays without a check-in.
-- [ ] T023 Start the backend and regenerate `frontend/src/lib/api/schema.d.ts` (`npm run gen:api`). Add `errors.check-in.no-adjustment` to `F/locales/en.json` ("Today's targets are as planned, so there is nothing to switch.") and `pl.json` ("Dzisiejsze cele są zgodne z planem, więc nie ma czego przełączać."). Run `npm run check` in `frontend/`.
-- [ ] T024 Run `./gradlew check`, which must pass (`HexagonalArchitectureTest`: `sessionlog → readiness → plan`, no cycle). Try quickstart scenario 6 by hand. Commit `feat(backend): add today's target adjustment api (#119)`.
+- [X] T023 Start the backend and regenerate `frontend/src/lib/api/schema.d.ts` (`npm run gen:api`). Add `errors.check-in.no-adjustment` to `F/locales/en.json` ("Today's targets are as planned, so there is nothing to switch.") and `pl.json` ("Dzisiejsze cele są zgodne z planem, więc nie ma czego przełączać."). Run `npm run check` in `frontend/`.
+- [X] T024 Run `./gradlew check`, which must pass (`HexagonalArchitectureTest`: `sessionlog → readiness → plan`, no cycle). Try quickstart scenario 6 by hand. Commit `feat(backend): add today's target adjustment api (#119)`.
 
 ## Phase 4: task #120, adjusted session view (US1, US2, US4)
 

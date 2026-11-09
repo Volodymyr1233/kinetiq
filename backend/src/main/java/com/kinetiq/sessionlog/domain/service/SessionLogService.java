@@ -10,6 +10,10 @@ import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.Session;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Planned;
+import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.LogSessionUseCase;
@@ -23,6 +27,7 @@ import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetValues;
 import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
 import java.time.Clock;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
@@ -36,6 +41,7 @@ public class SessionLogService implements LogSessionUseCase {
     private final CurrentAccountUseCase accounts;
     private final ListExercisesUseCase exercises;
     private final SessionLogRepository logs;
+    private final CheckInUseCase checkIns;
     private final Clock clock;
 
     // ponytail: two starts at the same moment both pass the lookup and the second is refused by the database as a 500;
@@ -48,7 +54,7 @@ public class SessionLogService implements LogSessionUseCase {
         }
         Optional<SessionLog> existing = logs.findByClientAndDate(client, today.date());
         if (existing.isPresent()) {
-            return new StartedSession(existing.get(), library(client), false);
+            return started(existing.get(), false);
         }
         Session session = today.session();
         SessionLog started = SessionLog.start(
@@ -65,12 +71,12 @@ public class SessionLogService implements LogSessionUseCase {
                                 entry.restSeconds()))
                         .toList(),
                 clock.instant());
-        return new StartedSession(logs.save(started), library(client), true);
+        return started(logs.save(started), true);
     }
 
     @Override
     public StartedSession find(AccountId client, SessionLogId id) {
-        return new StartedSession(ownLog(client, id), library(client), false);
+        return started(ownLog(client, id), false);
     }
 
     @Override
@@ -81,12 +87,17 @@ public class SessionLogService implements LogSessionUseCase {
         logs.sessionOfSetLog(command.setLogId()).filter(id -> !id.equals(log.getId())).ifPresent(other -> {
             throw new SessionLogNotFoundException();
         });
-        SetLog logged = log.logSet(
-                command.setLogId(),
-                command.entryPosition(),
-                command.setNumber(),
-                new SetValues(command.loadKg(), command.amount(), command.rpe()),
-                clock.instant());
+        SetValues values = new SetValues(command.loadKg(), command.amount(), command.rpe());
+        SetLog logged = inUse(log, command.entryPosition())
+                .map(targets -> log.logSet(
+                        command.setLogId(),
+                        command.entryPosition(),
+                        command.setNumber(),
+                        values,
+                        targets,
+                        clock.instant()))
+                .orElseGet(() -> log.logSet(
+                        command.setLogId(), command.entryPosition(), command.setNumber(), values, clock.instant()));
         logs.save(log);
         return logged;
     }
@@ -108,6 +119,34 @@ public class SessionLogService implements LogSessionUseCase {
         SessionLog log = ownLog(client, id);
         log.writeNote(text, clock.instant());
         logs.save(log);
+    }
+
+    private StartedSession started(SessionLog log, boolean created) {
+        Map<ExerciseId, Exercise> library = library(log.getClient());
+        return new StartedSession(log, library, adjustment(log, library).orElse(null), created);
+    }
+
+    // a lighter day's targets for the place, or empty for a place outside the session, which logSet refuses
+    private Optional<Target> inUse(SessionLog log, int position) {
+        List<LoggedEntry> entries = log.getEntries();
+        if (position < 0 || position >= entries.size()) {
+            return Optional.empty();
+        }
+        Target planned = target(entries.get(position));
+        return Optional.of(adjustment(log, library(log.getClient()))
+                .map(adjustment -> adjustment.inUse(position, planned))
+                .orElse(planned));
+    }
+
+    private Optional<Adjustment> adjustment(SessionLog log, Map<ExerciseId, Exercise> library) {
+        List<Planned> planned = log.getEntries().stream()
+                .map(entry -> new Planned(target(entry), library.get(entry.exercise()).getMeasure()))
+                .toList();
+        return checkIns.adjustmentOn(log.getClient(), log.getDate(), planned);
+    }
+
+    private static Target target(LoggedEntry entry) {
+        return new Target(entry.loadKg(), entry.amount(), entry.rpe());
     }
 
     private SessionLog ownLog(AccountId client, SessionLogId id) {
