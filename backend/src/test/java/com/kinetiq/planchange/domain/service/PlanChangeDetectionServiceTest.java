@@ -19,7 +19,7 @@ class PlanChangeDetectionServiceTest {
 
     private final FakeTrainingHistory history = new FakeTrainingHistory();
     private final MutableClock clock = new MutableClock("2026-11-09T01:00:00Z");
-    private final PlanChangeDetectionService service = new PlanChangeDetectionService(history, List.of(), clock);
+    private final PlanChangeDetectionService service = new PlanChangeDetectionService(history, new FakePlanChangeRepository(), List.of(), clock);
 
     private void checkAllDue() {
         for (AccountId client : service.due()) {
@@ -89,6 +89,19 @@ class PlanChangeDetectionServiceTest {
     }
 
     @Test
+    void shouldNotCheckAgain_whenTheClientMovedWestAfterTheWeekWasClaimed() {
+        // claimed for 2026-11-09 as a Warsaw client; in Los Angeles that week has not begun at 02:00Z
+        AccountId client = history.publishedPlan("America/Los_Angeles");
+        history.checked(client, "2026-11-09");
+        clock.set("2026-11-09T02:00:00Z");
+
+        service.check(client);
+
+        assertThat(history.claims).isEmpty();
+        assertThat(history.claimedWeeks(client)).isEqualTo(weeks("2026-11-09"));
+    }
+
+    @Test
     void shouldSkipTheClient_whenThereIsNoPublishedPlan() {
         service.check(AccountId.random());
 
@@ -141,7 +154,7 @@ class PlanChangeDetectionServiceTest {
         List<RecordingRule> recording = Arrays.stream(rules).map(RecordingRule::new).toList();
         AccountId client = history.publishedPlan("Europe/Warsaw");
         clock.set(instant);
-        new PlanChangeDetectionService(history, List.copyOf(recording), clock).check(client);
+        new PlanChangeDetectionService(history, new FakePlanChangeRepository(), List.copyOf(recording), clock).check(client);
         return recording.stream().flatMap(rule -> rule.windows.stream()).toList();
     }
 

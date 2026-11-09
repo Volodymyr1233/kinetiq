@@ -65,6 +65,16 @@ class ScheduledClientTest {
     }
 
     @Test
+    void shouldNotBeDue_whenTheZoneMovedWestAfterTheWeekWasChecked() {
+        // checked for the week of 2026-11-09 as a Warsaw client; at 02:00Z it is still Sunday evening in Los Angeles
+        ScheduledClient moved = client("America/Los_Angeles", Optional.of(LocalDate.parse("2026-11-09")));
+
+        assertThat(moved.checkWeek(Instant.parse("2026-11-09T02:00:00Z"))).isEqualTo(LocalDate.parse("2026-11-02"));
+        assertThat(moved.isDue(Instant.parse("2026-11-09T02:00:00Z"))).isFalse();
+        assertThat(moved.isDue(Instant.parse("2026-11-16T11:00:00Z"))).isTrue();
+    }
+
+    @Test
     void shouldNotBeDue_whenThisWeekWasChecked_andBeDueAgainNextMonday() {
         ScheduledClient checked = client("Europe/Warsaw", Optional.of(LocalDate.parse("2026-11-02")));
 

@@ -106,10 +106,10 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). Each comm
 
 **Independent Test**: with all three rules firing only a low completion plan change is reported as due; with an open plan change nothing; after an end, each rule stays quiet until its full window has passed.
 
-- [ ] T025 [US5] Create the port `planchange/domain/output/PlanChangeRepository` (`boolean hasOpen(AccountId client)`, `Optional<Instant> lastEndedAt(AccountId client)`, `void open(DuePlanChange due)`) and the placeholder adapter `planchange/infrastructure/output/LoggingPlanChangeRepository` (`@Repository`; `hasOpen` false, `lastEndedAt` empty, `open` logs the rule name only; Javadoc says task #132 replaces it).
-- [ ] T026 [US5] Extend `PlanChangeDetectionService.check`: skip when `hasOpen`; compute the earliest usable week as `max(plan first week, first Monday on or after lastEndedAt in the client's zone)` and require each rule's whole window to start on or after it; choose the first finding in `Rule` order (completion, RPE, stalled weight); call `open` with a `DuePlanChange` carrying the rule, the window's first Monday and last Sunday and the exercises; never more than one due plan change per run. Inject `PlanChangeRepository` in `PlanChangeConfig`.
-- [ ] T027 [P] [US5] Unit tests in `PlanChangeDetectionServiceTest` with an in-memory fake `PlanChangeRepository`: all three fire gives completion; RPE and stalled gives RPE; only stalled gives stalled; open plan change gives nothing due and no history read; plan change ended 1 week ago blocks completion and RPE and stalled; ended 2 weeks ago allows completion and RPE but not stalled, 3 weeks ago allows stalled; a decline mid-week counts from the next Monday; an accepted or an expired change ended at its effective Monday; the winning rule in cool-down lets the next rule fire; the week is claimed even when nothing fires.
-- [ ] T028 [US5] Run `./gradlew check`, then commit `feat(backend): pick one plan change by priority with cool-down (#130)`.
+- [X] T025 [US5] Create the port `planchange/domain/output/PlanChangeRepository` (`boolean hasOpen(AccountId client)`, `Optional<Instant> lastEndedAt(AccountId client)`, `void open(DuePlanChange due)`) and the placeholder adapter `planchange/infrastructure/output/LoggingPlanChangeRepository` (`@Repository`; `hasOpen` false, `lastEndedAt` empty, `open` logs the rule name only; Javadoc says task #132 replaces it).
+- [X] T026 [US5] Extend `PlanChangeDetectionService.check`: skip when `hasOpen`; compute the earliest usable week as `max(plan first week, first Monday that begins at or after lastEndedAt in the client's zone)` and require each rule's whole window to start on or after it; choose the first finding in `Rule` order (completion, RPE, stalled weight); call `open` with a `DuePlanChange` carrying the rule, the window's first Monday and last Sunday and the exercises; never more than one due plan change per run. Inject `PlanChangeRepository` in `PlanChangeConfig`.
+- [X] T027 [P] [US5] Unit tests in `PlanChangeSelectionTest` (own class, to keep `PlanChangeDetectionServiceTest` on the weekly run) with an in-memory fake `PlanChangeRepository`: all three fire gives completion; RPE and stalled gives RPE; only stalled gives stalled; open plan change gives nothing due and no history read; plan change ended 1 week ago blocks completion and RPE and stalled; ended 2 weeks ago allows completion and RPE but not stalled, 3 weeks ago allows stalled; a decline mid-week counts from the next Monday; an accepted or an expired change ended at its effective Monday; a rule in cool-down does not stop a rule that is not (the windows are 2, 2 and 3 weeks, so only stalled weight can be the one in cool-down while another fires); the week is claimed even when nothing fires.
+- [X] T028 [US5] Run `./gradlew check`, then commit `feat(backend): pick one plan change by priority with cool-down (#130)`.
 
 ---
 
@@ -117,11 +117,11 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). Each comm
 
 **Purpose**: prove the whole story works and is secure before the pull request.
 
-- [ ] T029 Run `./gradlew check` in `backend/` and record the real result, including `HexagonalArchitectureTest`; fix any failure at its cause.
-- [ ] T030 [P] Security review of the branch (`/security-review` or the `security-review` skill): no endpoint or `SecurityConfig` change; `/v3/api-docs` shows no new path; logs carry only rule names, counts and exception class names, no names or emails; every history query is scoped to one client's own rows; nothing is sent to an LLM; the migration has named constraints.
-- [ ] T031 [P] Code review of the branch (`/code-review`) with attention to time zones (daylight saving, half-hour offsets), threshold boundaries, once-per-week under concurrency, and transaction scope (one client per transaction).
-- [ ] T032 Run the manual steps of `quickstart.md` on the local profile and note what was observed; correct `quickstart.md` if reality differs.
-- [ ] T033 Before opening the pull request run `gh pr list --repo Volodymyr1233/kinetiq --json number,files` to confirm V22 is free; open one pull request titled `feat(backend): detect plan changes by rule (#125)`, body closing `#125` and `#126` to `#130` (`Closes #n` each), merged with rebase or a merge commit so each task keeps its commit.
+- [X] T029 Run `./gradlew check` in `backend/` and record the real result, including `HexagonalArchitectureTest`; fix any failure at its cause.
+- [X] T030 [P] Security review of the branch (`/security-review` or the `security-review` skill): no endpoint or `SecurityConfig` change; `/v3/api-docs` shows no new path; logs carry only rule names, counts and exception class names, no names or emails; every history query is scoped to one client's own rows; nothing is sent to an LLM; the migration has named constraints.
+- [X] T031 [P] Code review of the branch (`/code-review`) with attention to time zones (daylight saving, half-hour offsets), threshold boundaries, once-per-week under concurrency, and transaction scope (one client per transaction).
+- [X] T032 Run the manual steps of `quickstart.md` on the local profile and note what was observed; correct `quickstart.md` if reality differs.
+- [X] T033 Before opening the pull request run `gh pr list --repo Volodymyr1233/kinetiq --json number,files` to confirm V22 is free; open one pull request titled `feat(backend): detect plan changes by rule (#125)`, body closing `#125` and `#126` to `#130` (`Closes #n` each), merged with rebase or a merge commit so each task keeps its commit.
 
 ---
 
@@ -138,3 +138,9 @@ Plan change table, model and states (#132), drafting and limits (#133 to #136), 
 ## Implementation strategy
 
 MVP is Phase 1 (the schedule and weekly claim), but the story is only useful with all five phases, so build in order and run `./gradlew check` before each commit. Stop and ask if a quality gate fails for a reason outside this feature.
+
+---
+
+## Phase 7: Convergence
+
+- [X] T034 Add a test that a client whose time zone moved west after a week was claimed is not due or checked again for that week (`ScheduledClientTest`, `PlanChangeDetectionServiceTest`) per edge case "A client changes time zone" (partial)
