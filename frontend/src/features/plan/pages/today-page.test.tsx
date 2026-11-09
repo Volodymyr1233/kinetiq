@@ -276,7 +276,7 @@ describe('TodayPage', () => {
     expect(screen.getByText('4 × 8 powt.')).toBeInTheDocument()
   })
 
-  const states = (state?: string) =>
+  const states = (state?: string, startedAt?: string) =>
     json({
       today: '2026-11-05',
       sessions: [
@@ -285,15 +285,18 @@ describe('TodayPage', () => {
           date: '2026-11-05',
           state,
           sessionLogId: state === 'DONE' ? 'log-1' : undefined,
+          startedAt,
         },
       ],
     })
   const withStates =
-    (state?: string): Reply =>
+    (state?: string, startedAt?: string): Reply =>
     (request) =>
       new URL(request.url).pathname === '/api/v1/session-states'
-        ? states(state)
+        ? states(state, startedAt)
         : sessionDay(request)
+  const hoursAgo = (hours: number) =>
+    new Date(Date.now() - hours * 60 * 60 * 1000).toISOString()
 
   it('says the session is done and links to its summary instead of the start action', async () => {
     openToday(withStates('DONE'))
@@ -306,6 +309,28 @@ describe('TodayPage', () => {
     )
     expect(
       screen.queryByRole('link', { name: 'Start session' }),
+    ).not.toBeInTheDocument()
+  })
+
+  it('offers Edit log on a done session while its 24 hours last, linking to that session', async () => {
+    openToday(withStates('DONE', hoursAgo(1)))
+
+    expect(
+      await screen.findByRole('link', { name: 'Edit log' }),
+    ).toHaveAttribute('href', '/app/session/log-1')
+    expect(
+      screen.getByRole('link', { name: 'View summary' }),
+    ).toBeInTheDocument()
+  })
+
+  it('offers no Edit log on a done session after its 24 hours', async () => {
+    openToday(withStates('DONE', hoursAgo(25)))
+
+    expect(
+      await screen.findByRole('link', { name: 'View summary' }),
+    ).toBeInTheDocument()
+    expect(
+      screen.queryByRole('link', { name: 'Edit log' }),
     ).not.toBeInTheDocument()
   })
 
