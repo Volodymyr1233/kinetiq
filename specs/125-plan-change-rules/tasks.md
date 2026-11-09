@@ -82,9 +82,9 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). Each comm
 
 **Independent Test**: loads 100/102/105 with mean RPE 7 do not fire (exactly 5%); 100/101/104.9 do; the same with RPE above 8 do not.
 
-- [ ] T019 [US3] Create `planchange/domain/rule/StalledWeightRule` (window 3): per exercise, over sets with a `loadKg`: present in each of the 3 weeks; `best3 < best1 * 1.05` with `BigDecimal` (best = highest load of the week); `sum(rpe) <= 8 * count` over the 3 weeks; exercises without any load are ignored; the finding lists every stalled exercise. Wire it in `PlanChangeConfig`.
-- [ ] T020 [P] [US3] Unit tests `.../domain/rule/StalledWeightRuleTest`: exactly 5% no; just under 5% yes; fall of the best load yes; RPE mean above 8 no and exactly 8 yes; logged in only 2 of 3 weeks no; bodyweight exercise ignored; only the stalled ones among several are listed.
-- [ ] T021 [US3] Run `./gradlew check`, then commit `feat(backend): detect stalled weight (#128)`.
+- [X] T019 [US3] Create `planchange/domain/rule/StalledWeightRule` (window 3): per exercise, over sets with a `loadKg`: present in each of the 3 weeks; `best3 < best1 * 1.05` with `BigDecimal` (best = highest load of the week); `sum(rpe) <= 8 * count` over the 3 weeks; exercises without any load are ignored; the finding lists every stalled exercise. Wire it in `PlanChangeConfig`.
+- [X] T020 [P] [US3] Unit tests `.../domain/rule/StalledWeightRuleTest`: exactly 5% no; just under 5% yes; fall of the best load yes; RPE mean above 8 no and exactly 8 yes; logged in only 2 of 3 weeks no; bodyweight exercise ignored; only the stalled ones among several are listed.
+- [X] T021 [US3] Run `./gradlew check`, then commit `feat(backend): detect stalled weight (#128)`.
 
 ---
 
