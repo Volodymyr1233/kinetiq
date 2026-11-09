@@ -16,7 +16,7 @@ All unknowns of the plan's Technical Context are resolved here; nothing is left 
 
 ## R3. Where the rule sits and what it takes
 
-- **Decision**: `readiness.domain.model.Adjustment.of(CheckIn, List<Planned>, WeightUnit)` returns `Optional<Adjustment>`: empty unless the band is `RECOVERY_DAY` and at least one target changes. `Planned` pairs a readiness-owned `Target(loadKg, amount, rpe)` with the exercise's `Measure`. Readiness reads `WeightUnit` from `account.domain.model` and `Measure` from `exercise.domain.model`; neither depends on readiness, so no cycle.
+- **Decision**: `readiness.domain.model.Adjustment.of(Answers, boolean inUse, List<Planned>, WeightUnit)` returns `Optional<Adjustment>`: empty unless the band is `RECOVERY_DAY` and at least one target changes. `Planned` pairs a readiness-owned `Target(loadKg, amount, rpe)` with the exercise's `Measure`. Readiness reads `WeightUnit` from `account.domain.model` and `Measure` from `exercise.domain.model`; neither depends on readiness, so no cycle.
 - **Rationale**: One pure function, unit-testable without Spring (FR-006), fed the same way from Today (plan session + library) and from the logger (session log copy + library).
 
 ## R4. Rounding
@@ -65,7 +65,7 @@ All unknowns of the plan's Technical Context are resolved here; nothing is left 
 ## R9. Switch UX and the Undo message
 
 - **Decision**: `useChooseTargets` updates the cached check-in at once (`onMutate`), rolls it back on error (FR-023), and stores the server's answer on success. Both mutations also invalidate the session log query, so the logger refetches. "Use original targets" calls `toast()` from the existing `sonner` `Toaster` with `action: { label: Undo }`. The switch is a `Button variant="link" size="touch"`; focus moves to the button that replaces it, and an `sr-only` status announces the targets in use.
-- **Rationale**: One tap with no wait (SC-001). `sonner` is already installed and placed in `app/app.tsx`. Its default time is fine because "Use lighter targets" stays on the card (WCAG 2.2.1).
+- **Rationale**: One tap with no wait (SC-001). `sonner` is already installed and placed in `app/app.tsx`, outside the routes, so the message stays across tabs. It lasts 5 seconds, a second over the default, because "Use lighter targets" stays on the card (WCAG 2.2.1). The open message's id is kept outside the component and dismissed before a new one opens and when the lighter targets return; a fixed id would not do, as sonner revives a dismissed message of the same id in its closing state.
 - **To verify in the browser**: the toast sits above the tab bar at 375 px; dark and light contrast of the `adjusted` badge.
 
 ## R10. Look

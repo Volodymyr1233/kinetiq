@@ -22,6 +22,11 @@ globalThis.ResizeObserver ??= class {
   disconnect() {}
 }
 
+// jsdom has no pointer capture; a sonner message captures the pointer when it is pressed, to let it be swiped
+Element.prototype.setPointerCapture ??= () => {}
+Element.prototype.releasePointerCapture ??= () => {}
+Element.prototype.hasPointerCapture ??= () => false
+
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()

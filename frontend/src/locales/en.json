@@ -1163,7 +1163,14 @@
         "SORENESS": "high soreness",
         "STRESS": "high stress"
       },
-      "planUnchanged": "Only today’s targets change. Your plan stays the same."
+      "planUnchanged": "Only today’s targets change. Your plan stays the same.",
+      "original": "Original targets",
+      "useOriginal": "Use original targets",
+      "useLighter": "Use lighter targets",
+      "restored": "Original targets restored",
+      "undo": "Undo",
+      "announceLighter": "Lighter targets in use.",
+      "announceOriginal": "Original targets in use."
     }
   },
   "targetChange": "{{planned}}, today {{today}}"

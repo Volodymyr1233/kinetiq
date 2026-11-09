@@ -130,7 +130,7 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 - [X] T021 [US5] Ownership test in `ST/infrastructure/input/SessionLogControllerTest.java` or `SessionLogServiceTest`: client B asking for A's adjusted session log by id gets `404 session-log.not-found`.
 - [X] T022 Demo data:
   - `BR/db/dev-data/R__demo_check_ins.sql`: Demo Client Daily keeps 2/4/3 on `current_date - 3`; add `target_choice` only if the insert lists columns that need it (the default is `LIGHTER`).
-  - `BR/db/dev-data/R__demo_session_logs.sql`: give Demo Client Daily a finished session log on `current_date - 3`, the date of the 2/4/3 check-in, whatever its weekday. Copy its entries from one of the client's plan sessions, and log every set at the lighter values of the rule, with `set_logs.target_load_kg`, `target_amount` and `target_rpe` holding those lighter values. Use fixed ids in an unused range (check the other demo files), with `on conflict do nothing`. Today stays without a check-in.
+  - `BR/db/dev-data/R__demo_session_logs.sql`: give Demo Client Daily's finished session on Thursday of plan week 2 (a logged day that is never one of the three relative check-in dates) a 2/4/3 check-in in `R__demo_check_ins.sql`. Copy its entries from one of the client's plan sessions, and log every set at the lighter values of the rule, with `set_logs.target_load_kg`, `target_amount` and `target_rpe` holding those lighter values. Use fixed ids in an unused range (check the other demo files), with `on conflict do nothing`. Today stays without a check-in.
 - [X] T023 Start the backend and regenerate `frontend/src/lib/api/schema.d.ts` (`npm run gen:api`). Add `errors.check-in.no-adjustment` to `F/locales/en.json` ("Today's targets are as planned, so there is nothing to switch.") and `pl.json` ("Dzisiejsze cele są zgodne z planem, więc nie ma czego przełączać."). Run `npm run check` in `frontend/`.
 - [X] T024 Run `./gradlew check`, which must pass (`HexagonalArchitectureTest`: `sessionlog → readiness → plan`, no cycle). Try quickstart scenario 6 by hand. Commit `feat(backend): add today's target adjustment api (#119)`.
 
@@ -168,12 +168,12 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 
 **Goal**: one-tap switch both ways, an Undo message, no dialog, and the fixed state (spec FR-020 to FR-024).
 
-- [ ] T036 [US3] `FR/api/check-in.ts`: `useChooseTargets()`, a `PUT /api/v1/check-ins/today/targets` with `{ choice }`.
+- [X] T036 [US3] `FR/api/check-in.ts`: `useChooseTargets()`, a `PUT /api/v1/check-ins/today/targets` with `{ choice }`.
   - `onMutate`: cancel the check-in query, keep the previous value, and set `checkIn.adjustment.inUse` to `choice === 'LIGHTER'`.
   - `onError`: restore the previous value; on `check-in.training-started`, invalidate.
   - `onSuccess`: `setQueryData` with the answer, and invalidate `SESSION_LOGS_KEY` (T034).
-- [ ] T037 [US3] `F/app/today-route.tsx`: pass `adjusted` whenever `checkIn.adjustment` is present, not only when it is in use. When `inUse` is false, leave out `targets`, `reason` and `note`, so `today-page.tsx` shows the planned targets with the plain border (T029 already allows this). `today-page.test.tsx`: with the original targets in use, only planned values are shown, which covers the visible half of FR-013.
-- [ ] T038 [US3] `AdjustmentMark` in `FR/components/adjustment.tsx`, props `{ adjustment, open }`:
+- [X] T037 [US3] `F/app/today-route.tsx`: pass `adjusted` whenever `checkIn.adjustment` is present, not only when it is in use. When `inUse` is false, leave out `targets`, `reason` and `note`, so `today-page.tsx` shows the planned targets with the plain border (T029 already allows this). `today-page.test.tsx`: with the original targets in use, only planned values are shown, which covers the visible half of FR-013.
+- [X] T038 [US3] `AdjustmentMark` in `FR/components/adjustment.tsx`, props `{ adjustment, open }`:
   - In use: the badge, plus, while `open`, `Button variant="link" size="touch" className="px-0"` labelled `t('readiness.adjustment.useOriginal')` ("Use original targets" / "Użyj celów z planu").
   - Not in use: `t('readiness.adjustment.useLighter')` ("Use lighter targets" / "Użyj lżejszych celów") while `open`, and no badge.
   - Use original: `mutate('ORIGINAL')` and `toast(t('readiness.adjustment.restored'), { action: { label: t('readiness.adjustment.undo'), onClick: () => mutate('LIGHTER') } })` ("Original targets restored" / "Przywrócono cele z planu"; "Undo" / "Cofnij").
@@ -182,20 +182,20 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
   - Focus moves to the button that replaces the tapped one (ref plus effect after a switch the client caused).
   - An `sr-only` `role="status"` announces `t('readiness.adjustment.announceLighter' | 'announceOriginal')` ("Lighter targets in use." / "Używasz lżejszych celów."; "Original targets in use." / "Używasz celów z planu.").
   - No dialog.
-- [ ] T039 [US3] `FR/components/adjustment.test.tsx`, with `userEvent` and a mocked `api`:
+- [X] T039 [US3] `F/app/today-route.test.tsx` (the switch through the Today route it lives in), with `userEvent` and a stubbed `fetch`:
   - "Use original targets" shows planned targets at once and the "Undo" message; "Undo" brings the lighter targets back.
   - "Use lighter targets" switches back with no message.
   - A failed `PUT` returns to the stored targets with a translated message.
   - Neither switch is shown when `open` is false.
   - Focus is on the new switch after each tap.
-- [ ] T040 [US3] Check the `Toaster` in `F/app/app.tsx` at 375 px: the message must not cover the tab bar or "Start session". If it does, set the client area's `offset` or `mobileOffset` per the sonner docs fetched in T025, without restyling.
-- [ ] T041 Run `npm run check`, which must pass. Commit `feat(frontend): switch between lighter and original targets with undo (#121)`.
+- [X] T040 [US3] Check the `Toaster` in `F/app/app.tsx` at 375 px: the message must not cover the tab bar or "Start session". If it does, set the client area's `offset` or `mobileOffset` per the sonner docs fetched in T025, without restyling.
+- [X] T041 Run `npm run check`, which must pass. Commit `feat(frontend): switch between lighter and original targets with undo (#121)`.
 
 ## Phase 6: Polish and verification
 
-- [ ] T042 Run quickstart.md scenarios 1 to 10 in the built-in browser at 375 px (and 1280 px for scenario 8's trainer logs), in light and dark, EN and PL: no console errors, no sideways scroll at 375 and 320 px, every action 48 px, visible focus, struck values read with their new value by the accessibility tree, nothing red. Check that the Undo message is reachable and operable by keyboard alone (FR-022), and that focus stays on the new switch. Take screenshots for the pull request.
-- [ ] T043 Review with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX: the contrast of `text-adjusted` on `bg-adjusted-muted` in both themes, toast timing with the persistent switch, and focus order. Fix findings without restyling the design system.
-- [ ] T044 Run `/speckit-converge`, then the backend `./gradlew check` and the frontend `npm run check` one last time. Open the story's pull request: `feat: lighten today's targets on a recovery day`, with `Closes #117`, `Closes #118`, `Closes #119`, `Closes #120`, `Closes #121`. Recheck the migration number against open pull requests before pushing.
+- [X] T042 Run quickstart.md scenarios 1 to 10 in the built-in browser at 375 px (and 1280 px for scenario 8's trainer logs), in light and dark, EN and PL: no console errors, no sideways scroll at 375 and 320 px, every action 48 px, visible focus, struck values read with their new value by the accessibility tree, nothing red. Check that the Undo message is reachable and operable by keyboard alone (FR-022), and that focus stays on the new switch. Take screenshots for the pull request.
+- [X] T043 Review with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX: the contrast of `text-adjusted` on `bg-adjusted-muted` in both themes, toast timing with the persistent switch, and focus order. Fix findings without restyling the design system.
+- [X] T044 Run `/speckit-converge`, then the backend `./gradlew check` and the frontend `npm run check` one last time. Open the story's pull request: `feat: lighten today's targets on a recovery day`, with `Closes #117`, `Closes #118`, `Closes #119`, `Closes #120`, `Closes #121`. Recheck the migration number against open pull requests before pushing. (Converge and both gates done; pushing and the pull request are left to the user.)
 
 ## Dependencies
 
@@ -215,3 +215,8 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 - MVP: #118 and #119. Lighter targets are computed, stored, logged and switchable through the API (US1, US2, US3 and US5 on the backend).
 - Then #120 makes them visible (US1, US2, US4), and #121 adds the one-tap switch with Undo (US3).
 - Each phase ends green (`./gradlew check`, `npm run check`) and with its own commit.
+
+## Phase 7: Convergence
+
+- [X] T045 Align `research.md` R3, `data-model.md` and T022 with the code: `Adjustment.of(Answers, boolean inUse, List<Planned>, WeightUnit)`, and the demo recovery day on Thursday of plan week 2, per plan: data model (partial)
+- [X] T046 Check an adjusted session in the browser with the client unit set to pounds (whole-pound lighter load, within 0.1 lb), per quickstart scenario 7 / FR-002 (partial)

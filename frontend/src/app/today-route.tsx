@@ -9,22 +9,30 @@ import { ReadinessSection } from '@/features/readiness/components/readiness-sect
 
 /**
  * The Today tab: the plan's page, with today's check-in from readiness above the session and, on a recovery day,
- * readiness's lighter targets in it.
+ * readiness's lighter targets in it, or the way back to them once the client chose the original ones.
  */
 export function TodayRoute() {
-  const adjustment = useCheckIn().data?.checkIn?.adjustment
-  const lighter = adjustment?.inUse ? adjustment : undefined
+  const today = useCheckIn().data
+  const adjustment = today?.checkIn?.adjustment
+  // with the original targets and nothing left to switch, the session reads as planned
+  const shown = adjustment && (adjustment.inUse || today.open)
 
   return (
     <TodayPage
       beforeSession={<ReadinessSection />}
       adjusted={
-        lighter && {
-          targets: lighter.entries,
-          mark: <AdjustmentMark />,
-          reason: <AdjustmentReason causes={lighter.causes} />,
-          note: <AdjustmentNote />,
-        }
+        shown
+          ? {
+              mark: (
+                <AdjustmentMark adjustment={adjustment} open={today.open} />
+              ),
+              ...(adjustment.inUse && {
+                targets: adjustment.entries,
+                reason: <AdjustmentReason causes={adjustment.causes} />,
+                note: <AdjustmentNote />,
+              }),
+            }
+          : undefined
       }
     />
   )
