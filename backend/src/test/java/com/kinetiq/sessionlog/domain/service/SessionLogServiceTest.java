@@ -482,6 +482,30 @@ class SessionLogServiceTest {
         }
 
         @Test
+        void shouldRefuseARepeatWithNewValuesAndChangeNothing_whenTheSessionLockedAfterTheSetWasStored() {
+            SetLogId id = newId();
+            SessionLog log = new SessionLog(
+                    SessionLogId.random(),
+                    CLIENT,
+                    TODAY.minusDays(2),
+                    "Lower body",
+                    NOW.minus(Duration.ofHours(30)),
+                    null,
+                    List.of(new LoggedEntry(SQUAT.getId(), 1, 5, new BigDecimal("100.0"), 8, 120)),
+                    List.of(new SetLog(
+                            id, 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), new BigDecimal("100.0"), 5, 8,
+                            NOW.minus(Duration.ofHours(29)))),
+                    0);
+            logs.save(log);
+
+            assertThatThrownBy(() -> service.logSet(command(CLIENT, log.getId(), id, 0, 1, 9, 10)))
+                    .isInstanceOf(SessionLogLockedException.class);
+
+            assertThat(stored.get(log.getId()).getSetLogs()).hasSize(1);
+            assertThat(stored.get(log.getId()).getSetLogs().getFirst().values().amount()).isEqualTo(5);
+        }
+
+        @Test
         void shouldAnswerNotFound_whenALockedSessionIsAnotherClients() {
             SessionLogId theirs = startedAt(NOW.minus(Duration.ofHours(25)), OTHER_CLIENT);
 

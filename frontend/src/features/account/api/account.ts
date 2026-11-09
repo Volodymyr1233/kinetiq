@@ -7,6 +7,7 @@ import { useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
+import { clearPendingLogs } from '@/lib/pending-logs'
 import { queryClient } from '@/lib/query-client'
 import { browserTimeZone } from '../time-zone'
 
@@ -188,6 +189,10 @@ export function useSignOut() {
     },
     onSuccess: () => {
       clearTabStorage()
+      // nothing of this account may stay on the phone; without a cached account every kept log goes
+      clearPendingLogs(
+        queryClient.getQueryData(currentAccountQuery.queryKey)?.id,
+      )
       queryClient.clear()
       void navigate('/sign-in', { replace: true })
     },

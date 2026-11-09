@@ -4,6 +4,7 @@ import { StrictMode, type ReactNode } from 'react'
 import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { vi } from 'vitest'
 import { createRoutes } from '@/app/router'
+import { registerLogSetDefaults } from '@/features/sessionlog/api/session-log'
 import { WeightUnitProvider } from '@/app/weight-unit-provider'
 import { queryClient } from '@/lib/query-client'
 
@@ -41,6 +42,15 @@ export function renderPage(page: ReactNode) {
       </QueryClientProvider>
     </StrictMode>,
   )
+}
+
+/** A client for the logger: it sends no set again by itself, and knows how a set log runs, as the client area makes it. */
+export function loggerClient() {
+  const client = new QueryClient({
+    defaultOptions: { queries: { retry: false } },
+  })
+  registerLogSetDefaults(client)
+  return client
 }
 
 export function pathsOf(requests: Request[]) {

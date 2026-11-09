@@ -1,11 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import { json, problem, stubApi, type Reply, loggerClient } from '@/test/page'
 import { LoggerPage } from './logger-page'
 
 const SQUAT = {
@@ -43,11 +43,7 @@ function openLogger(reply: Reply, unit: WeightUnit = 'KG') {
     { initialEntries: ['/app/session'] },
   )
   render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={loggerClient()}>
       <WeightUnitContext value={unit}>
         <RouterProvider router={router} />
       </WeightUnitContext>
@@ -62,7 +58,7 @@ function server(failing: () => boolean = () => false) {
   const puts: Put[] = []
   const reply: Reply = async (request) => {
     if (request.method === 'POST') return started()
-    if (failing()) return problem(500, { status: 500, code: 'internal.error' })
+    if (failing()) return problem(400, { status: 400, code: 'request.invalid' })
     const body = (await request.clone().json()) as Put['body']
     const id = new URL(request.url).pathname.split('/').pop()!
     puts.push({ id, body })
@@ -324,21 +320,26 @@ describe('logging a set', () => {
     openLogger(async (request) => {
       if (request.method === 'POST') return started()
       ids.push(new URL(request.url).pathname.split('/').pop()!)
-      if (failing) return problem(500, { status: 500, code: 'internal.error' })
+      if (failing) return problem(400, { status: 400, code: 'request.invalid' })
       return json({
         id: ids[0],
         loggedAt: '2026-11-07T10:05:00Z',
         ...(await request.clone().json()),
       })
     })
-    const tick = await screen.findByRole('button', {
-      name: 'Log set 1 of Back squat as planned',
-    })
-
-    await user.click(tick)
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Log set 1 of Back squat as planned',
+      }),
+    )
     await screen.findByRole('alert')
     failing = false
-    await user.click(tick)
+    // the row showed the send as kept while it was on its way, so the button is a new one
+    await user.click(
+      screen.getByRole('button', {
+        name: 'Log set 1 of Back squat as planned',
+      }),
+    )
 
     await within(firstRow()).findByText('Logged')
     expect(ids).toHaveLength(2)
