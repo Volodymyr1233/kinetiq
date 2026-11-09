@@ -21,6 +21,8 @@ const badgeVariants = cva(
         success: "bg-success-muted text-success",
         // design system: information that asks for nothing, such as a draft waiting for the trainer
         info: "bg-info-muted text-info",
+        // design system: today's targets are lighter than planned, never red
+        adjusted: "bg-adjusted-muted text-adjusted",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",

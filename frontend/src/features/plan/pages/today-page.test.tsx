@@ -348,4 +348,47 @@ describe('TodayPage', () => {
       cleanup()
     }
   })
+
+  it("shows each changed target as planned and today's, with the adjusted session's mark, reason and note", async () => {
+    stubApi(sessionDay)
+    render(
+      <QueryClientProvider
+        client={
+          new QueryClient({ defaultOptions: { queries: { retry: false } } })
+        }
+      >
+        <WeightUnitContext value="KG">
+          <MemoryRouter>
+            <TodayPage
+              adjusted={{
+                targets: [
+                  { position: 0, loadKg: 45, amount: 8, rpe: 7 },
+                  { position: 1, amount: 40, rpe: 6 },
+                ],
+                mark: <span>Mark</span>,
+                reason: <p>Reason</p>,
+                note: <p>Note</p>,
+              }}
+            />
+          </MemoryRouter>
+        </WeightUnitContext>
+      </QueryClientProvider>,
+    )
+
+    expect(await screen.findByText('50 kg, today 45 kg')).toBeInTheDocument()
+    expect(screen.getByText('RPE 8, today RPE 7')).toBeInTheDocument()
+    expect(screen.getByText('3 × 45 s, today 3 × 40 s')).toBeInTheDocument()
+    // unchanged targets read once
+    expect(screen.getByText('4 × 8 reps')).toBeInTheDocument()
+    expect(screen.getByText('Mark')).toBeInTheDocument()
+    expect(screen.getByText('Reason')).toBeInTheDocument()
+    expect(screen.getByText('Note')).toBeInTheDocument()
+  })
+
+  it('shows the planned targets when the adjusted session has none in use', async () => {
+    openToday(sessionDay)
+
+    expect(await screen.findByText('50 kg')).toBeInTheDocument()
+    expect(screen.queryByText(/today 45 kg/)).toBeNull()
+  })
 })

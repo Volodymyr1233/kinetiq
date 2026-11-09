@@ -187,4 +187,41 @@ describe('LoggerPage', () => {
     expect(screen.getByRole('link', { name: 'Dzisiaj' })).toBeInTheDocument()
     expect(screen.getAllByText('5 powt.')).toHaveLength(2)
   })
+
+  it('shows the lighter targets as planned → today on a recovery day, and logs a set at them', async () => {
+    const user = userEvent.setup()
+    const lighter = { loadKg: 90, amount: 5, rpe: 7 }
+    const adjusted = {
+      ...SQUAT,
+      planned: { loadKg: 100, amount: 5, rpe: 8 },
+      sets: SQUAT.sets.map((set) => ({ ...set, target: lighter })),
+    }
+    const { requests } = openLogger((request) =>
+      request.method === 'PUT'
+        ? json({
+            id: '00000000-0000-4000-b000-000000000001',
+            entryPosition: 0,
+            setNumber: 1,
+            ...lighter,
+            loggedAt: new Date().toISOString(),
+          })
+        : json(session([adjusted]), 201),
+    )
+
+    const squat = within(
+      await screen.findByRole('region', { name: 'Back squat' }),
+    )
+    // marked once for the session, not on each exercise
+    expect(screen.getAllByText('Adjusted')).toHaveLength(1)
+    expect(squat.queryByText('Adjusted')).toBeNull()
+    expect(squat.getByText('100 kg, today 90 kg')).toBeInTheDocument()
+    expect(squat.getByText('RPE 8, today RPE 7')).toBeInTheDocument()
+    // the amount did not change, so it is not repeated in the line
+    expect(squat.queryByText(/5 reps, today/)).toBeNull()
+
+    await user.click(squat.getAllByRole('button', { name: /^Log set 1/ })[0])
+
+    const put = requests.find((request) => request.method === 'PUT')
+    expect(await put?.json()).toMatchObject({ loadKg: 90, amount: 5, rpe: 7 })
+  })
 })

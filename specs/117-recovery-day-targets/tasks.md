@@ -138,31 +138,31 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 
 **Goal**: Today and the logger show old → new and the reason (spec FR-016 to FR-019). Read-only; the switch is #121.
 
-- [ ] T025 Before building: fetch current docs through context7 for `sonner` (the `toast` `action` option) and for `Intl.ListFormat`, and run `npx shadcn@latest docs badge`. Open the board "Client · Today recovery day" and the design system (adjusted tokens, `.strike`, `.card-adjusted`).
-- [ ] T026 [P] [US1] `F/components/ui/badge.tsx`: add the design-system variant `adjusted` (`bg-adjusted-muted text-adjusted`), with a one-line comment as the other variants have.
-- [ ] T027 [P] [US1] `F/components/target-change.tsx`: `TargetChange({ planned, today, label })` takes formatted strings and draws `<s className="text-muted-foreground">{planned}</s>`, an `ArrowRightIcon` with `aria-hidden`, and `<span className="text-foreground font-medium">{today}</span>`, all in `num`. The visible part is `aria-hidden`, and an `sr-only` text carries `t('targets.change', { label, planned, today })` ("Load 100 kg, today 90 kg" / "Obciążenie 100 kg, dziś 90 kg"). When `planned === today`, it renders `today` only. `F/components/target-change.test.tsx` covers both.
-- [ ] T028 [US1] `F/features/plan/components/entry-row.tsx`: an optional `today?: Target` (`components['schemas']['AdjustedTargetResponse']`). For load, amount and RPE, render `TargetChange` when `today` differs from the entry, and as now otherwise. "No load" stays words. Units come from `useWeightUnit()` and `fromKg`.
-- [ ] T029 [US1] `F/features/plan/pages/today-page.tsx`: an optional prop `adjusted?: { targets?: AdjustedTarget[]; mark: ReactNode; reason?: ReactNode; note?: ReactNode }`. When it is set:
+- [X] T025 Before building: fetch current docs through context7 for `sonner` (the `toast` `action` option) and for `Intl.ListFormat`, and run `npx shadcn@latest docs badge`. Open the board "Client · Today recovery day" and the design system (adjusted tokens, `.strike`, `.card-adjusted`).
+- [X] T026 [P] [US1] `F/components/ui/badge.tsx`: add the design-system variant `adjusted` (`bg-adjusted-muted text-adjusted`), with a one-line comment as the other variants have.
+- [X] T027 [P] [US1] `F/components/target-change.tsx`: `TargetChange({ planned, today, label })` takes formatted strings and draws `<s className="text-muted-foreground">{planned}</s>`, an `ArrowRightIcon` with `aria-hidden`, and `<span className="text-foreground font-medium">{today}</span>`, all in `num`. The visible part is `aria-hidden`, and an `sr-only` text carries `t('targets.change', { label, planned, today })` ("Load 100 kg, today 90 kg" / "Obciążenie 100 kg, dziś 90 kg"). When `planned === today`, it renders `today` only. `F/components/target-change.test.tsx` covers both.
+- [X] T028 [US1] `F/features/plan/components/entry-row.tsx`: an optional `today?: Target` (`components['schemas']['AdjustedTargetResponse']`). For load, amount and RPE, render `TargetChange` when `today` differs from the entry, and as now otherwise. "No load" stays words. Units come from `useWeightUnit()` and `fromKg`.
+- [X] T029 [US1] `F/features/plan/pages/today-page.tsx`: an optional prop `adjusted?: { targets?: AdjustedTarget[]; mark: ReactNode; reason?: ReactNode; note?: ReactNode }`. When it is set:
   - `mark` sits on a row above the name, the way the board does it.
   - `reason` sits under the name.
   - `note` sits at the bottom of the card, under "Start session", as the board does.
   - Only while `targets` is set: the session section gets the adjusted border (`border-[color-mix(in_oklch,var(--adjusted)_45%,var(--border))]`), and each `EntryRow` gets `today={targets[position]}`.
 
   Javadoc says `app/` fills it from readiness. `today-page.test.tsx`: with `targets`, the struck planned value and the new one are shown; with `adjusted` but no `targets`, only the planned values; without `adjusted`, the page is as now.
-- [ ] T030 [US1] `FR/components/adjustment-reason.tsx`:
+- [X] T030 [US1] `FR/components/adjustment.tsx` (`AdjustmentReason`, with `AdjustmentNote` and `AdjustmentMark` in the same file):
   - The sentence `t('readiness.adjustment.reason', { causes })`, where `causes` is the translated `readiness.adjustment.cause.<CAUSE>` phrases joined with `new Intl.ListFormat(i18n.language, { type: 'conjunction' })`, first letter upper-cased with `toLocaleUpperCase(i18n.language)`.
-  - `FR/components/adjustment-note.tsx`: a muted, centred line `t('readiness.adjustment.planUnchanged')`, passed as `note`.
+  - `AdjustmentNote`: a muted, centred line `t('readiness.adjustment.planUnchanged')`, passed as `note`.
   - EN: `cause` `{SLEEP: "poor sleep", SORENESS: "high soreness", STRESS: "high stress"}`, `reason` "{{causes}}, so today's targets are lighter.", `planUnchanged` "Only today's targets change. Your plan stays the same.".
   - PL: `{SLEEP: "słaby sen", SORENESS: "duża bolesność mięśni", STRESS: "wysoki stres"}`, "{{causes}}, więc dzisiejsze cele są lżejsze.", "Zmieniają się tylko dzisiejsze cele. Twój plan pozostaje bez zmian.".
-  - `FR/components/adjustment-mark.tsx` (badge only in this task): `<Badge variant="adjusted">` `t('readiness.adjustment.badge')` ("Adjusted for today" / "Dostosowane na dziś").
-- [ ] T031 [US1] `F/app/today-route.tsx`: read `useCheckIn()`. When `checkIn.adjustment?.inUse`, pass `adjusted={{ targets, mark: <AdjustmentMark …/>, reason: <AdjustmentReason causes=… />, note: <AdjustmentNote /> }}`, otherwise nothing. `ReadinessSection` keeps its place.
-- [ ] T032 [US1] `FR/components/readiness-card.tsx`:
+  - `AdjustmentMark` (badge only in this task): `<Badge variant="adjusted">` `t('readiness.adjustment.badge')` ("Adjusted for today" / "Dostosowane na dziś").
+- [X] T031 [US1] `F/app/today-route.tsx`: read `useCheckIn()`. When `checkIn.adjustment?.inUse`, pass `adjusted={{ targets, mark: <AdjustmentMark …/>, reason: <AdjustmentReason causes=… />, note: <AdjustmentNote /> }}`, otherwise nothing. `ReadinessSection` keeps its place.
+- [X] T032 [US1] `FR/components/readiness-card.tsx`:
   - With `checkIn.adjustment?.inUse`, the band line reads `t('readiness.card.lighter')` ("Today's targets are lighter." / "Dzisiejsze cele są lżejsze.").
   - With `checkIn.adjustment` present and `!open`, the fixed line reads `t('readiness.card.fixedWithTargets')` ("Answers and targets are fixed once training has started." / "Po rozpoczęciu treningu odpowiedzi i cele są już stałe.").
   - Otherwise, as now. `readiness-card.test.tsx` covers the three lines.
-- [ ] T033 [US2] `F/features/sessionlog/pages/logger-page.tsx`: under each exercise name with `entry.planned`, one muted line of `TargetChange` for every target that differs (load, amount with its measure, RPE). The set rows already show the target in use. `logger-page.test.tsx`: an adjusted entry shows planned → today; ticking a set as planned sends the lighter values.
-- [ ] T034 [US4] Move the session log query key out of the sessionlog feature: `export const SESSION_LOGS_KEY = ['session-log']` in `F/lib/query-keys.ts`, used by `F/features/sessionlog/api/session-log.ts` in place of its local `SESSION_LOGS`. `FR/api/check-in.ts`: `useSaveCheckIn` also invalidates `SESSION_LOGS_KEY` on success, so the logger shows recomputed targets. No feature imports another.
-- [ ] T035 Run `npm run check`, which must pass. Commit `feat(frontend): show adjusted targets on today and in the logger (#120)`.
+- [X] T033 [US2] `F/features/sessionlog/pages/logger-page.tsx`: under each exercise name with `entry.planned`, one muted line of `TargetChange` for every target that differs (load, amount with its measure, RPE). The set rows already show the target in use. `logger-page.test.tsx`: an adjusted entry shows planned → today; ticking a set as planned sends the lighter values.
+- [X] T034 [US4] Move the session log query key out of the sessionlog feature: `export const SESSION_LOGS_KEY = ['session-log']` in `F/lib/query-keys.ts`, used by `F/features/sessionlog/api/session-log.ts` in place of its local `SESSION_LOGS`. `FR/api/check-in.ts`: `useSaveCheckIn` also invalidates `SESSION_LOGS_KEY` on success, so the logger shows recomputed targets. No feature imports another.
+- [X] T035 Run `npm run check`, which must pass. Commit `feat(frontend): show adjusted targets on today and in the logger (#120)`.
 
 ## Phase 5: task #121, use original targets with Undo (US3)
 
@@ -173,7 +173,7 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
   - `onError`: restore the previous value; on `check-in.training-started`, invalidate.
   - `onSuccess`: `setQueryData` with the answer, and invalidate `SESSION_LOGS_KEY` (T034).
 - [ ] T037 [US3] `F/app/today-route.tsx`: pass `adjusted` whenever `checkIn.adjustment` is present, not only when it is in use. When `inUse` is false, leave out `targets`, `reason` and `note`, so `today-page.tsx` shows the planned targets with the plain border (T029 already allows this). `today-page.test.tsx`: with the original targets in use, only planned values are shown, which covers the visible half of FR-013.
-- [ ] T038 [US3] `FR/components/adjustment-mark.tsx`, props `{ adjustment, open }`:
+- [ ] T038 [US3] `AdjustmentMark` in `FR/components/adjustment.tsx`, props `{ adjustment, open }`:
   - In use: the badge, plus, while `open`, `Button variant="link" size="touch" className="px-0"` labelled `t('readiness.adjustment.useOriginal')` ("Use original targets" / "Użyj celów z planu").
   - Not in use: `t('readiness.adjustment.useLighter')` ("Use lighter targets" / "Użyj lżejszych celów") while `open`, and no badge.
   - Use original: `mutate('ORIGINAL')` and `toast(t('readiness.adjustment.restored'), { action: { label: t('readiness.adjustment.undo'), onClick: () => mutate('LIGHTER') } })` ("Original targets restored" / "Przywrócono cele z planu"; "Undo" / "Cofnij").
@@ -182,7 +182,7 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
   - Focus moves to the button that replaces the tapped one (ref plus effect after a switch the client caused).
   - An `sr-only` `role="status"` announces `t('readiness.adjustment.announceLighter' | 'announceOriginal')` ("Lighter targets in use." / "Używasz lżejszych celów."; "Original targets in use." / "Używasz celów z planu.").
   - No dialog.
-- [ ] T039 [US3] `FR/components/adjustment-mark.test.tsx`, with `userEvent` and a mocked `api`:
+- [ ] T039 [US3] `FR/components/adjustment.test.tsx`, with `userEvent` and a mocked `api`:
   - "Use original targets" shows planned targets at once and the "Undo" message; "Undo" brings the lighter targets back.
   - "Use lighter targets" switches back with no message.
   - A failed `PUT` returns to the stored targets with a translated message.

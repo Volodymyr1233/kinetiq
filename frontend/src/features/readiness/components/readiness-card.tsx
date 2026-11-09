@@ -80,14 +80,22 @@ export function ReadinessCard({
             >
               {t(`readiness.card.band.${checkIn.band}.name`)}
             </h2>
-            <p>{t(`readiness.card.band.${checkIn.band}.line`)}</p>
+            <p>
+              {checkIn.adjustment?.inUse
+                ? t('readiness.card.lighter')
+                : t(`readiness.card.band.${checkIn.band}.line`)}
+            </p>
           </div>
         </div>
         <p className="text-muted-foreground">
           {t('readiness.card.answers', checkIn)}
         </p>
         {!open && (
-          <p className="text-muted-foreground">{t('readiness.card.fixed')}</p>
+          <p className="text-muted-foreground">
+            {checkIn.adjustment
+              ? t('readiness.card.fixedWithTargets')
+              : t('readiness.card.fixed')}
+          </p>
         )}
       </CardContent>
     </Card>
