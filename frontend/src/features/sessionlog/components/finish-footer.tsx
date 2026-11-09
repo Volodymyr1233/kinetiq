@@ -16,13 +16,14 @@ import { Alert, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { useDialogFocus } from '@/hooks/use-dialog-focus'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
-import type { SessionLog } from '../api/session-log'
+import { useOnline } from '@/lib/online'
+import { usePendingLogs, type SessionLog } from '../api/session-log'
 import { useFinishSession } from '../api/session-summary'
 
 /**
  * The logger's sticky footer: how many sets are logged and the way out. An open session offers "Finish session",
- * unavailable while no set is logged and confirmed first when planned sets are missing; a finished one offers its
- * summary. A locked session offers nothing.
+ * unavailable while no set is logged, while the client is offline, and while a set is not yet synced, and confirmed
+ * first when planned sets are missing; a finished one offers its summary. A locked session offers nothing.
  */
 export function FinishFooter({
   session,
@@ -38,12 +39,35 @@ export function FinishFooter({
   const finish = useFinishSession(session.id)
   const focus = useDialogFocus()
   const reason = useId()
+  const online = useOnline()
+  const kept = usePendingLogs(session.id)
+  const unsynced = kept.length
   const [confirming, setConfirming] = useState(false)
 
-  const sets = session.entries.flatMap((entry) => entry.sets)
-  const logged = sets.filter((set) => set.log !== undefined).length
+  const sets = session.entries.flatMap((entry) =>
+    entry.sets.map((set) => ({ position: entry.position, set })),
+  )
+  // a set kept on the phone counts: the client did log it
+  const logged = sets.filter(
+    ({ position, set }) =>
+      set.log !== undefined ||
+      kept.some(
+        (log) =>
+          log.entryPosition === position &&
+          log.setNumber === set.number &&
+          log.state === 'saved',
+      ),
+  ).length
   const missing = sets.length - logged
   const finished = session.finishedAt !== undefined
+  // one reason at a time, the one that stands in the way first; nothing is queued to finish later
+  const why = !online
+    ? 'sessionlog.sync.finishOffline'
+    : unsynced > 0
+      ? 'sessionlog.sync.finishWaiting'
+      : logged === 0
+        ? 'sessionlog.finish.nothingLogged'
+        : undefined
 
   if (locked) return null
 
@@ -85,18 +109,18 @@ export function FinishFooter({
           <Button
             size="touch"
             className="bg-brand text-brand-foreground hover:bg-brand/80"
-            disabled={logged === 0 || finish.isPending}
-            aria-describedby={logged === 0 ? reason : undefined}
+            disabled={why !== undefined || finish.isPending}
+            aria-describedby={why === undefined ? undefined : reason}
             onClick={() => (missing > 0 ? setConfirming(true) : send())}
           >
             {t('sessionlog.finish.action')}
           </Button>
-          {logged === 0 && (
+          {why !== undefined && (
             <p
               id={reason}
               className="text-muted-foreground text-center text-sm"
             >
-              {t('sessionlog.finish.nothingLogged')}
+              {t(why)}
             </p>
           )}
         </>

@@ -3,7 +3,7 @@ import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client
 import { act, cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { useSignOut } from '@/features/account/api/account'
 import {
   createPendingLogsPersister,
@@ -15,6 +15,7 @@ import {
 import { WeightUnitContext } from '@/lib/weight'
 import { json, loggerClient, SIGNED_IN, stubApi } from '@/test/page'
 import { LoggerPage } from './logger-page'
+import { eventually } from '@/test/eventually'
 
 const ACCOUNT = SIGNED_IN.CLIENT.id
 const SESSION = '00000000-0000-4000-a000-000000000001'
@@ -127,7 +128,7 @@ const KEY = pendingLogsKey(ACCOUNT)
 const goOnline = () => act(() => onlineManager.setOnline(true))
 
 async function keptOnPhone() {
-  await vi.waitFor(() => expect(localStorage.getItem(KEY)).not.toBeNull())
+  await eventually(() => expect(localStorage.getItem(KEY)).not.toBeNull())
   return JSON.parse(localStorage.getItem(KEY)!).clientState.mutations as Array<{
     state: { variables: { setLogId: string; body: Put['body'] } }
   }>
@@ -146,14 +147,16 @@ describe('logging without a connection', () => {
 
     await tick()
 
-    expect(await within(firstRow()).findByText('Logged')).toBeInTheDocument()
+    expect(
+      await within(firstRow()).findByText('Saved on this phone'),
+    ).toBeInTheDocument()
     expect(within(firstRow()).getByText('5 reps')).toBeInTheDocument()
     expect(puts).toHaveLength(0)
     const [kept] = await keptOnPhone()
 
     await goOnline()
 
-    await vi.waitFor(() => expect(puts).toHaveLength(1))
+    await eventually(() => expect(puts).toHaveLength(1))
     expect(puts[0].id).toBe(kept.state.variables.setLogId)
     expect(puts[0].body).toEqual({
       entryPosition: 0,
@@ -162,9 +165,9 @@ describe('logging without a connection', () => {
       amount: 5,
       rpe: 8,
     })
-    expect(within(firstRow()).getByText('Logged')).toBeInTheDocument()
+    expect(within(firstRow()).getByText('Synced')).toBeInTheDocument()
     // the server has it, so the phone keeps nothing
-    await vi.waitFor(() => expect(localStorage.getItem(KEY)).toBeNull())
+    await eventually(() => expect(localStorage.getItem(KEY)).toBeNull())
     expect(puts).toHaveLength(1)
   })
 
@@ -180,10 +183,10 @@ describe('logging without a connection', () => {
     onlineManager.setOnline(true)
     openLogger(reply)
 
-    await vi.waitFor(() => expect(puts).toHaveLength(1))
+    await eventually(() => expect(puts).toHaveLength(1))
     expect(puts[0].id).toBe(kept.state.variables.setLogId)
-    expect(await within(await findRow()).findByText('Logged')).toBeVisible()
-    await vi.waitFor(() => expect(localStorage.getItem(KEY)).toBeNull())
+    expect(await within(await findRow()).findByText('Synced')).toBeVisible()
+    await eventually(() => expect(localStorage.getItem(KEY)).toBeNull())
     expect(puts).toHaveLength(1)
   })
 
@@ -199,7 +202,9 @@ describe('logging without a connection', () => {
     hold.gate = new Promise((resolve) => (release = resolve))
     onlineManager.setOnline(true)
     openLogger(reply)
-    expect(await within(await findRow()).findByText('Logged')).toBeVisible()
+    expect(
+      await within(await findRow()).findByText('Saved on this phone'),
+    ).toBeVisible()
     expect(
       screen.queryByRole('button', {
         name: 'Log set 1 of Back squat as planned',
@@ -219,7 +224,7 @@ describe('logging without a connection', () => {
     release()
 
     // the kept send and the change go in order, with one id, and the server ends with the last values
-    await vi.waitFor(() => expect(puts).toHaveLength(2))
+    await eventually(() => expect(puts).toHaveLength(2))
     expect(puts.map((put) => put.id)).toEqual([
       kept.state.variables.setLogId,
       kept.state.variables.setLogId,
@@ -231,7 +236,7 @@ describe('logging without a connection', () => {
     const { reply, puts } = server()
     await openLoggerThenGoOffline(reply)
     await tick()
-    await within(firstRow()).findByText('Logged')
+    await within(firstRow()).findByText('Saved on this phone')
 
     for (let step = 0; step < 2; step++) {
       await userEvent.click(
@@ -249,7 +254,7 @@ describe('logging without a connection', () => {
 
     await goOnline()
 
-    await vi.waitFor(() => expect(puts).toHaveLength(3))
+    await eventually(() => expect(puts).toHaveLength(3))
     expect(puts.map((put) => put.body.amount)).toEqual([5, 6, 7])
     expect(new Set(puts.map((put) => put.id)).size).toBe(1)
     expect(await within(firstRow()).findByText('7 reps')).toBeInTheDocument()

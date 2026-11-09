@@ -16,14 +16,19 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { locksAt as lockMoment } from '@/lib/edit-window'
 import { fromKg, useWeightUnit } from '@/lib/weight'
+import { useOnline } from '@/lib/online'
 import {
+  usePendingLogs,
   useSession,
   type LoggedEntry,
   type SessionLog,
+  type SyncState,
 } from '../api/session-log'
 import { FinishFooter } from '../components/finish-footer'
+import { OfflineBanner } from '../components/offline-banner'
 import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
+import { SyncBadge } from '../components/sync-badge'
 
 // when the rest after the last logged set ends, by session: kept while the app runs, so the timer outlives a change of
 // tab, but not a reload
@@ -50,7 +55,8 @@ function planAddress(state: unknown): string | undefined {
 export function LoggerPage() {
   const { t } = useTranslation()
   const { id } = useParams()
-  const query = useSession(id)
+  // a second tab shows what the first stored, but only while nothing here waits to be sent: the answer would lack it
+  const query = useSession(id, usePendingLogs().length === 0)
   const session = query.data
 
   if (session === undefined) {
@@ -115,7 +121,11 @@ function Session({ session }: { session: SessionLog }) {
   const [lockedOnArrival] = useState(() => Date.now() >= locksAt)
   // locked while the page is open, by its timer or by the server; only this is announced
   const [lockedHere, setLockedHere] = useState(false)
-  const locked = lockedOnArrival || lockedHere
+  const online = useOnline()
+  const pending = usePendingLogs(session.id)
+  // a set the server refused as locked turns the page read-only, with the set still shown as not synced
+  const refusedAsLocked = pending.some((log) => log.reason === 'locked')
+  const locked = lockedOnArrival || lockedHere || refusedAsLocked
 
   useEffect(() => {
     if (locked) return
@@ -160,9 +170,15 @@ function Session({ session }: { session: SessionLog }) {
           <AlertDescription>{t('sessionlog.locked.text')}</AlertDescription>
         </Alert>
       )}
+      {/* the banners are seen; this says a change once, without moving focus */}
       <p role="status" className="sr-only">
-        {lockedHere ? t('sessionlog.locked.title') : ''}
+        {lockedHere || refusedAsLocked
+          ? t('sessionlog.locked.title')
+          : online
+            ? ''
+            : t('sessionlog.offline.announce')}
       </p>
+      {!online && <OfflineBanner />}
       {session.entries.map((entry) => (
         // the same exercise can appear twice in a session, so its place is its key
         <section
@@ -170,12 +186,15 @@ function Session({ session }: { session: SessionLog }) {
           aria-labelledby={`entry-${entry.position}`}
           className="bg-card text-card-foreground rounded-xl border"
         >
-          <h2
-            id={`entry-${entry.position}`}
-            className="font-heading px-4 pt-4 pb-3 text-lg font-semibold break-words"
-          >
-            {entry.exerciseName}
-          </h2>
+          <div className="flex items-start justify-between gap-2 px-4 pt-4 pb-3">
+            <h2
+              id={`entry-${entry.position}`}
+              className="font-heading text-lg font-semibold break-words"
+            >
+              {entry.exerciseName}
+            </h2>
+            <ExerciseSync entry={entry} pending={pending} />
+          </div>
           {entry.planned && (
             <LighterToday planned={entry.planned} entry={entry} />
           )}
@@ -196,7 +215,6 @@ function Session({ session }: { session: SessionLog }) {
                       restSeconds > 0 ? Date.now() + restSeconds * 1000 : null,
                     )
                   }
-                  onLocked={() => setLockedHere(true)}
                 />
               )
             })}
@@ -264,4 +282,26 @@ function LighterToday({
       </ValueList>
     </p>
   )
+}
+
+/** The worst state among the rows of an exercise: Not synced, then Saved on this phone, then Synced. */
+function ExerciseSync({
+  entry,
+  pending,
+}: {
+  entry: LoggedEntry
+  pending: ReturnType<typeof usePendingLogs>
+}) {
+  const states = entry.sets.flatMap((set): SyncState[] => {
+    const kept = pending.find(
+      (log) =>
+        log.entryPosition === entry.position && log.setNumber === set.number,
+    )
+    if (kept) return [kept.state]
+    return set.log === undefined ? [] : ['synced']
+  })
+  const worst = (['not-synced', 'saved', 'synced'] as const).find((state) =>
+    states.includes(state),
+  )
+  return worst && <SyncBadge state={worst} />
 }

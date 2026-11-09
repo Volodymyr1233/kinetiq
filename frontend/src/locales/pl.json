@@ -789,6 +789,29 @@
       "title": "Sesja zablokowana",
       "text": "Serie można zapisywać i zmieniać przez 24 godziny od rozpoczęcia sesji."
     },
+    "offline": {
+      "title": "Brak połączenia",
+      "text": "Serie zapisują się na telefonie i zsynchronizują się później.",
+      "notKept": "Ta przeglądarka nie może zachować serii na telefonie, więc zostaw tę kartę otwartą do czasu powrotu połączenia.",
+      "announce": "Brak połączenia. Serie zapisują się na telefonie i zsynchronizują się później."
+    },
+    "sync": {
+      "saved": "Zapisano na telefonie",
+      "synced": "Zsynchronizowano",
+      "notSynced": "Nie zsynchronizowano",
+      "reason": {
+        "locked": "Sesja jest zablokowana, więc nie można zapisać tej serii.",
+        "invalid": "Wartości nie zostały przyjęte. Zmień je i spróbuj ponownie.",
+        "refused": "Nie można zapisać tej serii w tej sesji.",
+        "unreachable": "Nie można połączyć się z serwerem."
+      },
+      "retry": "Ponów",
+      "retryLabel": "Ponów serię {{number}}: {{exercise}}",
+      "discard": "Odrzuć",
+      "discardLabel": "Odrzuć serię {{number}}: {{exercise}}",
+      "finishOffline": "Brak połączenia. Zakończ sesję po powrocie połączenia.",
+      "finishWaiting": "Zakończ sesję, gdy każda seria będzie zsynchronizowana."
+    },
     "row": {
       "amount": "{{amount, number}} {{unit}}",
       "load": "{{load, number}} {{unit}}",

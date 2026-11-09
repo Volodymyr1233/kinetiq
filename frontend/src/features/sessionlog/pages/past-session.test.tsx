@@ -92,8 +92,8 @@ describe('the logger on an earlier session', () => {
     expect(
       await within(
         screen.getByRole('region', { name: 'Back squat' }),
-      ).findByText('Logged'),
-    ).toBeInTheDocument()
+      ).findAllByText('Synced'),
+    ).not.toHaveLength(0)
   })
 
   it('shows it locked once its 24 hours have passed', async () => {
