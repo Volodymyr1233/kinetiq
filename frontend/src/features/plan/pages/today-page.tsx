@@ -1,6 +1,6 @@
 import { CircleAlertIcon } from 'lucide-react'
 import { Link } from 'react-router'
-import { useId, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { SessionStateBadge } from '@/components/session-state-badge'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
+import { locksAt } from '@/lib/edit-window'
 import { cn } from '@/lib/utils'
 import { useOwnPlan } from '../api/client-plan'
 import { useSessionStates, type SessionStateEntry } from '../api/session-states'
@@ -45,6 +46,8 @@ export function TodayPage({
   const states = useSessionStates().data?.sessions
   const today = query.data
   const name = useId()
+  // read once: the logger itself turns read-only when the 24 hours end
+  const [now] = useState(Date.now)
 
   if (today === undefined) {
     if (query.isPending) {
@@ -152,6 +155,15 @@ export function TodayPage({
               <p className="text-muted-foreground text-sm">
                 {t('plan.today.done')}
               </p>
+              {entry.startedAt !== undefined &&
+                now < locksAt(entry.startedAt) && (
+                  <Button variant="outline" size="touch" asChild>
+                    {/* by id, so a tap after midnight opens this session and starts no other */}
+                    <Link to={`/app/session/${entry.sessionLogId}`}>
+                      {t('plan.client.editLog')}
+                    </Link>
+                  </Button>
+                )}
               <Button variant="outline" size="touch" asChild>
                 <Link to={`/app/summary/${entry.sessionLogId}`}>
                   {t('plan.client.viewSummary')}
