@@ -1,9 +1,9 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { describe, expect, it } from 'vitest'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import { json, problem, stubApi, type Reply, loggerClient } from '@/test/page'
 import { LoggerPage } from './logger-page'
 
 const HOUR = 60 * 60 * 1000
@@ -60,11 +60,7 @@ function openPastSession(
     },
   )
   render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={loggerClient()}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )

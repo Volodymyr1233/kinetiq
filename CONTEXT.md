@@ -101,6 +101,14 @@ _Avoid_: Survey, questionnaire, onboarding form
 What a client actually did in a set: load, repetitions or seconds, and RPE.
 _Avoid_: Track, record, entry
 
+**Pending log**:
+A log made on the phone that the server has not confirmed yet. It is kept on the phone, per account, and sent by itself when the app is open and online.
+_Avoid_: Offline log, queued log
+
+**Log state**:
+Where one logged set stands for the client: **Saved on this phone** (a pending log not yet sent), **Synced** (stored by the server) or **Not synced** (the server refused it, or it could not be sent after 3 tries; it offers Retry and Discard). Derived, never stored.
+_Avoid_: Failed, error
+
 **Session state**:
 Where one planned session stands: Done, In progress, Missed, Today or Planned. Derived from the calendar and the session log, never stored.
 

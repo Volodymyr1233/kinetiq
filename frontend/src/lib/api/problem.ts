@@ -10,6 +10,16 @@ export function problemCode(error: unknown): string | undefined {
     : undefined
 }
 
+/** Returns the HTTP `status` of the backend's problem detail, or `undefined` for any other error. */
+export function problemStatus(error: unknown): number | undefined {
+  return typeof error === 'object' &&
+    error !== null &&
+    'status' in error &&
+    typeof error.status === 'number'
+    ? error.status
+    : undefined
+}
+
 // the backend's problem detail; only its code is ever shown, as translated text
 export function errorMessageKey(error: unknown): string {
   const code = problemCode(error)

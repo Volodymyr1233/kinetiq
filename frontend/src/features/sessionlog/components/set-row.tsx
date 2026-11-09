@@ -1,3 +1,4 @@
+import { onlineManager } from '@tanstack/react-query'
 import { CheckIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -9,6 +10,7 @@ import { cn } from '@/lib/utils'
 import { fromKg, useWeightUnit } from '@/lib/weight'
 import {
   useLogSet,
+  usePendingLog,
   type LoggedEntry,
   type PlannedSet,
 } from '../api/session-log'
@@ -49,47 +51,61 @@ export function SetRow({
 }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
-  const log = useLogSet(sessionId)
+  const pending = usePendingLog(sessionId, entry.position, set.number)
   // made once, so a send that is repeated after a failure carries the same id and stores the set once
   const [ownId] = useState(() => crypto.randomUUID())
+  // a send kept on the phone has an id already, which a reload must not replace
+  const setLogId = pending?.setLogId ?? set.log?.id ?? ownId
+  const log = useLogSet(sessionId, entry.position, set.number, setLogId)
   const [edited, setEdited] = useState<Values | null>(null)
   const [tried, setTried] = useState(false)
 
-  const logged = set.log !== undefined
-  const shown = set.log ?? set.target
+  // what the client logged last: kept on the phone, or stored by the server
+  const current = pending?.body ?? set.log
+  // a failed send keeps what was entered, but the set is not logged until a send is stored or kept
+  const failed = pending?.failed === true
+  const logged = set.log !== undefined || (pending !== undefined && !failed)
+  const shown = current ?? set.target
   const values = edited ?? valuesOf(shown, unit)
   const problems = problemsOf(values, unit)
   // a logged set that still holds what was logged has nothing to update
   const unchanged =
-    set.log !== undefined &&
+    !failed &&
+    current !== undefined &&
     Object.keys(problems).length === 0 &&
-    sameValues(values, valuesOf(set.log, unit), unit)
+    sameValues(values, valuesOf(current, unit), unit)
   const measure = t(`plan.entries.measures.${entry.measure}`)
   const which = { exercise: entry.exerciseName, number: set.number }
 
   const submit = (toLog: Values) => {
     setTried(true)
     if (Object.keys(problemsOf(toLog, unit)).length > 0) return
+    // a change replaces a failed send instead of queueing behind it
+    if (pending?.failed) pending.discard()
+    const done = () => {
+      setEdited(null)
+      setTried(false)
+      if (open) onToggle()
+      if (!logged) onLogged(entry.restSeconds)
+    }
     log.mutate(
       {
-        setLogId: set.log?.id ?? ownId,
+        sessionId,
+        setLogId,
         body: bodyOf(toLog, unit, {
           entryPosition: entry.position,
           setNumber: set.number,
         }),
       },
       {
-        onSuccess: () => {
-          setEdited(null)
-          setTried(false)
-          if (open) onToggle()
-          if (!logged) onLogged(entry.restSeconds)
-        },
+        onSuccess: done,
         onError: (error) => {
           if (problemCode(error) === 'session-log.locked') onLocked()
         },
       },
     )
+    // with no connection the send waits and the phone keeps it: the row is logged now, not when it is sent
+    if (!onlineManager.isOnline()) done()
   }
 
   const shownValues = (
@@ -178,7 +194,7 @@ export function SetRow({
             disabled={log.isPending}
             aria-busy={log.isPending}
             aria-label={t('sessionlog.row.tick', which)}
-            onClick={() => submit(valuesOf(set.target, unit))}
+            onClick={() => submit(valuesOf(shown, unit))}
           >
             {log.isPending ? (
               <Spinner aria-hidden="true" />
@@ -203,7 +219,8 @@ export function SetRow({
           problems={tried ? problems : {}}
           logged={logged}
           unchanged={unchanged}
-          pending={log.isPending}
+          // a send that waits for a connection is kept, so the next change can be made
+          pending={log.isPending && !log.isPaused}
           onChange={setEdited}
           onSubmit={() => submit(values)}
         />
