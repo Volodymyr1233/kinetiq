@@ -67,7 +67,7 @@ A client who feels fine despite the answers taps "Use original targets" on the s
 
 **Acceptance Scenarios**:
 
-1. **Given** an adjusted session and no set logged today, **When** the client taps "Use original targets", **Then** without a dialog the session shows its planned targets, the "Adjusted for today" mark and the reason sentence are gone, the readiness card shows the band's usual line, and a message "Original targets restored" with "Undo" appears.
+1. **Given** an adjusted session and no set logged today, **When** the client taps "Use original targets", **Then** without a dialog the session shows its planned targets, the mark reads "Original targets" instead of "Adjusted for today", the reason sentence is gone, the readiness card shows the band's usual line, and a message "Original targets restored" with "Undo" appears.
 2. **Given** that message, **When** the client taps "Undo", **Then** the lighter targets return as before and the message closes.
 3. **Given** the original targets in use, **When** the session card is shown, **Then** it offers "Use lighter targets", which brings the lighter targets back in one tap, without a message.
 4. **Given** either choice, **When** the client reloads Today or opens the logger, **Then** the choice is kept: it is stored for that day, not only on the screen.
@@ -125,7 +125,7 @@ Only the client reads and switches their own targets for their own today.
 - A switch sent twice gives the same result as once. A switch on a day that is not a recovery day, or with no adjustment, is refused with a stable code.
 - A set logged in another tab while Today is open: the next switch is refused (User Story 3, scenario 5), and Today then shows what is stored.
 - "Today" is the client's date in their time zone; at midnight the next day has no adjustment until a new check-in. The screen is not live.
-- The "Original targets restored" message closes on its own; the session card's "Use lighter targets" stays, so nothing depends on catching it in time.
+- The "Original targets restored" message closes on its own after 5 seconds and stays while the client moves to another tab; the session card's "Use lighter targets" stays, so nothing depends on catching it in time. Only one such message shows at a time.
 - No error response contains server internals.
 
 ## Requirements *(mandatory)*
@@ -156,14 +156,14 @@ Only the client reads and switches their own targets for their own today.
 **Adjusted session view** (task #120)
 
 - **FR-016**: On an adjusted day Today's session card MUST show the mark "Adjusted for today", the reason sentence under the session's name, and for each changed target the planned value struck through, an arrow and the new value; unchanged targets show once. The readiness card's line for the band MUST read "Today's targets are lighter." while the lighter targets are in use.
-- **FR-017**: The logger MUST show each exercise's targets the same way, old → new, and suggest the adjusted values for unlogged sets, including the RPE marked as the target. The logger MUST NOT offer either switch; the choice is made on Today.
+- **FR-017**: The logger MUST mark the session "Adjusted" once, beside its date, and show each exercise's changed targets the same way, old → new, without repeating the mark; it MUST suggest the adjusted values for unlogged sets, including the RPE marked as the target. The logger MUST NOT offer either switch; the choice is made on Today.
 - **FR-018**: A struck-through value MUST NOT rely on the strike alone: its accessible text MUST say it was the planned value and give the new one (e.g. "Load 100 kg, today 90 kg").
 - **FR-019**: At the bottom of an adjusted session card, under "Start session", the card MUST say "Only today's targets change. Your plan stays the same."
 
 **Use original targets with Undo** (task #121)
 
-- **FR-020**: While the choice can be switched, an adjusted session card MUST offer "Use original targets"; one tap MUST switch to the planned targets with no dialog and show the message "Original targets restored" with "Undo", which switches back.
-- **FR-021**: With the original targets in use and the choice switchable, the session card MUST offer "Use lighter targets", which switches back in one tap with no message.
+- **FR-020**: While the choice can be switched, an adjusted session card MUST offer "Use original targets"; one tap MUST switch to the planned targets with no dialog and show the message "Original targets restored" with "Undo", which switches back. The message MUST last 5 seconds, MUST stay while the client moves between tabs, and a new one MUST replace the one still showing.
+- **FR-021**: With the original targets in use and the choice switchable, the session card MUST be marked "Original targets" in the place of "Adjusted for today" and offer "Use lighter targets", which switches back in one tap with no message and closes the Undo message, which then has nothing to undo.
 - **FR-022**: Focus MUST stay on the switch, which takes the place of the one tapped, and the change MUST be announced to assistive technology; the message with "Undo" MUST be reachable by keyboard, and nothing depends on it, as FR-021 offers the same.
 - **FR-023**: A switch MUST show the requested targets at once; if the system refuses it or cannot be reached, the screen MUST return to the stored targets and show a translated message, so that once the request ends it never shows a choice that was not stored.
 - **FR-024**: Once a set is logged, the session card MUST offer neither switch. On a day with an adjustment, the readiness card's line about fixed answers (spec `109-readiness-check-in`, FR-018) MUST read "Answers and targets are fixed once training has started." instead, so the rule is said once, in one place; on other days it is unchanged.

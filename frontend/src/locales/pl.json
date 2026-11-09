@@ -1212,7 +1212,14 @@
         "SORENESS": "duża bolesność mięśni",
         "STRESS": "wysoki stres"
       },
-      "planUnchanged": "Zmieniają się tylko dzisiejsze cele. Twój plan pozostaje bez zmian."
+      "planUnchanged": "Zmieniają się tylko dzisiejsze cele. Twój plan pozostaje bez zmian.",
+      "original": "Cele z planu",
+      "useOriginal": "Użyj celów z planu",
+      "useLighter": "Użyj lżejszych celów",
+      "restored": "Przywrócono cele z planu",
+      "undo": "Cofnij",
+      "announceLighter": "Używasz lżejszych celów.",
+      "announceOriginal": "Używasz celów z planu."
     }
   },
   "targetChange": "{{planned}}, dziś {{today}}"

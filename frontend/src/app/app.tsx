@@ -16,7 +16,13 @@ export function App() {
           <RouterProvider router={router} />
         </WeightUnitProvider>
         {/* design system: bottom-right on desktop; client screens move it to bottom-centre when they first need it */}
-        <Toaster position="bottom-right" />
+        {/* on a phone the client's tab bar takes the bottom 3.5 rem, so messages sit above it */}
+        <Toaster
+          position="bottom-right"
+          mobileOffset={{
+            bottom: 'calc(3.5rem + 1px + env(safe-area-inset-bottom) + 16px)',
+          }}
+        />
       </QueryClientProvider>
     </ThemeProvider>
   )

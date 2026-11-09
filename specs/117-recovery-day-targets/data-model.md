@@ -41,7 +41,7 @@ All other columns are unchanged (spec 109). The plan tables are never written by
 ### `Adjustment` (record)
 
 - Fields: `List<Target> lighter` (one per planned entry, by position), `List<Cause> causes`, `boolean inUse` (`targetChoice == LIGHTER`).
-- `static Optional<Adjustment> of(CheckIn, List<Planned>, WeightUnit)`: empty unless the band is `RECOVERY_DAY` and at least one target changes.
+- `static Optional<Adjustment> of(Answers, boolean inUse, List<Planned>, WeightUnit)`: the service passes the check-in's answers and `targetChoice == LIGHTER`; empty unless the band is `RECOVERY_DAY` and at least one target changes.
 - `static Target lighter(Target, Measure, WeightUnit)`: the rule of FR-002 to FR-005 and research R4.
 - `Target inUse(int position, Target planned)`: the lighter target when `inUse`, else `planned`.
 
