@@ -32,8 +32,12 @@ class SessionLogConfig {
 
     @Bean
     ViewSessionStatesUseCase viewSessionStatesUseCase(
-            ViewOwnPlanUseCase plan, CurrentAccountUseCase accounts, SessionLogRepository logs) {
-        return new SessionStateService(plan, accounts, logs, Clock.systemUTC());
+            ViewOwnPlanUseCase plan,
+            CurrentAccountUseCase accounts,
+            SessionLogRepository logs,
+            ListExercisesUseCase exercises,
+            CheckInUseCase checkIns) {
+        return new SessionStateService(plan, accounts, logs, exercises, checkIns, Clock.systemUTC());
     }
 
     @Bean

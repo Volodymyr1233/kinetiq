@@ -1131,6 +1131,7 @@ export interface components {
             sessionLogId?: string;
             /** Format: date-time */
             startedAt?: string;
+            adjusted: boolean;
         };
         SessionStatesResponse: {
             /** Format: date */

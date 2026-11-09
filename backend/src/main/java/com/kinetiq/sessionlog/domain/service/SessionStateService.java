@@ -2,9 +2,19 @@ package com.kinetiq.sessionlog.domain.service;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
+import com.kinetiq.exercise.domain.model.Exercise;
+import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.Session;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Planned;
+import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.input.SessionStates;
 import com.kinetiq.sessionlog.domain.input.ViewSessionStatesUseCase;
 import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
@@ -28,6 +38,8 @@ public class SessionStateService implements ViewSessionStatesUseCase {
     private final ViewOwnPlanUseCase plan;
     private final CurrentAccountUseCase accounts;
     private final SessionLogRepository logs;
+    private final ListExercisesUseCase exercises;
+    private final CheckInUseCase checkIns;
     private final Clock clock;
 
     @Override
@@ -45,6 +57,7 @@ public class SessionStateService implements ViewSessionStatesUseCase {
                 .stream()
                 .collect(Collectors.toMap(SessionLogHeader::date, Function.identity()));
         LocalDate publishedOn = published.getPublishedOn().orElseThrow();
+        Map<ExerciseId, Measure> measures = measures(client);
         return new SessionStates(
                 today,
                 published.getSessions().stream()
@@ -56,8 +69,25 @@ public class SessionStateService implements ViewSessionStatesUseCase {
                                     date,
                                     SessionState.of(date, today, publishedOn, log, now),
                                     log.map(SessionLogHeader::id),
-                                    log.map(SessionLogHeader::startedAt));
+                                    log.map(SessionLogHeader::startedAt),
+                                    // a check-in exists only for a day that has come
+                                    !date.isAfter(today) && adjusted(client, date, session, measures));
                         })
                         .toList());
+    }
+
+    // ponytail: the plan's targets, not a started session's copy; they differ only after a plan revision, which almost
+    // never changes whether a target gets lighter. Read the log's copy if a marked day ever disagrees
+    private boolean adjusted(AccountId client, LocalDate date, Session session, Map<ExerciseId, Measure> measures) {
+        List<Planned> planned = session.entries().stream()
+                .map(entry -> new Planned(
+                        new Target(entry.loadKg(), entry.amount(), entry.rpe()), measures.get(entry.exercise())))
+                .toList();
+        return checkIns.adjustmentOn(client, date, planned).map(Adjustment::inUse).orElse(false);
+    }
+
+    private Map<ExerciseId, Measure> measures(AccountId client) {
+        AccountId trainer = accounts.find(client).getTrainerId().orElseThrow(PlanNotFoundException::new);
+        return exercises.library(trainer).stream().collect(Collectors.toMap(Exercise::getId, Exercise::getMeasure));
     }
 }

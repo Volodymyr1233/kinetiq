@@ -220,3 +220,11 @@ description: "Tasks for story #117, Today's targets are lightened on a recovery 
 
 - [X] T045 Align `research.md` R3, `data-model.md` and T022 with the code: `Adjustment.of(Answers, boolean inUse, List<Planned>, WeightUnit)`, and the demo recovery day on Thursday of plan week 2, per plan: data model (partial)
 - [X] T046 Check an adjusted session in the browser with the client unit set to pounds (whole-pound lighter load, within 0.1 lb), per quickstart scenario 7 / FR-002 (partial)
+
+## Phase 8: task #275, Plan week marks adjusted days (US1)
+
+**Goal**: FR-028 and research R12. Added after review, in the same pull request.
+
+- [X] T047 [US1] `S/domain/input/SessionStates.java`: `Entry` gains `boolean adjusted`. `S/domain/service/SessionStateService.java` takes `ListExercisesUseCase` and `CheckInUseCase`; a session on a day that has come is adjusted when `adjustmentOn` with the plan session's targets is present and in use. Wire both in `S/infrastructure/config/SessionLogConfig.java`; map `adjusted` in `SessionStatesResponse` and `SessionLogWebMapper`.
+- [X] T048 [US1] Tests: `ST/domain/service/SessionStateServiceTest.java` (a recovery day is marked, a Ready day and a day to come are not, nor a day with the original targets chosen); `ST/infrastructure/input/SessionStateControllerTest.java` (`adjusted` in the answer). Regenerate `F/lib/api/schema.d.ts`.
+- [X] T049 [US1] `F/features/plan/components/session-card.tsx`: an `adjusted` badge "Adjusted" / "Dostosowana" beside the state, passed from `week-strip.tsx`; tested in `client-plan-page.test.tsx`. Run both gates. Commit `feat: mark adjusted days in the plan week (#275)`.

@@ -10,8 +10,16 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.common.domain.model.Email;
+import com.kinetiq.exercise.domain.input.ExerciseListing;
+import com.kinetiq.exercise.domain.input.ListExercisesQuery;
+import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
+import com.kinetiq.exercise.domain.model.LocalizedText;
+import com.kinetiq.exercise.domain.model.Category;
+import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.exception.PlanWeekOutOfRangeException;
 import com.kinetiq.plan.domain.input.DraftSummary;
@@ -23,6 +31,13 @@ import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.PlanId;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.model.Goal;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
+import com.kinetiq.readiness.domain.input.ChooseTargetsCommand;
+import com.kinetiq.readiness.domain.input.SaveCheckInCommand;
+import com.kinetiq.readiness.domain.input.TodayCheckIn;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Answers;
+import com.kinetiq.readiness.domain.model.Planned;
 import com.kinetiq.sessionlog.domain.input.SessionStates;
 import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
@@ -36,6 +51,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -61,12 +77,29 @@ class SessionStateServiceTest {
     private ZoneId zone = ZoneId.of("Europe/Warsaw");
     private Instant now = NOW;
     private final List<SessionLogHeader> headers = new ArrayList<>();
+    // a check-in's answers by date; the real rule decides whether that day is adjusted
+    private final Map<LocalDate, Answers> answers = new HashMap<>();
+    private boolean lighterInUse = true;
 
     private static Session session(DayOfWeek day) {
         return new Session(
                 "S " + day,
                 day,
                 List.of(new ExerciseEntry(ExerciseId.random(), 3, 5, new BigDecimal("100.0"), 8, 120)));
+    }
+
+    private static Exercise squat(ExerciseId id) {
+        return new Exercise(
+                id,
+                TRAINER,
+                new LocalizedText("Squat", "Przysiad"),
+                Category.LEGS,
+                new LocalizedText("", ""),
+                Measure.REPS,
+                3,
+                5,
+                120,
+                new LocalizedText("", ""));
     }
 
     private static Plan published(LocalDate firstWeek, LocalDate publishedOn, int weeks) {
@@ -145,8 +178,56 @@ class SessionStateServiceTest {
 
     private final SessionLogRepository logs = new SessionLogRepositoryStub(headers);
 
+    private final ListExercisesUseCase exercises = new ListExercisesUseCase() {
+        @Override
+        public ExerciseListing list(ListExercisesQuery query) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public List<Exercise> library(AccountId trainer) {
+            return SESSIONS.stream()
+                    .map(session -> session.entries().getFirst().exercise())
+                    .map(SessionStateServiceTest::squat)
+                    .toList();
+        }
+    };
+
+    private final CheckInUseCase checkIns = new CheckInUseCase() {
+        @Override
+        public TodayCheckIn today(AccountId client) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TodayCheckIn save(SaveCheckInCommand command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TodayCheckIn choose(ChooseTargetsCommand command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<Adjustment> adjustmentOn(AccountId client, LocalDate date, List<Planned> entries) {
+            return Optional.ofNullable(answers.get(date))
+                    .flatMap(given -> Adjustment.of(given, lighterInUse, entries, WeightUnit.KG));
+        }
+    };
+
     private SessionStates states(Integer week) {
-        return new SessionStateService(planPort, accounts, logs, Clock.fixed(now, ZoneOffset.UTC)).states(CLIENT, week);
+        return new SessionStateService(
+                        planPort, accounts, logs, exercises, checkIns, Clock.fixed(now, ZoneOffset.UTC))
+                .states(CLIENT, week);
+    }
+
+    private static boolean adjustedOn(SessionStates states, DayOfWeek day) {
+        return states.sessions().stream()
+                .filter(entry -> entry.day() == day)
+                .findFirst()
+                .orElseThrow()
+                .adjusted();
     }
 
     private static Optional<SessionState> stateOf(SessionStates states, DayOfWeek day) {
@@ -257,6 +338,31 @@ class SessionStateServiceTest {
 
         assertThat(states(null).sessions()).isEmpty();
         assertThatThrownBy(() -> states(1)).isInstanceOf(PlanWeekOutOfRangeException.class);
+    }
+
+    @Test
+    void shouldMarkTheDaysWhoseLighterTargetsAreInUse() {
+        // Recovery day answers for Monday, today and Sunday, which has not come; Ready for Tuesday
+        answers.put(WEEK_3_MONDAY, new Answers(2, 4, 3));
+        answers.put(WEEK_3_MONDAY.plusDays(1), new Answers(4, 2, 1));
+        answers.put(WEEK_3_MONDAY.plusDays(5), new Answers(1, 5, 5));
+        answers.put(WEEK_3_MONDAY.plusDays(6), new Answers(1, 5, 5));
+
+        SessionStates states = states(null);
+
+        assertThat(adjustedOn(states, DayOfWeek.MONDAY)).isTrue();
+        assertThat(adjustedOn(states, DayOfWeek.TUESDAY)).isFalse();
+        assertThat(adjustedOn(states, DayOfWeek.WEDNESDAY)).isFalse();
+        assertThat(adjustedOn(states, DayOfWeek.SATURDAY)).isTrue();
+        assertThat(adjustedOn(states, DayOfWeek.SUNDAY)).isFalse();
+    }
+
+    @Test
+    void shouldNotMarkADay_whenTheClientChoseTheOriginalTargets() {
+        answers.put(WEEK_3_MONDAY.plusDays(5), new Answers(1, 5, 5));
+        lighterInUse = false;
+
+        assertThat(adjustedOn(states(null), DayOfWeek.SATURDAY)).isFalse();
     }
 
     @Test

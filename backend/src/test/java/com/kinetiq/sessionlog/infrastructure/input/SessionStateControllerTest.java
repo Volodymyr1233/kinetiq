@@ -66,19 +66,22 @@ class SessionStateControllerTest {
                                         LocalDate.parse("2026-11-02"),
                                         Optional.of(SessionState.DONE),
                                         Optional.of(new SessionLogId(LOG_ID)),
-                                        Optional.of(Instant.parse("2026-11-02T08:00:00Z"))),
+                                        Optional.of(Instant.parse("2026-11-02T08:00:00Z")),
+                                        true),
                                 new SessionStates.Entry(
                                         DayOfWeek.TUESDAY,
                                         LocalDate.parse("2026-11-03"),
                                         Optional.empty(),
                                         Optional.empty(),
-                                        Optional.empty()),
+                                        Optional.empty(),
+                                        false),
                                 new SessionStates.Entry(
                                         DayOfWeek.WEDNESDAY,
                                         LocalDate.parse("2026-11-04"),
                                         Optional.of(SessionState.TODAY),
                                         Optional.empty(),
-                                        Optional.empty()))));
+                                        Optional.empty(),
+                                        false))));
 
         var result = mvc.get().uri(STATES).param("week", "3").with(CLIENT).exchange();
 
@@ -89,6 +92,8 @@ class SessionStateControllerTest {
         assertThat(result).bodyJson().extractingPath("$.sessions[0].state").isEqualTo("DONE");
         assertThat(result).bodyJson().extractingPath("$.sessions[0].sessionLogId").isEqualTo(LOG_ID.toString());
         assertThat(result).bodyJson().extractingPath("$.sessions[0].startedAt").isEqualTo("2026-11-02T08:00:00Z");
+        assertThat(result).bodyJson().extractingPath("$.sessions[0].adjusted").isEqualTo(true);
+        assertThat(result).bodyJson().extractingPath("$.sessions[1].adjusted").isEqualTo(false);
         assertThat(result).bodyJson().doesNotHavePath("$.sessions[1].state");
         assertThat(result).bodyJson().doesNotHavePath("$.sessions[1].sessionLogId");
         assertThat(result).bodyJson().doesNotHavePath("$.sessions[1].startedAt");

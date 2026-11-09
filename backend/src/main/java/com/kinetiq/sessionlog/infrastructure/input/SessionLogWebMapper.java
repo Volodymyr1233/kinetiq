@@ -146,7 +146,8 @@ class SessionLogWebMapper {
                                 entry.date(),
                                 entry.state().orElse(null),
                                 entry.sessionLogId().map(SessionLogId::value).orElse(null),
-                                entry.startedAt().orElse(null)))
+                                entry.startedAt().orElse(null),
+                                entry.adjusted()))
                         .toList());
     }
 

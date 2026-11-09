@@ -80,3 +80,9 @@ All unknowns of the plan's Technical Context are resolved here; nothing is left 
 
 - **Decision**: `V22__add_check_in_target_choice.sql` adds `target_choice varchar(8) not null default 'LIGHTER'` with check constraint `ck_check_ins_target_choice`. No open pull request takes V22 (checked with `gh pr list`). Demo data: `R__demo_check_ins.sql` keeps an earlier recovery-day check-in for `demo.client.daily`; `R__demo_session_logs.sql` gives that day's set logs lighter target copies.
 - **Rationale**: One column of the check-in's own key (3NF); the default makes every existing check-in "lighter", which matches what an adjusted day starts as.
+
+## R12. Marking adjusted days in the Plan week (task #275)
+
+- **Decision**: `SessionStateService` (sessionlog) asks `CheckInUseCase.adjustmentOn` for each session on a day that has come, with the plan session's targets and the trainer library's measures, and returns `adjusted` per session. The Plan week shows the `adjusted` badge variant beside the state badge.
+- **Rationale**: Sessionlog already depends on readiness (R1, R7), and the Plan week already reads `/session-states`, so no new endpoint, port or cross-feature import. The plan's targets differ from a started session's copy only after a plan revision, which almost never changes whether a target gets lighter; this is marked `ponytail:` in the code.
+- **Alternatives**: reading each started session's log copy (one more query per day for a boolean that rarely differs); a separate readiness endpoint for a week of marks (a second request for the same screen).
