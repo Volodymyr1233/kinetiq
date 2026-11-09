@@ -127,7 +127,10 @@ export function TodayPage({
             >
               <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 {today.session.name}
-                <SessionStateBadge state={entry?.state} />
+                {/* this tab is today, so only a state beyond that is shown */}
+                <SessionStateBadge
+                  state={entry?.state === 'TODAY' ? undefined : entry?.state}
+                />
               </span>
             </h2>
             {adjusted?.reason && (
@@ -162,7 +165,13 @@ export function TodayPage({
                 asChild
                 className="bg-brand text-brand-foreground hover:bg-brand/80"
               >
-                <Link to="/app/session">{t('plan.today.start')}</Link>
+                <Link to="/app/session">
+                  {t(
+                    entry?.state === 'IN_PROGRESS'
+                      ? 'plan.today.continue'
+                      : 'plan.today.start',
+                  )}
+                </Link>
               </Button>
             </div>
           )}

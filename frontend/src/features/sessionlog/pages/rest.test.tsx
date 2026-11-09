@@ -19,11 +19,13 @@ const entry = (position: number, restSeconds: number) => ({
 })
 
 function openLogger(entries: object[]) {
+  // a session of its own per test: the logger keeps a running rest by session
+  const id = crypto.randomUUID()
   const reply: Reply = async (request) => {
     if (request.method === 'POST') {
       return json(
         {
-          id: '00000000-0000-4000-a000-000000000001',
+          id,
           date: '2026-11-07',
           name: 'Lower body',
           // started just now, so the session is open: it locks 24 hours after its start
@@ -42,7 +44,10 @@ function openLogger(entries: object[]) {
   }
   stubApi(reply)
   const router = createMemoryRouter(
-    [{ path: '/app/session', Component: LoggerPage }],
+    [
+      { path: '/app/session', Component: LoggerPage },
+      { path: '/app/plan', Component: () => <h1>Plan</h1> },
+    ],
     { initialEntries: ['/app/session'] },
   )
   render(
@@ -54,6 +59,7 @@ function openLogger(entries: object[]) {
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
+  return router
 }
 
 const tick = (exercise: string, number: number) =>
@@ -91,6 +97,21 @@ describe('the rest timer in the logger', () => {
     ).getAllByRole('listitem')
     expect(await within(rows[0]).findByText('Logged')).toBeInTheDocument()
     expect(screen.getByRole('timer')).toHaveTextContent(/^(0:45|0:44)$/)
+  })
+
+  it('keeps running when the client leaves the logger for another tab and comes back', async () => {
+    const user = userEvent.setup()
+    const router = openLogger([entry(0, 120)])
+    await user.click(await tick('Back squat', 1))
+    await screen.findByRole('timer')
+
+    await router.navigate('/app/plan')
+    await screen.findByRole('heading', { name: 'Plan' })
+    await router.navigate('/app/session')
+
+    expect(await screen.findByRole('timer')).toHaveTextContent(
+      /^(2:00|1:59|1:58)$/,
+    )
   })
 
   it('goes away when it is dismissed', async () => {

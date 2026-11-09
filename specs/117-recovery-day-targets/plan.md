@@ -99,7 +99,10 @@ backend/src/main/
 │   │   ├── domain/model/SessionLog.java                                      # logSet copies the targets in use
 │   │   ├── domain/input/StartedSession.java                                  # + adjustment
 │   │   ├── domain/service/SessionLogService.java                             # asks CheckInUseCase.adjustmentOn
+│   │   ├── domain/input/SessionStates.java                                   # + adjusted (#275)
+│   │   ├── domain/service/SessionStateService.java                           # adjusted per session (#275)
 │   │   ├── infrastructure/config/SessionLogConfig.java
+│   │   ├── infrastructure/input/SessionStatesResponse.java                   # + adjusted (#275)
 │   │   └── infrastructure/input/{SessionLogResponse, SessionLogWebMapper}.java   # + planned; set copies
 ├── resources/db/migration/V22__add_check_in_target_choice.sql
 └── resources/db/dev-data/{R__demo_check_ins, R__demo_session_logs}.sql
@@ -107,6 +110,7 @@ backend/src/test/java/com/kinetiq/{readiness,sessionlog}/...
 
 frontend/src/
 ├── components/target-change.tsx (+ test)                 # old struck → new, accessible text
+├── components/value-list.tsx                             # values apart by hidden middle dots (#274)
 ├── components/ui/badge.tsx                               # + variant adjusted (design system)
 ├── features/readiness/
 │   ├── api/check-in.ts                                   # + useChooseTargets (optimistic, rollback)
@@ -114,7 +118,8 @@ frontend/src/
 │   └── components/readiness-card.tsx                     # lighter line, fixed-with-targets line
 ├── features/plan/
 │   ├── pages/today-page.tsx (+ test)                     # + adjusted prop: mark, reason, targets
-│   └── components/entry-row.tsx                          # optional today target → TargetChange
+│   ├── components/entry-row.tsx                          # optional today target → TargetChange
+│   └── components/{session-card, week-strip}.tsx         # "Adjusted" chip in the Plan week (#275)
 ├── features/sessionlog/pages/logger-page.tsx (+ test)    # entry.planned → old → new line under the name
 ├── app/today-route.tsx                                   # passes readiness's adjustment to TodayPage
 ├── lib/query-keys.ts                                     # SESSION_LOGS_KEY, shared by sessionlog and readiness
@@ -153,4 +158,7 @@ frontend/src/
   - the fixed state;
   - strings; tests; browser check at 375 px in light and dark, EN and PL.
 
-Commit order in the story's pull request: #118, #119, #120, #121. Each is one commit ending with `(#<task>)`.
+- **#275 (both sides, added after review)**: `adjusted` per session in `GET /api/v1/session-states` (research R12), with tests; regenerated `schema.d.ts`; the "Adjusted" chip in the Plan week.
+- **#274 (bug, frontend)**: `ValueList` for target values on Today, the Plan week and the logger; no "Today" chip on the Today tab; "Continue session" while in progress; the rest timer kept across tabs; optional band lines.
+
+Commit order in the story's pull request: #118, #119, #120, #121, #275, #274. Each is one commit ending with `(#<task>)`.

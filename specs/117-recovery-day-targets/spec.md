@@ -219,7 +219,7 @@ None. Every operation needs a signed-in client.
 
 ## Assumptions
 
-- Only the Recovery day band adjusts targets; Take it easier keeps its line "Same plan. Stop a rep earlier." and the planned targets.
+- Only the Recovery day band adjusts targets; Take it easier keeps its line "Same plan. Stop a rep earlier if you need to." and the planned targets. With the original targets chosen, Recovery day shows its band line "Same plan. Stop two reps earlier if you need to." (bug #274).
 - The client's unit comes from their account settings (spec `42-account-settings`); "today" is computed as in spec `89-todays-session`.
 - The adjustment is a fixed rule; nothing goes to an LLM (constitution IV).
 - The adjusted targets are derived when read, so a later change of the rule would change how an earlier day's unlogged targets read; logged sets keep their copy, and nothing in this story needs the rule to change.

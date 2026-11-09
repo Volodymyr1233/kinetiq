@@ -891,6 +891,7 @@
       "weekDone_one": "{{done, number}} of {{count, number}} session done this week",
       "weekDone_other": "{{done, number}} of {{count, number}} sessions done this week",
       "start": "Start session",
+      "continue": "Continue session",
       "done": "Session done"
     },
     "client": {
@@ -1144,11 +1145,11 @@
         "READY": { "name": "Ready", "line": "Train as planned." },
         "TAKE_IT_EASIER": {
           "name": "Take it easier",
-          "line": "Same plan. Stop a rep earlier."
+          "line": "Same plan. Stop a rep earlier if you need to."
         },
         "RECOVERY_DAY": {
           "name": "Recovery day",
-          "line": "Same plan. Stop two reps earlier."
+          "line": "Same plan. Stop two reps earlier if you need to."
         }
       },
       "answers": "Sleep {{sleep, number}} · soreness {{soreness, number}} · stress {{stress, number}}",

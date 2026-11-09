@@ -41,8 +41,18 @@ describe('ReadinessCard', () => {
   })
 
   it.each([
-    ['TAKE_IT_EASIER', 50, 'Take it easier', 'Same plan. Stop a rep earlier.'],
-    ['RECOVERY_DAY', 33, 'Recovery day', 'Same plan. Stop two reps earlier.'],
+    [
+      'TAKE_IT_EASIER',
+      50,
+      'Take it easier',
+      'Same plan. Stop a rep earlier if you need to.',
+    ],
+    [
+      'RECOVERY_DAY',
+      33,
+      'Recovery day',
+      'Same plan. Stop two reps earlier if you need to.',
+    ],
   ] as const)('names the band %s and its line', (band, score, name, line) => {
     renderCard({ ...READY, band, score })
 
@@ -80,7 +90,9 @@ describe('ReadinessCard', () => {
     })
 
     expect(screen.getByText('Today’s targets are lighter.')).toBeInTheDocument()
-    expect(screen.queryByText('Same plan. Stop two reps earlier.')).toBeNull()
+    expect(
+      screen.queryByText('Same plan. Stop two reps earlier if you need to.'),
+    ).toBeNull()
   })
 
   it('keeps the band line once the original targets are in use', () => {
@@ -92,7 +104,7 @@ describe('ReadinessCard', () => {
     })
 
     expect(
-      screen.getByText('Same plan. Stop two reps earlier.'),
+      screen.getByText('Same plan. Stop two reps earlier if you need to.'),
     ).toBeInTheDocument()
   })
 

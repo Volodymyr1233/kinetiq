@@ -920,6 +920,7 @@
       "weekDone_many": "Zrobione sesje w tym tygodniu: {{done, number}} z {{count, number}}",
       "weekDone_other": "Zrobione sesje w tym tygodniu: {{done, number}} z {{count, number}}",
       "start": "Rozpocznij sesję",
+      "continue": "Kontynuuj sesję",
       "done": "Sesja zakończona"
     },
     "client": {
@@ -1193,11 +1194,11 @@
         },
         "TAKE_IT_EASIER": {
           "name": "Trochę lżej",
-          "line": "Ten sam plan. Kończ serię o powtórzenie wcześniej."
+          "line": "Ten sam plan. W razie potrzeby kończ serię o powtórzenie wcześniej."
         },
         "RECOVERY_DAY": {
           "name": "Dzień regeneracji",
-          "line": "Ten sam plan. Kończ serię dwa powtórzenia wcześniej."
+          "line": "Ten sam plan. W razie potrzeby kończ serię dwa powtórzenia wcześniej."
         }
       },
       "answers": "Sen {{sleep, number}} · bolesność {{soreness, number}} · stres {{stress, number}}",
