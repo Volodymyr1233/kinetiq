@@ -771,6 +771,29 @@
       "title": "Session locked",
       "text": "Sets can be logged and changed for 24 hours after a session starts."
     },
+    "offline": {
+      "title": "You're offline",
+      "text": "Logs save on this phone and sync later.",
+      "notKept": "This browser can't keep logs on the phone, so keep this tab open until you're back online.",
+      "announce": "You're offline. Logs save on this phone and sync later."
+    },
+    "sync": {
+      "saved": "Saved on this phone",
+      "synced": "Synced",
+      "notSynced": "Not synced",
+      "reason": {
+        "locked": "The session is locked, so this set can't be saved.",
+        "invalid": "The values were not accepted. Change them and try again.",
+        "refused": "This set can't be saved to this session.",
+        "unreachable": "Can't reach the server."
+      },
+      "retry": "Retry",
+      "retryLabel": "Retry set {{number}} of {{exercise}}",
+      "discard": "Discard",
+      "discardLabel": "Discard set {{number}} of {{exercise}}",
+      "finishOffline": "You're offline. Finish the session when you're back online.",
+      "finishWaiting": "Finish the session when every set is synced."
+    },
     "row": {
       "amount": "{{amount, number}} {{unit}}",
       "load": "{{load, number}} {{unit}}",

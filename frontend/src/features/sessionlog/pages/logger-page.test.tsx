@@ -1,11 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import { json, problem, stubApi, type Reply, loggerClient } from '@/test/page'
 import { LoggerPage } from './logger-page'
 
 const SQUAT = {
@@ -50,11 +50,7 @@ function openLogger(reply: Reply, unit: WeightUnit = 'KG') {
     { initialEntries: ['/app/session'] },
   )
   render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={loggerClient()}>
       <WeightUnitContext value={unit}>
         <RouterProvider router={router} />
       </WeightUnitContext>
@@ -133,11 +129,11 @@ describe('LoggerPage', () => {
     const rows = within(
       await screen.findByRole('region', { name: 'Back squat' }),
     ).getAllByRole('listitem')
-    expect(within(rows[0]).getByText('Logged')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Synced')).toBeInTheDocument()
     expect(within(rows[0]).getByText('6 reps')).toBeInTheDocument()
     expect(within(rows[0]).getByText('102.5 kg')).toBeInTheDocument()
     expect(within(rows[0]).getByText('RPE 9')).toBeInTheDocument()
-    expect(within(rows[1]).queryByText('Logged')).not.toBeInTheDocument()
+    expect(within(rows[1]).queryByText('Synced')).not.toBeInTheDocument()
   })
 
   it('goes back to Today when there is no session to log', async () => {

@@ -206,80 +206,95 @@ export const createRoutes = (): RouteObject[] => [
       Component: async () => (await import('@/app/quiz-area')).QuizStepsRoute,
     },
   },
-  // the logger takes the whole screen, so like the quiz it has no tab bar
+  // every client route but the quiz keeps the logs made on the phone and sends them when the app is online
   {
-    path: '/app/session',
-    loader: requireRole('CLIENT'),
-    ErrorBoundary: AreaErrorPage,
     HydrateFallback: BlankWhileLoading,
     lazy: {
       Component: async () =>
-        (await import('@/features/sessionlog/pages/logger-page')).LoggerPage,
-    },
-  },
-  // an earlier session, opened from its card on the Plan tab
-  {
-    path: '/app/session/:id',
-    loader: requireRole('CLIENT'),
-    ErrorBoundary: AreaErrorPage,
-    HydrateFallback: BlankWhileLoading,
-    lazy: {
-      Component: async () =>
-        (await import('@/features/sessionlog/pages/logger-page')).LoggerPage,
-    },
-  },
-  {
-    path: '/app/summary/:id',
-    loader: requireRole('CLIENT'),
-    ErrorBoundary: AreaErrorPage,
-    HydrateFallback: BlankWhileLoading,
-    lazy: {
-      Component: async () =>
-        (await import('@/app/summary-route')).SessionSummaryRoute,
-    },
-  },
-  {
-    path: '/app/plan-ready',
-    loader: requireRole('CLIENT'),
-    ErrorBoundary: AreaErrorPage,
-    HydrateFallback: BlankWhileLoading,
-    lazy: {
-      Component: async () => (await import('@/app/client-area')).PlanReadyRoute,
-    },
-  },
-  {
-    path: '/app',
-    loader: requireRole('CLIENT'),
-    ErrorBoundary: AreaErrorPage,
-    HydrateFallback: BlankWhileLoading,
-    lazy: {
-      Component: async () => (await import('@/app/client-area')).ClientArea,
+        (await import('@/app/pending-logs-route')).PendingLogsRoute,
     },
     children: [
-      { index: true, loader: () => redirect('/app/today') },
+      // the logger takes the whole screen, so like the quiz it has no tab bar
       {
-        path: 'today',
-        lazy: {
-          Component: async () => (await import('@/app/today-route')).TodayRoute,
-        },
-      },
-      {
-        path: 'plan',
-        lazy: {
-          Component: async () =>
-            (await import('@/features/plan/pages/client-plan-page'))
-              .ClientPlanPage,
-        },
-      },
-      clientPlaceholder('progress'),
-      {
-        path: 'messages',
+        path: '/app/session',
+        loader: requireRole('CLIENT'),
+        ErrorBoundary: AreaErrorPage,
         HydrateFallback: BlankWhileLoading,
         lazy: {
           Component: async () =>
-            (await import('@/features/messaging/pages/client-messages-page'))
-              .ClientMessagesPage,
+            (await import('@/features/sessionlog/pages/logger-page'))
+              .LoggerPage,
         },
+      },
+      // an earlier session, opened from its card on the Plan tab
+      {
+        path: '/app/session/:id',
+        loader: requireRole('CLIENT'),
+        ErrorBoundary: AreaErrorPage,
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/sessionlog/pages/logger-page'))
+              .LoggerPage,
+        },
+      },
+      {
+        path: '/app/summary/:id',
+        loader: requireRole('CLIENT'),
+        ErrorBoundary: AreaErrorPage,
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/app/summary-route')).SessionSummaryRoute,
+        },
+      },
+      {
+        path: '/app/plan-ready',
+        loader: requireRole('CLIENT'),
+        ErrorBoundary: AreaErrorPage,
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/app/client-area')).PlanReadyRoute,
+        },
+      },
+      {
+        path: '/app',
+        loader: requireRole('CLIENT'),
+        ErrorBoundary: AreaErrorPage,
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () => (await import('@/app/client-area')).ClientArea,
+        },
+        children: [
+          { index: true, loader: () => redirect('/app/today') },
+          {
+            path: 'today',
+            lazy: {
+              Component: async () =>
+                (await import('@/app/today-route')).TodayRoute,
+            },
+          },
+          {
+            path: 'plan',
+            lazy: {
+              Component: async () =>
+                (await import('@/features/plan/pages/client-plan-page'))
+                  .ClientPlanPage,
+            },
+          },
+          clientPlaceholder('progress'),
+          {
+            path: 'messages',
+            HydrateFallback: BlankWhileLoading,
+            lazy: {
+              Component: async () =>
+                (
+                  await import('@/features/messaging/pages/client-messages-page')
+                ).ClientMessagesPage,
+            },
+          },
+        ],
       },
     ],
   },

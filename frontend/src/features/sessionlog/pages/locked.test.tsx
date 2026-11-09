@@ -1,10 +1,10 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { act, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import i18n from '@/lib/i18n'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import { json, problem, stubApi, type Reply, loggerClient } from '@/test/page'
 import { LoggerPage } from './logger-page'
 
 const HOUR = 60 * 60 * 1000
@@ -58,11 +58,7 @@ function openLogger(startedAt: Date, put: Reply = stored) {
     { initialEntries: ['/app/session'] },
   )
   render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={loggerClient()}>
       <RouterProvider router={router} />
     </QueryClientProvider>,
   )
@@ -129,7 +125,7 @@ describe('a locked session in the logger', () => {
     expect(screen.getByRole('status')).toHaveTextContent('Session locked')
   })
 
-  it('turns read-only when the server refuses a log as locked, and the set stays as it was', async () => {
+  it('turns read-only when the server refuses a log as locked, and the set stays visible as not synced, with Discard and without Retry', async () => {
     const user = userEvent.setup()
     openLogger(new Date(), async () =>
       problem(409, { status: 409, code: 'session-log.locked' }),
@@ -142,8 +138,18 @@ describe('a locked session in the logger', () => {
     )
 
     expect(await screen.findByText(REASON)).toBeInTheDocument()
-    expect(screen.getByRole('status')).toHaveTextContent('Session locked')
-    expect(rows()[1]).toHaveTextContent('Not logged')
+    expect(screen.getAllByRole('status')[0]).toHaveTextContent('Session locked')
+    expect(rows()[1]).toHaveTextContent('Not synced')
+    expect(rows()[1]).toHaveTextContent(
+      "The session is locked, so this set can't be saved.",
+    )
+    // the set can no longer be sent, so only the kept copy can go
+    expect(
+      screen.queryByRole('button', { name: /^Retry set 2/ }),
+    ).not.toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: 'Discard set 2 of Back squat' }),
+    ).toBeVisible()
     expect(
       screen.queryByText('Something went wrong. Try again.'),
     ).not.toBeInTheDocument()

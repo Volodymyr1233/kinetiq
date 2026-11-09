@@ -1,11 +1,11 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import { json, problem, stubApi, type Reply, loggerClient } from '@/test/page'
 import { LoggerPage } from './logger-page'
 
 const SQUAT = {
@@ -43,11 +43,7 @@ function openLogger(reply: Reply, unit: WeightUnit = 'KG') {
     { initialEntries: ['/app/session'] },
   )
   render(
-    <QueryClientProvider
-      client={
-        new QueryClient({ defaultOptions: { queries: { retry: false } } })
-      }
-    >
+    <QueryClientProvider client={loggerClient()}>
       <WeightUnitContext value={unit}>
         <RouterProvider router={router} />
       </WeightUnitContext>
@@ -62,7 +58,7 @@ function server(failing: () => boolean = () => false) {
   const puts: Put[] = []
   const reply: Reply = async (request) => {
     if (request.method === 'POST') return started()
-    if (failing()) return problem(500, { status: 500, code: 'internal.error' })
+    if (failing()) return problem(400, { status: 400, code: 'request.invalid' })
     const body = (await request.clone().json()) as Put['body']
     const id = new URL(request.url).pathname.split('/').pop()!
     puts.push({ id, body })
@@ -70,6 +66,8 @@ function server(failing: () => boolean = () => false) {
   }
   return { reply, puts }
 }
+
+const NOT_ACCEPTED = 'The values were not accepted. Change them and try again.'
 
 const firstRow = () =>
   within(screen.getByRole('region', { name: 'Back squat' })).getAllByRole(
@@ -97,7 +95,7 @@ describe('logging a set', () => {
       }),
     )
 
-    expect(await within(firstRow()).findByText('Logged')).toBeInTheDocument()
+    expect(await within(firstRow()).findByText('Synced')).toBeInTheDocument()
     expect(puts).toHaveLength(1)
     expect(puts[0].body).toEqual({
       entryPosition: 0,
@@ -133,7 +131,7 @@ describe('logging a set', () => {
     await user.click(screen.getByRole('radio', { name: /^RPE 9 for set 1/ }))
     await user.click(screen.getByRole('button', { name: 'Log set' }))
 
-    expect(await within(firstRow()).findByText('Logged')).toBeInTheDocument()
+    expect(await within(firstRow()).findByText('Synced')).toBeInTheDocument()
     expect(within(firstRow()).getByText('4 reps')).toBeInTheDocument()
     expect(within(firstRow()).getByText('102.5 kg')).toBeInTheDocument()
     expect(within(firstRow()).getByText('RPE 9')).toBeInTheDocument()
@@ -170,7 +168,7 @@ describe('logging a set', () => {
     await user.type(load, '225')
     await user.click(screen.getByRole('button', { name: 'Log set' }))
 
-    await within(firstRow()).findByText('Logged')
+    await within(firstRow()).findByText('Synced')
     expect(puts[0].body.loadKg).toBe(102.1)
   })
 
@@ -242,7 +240,7 @@ describe('logging a set', () => {
         name: 'Log set 1 of Back squat as planned',
       }),
     )
-    await within(firstRow()).findByText('Logged')
+    await within(firstRow()).findByText('Synced')
     await user.click(
       screen.getByRole('button', { name: /^Change set 1 of Back squat/ }),
     )
@@ -272,7 +270,7 @@ describe('logging a set', () => {
         name: 'Log set 1 of Back squat as planned',
       }),
     )
-    await within(firstRow()).findByText('Logged')
+    await within(firstRow()).findByText('Synced')
 
     await user.click(
       screen.getByRole('button', { name: /^Change set 1 of Back squat/ }),
@@ -303,7 +301,7 @@ describe('logging a set', () => {
     )
     await user.click(screen.getByRole('button', { name: 'Log set' }))
 
-    expect(await screen.findByRole('alert')).toBeInTheDocument()
+    expect(await screen.findByText(NOT_ACCEPTED)).toBeInTheDocument()
     expect(
       screen.getByRole('textbox', {
         name: 'Load in kg for set 1 of Back squat',
@@ -312,35 +310,37 @@ describe('logging a set', () => {
 
     failing = false
     await user.click(screen.getByRole('button', { name: 'Log set' }))
-    await within(firstRow()).findByText('Logged')
+    await within(firstRow()).findByText('Synced')
     expect(puts).toHaveLength(1)
     expect(puts[0].body.loadKg).toBe(102.5)
   })
 
-  it('sends the same id when a tick is retried after a failure', async () => {
+  it('sends the same id when Retry is pressed after a failure', async () => {
     const user = userEvent.setup()
     let failing = true
     const ids: string[] = []
     openLogger(async (request) => {
       if (request.method === 'POST') return started()
       ids.push(new URL(request.url).pathname.split('/').pop()!)
-      if (failing) return problem(500, { status: 500, code: 'internal.error' })
+      if (failing) return problem(400, { status: 400, code: 'request.invalid' })
       return json({
         id: ids[0],
         loggedAt: '2026-11-07T10:05:00Z',
         ...(await request.clone().json()),
       })
     })
-    const tick = await screen.findByRole('button', {
-      name: 'Log set 1 of Back squat as planned',
-    })
-
-    await user.click(tick)
-    await screen.findByRole('alert')
+    await user.click(
+      await screen.findByRole('button', {
+        name: 'Log set 1 of Back squat as planned',
+      }),
+    )
+    await screen.findByText(NOT_ACCEPTED)
     failing = false
-    await user.click(tick)
+    await user.click(
+      screen.getByRole('button', { name: 'Retry set 1 of Back squat' }),
+    )
 
-    await within(firstRow()).findByText('Logged')
+    await within(firstRow()).findByText('Synced')
     expect(ids).toHaveLength(2)
     expect(ids[1]).toBe(ids[0])
   })
