@@ -14,7 +14,7 @@ A scheduled job, running every 10 minutes, finds each client whose local time ha
 
 **Primary Dependencies**: Spring Scheduling (already enabled in `PlanConfig`), Spring JDBC `JdbcTemplate` (as `JdbcDraftedPlanDirectory`), Flyway. No new dependency.
 
-**Storage**: PostgreSQL; one new table, `weekly_checks` (migration V22). Plan changes are not stored here (task #132).
+**Storage**: PostgreSQL; one new table, `weekly_checks` (migration V23). Plan changes are not stored here (task #132).
 
 **Testing**: JUnit 5 + AssertJ; plain unit tests with hand-written fakes and `Clock.fixed` for rules and service; `*IT` with Testcontainers for the JDBC adapter (history and weekly claim); `HexagonalArchitectureTest` unchanged and must pass.
 
@@ -76,7 +76,7 @@ backend/src/main/java/com/kinetiq/planchange/
     └── output/          JdbcTrainingHistory, LoggingPlanChangeRepository (placeholder until #132)
 
 backend/src/main/resources/db/migration/
-└── V22__create_weekly_checks.sql
+└── V23__create_weekly_checks.sql
 
 backend/src/test/java/com/kinetiq/planchange/...   unit tests and *IT next to the code they cover
 ```
