@@ -94,9 +94,9 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). Each comm
 
 **Independent Test**: 4 of 6 finished fires; 7 of 10 (exactly 70%) does not; a plan of 2 a week with none finished does not.
 
-- [ ] T022 [US4] Create `planchange/domain/rule/LowCompletionRule` (window 2): sum `plannedSessions` and `finishedSessions` over the window; fires when planned is above 0, `sessionsInPlan` is above 2 in every week and `finished * 10 < planned * 7`; no exercises in the finding. Wire it in `PlanChangeConfig`.
-- [ ] T023 [P] [US4] Unit tests `.../domain/rule/LowCompletionRuleTest`: 4 of 6 yes; 5 of 6 no; 7 of 10 no; a plan of 2 sessions a week never, also with 0 finished; a week where the plan was published mid-week counts only the planned days; zero planned no.
-- [ ] T024 [US4] Run `./gradlew check`, then commit `feat(backend): detect low completion (#129)`.
+- [X] T022 [US4] Create `planchange/domain/rule/LowCompletionRule` (window 2): sum `plannedSessions` and `finishedSessions` over the window; fires when planned is above 0, `sessionsInPlan` is above 2 in every week and `finished * 10 < planned * 7`; no exercises in the finding. Wire it in `PlanChangeConfig`.
+- [X] T023 [P] [US4] Unit tests `.../domain/rule/LowCompletionRuleTest`: 4 of 6 yes; 5 of 6 no; 7 of 10 no; a plan of 2 sessions a week never, also with 0 finished; a week where the plan was published mid-week counts only the planned days; zero planned no.
+- [X] T024 [US4] Run `./gradlew check`, then commit `feat(backend): detect low completion (#129)`.
 
 ---
 
