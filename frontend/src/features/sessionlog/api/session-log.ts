@@ -7,7 +7,7 @@ import {
 } from '@tanstack/react-query'
 import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
-import { isWorthRetrying, problemStatus } from '@/lib/api/problem'
+import { isWorthRetrying, problemCode, problemStatus } from '@/lib/api/problem'
 import { LOG_SET } from '@/lib/pending-logs'
 import type { components } from '@/lib/api/schema'
 import { SESSION_LOGS_KEY as SESSION_LOGS } from '@/lib/query-keys'
@@ -34,9 +34,10 @@ export function updateSessionLog(
 /**
  * Today's session, started if it was not yet, or the client's session of `id`, of any day, without starting anything.
  * Opening the logger again returns the same one, so this is a query. A rest day or no plan fails with its code, and so
- * does an id that is not the client's, which the page turns into a way back.
+ * does an id that is not the client's, which the page turns into a way back. With `refetchOnFocus` the session is asked
+ * for again when the tab regains focus.
  */
-export function useSession(id?: string) {
+export function useSession(id?: string, refetchOnFocus = false) {
   const { i18n } = useTranslation()
   return useQuery({
     // the backend names exercises in the UI language, so the language is part of the key
@@ -54,7 +55,9 @@ export function useSession(id?: string) {
     },
     // what is logged here is written into the cache as it happens; a refetch would only repeat the start
     staleTime: Infinity,
-    refetchOnWindowFocus: false,
+    // the logger asks again when the tab returns, so a second tab shows what the first stored; 'always' because
+    // nothing is ever stale here
+    refetchOnWindowFocus: refetchOnFocus ? 'always' : false,
   })
 }
 
@@ -118,8 +121,9 @@ export function registerLogSetDefaults(queryClient: QueryClient) {
       if (error !== undefined) throw error
       return data
     },
-    // a refusal is final; a lost connection or a failing server is tried again, then left to Retry
-    retry: (failures, error) => failures < 3 && isWorthRetrying(error),
+    // a refusal is final; a lost connection or a failing server is tried 3 times in all, then left to Retry
+    // (`failures` counts the failures so far, so two more tries follow the first)
+    retry: (failures, error) => failures < 2 && isWorthRetrying(error),
     retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30_000),
     // a failed send must outlive its row until the client retries or discards it
     gcTime: Infinity,
@@ -149,10 +153,70 @@ export function useLogSet(
   })
 }
 
+export type SyncReason = 'locked' | 'invalid' | 'refused' | 'unreachable'
+/** Where a logged set stands: kept on the phone, stored by the server, or refused or unreachable. */
+export type SyncState = 'saved' | 'synced' | 'not-synced'
+
+// from the problem's code and status, never from its text: a definite refusal says why, anything else did not arrive
+function reasonOf(error: unknown): SyncReason {
+  const code = problemCode(error)
+  const status = problemStatus(error)
+  if (code === 'session-log.locked') return 'locked'
+  if (status === undefined || status >= 500) return 'unreachable'
+  return code?.startsWith('set-values.') || code?.startsWith('request.')
+    ? 'invalid'
+    : 'refused'
+}
+
+// a send that failed for good; one a sign-in cut off (401) is only waiting for the same account to sign in again
+const failedFor = (error: unknown, status: string) =>
+  status === 'error' && problemStatus(error) !== 401
+
+const stateOf = (error: unknown, status: string): SyncState =>
+  status === 'success'
+    ? 'synced'
+    : failedFor(error, status)
+      ? 'not-synced'
+      : 'saved'
+
 /**
- * The newest send of a place that the server has not stored, or `undefined`. The row shows its values in place of the
- * server's and reuses its id, so logging the place again after a reload sends the id already kept. `failed` is a
- * refusal or the end of the tries; a send cut off by a sign-in is still waiting.
+ * The sends of a session that the server has not stored, one for each place: the newest. Without a session, those of
+ * every session.
+ */
+export function usePendingLogs(sessionId?: string) {
+  const all = useMutationState({
+    filters: {
+      mutationKey: sessionId === undefined ? [LOG_SET] : [LOG_SET, sessionId],
+      predicate: (mutation) => mutation.state.status !== 'success',
+    },
+    select: (mutation) => {
+      const { error, status, submittedAt } = mutation.state
+      const [, session, entryPosition, setNumber] = mutation.options
+        .mutationKey as ReturnType<typeof logSetKey>
+      return {
+        key: `${session}-${entryPosition}-${setNumber}`,
+        entryPosition,
+        setNumber,
+        state: stateOf(error, status),
+        reason: failedFor(error, status) ? reasonOf(error) : undefined,
+        submittedAt,
+      }
+    },
+  })
+  const newest = new Map<string, (typeof all)[number]>()
+  for (const log of all) {
+    const known = newest.get(log.key)
+    if (known === undefined || log.submittedAt > known.submittedAt)
+      newest.set(log.key, log)
+  }
+  return [...newest.values()]
+}
+
+/**
+ * The newest send of a place, or `undefined`. While the server has not stored it, the row shows its values in place of
+ * the server's; one that was stored stays only so the row never shows a gap between the send ending and the session
+ * taking its answer. Its id is reused, so logging the place again after a reload sends the id already kept. Retry sends
+ * a failed one again with the same id; Discard drops it.
  */
 export function usePendingLog(
   sessionId: string,
@@ -161,28 +225,35 @@ export function usePendingLog(
 ) {
   const queryClient = useQueryClient()
   const [newest] = useMutationState({
-    filters: {
-      mutationKey: logSetKey(sessionId, entryPosition, setNumber),
-      predicate: (mutation) => mutation.state.status !== 'success',
-    },
+    filters: { mutationKey: logSetKey(sessionId, entryPosition, setNumber) },
     select: (mutation) => ({
       id: mutation.mutationId,
-      failed:
-        mutation.state.status === 'error' &&
-        problemStatus(mutation.state.error) !== 401,
+      state: stateOf(mutation.state.error, mutation.state.status),
+      reason: failedFor(mutation.state.error, mutation.state.status)
+        ? reasonOf(mutation.state.error)
+        : undefined,
       submittedAt: mutation.state.submittedAt,
       variables: mutation.state.variables as LogSetVariables,
     }),
   }).sort((a, b) => b.submittedAt - a.submittedAt)
   if (newest === undefined) return undefined
+  const find = () =>
+    queryClient
+      .getMutationCache()
+      .getAll()
+      .find((mutation) => mutation.mutationId === newest.id)
   return {
     setLogId: newest.variables.setLogId,
     body: newest.variables.body,
-    failed: newest.failed,
+    state: newest.state,
+    reason: newest.reason,
+    retry: () => {
+      const mutation = find()
+      if (mutation) void mutation.execute(newest.variables).catch(() => {})
+    },
     discard: () => {
-      const cache = queryClient.getMutationCache()
-      const mutation = cache.getAll().find((m) => m.mutationId === newest.id)
-      if (mutation) cache.remove(mutation)
+      const mutation = find()
+      if (mutation) queryClient.getMutationCache().remove(mutation)
     },
   }
 }

@@ -129,11 +129,11 @@ describe('LoggerPage', () => {
     const rows = within(
       await screen.findByRole('region', { name: 'Back squat' }),
     ).getAllByRole('listitem')
-    expect(within(rows[0]).getByText('Logged')).toBeInTheDocument()
+    expect(within(rows[0]).getByText('Synced')).toBeInTheDocument()
     expect(within(rows[0]).getByText('6 reps')).toBeInTheDocument()
     expect(within(rows[0]).getByText('102.5 kg')).toBeInTheDocument()
     expect(within(rows[0]).getByText('RPE 9')).toBeInTheDocument()
-    expect(within(rows[1]).queryByText('Logged')).not.toBeInTheDocument()
+    expect(within(rows[1]).queryByText('Synced')).not.toBeInTheDocument()
   })
 
   it('goes back to Today when there is no session to log', async () => {

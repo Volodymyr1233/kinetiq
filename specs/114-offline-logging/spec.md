@@ -102,7 +102,7 @@ Every logged set shows one of three states: Saved on this phone (kept, not yet s
 - **FR-005**: Kept sets MUST belong to one account. They MUST NOT be sent under another account, and MUST be removed from the phone when the client signs out.
 - **FR-005a**: When a replay is answered as unauthenticated, the kept sets MUST stay Saved on this phone, the client MUST be sent to sign in, and replay MUST resume after they sign in as the same account. After a sign-in as another account the kept sets of the first account MUST be discarded unsent. Tests prove both.
 - **FR-006**: Only set logs are kept. No other request is queued while offline.
-- **FR-006a**: "Finish session" MUST be disabled while the client is offline or any set of the session is Saved on this phone or Not synced, with a short reason in text; it becomes available once every set is Synced.
+- **FR-006a**: "Finish session" MUST be disabled while the client is offline or any set of the session is Saved on this phone or Not synced, with a short reason in text; it becomes available once every set is Synced. The count of logged sets includes the sets Saved on this phone.
 - **FR-007**: What is kept MUST hold no tokens, names or other identifiers of a person beyond what the set needs (constitution III); a refused set MUST NOT be sent again by itself, only by Retry.
 - **FR-008**: Opening the app without a connection is not supported and MUST NOT be promised anywhere; no service worker is added (ADR 0003).
 - **FR-009**: The server MUST keep its rules for a replayed set unchanged: values checked (spec 92, FR-009), ownership answering "not found" (spec 92, FR-010), the 24-hour rule (spec 101). Tests prove a replay of another client's set is "not found" and a replay after the lock is refused.
@@ -116,7 +116,7 @@ Every logged set shows one of three states: Saved on this phone (kept, not yet s
 - **FR-013**: Retry MUST send the kept set again; on success the row shows Synced and the kept copy is removed; on failure it stays Not synced.
 - **FR-013a**: A Not synced row MUST also offer Discard, with an accessible name that includes its exercise and set number. Discard removes the kept copy, and the row shows what the server holds for that set, or its targets marked as not logged when it holds none. A discarded set is never sent. Discard is not offered on a row that is Saved on this phone.
 - **FR-014**: A change of the banner or of a row's state MUST be announced politely to assistive technology, without moving focus.
-- **FR-015**: A set refused as locked MUST also turn the logger read-only (spec 101, FR-012); its kept copy stays visible as Not synced until the client leaves.
+- **FR-015**: A set refused as locked MUST also turn the logger read-only (spec 101, FR-012); its kept copy stays visible as Not synced, with its reason and Discard but no Retry, until the client discards it or leaves.
 
 **Quality**
 
