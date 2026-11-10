@@ -60,7 +60,7 @@ class FakeTrainingHistory implements TrainingHistory {
         return IntStream.range(0, count)
                 .mapToObj(week -> {
                     LocalDate monday = firstMonday.plusWeeks(week);
-                    return trained.getOrDefault(monday, new WeekTraining(monday, 3, 3, 0, List.of()));
+                    return trained.getOrDefault(monday, new WeekTraining(monday, 3, 3, 0, List.of(), List.of()));
                 })
                 .toList();
     }

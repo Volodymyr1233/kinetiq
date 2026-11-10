@@ -1,23 +1,24 @@
 package com.kinetiq.planchange.domain.service;
 
 import com.kinetiq.account.domain.model.AccountId;
-import com.kinetiq.planchange.domain.model.DuePlanChange;
+import com.kinetiq.planchange.domain.model.PlanChange;
+import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-/** Holds one open flag and one end time for every client, and the plan changes handed over. */
+/** Holds the saved plan changes, plus an open flag and one end time that stand for any client's earlier ones. */
 class FakePlanChangeRepository implements PlanChangeRepository {
 
     boolean open;
     Instant endedAt;
-    final List<DuePlanChange> opened = new ArrayList<>();
+    final List<PlanChange> saved = new ArrayList<>();
 
     @Override
     public boolean hasOpen(AccountId client) {
-        return open;
+        return open || findOpen(client).isPresent();
     }
 
     @Override
@@ -26,7 +27,23 @@ class FakePlanChangeRepository implements PlanChangeRepository {
     }
 
     @Override
-    public void open(DuePlanChange due) {
-        opened.add(due);
+    public PlanChange save(PlanChange planChange) {
+        if (findOpen(planChange.getClient()).isPresent()) {
+            throw new IllegalStateException("a second open plan change for the client");
+        }
+        saved.add(planChange);
+        return planChange;
+    }
+
+    @Override
+    public Optional<PlanChange> find(PlanChangeId id) {
+        return saved.stream().filter(change -> change.getId().equals(id)).findFirst();
+    }
+
+    @Override
+    public Optional<PlanChange> findOpen(AccountId client) {
+        return saved.stream()
+                .filter(change -> change.getClient().equals(client) && change.isOpen())
+                .findFirst();
     }
 }

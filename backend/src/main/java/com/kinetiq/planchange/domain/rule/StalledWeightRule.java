@@ -1,12 +1,14 @@
 package com.kinetiq.planchange.domain.rule;
 
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.planchange.domain.model.Figure;
 import com.kinetiq.planchange.domain.model.Finding;
 import com.kinetiq.planchange.domain.model.LoggedSet;
 import com.kinetiq.planchange.domain.model.Rule;
 import com.kinetiq.planchange.domain.model.WeekTraining;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +36,16 @@ public final class StalledWeightRule implements PlanChangeRule {
                 .distinct()
                 .filter(exercise -> stalled(exercise, window))
                 .collect(Collectors.toSet());
-        return stalled.isEmpty() ? Optional.empty() : Optional.of(new Finding(Rule.STALLED_WEIGHT, stalled));
+        if (stalled.isEmpty()) {
+            return Optional.empty();
+        }
+        List<Figure> figures = stalled.stream()
+                .sorted(Comparator.comparing(ExerciseId::value))
+                .flatMap(exercise -> window.stream()
+                        .map(week -> Figure.bestLoad(
+                                exercise, week.monday(), heaviest(exercise, week).orElseThrow())))
+                .toList();
+        return Optional.of(new Finding(Rule.STALLED_WEIGHT, stalled, figures));
     }
 
     private static boolean stalled(ExerciseId exercise, List<WeekTraining> window) {
@@ -42,21 +53,28 @@ public final class StalledWeightRule implements PlanChangeRule {
         long rpeSum = 0;
         long count = 0;
         for (WeekTraining week : window) {
-            List<LoggedSet> sets =
-                    week.sets().stream().filter(set -> set.exercise().equals(exercise)).toList();
-            Optional<BigDecimal> heaviest = sets.stream()
-                    .map(LoggedSet::loadKg)
-                    .filter(load -> load != null)
-                    .max(BigDecimal::compareTo);
+            Optional<BigDecimal> heaviest = heaviest(exercise, week);
             if (heaviest.isEmpty()) {
                 return false;
             }
             best.add(heaviest.get());
+            List<LoggedSet> sets = setsOf(exercise, week);
             rpeSum += sets.stream().mapToLong(LoggedSet::rpe).sum();
             count += sets.size();
         }
         // exact decimals and sums: a rounded mean or a double would misjudge exactly 5% and exactly 8
         boolean belowRise = best.getLast().compareTo(best.getFirst().multiply(REQUIRED_RISE)) < 0;
         return belowRise && rpeSum <= (long) RPE_LIMIT * count;
+    }
+
+    private static Optional<BigDecimal> heaviest(ExerciseId exercise, WeekTraining week) {
+        return setsOf(exercise, week).stream()
+                .map(LoggedSet::loadKg)
+                .filter(load -> load != null)
+                .max(BigDecimal::compareTo);
+    }
+
+    private static List<LoggedSet> setsOf(ExerciseId exercise, WeekTraining week) {
+        return week.sets().stream().filter(set -> set.exercise().equals(exercise)).toList();
     }
 }

@@ -42,6 +42,11 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
 
     @Override
     public void check(AccountId client) {
+        chooseDue(client).ifPresent(due -> log.info("Plan change due, rule={}", due.rule()));
+    }
+
+    /** Claims the client's check week and returns the plan change due for it, if a rule fires. */
+    Optional<DuePlanChange> chooseDue(AccountId client) {
         Optional<ScheduledClient> found = history.scheduledClient(client);
         Instant now = clock.instant();
         // the week is read again here: it may have been checked since due() ran
@@ -49,28 +54,23 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
                 || !found.get().isDue(now)
                 || !history.claimWeek(client, found.get().checkWeek(now), now)
                 || planChanges.hasOpen(client)) {
-            return;
+            return Optional.empty();
         }
         ScheduledClient scheduled = found.get();
         LocalDate lastMonday = scheduled.checkWeek(now).minusWeeks(1);
-        List<Finding> findings = evaluate(client, scheduled, lastMonday);
-        if (findings.isEmpty()) {
-            return;
+        List<DuePlanChange> due = evaluate(scheduled, lastMonday);
+        if (due.isEmpty()) {
+            return Optional.empty();
         }
-        log.info("Rules fired, count={}, rules={}", findings.size(), findings.stream().map(Finding::rule).toList());
+        log.info("Rules fired, count={}, rules={}", due.size(), due.stream().map(DuePlanChange::rule).toList());
         // one plan change per run: the first rule in priority order
-        Finding chosen = findings.getFirst();
-        planChanges.open(new DuePlanChange(
-                client,
-                chosen.rule(),
-                windowStart(lastMonday, chosen.rule().weeks()),
-                lastMonday.plusDays(DAYS_PER_WEEK - 1L),
-                chosen.exercises()));
+        return Optional.of(due.getFirst());
     }
 
     // the completed weeks are the ones before the check week; a rule needs its whole window inside the plan and after
     // the last plan change, so weeks trained under an older plan never count
-    private List<Finding> evaluate(AccountId client, ScheduledClient scheduled, LocalDate lastMonday) {
+    private List<DuePlanChange> evaluate(ScheduledClient scheduled, LocalDate lastMonday) {
+        AccountId client = scheduled.client();
         LocalDate lastPlanMonday = scheduled.firstWeek().plusWeeks(scheduled.weeks() - 1L);
         if (lastMonday.isAfter(lastPlanMonday)) {
             return List.of();
@@ -87,10 +87,22 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
         List<WeekTraining> weeks = history.weeks(client, windowStart(lastMonday, longest), longest);
         return eligible.stream()
                 .flatMap(rule -> {
-                    int size = rule.rule().weeks();
-                    return rule.evaluate(weeks.subList(weeks.size() - size, weeks.size())).stream();
+                    List<WeekTraining> window = weeks.subList(weeks.size() - rule.rule().weeks(), weeks.size());
+                    return rule.evaluate(window).stream().map(finding -> due(scheduled, finding, window));
                 })
                 .toList();
+    }
+
+    private static DuePlanChange due(ScheduledClient scheduled, Finding finding, List<WeekTraining> window) {
+        return new DuePlanChange(
+                scheduled.client(),
+                scheduled.zone(),
+                finding.rule(),
+                window.getFirst().monday(),
+                window.getLast().monday().plusDays(DAYS_PER_WEEK - 1L),
+                finding.exercises(),
+                finding.figures(),
+                window);
     }
 
     // the first Monday that begins after the last plan change ended, or the first plan week if that is later

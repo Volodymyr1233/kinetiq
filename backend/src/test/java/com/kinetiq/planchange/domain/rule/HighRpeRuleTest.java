@@ -3,10 +3,13 @@ package com.kinetiq.planchange.domain.rule;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.planchange.domain.model.Figure;
+import com.kinetiq.planchange.domain.model.FigureKind;
 import com.kinetiq.planchange.domain.model.Finding;
 import com.kinetiq.planchange.domain.model.LoggedSet;
 import com.kinetiq.planchange.domain.model.Rule;
 import com.kinetiq.planchange.domain.model.WeekTraining;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +32,7 @@ class HighRpeRuleTest {
     }
 
     private static WeekTraining week(String monday, List<LoggedSet> sets) {
-        return new WeekTraining(LocalDate.parse(monday), 3, 3, 3, sets);
+        return new WeekTraining(LocalDate.parse(monday), 3, 3, 3, sets, List.of());
     }
 
     private Optional<Finding> evaluate(List<LoggedSet> first, List<LoggedSet> second) {
@@ -82,5 +85,19 @@ class HighRpeRuleTest {
         second.addAll(sets(SQUAT, 5, 10));
 
         assertThat(evaluate(first, second).orElseThrow().exercises()).containsExactlyInAnyOrder(SQUAT, ROW);
+    }
+
+    @Test
+    void shouldReportTheMeanRpeOfEveryWeek_asTheNumbersItCompared() {
+        // 201 over 25 sets is 8.04; 26 sets of 9 and 4 of 8 over 30 is 8.867
+        List<LoggedSet> first = new ArrayList<>(sets(SQUAT, 24, 8));
+        first.add(new LoggedSet(SQUAT, null, 9));
+        List<LoggedSet> second = new ArrayList<>(sets(SQUAT, 26, 9));
+        second.addAll(sets(ROW, 4, 8));
+
+        assertThat(evaluate(first, second).orElseThrow().figures())
+                .containsExactly(
+                        Figure.ofWeek(FigureKind.MEAN_RPE, LocalDate.parse("2026-11-02"), new BigDecimal("8.040")),
+                        Figure.ofWeek(FigureKind.MEAN_RPE, LocalDate.parse("2026-11-09"), new BigDecimal("8.867")));
     }
 }

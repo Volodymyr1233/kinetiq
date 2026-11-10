@@ -9,6 +9,7 @@ import com.kinetiq.common.infrastructure.config.TransactionConfig;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.model.ScheduledClient;
 import com.kinetiq.planchange.domain.model.WeekTraining;
+import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.TrainingHistory;
 import com.kinetiq.planchange.domain.service.PlanChangeDetectionService;
 import java.time.Clock;
@@ -35,6 +36,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Import({
     TestcontainersConfiguration.class,
     JdbcTrainingHistory.class,
+    PlanChangeRepositoryImpl.class,
+    PlanChangeMapperImpl.class,
     TransactionConfig.class,
     WeeklyClaimRollbackIT.Wiring.class
 })
@@ -98,9 +101,9 @@ class WeeklyClaimRollbackIT {
     static class Wiring {
 
         @Bean
-        DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history) {
+        DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history, PlanChangeRepository planChanges) {
             return new PlanChangeDetectionService(
-                    new FailsAfterClaim(history), new LoggingPlanChangeRepository(), List.of(), Clock.fixed(NOW, ZoneOffset.UTC));
+                    new FailsAfterClaim(history), planChanges, List.of(), Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }
 

@@ -10,6 +10,7 @@ import com.kinetiq.planchange.domain.model.LoggedSet;
 import com.kinetiq.planchange.domain.model.ScheduledClient;
 import com.kinetiq.planchange.domain.model.WeekTraining;
 import java.math.BigDecimal;
+import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -224,6 +225,9 @@ class JdbcTrainingHistoryIT {
         // the Monday before the publishing day is not planned, and a started but unfinished session is not finished
         assertThat(weeks).extracting(WeekTraining::plannedSessions).containsExactly(2, 3);
         assertThat(weeks).extracting(WeekTraining::finishedSessions).containsExactly(1, 2);
+        assertThat(weeks)
+                .extracting(WeekTraining::finishedDays)
+                .containsExactly(List.of(DayOfWeek.WEDNESDAY), List.of(DayOfWeek.MONDAY, DayOfWeek.WEDNESDAY));
     }
 
     @Test

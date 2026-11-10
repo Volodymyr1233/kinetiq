@@ -13,6 +13,8 @@ import com.kinetiq.planchange.domain.rule.HighRpeRule;
 import com.kinetiq.planchange.domain.rule.PlanChangeRule;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -32,13 +34,14 @@ class PlanChangeSelectionTest {
     private final FakePlanChangeRepository planChanges = new FakePlanChangeRepository();
     private final MutableClock clock = new MutableClock(CHECK_TIME);
     private final AccountId client = history.publishedPlan("Europe/Warsaw");
+    private final List<DuePlanChange> chosen = new ArrayList<>();
 
     /** Fires every time it is asked. */
     private record FiringRule(Rule rule, Set<ExerciseId> exercises) implements PlanChangeRule {
 
         @Override
         public Optional<Finding> evaluate(List<WeekTraining> window) {
-            return Optional.of(new Finding(rule, exercises));
+            return Optional.of(new Finding(rule, exercises, List.of()));
         }
     }
 
@@ -46,11 +49,15 @@ class PlanChangeSelectionTest {
         List<PlanChangeRule> rules = Arrays.stream(fired)
                 .map(rule -> (PlanChangeRule) new FiringRule(rule, Set.of()))
                 .toList();
-        new PlanChangeDetectionService(history, planChanges, rules, clock).check(client);
+        run(rules);
+    }
+
+    private void run(List<PlanChangeRule> rules) {
+        new PlanChangeDetectionService(history, planChanges, rules, clock).chooseDue(client).ifPresent(chosen::add);
     }
 
     private List<Rule> dueRules() {
-        return planChanges.opened.stream().map(DuePlanChange::rule).toList();
+        return chosen.stream().map(DuePlanChange::rule).toList();
     }
 
     @Test
@@ -78,36 +85,41 @@ class PlanChangeSelectionTest {
     void shouldReportNothing_whenNoRuleFires() {
         check();
 
-        assertThat(planChanges.opened).isEmpty();
+        assertThat(chosen).isEmpty();
     }
 
     @Test
     void shouldCarryTheRuleTheWindowAndTheExercises() {
         PlanChangeRule fires = new FiringRule(Rule.STALLED_WEIGHT, Set.of(SQUAT));
 
-        new PlanChangeDetectionService(history, planChanges, List.of(fires), clock).check(client);
+        run(List.of(fires));
 
-        assertThat(planChanges.opened)
-                .containsExactly(new DuePlanChange(
-                        client,
-                        Rule.STALLED_WEIGHT,
-                        LocalDate.parse("2026-10-19"),
-                        LocalDate.parse("2026-11-08"),
-                        Set.of(SQUAT)));
+        assertThat(chosen).hasSize(1);
+        DuePlanChange due = chosen.getFirst();
+        assertThat(due.client()).isEqualTo(client);
+        assertThat(due.zone()).isEqualTo(ZoneId.of("Europe/Warsaw"));
+        assertThat(due.rule()).isEqualTo(Rule.STALLED_WEIGHT);
+        assertThat(due.windowStart()).isEqualTo(LocalDate.parse("2026-10-19"));
+        assertThat(due.windowEnd()).isEqualTo(LocalDate.parse("2026-11-08"));
+        assertThat(due.exercises()).containsExactly(SQUAT);
+        assertThat(due.weeks())
+                .extracting(WeekTraining::monday)
+                .containsExactly(LocalDate.parse("2026-10-19"), LocalDate.parse("2026-10-26"), LocalDate.parse("2026-11-02"));
     }
 
     @Test
     void shouldReportTheExercisesOfARealRuleOverLoggedWeeks() {
         history.trained(new WeekTraining(
-                LocalDate.parse("2026-10-26"), 3, 3, 3, List.of(new LoggedSet(SQUAT, null, 9), new LoggedSet(SQUAT, null, 9))));
-        history.trained(new WeekTraining(LocalDate.parse("2026-11-02"), 3, 3, 3, List.of(new LoggedSet(SQUAT, null, 10))));
+                LocalDate.parse("2026-10-26"), 3, 3, 3, List.of(new LoggedSet(SQUAT, null, 9), new LoggedSet(SQUAT, null, 9)), List.of()));
+        history.trained(new WeekTraining(LocalDate.parse("2026-11-02"), 3, 3, 3, List.of(new LoggedSet(SQUAT, null, 10)), List.of()));
 
-        new PlanChangeDetectionService(history, planChanges, List.of(new HighRpeRule()), clock).check(client);
+        run(List.of(new HighRpeRule()));
 
-        assertThat(planChanges.opened).hasSize(1);
-        assertThat(planChanges.opened.getFirst().rule()).isEqualTo(Rule.HIGH_RPE);
-        assertThat(planChanges.opened.getFirst().exercises()).containsExactly(SQUAT);
-        assertThat(planChanges.opened.getFirst().windowStart()).isEqualTo(LocalDate.parse("2026-10-26"));
+        assertThat(chosen).hasSize(1);
+        assertThat(chosen.getFirst().rule()).isEqualTo(Rule.HIGH_RPE);
+        assertThat(chosen.getFirst().exercises()).containsExactly(SQUAT);
+        assertThat(chosen.getFirst().windowStart()).isEqualTo(LocalDate.parse("2026-10-26"));
+        assertThat(chosen.getFirst().figures()).hasSize(2);
     }
 
     @Test
@@ -116,7 +128,7 @@ class PlanChangeSelectionTest {
 
         check(Rule.LOW_COMPLETION, Rule.HIGH_RPE, Rule.STALLED_WEIGHT);
 
-        assertThat(planChanges.opened).isEmpty();
+        assertThat(chosen).isEmpty();
         assertThat(history.weekReads).isZero();
     }
 
@@ -133,7 +145,7 @@ class PlanChangeSelectionTest {
         check(Rule.LOW_COMPLETION, Rule.HIGH_RPE);
         check(Rule.LOW_COMPLETION, Rule.HIGH_RPE);
 
-        assertThat(planChanges.opened).hasSize(1);
+        assertThat(chosen).hasSize(1);
     }
 
     @Test
@@ -143,7 +155,7 @@ class PlanChangeSelectionTest {
 
         check(Rule.LOW_COMPLETION, Rule.HIGH_RPE, Rule.STALLED_WEIGHT);
 
-        assertThat(planChanges.opened).isEmpty();
+        assertThat(chosen).isEmpty();
     }
 
     @Test
@@ -162,7 +174,7 @@ class PlanChangeSelectionTest {
 
         check(Rule.STALLED_WEIGHT);
 
-        assertThat(planChanges.opened).isEmpty();
+        assertThat(chosen).isEmpty();
     }
 
     @Test
@@ -181,7 +193,7 @@ class PlanChangeSelectionTest {
 
         check(Rule.LOW_COMPLETION);
 
-        assertThat(planChanges.opened).isEmpty();
+        assertThat(chosen).isEmpty();
     }
 
     @Test
@@ -191,7 +203,7 @@ class PlanChangeSelectionTest {
 
         check(Rule.LOW_COMPLETION);
 
-        assertThat(planChanges.opened).isEmpty();
+        assertThat(chosen).isEmpty();
     }
 
     @Test

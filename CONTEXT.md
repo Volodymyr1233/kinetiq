@@ -163,6 +163,10 @@ A condition over a client's logs that, when met, calls for a plan change.
 A suggested lasting modification to a plan, with the rule that caused it. It takes effect only when both trainer and client accept it.
 _Avoid_: Proposal, suggestion
 
+**Plan change content**:
+The proposed changes of a plan change: targets, removed session and moves.
+_Avoid_: Draft, which is an unpublished plan
+
 **Effective week**:
 The week from which an accepted plan change applies: the one after the plan change was created.
 

@@ -115,12 +115,18 @@ class JdbcTrainingHistory implements TrainingHistory {
                     .map(day -> monday.plusDays(day.day().getValue() - 1L))
                     .filter(date -> !date.isBefore(planDays.getFirst().publishedOn()))
                     .toList();
+            List<DayOfWeek> finishedDays = finished.stream()
+                    .filter(date -> !date.isBefore(monday) && date.isBefore(monday.plusWeeks(1)))
+                    .map(LocalDate::getDayOfWeek)
+                    .sorted()
+                    .toList();
             weeks.add(new WeekTraining(
                     monday,
                     planDays.size(),
                     planned.size(),
                     (int) planned.stream().filter(finished::contains).count(),
-                    sets.get(week)));
+                    sets.get(week),
+                    finishedDays));
         }
         return weeks;
     }
