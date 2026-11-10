@@ -1,9 +1,12 @@
 import { useState } from 'react'
+import type { About } from './api/messaging'
 
 export type OutboxEntry = {
   id: string
   conversation: string
   text: string
+  // the logged set the message is about, sent again with every retry
+  about?: About
   status: 'sending' | 'failed'
 }
 
@@ -11,6 +14,7 @@ type Send = (entry: {
   id: string
   conversation: string
   text: string
+  about?: About
 }) => Promise<unknown>
 
 /**
@@ -35,11 +39,12 @@ export function useOutbox(send: Send) {
 
   return {
     entries,
-    submit: (conversation: string, text: string) => {
+    submit: (conversation: string, text: string, about?: About) => {
       const entry: OutboxEntry = {
         id: crypto.randomUUID(),
         conversation,
         text,
+        about,
         status: 'sending',
       }
       setEntries((current) => [...current, entry])

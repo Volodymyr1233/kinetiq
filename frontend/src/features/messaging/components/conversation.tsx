@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 import { firstName } from '@/lib/first-name'
-import { messagesOf, useMessages } from '../api/messaging'
+import { messagesOf, useMessages, type About } from '../api/messaging'
 import { useFirstUnread } from '../use-first-unread'
 import type { OutboxEntry } from '../use-outbox'
 import { Composer } from './composer'
@@ -22,13 +22,15 @@ export function Conversation({
   onSend,
   onRetry,
   composerHint,
+  ask,
 }: {
   clientId: string
   name: string
   outbox: OutboxEntry[]
-  onSend: (text: string) => void
+  onSend: (text: string, about?: About) => void
   onRetry: (id: string) => void
   composerHint?: string
+  ask?: About
 }) {
   const { t } = useTranslation()
   const query = useMessages(clientId)
@@ -75,7 +77,13 @@ export function Conversation({
           now={new Date(query.dataUpdatedAt)}
         />
       )}
-      <Composer name={peerName} hint={composerHint} onSend={onSend} />
+      <Composer
+        name={peerName}
+        hint={composerHint}
+        draftKey={clientId}
+        ask={ask}
+        onSend={onSend}
+      />
     </>
   )
 }

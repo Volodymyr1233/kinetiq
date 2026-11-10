@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import type { components } from '@/lib/api/schema'
 import { locksAt as lockMoment } from '@/lib/edit-window'
 import { fromKg, useWeightUnit } from '@/lib/weight'
 import { useOnline } from '@/lib/online'
@@ -29,6 +30,9 @@ import { OfflineBanner } from '../components/offline-banner'
 import { RestTimer } from '../components/rest-timer'
 import { SetRow } from '../components/set-row'
 import { SyncBadge } from '../components/sync-badge'
+
+// the logged set a message is about, in the shape the conversation shows it; built here from the session on screen
+type About = components['schemas']['AboutResponse']
 
 // when the rest after the last logged set ends, by session: kept while the app runs, so the timer outlives a change of
 // tab, but not a reload
@@ -50,9 +54,9 @@ function planAddress(state: unknown): string | undefined {
 
 /**
  * The session logger: today's session, or the client's session of the id in the address, with one row for each planned
- * set.
+ * set. With `onAsk`, each set the server has stored offers to ask the trainer about it.
  */
-export function LoggerPage() {
+export function LoggerPage({ onAsk }: { onAsk?: (about: About) => void }) {
   const { t } = useTranslation()
   const { id } = useParams()
   // a second tab shows what the first stored, but only while nothing here waits to be sent: the answer would lack it
@@ -101,10 +105,16 @@ export function LoggerPage() {
   }
 
   // keyed, so another session starts with its own lock and panels
-  return <Session key={session.id} session={session} />
+  return <Session key={session.id} session={session} onAsk={onAsk} />
 }
 
-function Session({ session }: { session: SessionLog }) {
+function Session({
+  session,
+  onAsk,
+}: {
+  session: SessionLog
+  onAsk?: (about: About) => void
+}) {
   const { t, i18n } = useTranslation()
   const plan = planAddress(useLocation().state)
   // one entry panel is open at a time
@@ -214,6 +224,21 @@ function Session({ session }: { session: SessionLog }) {
                     setRestEndsAt(
                       restSeconds > 0 ? Date.now() + restSeconds * 1000 : null,
                     )
+                  }
+                  onAsk={
+                    onAsk &&
+                    set.log &&
+                    (() =>
+                      onAsk({
+                        setLogId: set.log!.id,
+                        sessionLogId: session.id,
+                        sessionName: session.name,
+                        sessionDate: session.date,
+                        exerciseName: entry.exerciseName,
+                        entryPosition: entry.position,
+                        setNumber: set.number,
+                        rpe: set.log!.rpe,
+                      }))
                   }
                 />
               )

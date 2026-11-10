@@ -12,6 +12,8 @@ import type { components } from '@/lib/api/schema'
 
 export type Conversation = components['schemas']['ConversationResponse']
 export type Message = components['schemas']['MessageResponse']
+/** The logged set a message is about, as its chip shows it. */
+export type About = components['schemas']['AboutResponse']
 type MessagePage = components['schemas']['MessagePageResponse']
 
 /** The most a message can hold, in UTF-16 units; the backend's `MessageText` holds the same limit. */
@@ -90,14 +92,19 @@ export function useSendMessage() {
       clientId,
       id,
       text,
+      about,
     }: {
       clientId: string
       id: string
       text: string
+      about?: About
     }) => {
       const { data, error } = await api.POST(
         '/api/v1/conversations/{clientId}/messages',
-        { params: { path: { clientId } }, body: { id, text } },
+        {
+          params: { path: { clientId } },
+          body: { id, text, aboutSetLogId: about?.setLogId },
+        },
       )
       if (error !== undefined) throw error
       return data

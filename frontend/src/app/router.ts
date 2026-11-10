@@ -222,8 +222,7 @@ export const createRoutes = (): RouteObject[] => [
         HydrateFallback: BlankWhileLoading,
         lazy: {
           Component: async () =>
-            (await import('@/features/sessionlog/pages/logger-page'))
-              .LoggerPage,
+            (await import('@/app/logger-route')).LoggerRoute,
         },
       },
       // an earlier session, opened from its card on the Plan tab
@@ -234,8 +233,7 @@ export const createRoutes = (): RouteObject[] => [
         HydrateFallback: BlankWhileLoading,
         lazy: {
           Component: async () =>
-            (await import('@/features/sessionlog/pages/logger-page'))
-              .LoggerPage,
+            (await import('@/app/logger-route')).LoggerRoute,
         },
       },
       {
