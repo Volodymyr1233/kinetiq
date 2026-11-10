@@ -133,6 +133,9 @@
       "training-started": "Trening już się zaczął, więc dzisiejszych odpowiedzi nie można zmienić.",
       "no-session-today": "Dziś nie masz sesji, więc nie ma czego oceniać.",
       "no-adjustment": "Dzisiejsze cele są zgodne z planem, więc nie ma czego przełączać."
+    },
+    "plan-change": {
+      "not-found": "Ta zmiana planu nie istnieje albo nie dotyczy Twojego klienta."
     }
   },
   "account": {
@@ -1190,12 +1193,18 @@
   "readiness": {
     "checkIn": {
       "title": "Jak się dziś czujesz?",
-      "sleep": { "label": "Sen", "scale": "1 źle · 5 świetnie" },
+      "sleep": {
+        "label": "Sen",
+        "scale": "1 źle · 5 świetnie"
+      },
       "soreness": {
         "label": "Bolesność mięśni",
         "scale": "1 brak · 5 bardzo silna"
       },
-      "stress": { "label": "Stres", "scale": "1 spokój · 5 wysoki" },
+      "stress": {
+        "label": "Stres",
+        "scale": "1 spokój · 5 wysoki"
+      },
       "skip": "Pomiń",
       "savesAfterThird": "Zapisuje się po trzeciej odpowiedzi",
       "saving": "Zapisywanie…",
@@ -1356,6 +1365,80 @@
       "topSet": "Najlepsza seria",
       "rpe": "RPE",
       "recent": "Ostatnie sesje z ćwiczeniem {{exercise}}"
+    }
+  },
+  "planChange": {
+    "card": {
+      "label": "Zmiana planu",
+      "effective": "Obowiązuje od {{date}} po akceptacji.",
+      "open": "Otwórz zmianę planu"
+    },
+    "back": "Wróć do: {{client}}",
+    "forClient": "Zmiana planu dla: {{client}}",
+    "loading": "Wczytywanie zmiany planu",
+    "retry": "Spróbuj ponownie",
+    "notFound": {
+      "title": "Nie znaleziono zmiany planu",
+      "body": "Ta zmiana planu nie istnieje albo nie dotyczy Twojego klienta.",
+      "action": "Wróć do wszystkich klientów"
+    },
+    "states": {
+      "PENDING": "Czeka na decyzję",
+      "ACCEPTED_BY_ONE": "Zaakceptowana przez jedną stronę",
+      "APPLIED": "Wprowadzona",
+      "DECLINED": "Odrzucona",
+      "EXPIRED": "Wygasła"
+    },
+    "effective": "Obowiązuje od {{date}}, jeśli zaakceptujesz ją Ty i {{client}}.",
+    "notes": {
+      "HIGH_RPE": "Zmieniają się tylko ćwiczenia ze średnim RPE powyżej 8: {{exercises}}. Obciążenie, RPE i przerwy zostają bez zmian.",
+      "STALLED_WEIGHT": "Zmieniają się tylko ćwiczenia, w których obciążenie stoi w miejscu: {{exercises}}. Serie, RPE i przerwy zostają bez zmian.",
+      "LOW_COMPLETION": "Pozostałe sesje zostają bez zmian. Plan nigdy nie ma mniej niż 2 sesji w tygodniu."
+    },
+    "table": {
+      "exercise": "Ćwiczenie",
+      "plan": "Plan",
+      "session": "Sesja",
+      "now": "Teraz",
+      "new": "Nowe",
+      "change": "Zmiana",
+      "sessionOn": "{{name}}, {{day}}",
+      "planned": "Zaplanowana",
+      "removed": "Usunięta",
+      "oneSessionLess": "O 1 sesję mniej",
+      "moved": "Przeniesione"
+    },
+    "values": {
+      "sets_one": "{{count, number}} seria",
+      "sets_few": "{{count, number}} serie",
+      "sets_many": "{{count, number}} serii",
+      "sets_other": "{{count, number}} serii",
+      "reps_one": "{{count, number}} powtórzenie",
+      "reps_few": "{{count, number}} powtórzenia",
+      "reps_many": "{{count, number}} powtórzeń",
+      "reps_other": "{{count, number}} powtórzenia",
+      "seconds_one": "{{count, number}} s",
+      "seconds_few": "{{count, number}} s",
+      "seconds_many": "{{count, number}} s",
+      "seconds_other": "{{count, number}} s",
+      "load": "{{load}} {{unit}}",
+      "rpe": "RPE {{rpe, number}}"
+    },
+    "chart": {
+      "title": "Skąd ta zmiana",
+      "subtitle": {
+        "HIGH_RPE": "Średnie RPE w kolejnych tygodniach. Reguła działa, gdy w każdym tygodniu przekracza 8.",
+        "STALLED_WEIGHT": "Najlepsze obciążenie w ćwiczeniu {{exercise}} w kolejnych tygodniach. Reguła działa, gdy wzrost jest mniejszy niż 5%.",
+        "LOW_COMPLETION": "Odsetek ukończonych zaplanowanych sesji w kolejnych tygodniach. Reguła działa poniżej 70%."
+      },
+      "series": {
+        "HIGH_RPE": "Średnie RPE",
+        "STALLED_WEIGHT": "Najlepsze obciążenie, {{exercise}}",
+        "LOW_COMPLETION": "Ukończone sesje"
+      },
+      "point": "{{week}}: {{value}}",
+      "description": "{{series}}: {{values}}. Próg reguły {{threshold}}.",
+      "threshold": "Próg reguły, {{value}}"
     }
   }
 }

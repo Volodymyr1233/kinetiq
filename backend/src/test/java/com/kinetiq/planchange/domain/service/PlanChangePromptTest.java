@@ -145,7 +145,7 @@ class PlanChangePromptTest {
                 List.of(), Optional.of("s1"), List.of(new ProposedContent.Move("s1e2", "s3"))));
 
         assertThat(content.removed()).contains(new RemovedSession(MONDAY, MONDAY_NAME));
-        assertThat(content.moves()).containsExactly(new SessionMove(new EntryRef(MONDAY, 1), FRIDAY));
+        assertThat(content.moves()).containsExactly(new SessionMove(new EntryRef(MONDAY, 1), PLANK, FRIDAY));
     }
 
     private Set<String> rejected(ProposedContent proposed) {

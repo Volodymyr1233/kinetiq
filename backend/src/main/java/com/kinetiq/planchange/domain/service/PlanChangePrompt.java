@@ -148,7 +148,7 @@ final class PlanChangePrompt {
             } else if (removed.isEmpty() || removed.get().day() != from.get().day()) {
                 codes.add(LimitCode.MOVE_NOT_FROM_REMOVED);
             } else {
-                moves.add(new SessionMove(from.get(), to.get().day()));
+                moves.add(new SessionMove(from.get(), plan.entry(from.get()).orElseThrow().exercise(), to.get().day()));
             }
         }
         if (codes.isEmpty() && changes.isEmpty() && removed.isEmpty()) {

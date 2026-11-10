@@ -37,7 +37,9 @@ interface PlanChangeMapper {
                 entity.getMoves().stream()
                         .sorted(Comparator.comparing(PlanChangeMoveEmbeddable::getFromPosition))
                         .map(move -> new SessionMove(
-                                new EntryRef(entity.getRemovedDay(), move.getFromPosition()), move.getToDay()))
+                                new EntryRef(entity.getRemovedDay(), move.getFromPosition()),
+                                new ExerciseId(move.getExerciseId()),
+                                move.getToDay()))
                         .toList());
         return new PlanChange(
                 new PlanChangeId(entity.getId()),
@@ -119,6 +121,7 @@ interface PlanChangeMapper {
     private PlanChangeMoveEmbeddable toEmbeddable(SessionMove move) {
         PlanChangeMoveEmbeddable embeddable = new PlanChangeMoveEmbeddable();
         embeddable.setFromPosition(move.from().position());
+        embeddable.setExerciseId(move.exercise().value());
         embeddable.setToDay(move.toDay());
         return embeddable;
     }

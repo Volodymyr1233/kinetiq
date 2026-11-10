@@ -1,6 +1,9 @@
 package com.kinetiq.planchange.infrastructure.config;
 
+import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
+import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
 import com.kinetiq.planchange.domain.output.PlanChangeDrafter;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.PlanSource;
@@ -17,6 +20,7 @@ import com.kinetiq.planchange.domain.rule.StalledWeightRule;
 import com.kinetiq.planchange.domain.service.PlanChangeDetectionService;
 import com.kinetiq.planchange.domain.service.PlanChangeDraftingService;
 import com.kinetiq.planchange.domain.service.PlanChangeLimits;
+import com.kinetiq.planchange.domain.service.PlanChangeViewService;
 import com.kinetiq.planchange.infrastructure.output.OpenRouterPlanChangeDrafter;
 import com.kinetiq.planchange.infrastructure.output.UnavailablePlanChangeDrafter;
 import java.time.Clock;
@@ -51,6 +55,15 @@ class PlanChangeConfig {
                 plans,
                 drafting,
                 Clock.systemUTC());
+    }
+
+    @Bean
+    ViewPlanChangeUseCase viewPlanChangeUseCase(
+            ViewClientsUseCase clients,
+            CurrentAccountUseCase accounts,
+            PlanChangeRepository planChanges,
+            PlanSource plans) {
+        return new PlanChangeViewService(clients, accounts, planChanges, plans);
     }
 
     // the chat model is the drafter's own, not a bean, so it cannot be mistaken for the plan drafting one

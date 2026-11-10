@@ -19,7 +19,7 @@ The plan change of one of the caller's own clients.
 | reason | string | built for the caller's language |
 | effectiveWeek | date | a Monday |
 | windowStart / windowEnd | date | |
-| targets | array | `{ sessionDay, sessionName, position, exerciseId, exerciseName, target, oldValue, newValue }`, ordered by weekday, position, target |
+| targets | array | `{ sessionDay, sessionName, position, exerciseId, exerciseName, measure, target, oldValue, newValue }` (`measure` is `REPS` or `SECONDS`, so an amount can be labelled), ordered by weekday, position, target |
 | removedSession | object / null | `{ day, name }` |
 | moves | array | `{ exerciseId, exerciseName, fromDay, toDay }` |
 | concernedExercises | array | `{ id, name }` |

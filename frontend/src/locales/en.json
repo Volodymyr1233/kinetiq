@@ -131,6 +131,9 @@
       "training-started": "Training has started, so today’s answers can no longer change.",
       "no-session-today": "There is no session today, so there is no check-in to give.",
       "no-adjustment": "Today’s targets are as planned, so there is nothing to switch."
+    },
+    "plan-change": {
+      "not-found": "This plan change does not exist, or is not for one of your clients."
     }
   },
   "account": {
@@ -1147,9 +1150,18 @@
   "readiness": {
     "checkIn": {
       "title": "How do you feel today?",
-      "sleep": { "label": "Sleep", "scale": "1 bad · 5 great" },
-      "soreness": { "label": "Soreness", "scale": "1 none · 5 very sore" },
-      "stress": { "label": "Stress", "scale": "1 calm · 5 high" },
+      "sleep": {
+        "label": "Sleep",
+        "scale": "1 bad · 5 great"
+      },
+      "soreness": {
+        "label": "Soreness",
+        "scale": "1 none · 5 very sore"
+      },
+      "stress": {
+        "label": "Stress",
+        "scale": "1 calm · 5 high"
+      },
       "skip": "Skip",
       "savesAfterThird": "Saves after the third answer",
       "saving": "Saving…",
@@ -1165,7 +1177,10 @@
       "score": "{{score, number}}",
       "announcement": "Readiness {{score, number}}: {{band}}",
       "band": {
-        "READY": { "name": "Ready", "line": "Train as planned." },
+        "READY": {
+          "name": "Ready",
+          "line": "Train as planned."
+        },
         "TAKE_IT_EASIER": {
           "name": "Take it easier",
           "line": "Same plan. Stop a rep earlier if you need to."
@@ -1294,6 +1309,74 @@
       "topSet": "Top set",
       "rpe": "RPE",
       "recent": "Last sessions with {{exercise}}"
+    }
+  },
+  "planChange": {
+    "card": {
+      "label": "Plan change",
+      "effective": "Takes effect {{date}} if accepted.",
+      "open": "Open plan change"
+    },
+    "back": "Back to {{client}}",
+    "forClient": "Plan change for {{client}}",
+    "loading": "Loading plan change",
+    "retry": "Try again",
+    "notFound": {
+      "title": "Plan change not found",
+      "body": "This plan change does not exist, or is not for one of your clients.",
+      "action": "Back to all clients"
+    },
+    "states": {
+      "PENDING": "Waiting for a decision",
+      "ACCEPTED_BY_ONE": "Accepted by one side",
+      "APPLIED": "Applied",
+      "DECLINED": "Declined",
+      "EXPIRED": "Expired"
+    },
+    "effective": "Takes effect {{date}} once you and {{client}} accept.",
+    "notes": {
+      "HIGH_RPE": "Only exercises with an average RPE above 8 change: {{exercises}}. Load, RPE and rest stay the same.",
+      "STALLED_WEIGHT": "Only exercises whose load stalled change: {{exercises}}. Sets, RPE and rest stay the same.",
+      "LOW_COMPLETION": "The other sessions stay as they are. A plan never goes below 2 sessions a week."
+    },
+    "table": {
+      "exercise": "Exercise",
+      "plan": "Plan",
+      "session": "Session",
+      "now": "Now",
+      "new": "New",
+      "change": "Change",
+      "sessionOn": "{{name}}, {{day}}",
+      "planned": "Planned",
+      "removed": "Removed",
+      "oneSessionLess": "1 session less",
+      "moved": "Moved"
+    },
+    "values": {
+      "sets_one": "{{count, number}} set",
+      "sets_other": "{{count, number}} sets",
+      "reps_one": "{{count, number}} rep",
+      "reps_other": "{{count, number}} reps",
+      "seconds_one": "{{count, number}} s",
+      "seconds_other": "{{count, number}} s",
+      "load": "{{load}} {{unit}}",
+      "rpe": "RPE {{rpe, number}}"
+    },
+    "chart": {
+      "title": "Why this change",
+      "subtitle": {
+        "HIGH_RPE": "Average RPE per week. The rule fires when it is above 8 in every week.",
+        "STALLED_WEIGHT": "Best load of {{exercise}} per week. The rule fires when it rises less than 5%.",
+        "LOW_COMPLETION": "Share of planned sessions finished per week. The rule fires below 70%."
+      },
+      "series": {
+        "HIGH_RPE": "Average RPE",
+        "STALLED_WEIGHT": "Best load, {{exercise}}",
+        "LOW_COMPLETION": "Sessions finished"
+      },
+      "point": "{{week}}: {{value}}",
+      "description": "{{series}}: {{values}}. Rule threshold {{threshold}}.",
+      "threshold": "Rule threshold, {{value}}"
     }
   }
 }

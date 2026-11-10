@@ -3,6 +3,8 @@ package com.kinetiq.planchange.domain.service;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.PlanSnapshot;
 import com.kinetiq.planchange.domain.output.PlanSource;
 import java.util.HashMap;
@@ -23,11 +25,13 @@ class FakePlanSource implements PlanSource {
     }
 
     @Override
-    public Map<ExerciseId, String> exerciseNames(Set<ExerciseId> exercises, Language language) {
+    public Map<ExerciseId, ExerciseLabel> exercises(Set<ExerciseId> exercises, Language language) {
         return exercises.stream()
                 .filter(names::containsKey)
                 .collect(Collectors.toMap(
                         exercise -> exercise,
-                        exercise -> language == Language.PL ? names.get(exercise) + " PL" : names.get(exercise)));
+                        exercise -> new ExerciseLabel(
+                                language == Language.PL ? names.get(exercise) + " PL" : names.get(exercise),
+                                Measure.REPS)));
     }
 }
