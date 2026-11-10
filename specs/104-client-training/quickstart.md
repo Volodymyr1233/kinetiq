@@ -40,7 +40,10 @@ docker compose exec postgres psql -U kinetiq -d kinetiq -c "update session_logs 
 
 ## 4. Progress (#108)
 
-Run when stories #156 (#158, #159) and #108 are merged: for the same client and period, the trainer's progress section and the client's Progress screen show the same numbers.
+1. Sign in as `demo.client.daily`, open Progress and note every figure for 4, 8 and 12 weeks.
+2. Sign in as `demo.trainer` and open Demo Client Daily. The Overview starts with the period switch on 8 weeks, the tiles Sessions done, Average RPE and the best set, then the sessions chart beside "By exercise". For each period the figures, the chart titles and the tables of "Show as table" equal the client's; there is no "In a row" and no "PR today".
+3. Demo Client Draft shows no progress section; its cards say "No published plan yet."
+4. Check light and dark at 1280 px, keyboard focus and names, English and Polish, and an empty console.
 
 ## Automated
 

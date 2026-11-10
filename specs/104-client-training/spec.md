@@ -165,6 +165,7 @@ None. Every operation needs a signed-in trainer.
 | Source | It says | This spec | Why |
 |---|---|---|---|
 | Board "Trainer · client overview" | Tiles: sessions over 4 weeks, average RPE over 2 weeks, best load, readiness today | Built only as far as they are the client's progress figures, by task #108 (FR-013) | Progress comes from story #156; readiness today and its chart are story #122 (and the check-in of story #109). |
+| Board "Trainer · client overview" | Tiles only, no period switch and no progress charts | The client's period switch, tiles and charts at the top of the Overview, without "In a row" and "PR today" (research R14) | FR-013 and task #108 ask for the client's figures and charts; the design system shows a week streak and a PR badge on client screens only (spec 156, Assumptions). |
 | Board "Trainer · client overview" | A plan change alert with "Open" | Not built | Plan changes are story #137. |
 | Board "Trainer · client overview" | Header with a status badge ("Watch"), plan week, days a week, unit, "Message" and "Edit plan" | Header unchanged (spec 35) | Client status is story #162; the header is not part of this story. |
 | Board "Trainer · client overview" | Today's started session shows "in progress" next to a "Today" badge | Labelled In progress | A started session is In progress whatever its day (spec 98, FR-006). |
@@ -195,6 +196,8 @@ The main English and Polish texts. Polish uses informal "ty" and should be confi
 | Chosen session | {logged} of {planned} sets · {minutes} min · average RPE {value} | Serie: {logged} z {planned} · {minutes} min · średnie RPE {value} |
 | A session without sets in the list | No sets | Brak serii |
 | Client's note | Note from {client} | Notatka od: {client} |
+| Progress section | Progress (its name for assistive technology); the client's period switch, tiles and charts with their texts (spec 156, Texts) | Postępy; przełącznik okresu, kafelki i wykresy klienta z ich tekstami (spec 156, Texts) |
+| Nothing logged in the period | No sessions logged in this period yet. | W tym okresie nie zapisano jeszcze żadnej sesji. |
 | Load failed | The error's message, as on the client page's other tabs, and "Try again" | Komunikat błędu, jak na innych zakładkach strony klienta, i „Spróbuj ponownie” |
 
 ## Assumptions

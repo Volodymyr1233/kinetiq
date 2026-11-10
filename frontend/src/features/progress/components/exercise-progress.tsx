@@ -31,14 +31,17 @@ const RPE_AXIS = [5, 10]
 
 /**
  * "By exercise": the period's exercises to choose from, the chosen one's top set and average RPE week by week, and its
- * last sessions. `weeks` are the period's week numbers, so a week without the exercise leaves a gap.
+ * last sessions. `weeks` are the period's week numbers, so a week without the exercise leaves a gap; `compact` gives
+ * the tables the trainer's density.
  */
 export function ExerciseProgress({
   exercises,
   weeks,
+  compact = false,
 }: {
   exercises: Exercise[]
   weeks: number[]
+  compact?: boolean
 }) {
   const { t } = useTranslation()
   const headingId = useId()
@@ -74,8 +77,8 @@ export function ExerciseProgress({
           </ToggleGroupItem>
         ))}
       </ToggleGroup>
-      <ExerciseChart exercise={chosen} weeks={weeks} />
-      <RecentSessions exercise={chosen} />
+      <ExerciseChart exercise={chosen} weeks={weeks} compact={compact} />
+      <RecentSessions exercise={chosen} compact={compact} />
     </section>
   )
 }
@@ -83,9 +86,11 @@ export function ExerciseProgress({
 function ExerciseChart({
   exercise,
   weeks,
+  compact,
 }: {
   exercise: Exercise
   weeks: number[]
+  compact: boolean
 }) {
   const { t, i18n } = useTranslation()
   const weightUnit = useWeightUnit()
@@ -237,7 +242,7 @@ function ExerciseChart({
         </ChartContainer>
       }
       table={
-        <Table>
+        <Table data-density={compact ? 'compact' : undefined}>
           <TableHeader>
             <TableRow>
               <TableHead>{t('progress.exercise.week')}</TableHead>
@@ -266,7 +271,13 @@ function ExerciseChart({
   )
 }
 
-function RecentSessions({ exercise }: { exercise: Exercise }) {
+function RecentSessions({
+  exercise,
+  compact,
+}: {
+  exercise: Exercise
+  compact: boolean
+}) {
   const { t, i18n } = useTranslation()
   const measured = useMeasured(exercise.measure)
   // plain dates, read in UTC so no time zone can move the day
@@ -280,7 +291,7 @@ function RecentSessions({ exercise }: { exercise: Exercise }) {
   return (
     <Card>
       <CardContent>
-        <Table>
+        <Table data-density={compact ? 'compact' : undefined}>
           <TableCaption className="sr-only">
             {t('progress.exercise.recent', { exercise: exercise.name })}
           </TableCaption>

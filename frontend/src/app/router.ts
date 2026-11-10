@@ -89,9 +89,8 @@ export const createRoutes = (): RouteObject[] => [
                 index: true,
                 lazy: {
                   Component: async () =>
-                    (
-                      await import('@/features/sessionlog/pages/client-overview-tab')
-                    ).ClientOverviewTab,
+                    (await import('@/app/client-overview-route'))
+                      .ClientOverviewRoute,
                 },
               },
               {

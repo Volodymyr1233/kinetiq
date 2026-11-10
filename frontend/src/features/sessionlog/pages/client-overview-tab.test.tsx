@@ -81,12 +81,26 @@ const OVERVIEW: ClientOverview = {
   },
 }
 
+// the progress section's own figures are tested with it; here only where it stands
+const PROGRESS = {
+  goal: 'BUILD_MUSCLE',
+  week: 2,
+  finished: false,
+  sessionsDone: 0,
+  sessionsPlanned: 6,
+  weeksInARow: 0,
+  weeks: [],
+  exercises: [],
+}
+
 function backend(client: Client, overview: ClientOverview): Reply {
   return (request) => {
     const { pathname } = new URL(request.url)
     if (pathname === `/api/v1/clients/${client.id}`) return json(client)
     if (pathname === `/api/v1/clients/${client.id}/overview`)
       return json(overview)
+    if (pathname === `/api/v1/clients/${client.id}/progress`)
+      return json(PROGRESS)
     return problem(404, { status: 404, code: 'client.not-found' })
   }
 }
@@ -103,6 +117,24 @@ const card = (name: string) => screen.findByRole('region', { name })
 
 describe('ClientOverviewTab', () => {
   afterEach(() => i18n.changeLanguage('en'))
+
+  it('opens with the client’s progress for 8 weeks, above the cards', async () => {
+    const { requests } = openOverview()
+
+    const progress = await screen.findByRole('region', { name: 'Progress' })
+    expect(
+      within(progress).getByRole('radio', { name: '8 weeks' }),
+    ).toBeChecked()
+    expect(
+      progress.compareDocumentPosition(await card('This week')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    const asked = requests.find(
+      (request) =>
+        new URL(request.url).pathname === `/api/v1/clients/${ANNA.id}/progress`,
+    )
+    expect(new URL(asked!.url).searchParams.get('weeks')).toBe('8')
+  })
 
   it('shows this week’s sessions with their labels and the seven days', async () => {
     openOverview()
@@ -182,7 +214,7 @@ describe('ClientOverviewTab', () => {
 
   it('says there is no published plan yet, and still shows the quiz answers', async () => {
     const draft: Client = { ...ANNA, planState: 'DRAFT' }
-    openOverview(draft, {
+    const { requests } = openOverview(draft, {
       today: OVERVIEW.today,
       recentSessions: [],
       quizAnswers: OVERVIEW.quizAnswers,
@@ -197,6 +229,13 @@ describe('ClientOverviewTab', () => {
     expect(
       within(await card('Quiz answers')).getByText('Build muscle'),
     ).toBeInTheDocument()
+    // a client without a published plan has no progress to read
+    expect(
+      screen.queryByRole('region', { name: 'Progress' }),
+    ).not.toBeInTheDocument()
+    expect(requests.some((request) => request.url.endsWith('/progress'))).toBe(
+      false,
+    )
   })
 
   it('says the plan has finished, and still lists the last sessions', async () => {
@@ -237,6 +276,10 @@ describe('ClientOverviewTab', () => {
     )
 
     const retry = await screen.findByRole('button', { name: 'Try again' })
+    // the progress has its own answer, so it stays
+    expect(
+      await screen.findByRole('region', { name: 'Progress' }),
+    ).toBeInTheDocument()
     failing = false
     await user.click(retry)
 

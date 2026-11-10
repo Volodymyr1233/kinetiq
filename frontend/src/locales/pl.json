@@ -1253,6 +1253,11 @@
     "noPlan": "Postępy pojawią się tu, gdy trener opublikuje Twój plan.",
     "nothingLogged": "Zapisz sesję, a tu zobaczysz swoje postępy.",
     "retry": "Spróbuj ponownie",
+    "trainer": {
+      "label": "Postępy",
+      "loading": "Ładowanie postępów klienta",
+      "nothingLogged": "W tym okresie nie zapisano jeszcze żadnej sesji."
+    },
     "header": {
       "week": "{{goal}} · Tydzień {{week, number}}",
       "finished": "{{goal}} · Plan zakończony"

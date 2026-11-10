@@ -87,19 +87,26 @@ frontend/src/
 ├── features/sessionlog/
 │   ├── api/client-training.ts                           # #106: overview; #107: sessions, session log
 │   ├── components/week-days.tsx                         # #106: this week's day strip
-│   ├── pages/client-overview-tab.tsx                    # #106
+│   ├── pages/client-overview-tab.tsx                    # #106; #108: progress slot
 │   └── pages/client-logs-tab.tsx                        # #107; #261: the note
 ├── features/plan/components/draft-panel.tsx             # #106: uses the moved quiz answers
 ├── features/plan/components/session-card.tsx            # #106: imports the moved badge
 ├── features/plan/pages/today-page.tsx                   # #106: imports the moved badge
+├── features/progress/
+│   ├── api/progress.ts                                  # #108: + useClientProgress
+│   ├── components/period-switch.tsx                     # #108: out of the Progress tab, used by both
+│   ├── components/progress-tiles.tsx                    # #108: + rewards, className
+│   ├── components/client-progress-section.tsx           # #108
+│   └── pages/progress-page.tsx                          # #108: uses the period switch
 ├── components/quiz-answers.tsx                          # #106: moved up from the draft panel
 ├── components/session-state-badge.tsx                   # #106: moved up from features/plan, + locked
-├── app/router.ts                                        # #106: overview index; #107: logs
+├── app/client-overview-route.tsx                        # #108: the Overview tab with the progress section
+├── app/router.ts                                        # #106: overview index; #107: logs; #108: overview route
 ├── lib/api/schema.d.ts                                  # #105, #107, #261: regenerated
-└── locales/{en,pl}.json                                 # #106, #107, #261
+└── locales/{en,pl}.json                                 # #106, #107, #261, #108
 ```
 
-**Structure Decision**: The trainer's view lives in the `sessionlog` feature on both sides, because it reads session logs and `sessionlog` may depend on `client`, `quiz` and `plan` without a cycle (research R1). What the Plan tab and the draft panel already show moves up to `components/` so both features use it (research R9). `features/plan` keeps its own week strip; the trainer's day strip is new, because the board shows a row of days, not the client's list.
+**Structure Decision**: The trainer's view lives in the `sessionlog` feature on both sides, because it reads session logs and `sessionlog` may depend on `client`, `quiz` and `plan` without a cycle (research R1). What the Plan tab and the draft panel already show moves up to `components/` so both features use it (research R9). `features/plan` keeps its own week strip; the trainer's day strip is new, because the board shows a row of days, not the client's list. The progress section belongs to `features/progress`, which serves both readers' statistics, and `app/` places it in the Overview tab (research R14).
 
 ## Phases
 
@@ -107,6 +114,6 @@ frontend/src/
 - **#106 (frontend)**: the Overview tab at the client page's index, the day strip, the moved quiz answers and badge, strings, tests. Blocked by #105.
 - **#107 (backend and frontend)**: the sessions and session log endpoints, the Logs tab, strings, tests, regenerated `schema.d.ts`. Its API needs only #99 and the list rule of #105 (research R5); its tab reuses the badge moved in #106, so it is built after #106.
 - **#261 (backend and frontend)**: the note in the session log answer and on the Logs tab. Blocked by #107.
-- **#108 (frontend, Iteration 4)**: the progress section from story #156's statistics for trainers and its chart. Blocked by #106, #158 and #159.
+- **#108 (frontend, Iteration 4)**: the progress section from story #156's statistics for trainers, with the client's period switch, tiles and charts, at the top of the Overview (research R14). Blocked by #106, #158 and #159.
 
 Each task is its own pull request, squash merged.
