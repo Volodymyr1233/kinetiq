@@ -836,7 +836,8 @@
       "planned": "Planned",
       "open": "Choose set {{number}} of {{exercise}}",
       "edit": "Change set {{number}} of {{exercise}}",
-      "tick": "Log set {{number}} of {{exercise}} as planned"
+      "tick": "Log set {{number}} of {{exercise}} as planned",
+      "ask": "Ask your trainer about set {{number}} of {{exercise}}"
     },
     "panel": {
       "load": "Load, {{unit}}",
@@ -1126,6 +1127,11 @@
   },
   "messaging": {
     "unreadSeparator": "Unread messages",
+    "about": {
+      "label": "About",
+      "text": "{{session}} · {{date}} · {{exercise}}, set {{number}} · RPE {{rpe, number}}",
+      "remove": "Remove the set from this message"
+    },
     "trainer": {
       "listLabel": "Conversations",
       "searchLabel": "Search clients",

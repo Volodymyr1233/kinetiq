@@ -108,6 +108,6 @@ The row named by `set` gets `aria-current="true"`, a ring around it, is scrolled
 
 ## R14. What changes in earlier tests
 
-**Decision**: `locked.test.tsx` (spec 101: "no control of a locked row takes focus") is changed with #174: on a locked session only the back link and the Ask buttons of logged rows take focus. `client-logs-tab.test.tsx` gains the address cases with #175.
+**Decision**: `locked.test.tsx` (spec 101: "no control of a locked row takes focus") renders the logger without a way to ask and stays as it was; the new `ask.test.tsx` proves that with one, a locked session lets focus reach only the back link and the Ask buttons of logged rows. `client-logs-tab.test.tsx` gains the address cases with #175.
 
 **Why**: The spec departs from spec 101, FR-009 and SC-004, and names it.

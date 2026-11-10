@@ -54,6 +54,36 @@ describe('useOutbox', () => {
     expect(send.mock.calls[1]![0]).toMatchObject({ id, text: 'hello' })
   })
 
+  it('sends the set a message is about again on retry', async () => {
+    const about = {
+      setLogId: 'set',
+      sessionLogId: 'session',
+      sessionName: 'Lower body',
+      sessionDate: '2026-11-07',
+      exerciseName: 'Back squat',
+      entryPosition: 0,
+      setNumber: 3,
+      rpe: 9,
+    }
+    const send = vi
+      .fn()
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockResolvedValueOnce(undefined)
+    const { result } = renderHook(() => useOutbox(send))
+    act(() => result.current.submit('anna', 'Too heavy?', about))
+    await waitFor(() =>
+      expect(result.current.entries[0]).toMatchObject({
+        status: 'failed',
+        about,
+      }),
+    )
+
+    act(() => result.current.retry(result.current.entries[0]!.id))
+
+    await waitFor(() => expect(result.current.entries).toEqual([]))
+    expect(send.mock.calls[1]![0]).toMatchObject({ text: 'Too heavy?', about })
+  })
+
   it('does not send again while an attempt is open', async () => {
     const send = vi.fn(() => new Promise(() => {}))
     const { result } = renderHook(() => useOutbox(send))

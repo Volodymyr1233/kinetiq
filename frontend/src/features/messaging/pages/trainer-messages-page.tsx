@@ -76,8 +76,8 @@ export function TrainerMessagesPage() {
   const conversations = useConversations()
   const { mutateAsync: send } = useSendMessage()
   // kept here, so a message that failed in one conversation is still there after looking at another
-  const outbox = useOutbox(({ conversation, id, text }) =>
-    send({ clientId: conversation, id, text }),
+  const outbox = useOutbox(({ conversation, id, text, about }) =>
+    send({ clientId: conversation, id, text, about }),
   )
   const rows = conversations.data?.conversations
   const open = rows?.find((row) => row.clientId === clientId)

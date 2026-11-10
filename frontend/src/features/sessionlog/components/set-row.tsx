@@ -1,5 +1,5 @@
 import { onlineManager } from '@tanstack/react-query'
-import { CheckIcon } from 'lucide-react'
+import { CheckIcon, MessageCircleIcon } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
@@ -27,7 +27,8 @@ import { SyncBadge } from './sync-badge'
  * One planned set: its targets in grey until it is logged, and what the client did afterwards. A tick logs the set as
  * planned; choosing the row opens the entry panel to log other values or to change a logged set. A logged set says
  * where it stands: Saved on this phone, Synced, or Not synced with its reason, Retry and Discard. A locked row only
- * shows what was logged, with nothing to focus.
+ * shows what was logged. With `onAsk`, a set the server has stored offers a button to ask the trainer about it, which
+ * is the one thing a locked row lets the client do.
  */
 export function SetRow({
   sessionId,
@@ -37,6 +38,7 @@ export function SetRow({
   locked,
   onToggle,
   onLogged,
+  onAsk,
 }: {
   sessionId: string
   entry: LoggedEntry
@@ -46,6 +48,7 @@ export function SetRow({
   onToggle: () => void
   // told when a set is logged for the first time, so the rest after it can start; a change does not start one
   onLogged: (restSeconds: number) => void
+  onAsk?: () => void
 }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
@@ -140,6 +143,24 @@ export function SetRow({
     </span>
   )
 
+  // only a set the server holds as shown can be asked about: it checks that the set is the client's own
+  const ask = onAsk !== undefined &&
+    set.log !== undefined &&
+    (pending === undefined || pending.state === 'synced') && (
+      <Button
+        type="button"
+        variant="ghost"
+        className="size-12 shrink-0"
+        aria-label={t('sessionlog.row.ask', which)}
+        onClick={onAsk}
+      >
+        <MessageCircleIcon aria-hidden />
+      </Button>
+    )
+
+  // the mark and the buttons after the values; on a narrow screen they go under them instead of squeezing them
+  const trailing = 'ml-auto flex min-h-12 shrink-0 items-center gap-2'
+
   const notSynced = pending?.state === 'not-synced' && (
     <div className="flex flex-col gap-2 px-4 pb-3">
       <p className="text-sm">
@@ -172,35 +193,39 @@ export function SetRow({
   )
 
   if (locked) {
-    // nothing here takes focus; the dashed line is the locked look, and the page's message says it in words. A log still
+    // nothing here takes focus but the button to ask about a logged set; the dashed line is the locked look, and the
+    // page's message says it in words. A log still
     // kept on the phone shows where it stands, and can be discarded, but not retried: the session can no longer change
     return (
       <li>
         <div
           className={cn(
-            'flex min-h-14 items-center gap-2 px-4 py-1',
+            'flex min-h-14 flex-wrap items-center gap-x-2 px-4 py-1',
             !logged && 'text-muted-foreground',
           )}
         >
-          <span className="bg-muted/50 flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-md border border-dashed px-2">
+          <span className="bg-muted/50 flex min-h-12 min-w-40 flex-1 items-center gap-3 rounded-md border border-dashed px-2">
             <span className="num w-6 shrink-0 text-sm font-medium">
               {set.number}
             </span>
             {shownValues}
           </span>
-          {pending && pending.state !== 'synced' ? (
-            mark
-          ) : logged ? (
-            // logged is told by an icon and by text, not by colour alone
-            <span className="text-foreground flex shrink-0 items-center gap-1 text-sm font-medium">
-              <CheckIcon aria-hidden className="size-5" />
-              {t('sessionlog.row.logged')}
-            </span>
-          ) : (
-            <span className="shrink-0 text-sm">
-              {t('sessionlog.row.notLogged')}
-            </span>
-          )}
+          <div className={trailing}>
+            {pending && pending.state !== 'synced' ? (
+              mark
+            ) : logged ? (
+              // logged is told by an icon and by text, not by colour alone
+              <span className="text-foreground flex shrink-0 items-center gap-1 text-sm font-medium">
+                <CheckIcon aria-hidden className="size-5" />
+                {t('sessionlog.row.logged')}
+              </span>
+            ) : (
+              <span className="shrink-0 text-sm">
+                {t('sessionlog.row.notLogged')}
+              </span>
+            )}
+            {ask}
+          </div>
         </div>
         {notSynced}
       </li>
@@ -211,7 +236,7 @@ export function SetRow({
     <li>
       <div
         className={cn(
-          'flex min-h-14 items-center gap-2 px-4 py-1',
+          'flex min-h-14 flex-wrap items-center gap-x-2 px-4 py-1',
           !logged && 'text-muted-foreground',
         )}
       >
@@ -219,7 +244,7 @@ export function SetRow({
           ref={toggle}
           type="button"
           aria-expanded={open}
-          className="focus-visible:ring-ring/50 -mx-2 flex min-h-12 min-w-0 flex-1 items-center gap-3 rounded-md px-2 text-left outline-none focus-visible:ring-3"
+          className="focus-visible:ring-ring/50 -mx-2 flex min-h-12 min-w-40 flex-1 items-center gap-3 rounded-md px-2 text-left outline-none focus-visible:ring-3"
           onClick={onToggle}
         >
           <span className="sr-only">
@@ -230,19 +255,22 @@ export function SetRow({
           </span>
           {shownValues}
         </button>
-        {logged ? (
-          mark
-        ) : (
-          <Button
-            type="button"
-            variant="outline"
-            className="size-12 shrink-0"
-            aria-label={t('sessionlog.row.tick', which)}
-            onClick={() => submit(valuesOf(shown, unit))}
-          >
-            <CheckIcon aria-hidden />
-          </Button>
-        )}
+        <div className={trailing}>
+          {logged ? (
+            mark
+          ) : (
+            <Button
+              type="button"
+              variant="outline"
+              className="size-12 shrink-0"
+              aria-label={t('sessionlog.row.tick', which)}
+              onClick={() => submit(valuesOf(shown, unit))}
+            >
+              <CheckIcon aria-hidden />
+            </Button>
+          )}
+          {ask}
+        </div>
       </div>
       {notSynced}
       {open && (

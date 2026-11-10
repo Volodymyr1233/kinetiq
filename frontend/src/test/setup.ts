@@ -30,4 +30,6 @@ Element.prototype.hasPointerCapture ??= () => false
 afterEach(() => {
   cleanup()
   vi.unstubAllGlobals()
+  // what a tab keeps, such as a message draft, must not leak into the next test
+  sessionStorage.clear()
 })

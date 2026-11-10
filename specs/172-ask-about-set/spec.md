@@ -27,7 +27,7 @@ A client has logged a set that felt wrong: too heavy, a sore knee, an odd RPE. O
 5. **Given** the chip in the composer, **When** the client removes it, **Then** the message they send is an ordinary message.
 6. **Given** the chip in the composer and an empty message field, **When** the client looks at Send, **Then** it is disabled: a reference alone is not a message.
 7. **Given** a message with a reference could not be delivered, **When** the client chooses Retry, **Then** it is sent with the same text and the same reference, and the trainer receives it once.
-8. **Given** the conversation was opened from the logger, **When** the client closes it, with or without sending, **Then** they are back in the same session at the same place, with its entry panels and rest timer as they were. A chip that was not sent is gone.
+8. **Given** the conversation was opened from the logger, **When** the client closes it, with or without sending, **Then** they are back in the same session at the same place, with its entry panels and rest timer as they were. Text and a chip that were not sent stay in the composer, in the sheet and on the Messages tab; asking about another set puts that set's chip in its place.
 9. **Given** a session that is locked, **When** the client opens it, **Then** every logged set still offers "Ask your trainer" and the action works as above. Nothing else on a locked row can be used.
 
 ---
@@ -82,7 +82,7 @@ A reference can point only to a set the sender logged themselves. A client canno
 - A long session or exercise name wraps inside the chip and never makes the page scroll sideways, at 375 px and at 320 px.
 - With no connection, the action is still offered on sets the server has stored; the conversation then behaves as spec 58 describes for a failed load or a message that is Not sent.
 - A set logged with no connection becomes askable when it turns Synced, without a reload.
-- The chip in the composer is not kept by the browser: leaving the conversation or reloading the page drops it. A Not sent message keeps its reference as long as it keeps its text (spec 58).
+- What the composer holds and was not sent, text and chip, is kept per conversation in the tab: closing the conversation, changing tab, following a chip and reloading keep it; closing the tab or signing out drops it. A Not sent message keeps its reference as long as it keeps its text (spec 58).
 - The trainer's conversation list and the unread counts are unchanged: the list shows the beginning of the message text, never the chip.
 - A reference never changes what a message's text may be: 1 to 2000 characters, plain text.
 - Two tabs or devices of the same account show the same chip after a short time, as any message.
@@ -166,6 +166,7 @@ None. Every operation of this story requires a signed-in client or trainer.
 | Story #172, design system 6.7 | The chip shows session, exercise, set and RPE | It also shows the session's date | "Works for locked sessions too" means a client can ask about last week's "Lower body"; without the date the chip cannot be told from this week's. |
 | Spec 101, FR-009 and SC-004 | On a locked session no control of the set rows takes focus | "Ask your trainer" on a logged row does | Task #174: the action works for locked sessions too. It changes nothing in the session. |
 | Spec 58, Assumptions | The "About …" cards are left to a later story | Built here | This is that story. |
+| Spec 58 | The composer starts empty each time a conversation opens | It keeps what was not sent, per conversation, for as long as the tab is open | A client asks between sets and may leave mid-sentence: losing the text and the chip on a change of tab or a closed sheet is annoying. Kept in the tab's storage, which belongs to one account, so the next person who signs in sees none of it. |
 
 ## Texts
 

@@ -1,17 +1,18 @@
 import { useTranslation } from 'react-i18next'
 import { AccountAvatar } from '@/components/account-avatar'
 import { Skeleton } from '@/components/ui/skeleton'
-import { useConversations, useSendMessage } from '../api/messaging'
+import { useConversations, useSendMessage, type About } from '../api/messaging'
 import { Conversation } from '../components/conversation'
 import { LoadError } from '../components/load-error'
 import { useOutbox } from '../use-outbox'
 
-export function ClientMessagesPage() {
+/** The client's conversation with their trainer. With `ask`, the next message is about that logged set. */
+export function ClientMessagesPage({ ask }: { ask?: About }) {
   const { t } = useTranslation()
   const conversations = useConversations()
   const { mutateAsync: send } = useSendMessage()
-  const outbox = useOutbox(({ conversation, id, text }) =>
-    send({ clientId: conversation, id, text }),
+  const outbox = useOutbox(({ conversation, id, text, about }) =>
+    send({ clientId: conversation, id, text, about }),
   )
   // a client has one conversation, with their trainer, so the tab opens straight into it
   const conversation = conversations.data?.conversations[0]
@@ -57,7 +58,10 @@ export function ClientMessagesPage() {
         clientId={conversation.clientId}
         name={conversation.name}
         outbox={outbox.entries}
-        onSend={(text) => outbox.submit(conversation.clientId, text)}
+        ask={ask}
+        onSend={(text, about) =>
+          outbox.submit(conversation.clientId, text, about)
+        }
         onRetry={outbox.retry}
       />
     </div>

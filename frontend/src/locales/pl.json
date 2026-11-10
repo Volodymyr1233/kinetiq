@@ -854,7 +854,8 @@
       "planned": "Zaplanowano",
       "open": "Wybierz serię {{number}}: {{exercise}}",
       "edit": "Zmień serię {{number}}: {{exercise}}",
-      "tick": "Zapisz serię {{number}}: {{exercise}} zgodnie z planem"
+      "tick": "Zapisz serię {{number}}: {{exercise}} zgodnie z planem",
+      "ask": "Zapytaj trenera o serię {{number}}: {{exercise}}"
     },
     "panel": {
       "load": "Obciążenie, {{unit}}",
@@ -1167,6 +1168,11 @@
   },
   "messaging": {
     "unreadSeparator": "Nieprzeczytane wiadomości",
+    "about": {
+      "label": "Dotyczy",
+      "text": "{{session}} · {{date}} · {{exercise}}, seria {{number}} · RPE {{rpe, number}}",
+      "remove": "Usuń serię z tej wiadomości"
+    },
     "trainer": {
       "listLabel": "Rozmowy",
       "searchLabel": "Szukaj klientów",
