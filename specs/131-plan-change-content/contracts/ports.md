@@ -6,7 +6,7 @@
 |---|---|---|
 | `DetectPlanChangesUseCase` | `due()`, `check(client)` | unchanged signatures. `check` now also builds the content and stores the plan change in the same transaction. |
 | `ViewPlanChangeUseCase` | `PlanChangeView get(AccountId trainer, PlanChangeId id)` | one plan change of the trainer's own client, with title and reason in the trainer's language; `PlanChangeNotFoundException` otherwise |
-| `ViewPlanChangeUseCase` | `Optional<PlanChangeSummary> openOf(AccountId trainer, AccountId client)` | the open plan change of an own client |
+| `ViewPlanChangeUseCase` | `PlanChangeSummary openOf(AccountId trainer, AccountId client)` | the open plan change of an own client; `ClientNotFoundException` for another trainer's client, `PlanChangeNotFoundException` when none is open |
 
 Ownership uses `ViewClientsUseCase.getClient(trainer, client)` of the `client` feature (answers not found for another trainer's client), as `PlanManagementService` does.
 
@@ -15,7 +15,7 @@ Ownership uses `ViewClientsUseCase.getClient(trainer, client)` of the `client` f
 | Port | Methods | Notes |
 |---|---|---|
 | `PlanChangeRepository` | `hasOpen`, `lastEndedAt` (real now), `PlanChange save(PlanChange)`, `Optional<PlanChange> find(PlanChangeId)`, `Optional<PlanChange> findOpen(AccountId client)` | replaces `open(DuePlanChange)`; `LoggingPlanChangeRepository` is deleted |
-| `PlanSource` | `Optional<PlanSnapshot> currentPlan(AccountId client)`; `Map<ExerciseId,String> exerciseNames(Set<ExerciseId>)` | JDBC read model over `plans`, `plan_sessions`, `plan_session_entries`, `exercises` |
+| `PlanSource` | `Optional<PlanSnapshot> currentPlan(AccountId client)`; `Map<ExerciseId,ExerciseLabel> exercises(Set<ExerciseId>, Language)` (library name in the language, and measure) | JDBC read model over `plans`, `plan_sessions`, `plan_session_entries`, `exercises` |
 | `PlanChangeDrafter` | `ProposedContent draft(PlanChangePromptMessages messages)` | one call is one attempt; throws `PlanChangeDraftingFailedException` (no usable answer) or `PlanChangeDrafterUnavailableException` (no service configured) |
 | `TrainingHistory` | adds `finishedDays` to `WeekTraining` | no new method |
 

@@ -46,6 +46,7 @@ One row per changed target value of one entry.
 |---|---|---|
 | plan_change_id | uuid | FK, part of PK |
 | from_position | int | position in the removed session, part of PK |
+| exercise_id | uuid | FK `exercises (id)`; copied for display, as on `plan_change_targets` |
 | to_day | varchar | weekday of the receiving session |
 
 Rule of the domain: moves exist only with a removed session; `from_*` is the removed session; at most 2 per plan change.
@@ -74,7 +75,7 @@ The exercises the rule concerns (above RPE 8, or stalled), one row each: `(plan_
 - `PlanChange(id, client, rule, state, planVersion, window, effectiveWeek, content, figures, concernedExercises, createdAt, endedAt)`; created only through a factory that takes a checked `PlanChangeContent`. No setters.
 - `PlanChangeContent(List<TargetChange> changes, Optional<RemovedSession> removed, List<SessionMove> moves)`; invariants: not empty; moves only with a removed session.
 - `TargetChange(EntryRef entry, ExerciseId exercise, String sessionName, Target target, BigDecimal oldValue, BigDecimal newValue)`.
-- `EntryRef(DayOfWeek day, int position)`, `RemovedSession(DayOfWeek day, String name)`, `SessionMove(EntryRef from, DayOfWeek toDay)`.
+- `EntryRef(DayOfWeek day, int position)`, `RemovedSession(DayOfWeek day, String name)`, `SessionMove(EntryRef from, ExerciseId exercise, DayOfWeek toDay)`.
 - `Figure(FigureKind kind, Optional<ExerciseId> exercise, LocalDate weekStart, BigDecimal value)`.
 - `Finding(Rule rule, Set<ExerciseId> exercises, List<Figure> figures)`; `DuePlanChange` gains `figures` and `List<WeekTraining> weeks` (the rule's window, oldest first; the low completion fallback counts finished sessions per weekday in it); `WeekTraining` gains `List<DayOfWeek> finishedDays`.
 - `PlanSnapshot(long version, LocalDate firstWeek, int weeks, List<SessionSnapshot> sessions)`; `SessionSnapshot(DayOfWeek day, String name, List<EntrySnapshot> entries)`; `EntrySnapshot(ExerciseId exercise, Category category, Measure measure, int sets, int amount, BigDecimal loadKg, int rpe, int restSeconds)`.

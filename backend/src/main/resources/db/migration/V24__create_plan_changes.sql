@@ -55,17 +55,22 @@ create table plan_change_targets (
 
 create index ix_plan_change_targets_exercise_id on plan_change_targets (exercise_id);
 
--- an entry of the removed session that moves to the end of another session
+-- an entry of the removed session that moves to the end of another session; its exercise is copied for the same
+-- reason as on plan_change_targets
 create table plan_change_moves (
     plan_change_id uuid       not null,
     from_position  integer    not null,
+    exercise_id    uuid       not null,
     to_day         varchar(9) not null,
     constraint pk_plan_change_moves primary key (plan_change_id, from_position),
     constraint fk_plan_change_moves_plan_change foreign key (plan_change_id) references plan_changes (id),
+    constraint fk_plan_change_moves_exercise foreign key (exercise_id) references exercises (id),
     constraint ck_plan_change_moves_from_position check (from_position >= 0),
     constraint ck_plan_change_moves_to_day check (to_day in (
         'MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY', 'SUNDAY'))
 );
+
+create index ix_plan_change_moves_exercise_id on plan_change_moves (exercise_id);
 
 -- the numbers the rule compared, one value per row
 create table plan_change_figures (

@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { api } from '@/lib/api/client'
+import { problemCode } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
 
 export type Client = components['schemas']['ClientResponse']
@@ -23,6 +24,25 @@ export function useClient(id: string | undefined) {
       const { data, error } = await api.GET('/api/v1/clients/{id}', {
         params: { path: { id: id! } },
       })
+      if (error !== undefined) throw error
+      return data
+    },
+    enabled: id !== undefined,
+  })
+}
+
+export type OpenPlanChange = components['schemas']['ClientPlanChangeResponse']
+
+/** The client's open plan change, or `null` when there is none. */
+export function useOpenPlanChange(id: string | undefined) {
+  return useQuery({
+    queryKey: ['clients', id, 'plan-change'],
+    queryFn: async (): Promise<OpenPlanChange | null> => {
+      const { data, error } = await api.GET(
+        '/api/v1/clients/{id}/plan-change',
+        { params: { path: { id: id! } } },
+      )
+      if (problemCode(error) === 'plan-change.not-found') return null
       if (error !== undefined) throw error
       return data
     },

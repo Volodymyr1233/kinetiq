@@ -9,6 +9,7 @@ import com.kinetiq.exercise.domain.model.Category;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.planchange.domain.model.EntrySnapshot;
+import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.PlanSnapshot;
 import com.kinetiq.planchange.domain.model.SessionSnapshot;
 import java.math.BigDecimal;
@@ -152,10 +153,14 @@ class JdbcPlanSourceIT {
         ExerciseId squat = insertExercise("LEGS", "REPS", "Squat", "Przysiad");
         ExerciseId own = insertExercise("LEGS", "REPS", "Sled push", null);
 
-        assertThat(source.exerciseNames(Set.of(squat, own), Language.PL))
-                .containsEntry(squat, "Przysiad")
-                .containsEntry(own, "Sled push " + own.value());
-        assertThat(source.exerciseNames(Set.of(squat), Language.EN)).containsEntry(squat, "Squat " + squat.value());
-        assertThat(source.exerciseNames(Set.of(), Language.EN)).isEmpty();
+        ExerciseId plank = insertExercise("CORE", "SECONDS", "Plank", "Deska");
+
+        assertThat(source.exercises(Set.of(squat, own, plank), Language.PL))
+                .containsEntry(squat, new ExerciseLabel("Przysiad", Measure.REPS))
+                .containsEntry(own, new ExerciseLabel("Sled push " + own.value(), Measure.REPS))
+                .containsEntry(plank, new ExerciseLabel("Deska", Measure.SECONDS));
+        assertThat(source.exercises(Set.of(squat), Language.EN))
+                .containsEntry(squat, new ExerciseLabel("Squat " + squat.value(), Measure.REPS));
+        assertThat(source.exercises(Set.of(), Language.EN)).isEmpty();
     }
 }

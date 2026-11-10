@@ -177,4 +177,47 @@ describe('ClientPage', () => {
       await screen.findByRole('heading', { name: 'Jan Nowak' }),
     ).toBeInTheDocument()
   })
+
+  it('shows the open plan change with a link to its detail, and no card without one', async () => {
+    const planChange = {
+      id: '00000000-0000-4000-9600-000000000001',
+      rule: 'HIGH_RPE',
+      state: 'PENDING',
+      title: 'Back squat: cut volume by 13%',
+      reason: 'Average RPE was 8.4 and 8.6 in the last 2 weeks, above 8.',
+      effectiveWeek: '2026-11-16',
+    }
+    renderAppAt(`/trainer/clients/${OLA.id}`, SIGNED_IN.TRAINER, (request) =>
+      new URL(request.url).pathname === `/api/v1/clients/${OLA.id}/plan-change`
+        ? json(planChange)
+        : backend(request),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: planChange.title }),
+    ).toBeInTheDocument()
+    expect(screen.getByText(planChange.reason)).toBeInTheDocument()
+    expect(
+      screen.getByText('Takes effect Mon, Nov 16 if accepted.'),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('link', { name: 'Open plan change' }),
+    ).toHaveAttribute('href', `/trainer/plan-changes/${planChange.id}`)
+  })
+
+  it('shows no plan change card when the client has none open', async () => {
+    renderAppAt(`/trainer/clients/${OLA.id}`, SIGNED_IN.TRAINER, (request) =>
+      new URL(request.url).pathname === `/api/v1/clients/${OLA.id}/plan-change`
+        ? problem(404, { status: 404, code: 'plan-change.not-found' })
+        : backend(request),
+    )
+
+    await screen.findByRole('heading', { name: 'Ola Kowalska' })
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('link', { name: 'Open plan change' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(screen.queryByText('Plan change')).not.toBeInTheDocument()
+  })
 })

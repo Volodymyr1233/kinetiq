@@ -80,7 +80,7 @@ class PlanChangeTest {
         assertThatThrownBy(() -> new PlanChangeContent(
                         List.of(CHANGE),
                         Optional.empty(),
-                        List.of(new SessionMove(new EntryRef(DayOfWeek.FRIDAY, 0), DayOfWeek.MONDAY))))
+                        List.of(new SessionMove(new EntryRef(DayOfWeek.FRIDAY, 0), SQUAT, DayOfWeek.MONDAY))))
                 .isInstanceOf(IllegalArgumentException.class);
     }
 }

@@ -1,6 +1,7 @@
 import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router'
+import { PlanChangeCard } from '@/components/plan-change-card'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import {
@@ -13,7 +14,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { errorMessageKey } from '@/lib/api/problem'
-import { isNotFound, useClient } from '../api/clients'
+import { isNotFound, useClient, useOpenPlanChange } from '../api/clients'
 import { PlanStateBadge } from '../components/plan-state-badge'
 
 const TABS = ['overview', 'plan', 'logs', 'messages'] as const
@@ -100,6 +101,7 @@ export function ClientPage() {
               })}
             </p>
           </header>
+          <OpenPlanChange clientId={client.id} />
           {/* each tab is its own address, so a reload or a shared link lands on the same tab */}
           <Tabs
             value={active}
@@ -125,6 +127,20 @@ export function ClientPage() {
         </>
       )}
     </div>
+  )
+}
+
+// shown only while the client has a plan change waiting; a failed read leaves the page as it was
+function OpenPlanChange({ clientId }: { clientId: string }) {
+  const planChange = useOpenPlanChange(clientId).data
+  if (!planChange) return null
+  return (
+    <PlanChangeCard
+      title={planChange.title}
+      reason={planChange.reason}
+      effectiveWeek={planChange.effectiveWeek}
+      to={`/trainer/plan-changes/${planChange.id}`}
+    />
   )
 }
 

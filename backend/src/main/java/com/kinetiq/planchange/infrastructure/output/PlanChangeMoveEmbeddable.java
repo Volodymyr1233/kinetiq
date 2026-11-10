@@ -4,6 +4,7 @@ import jakarta.persistence.Embeddable;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import java.time.DayOfWeek;
+import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -14,6 +15,7 @@ import lombok.Setter;
 class PlanChangeMoveEmbeddable {
 
     private int fromPosition;
+    private UUID exerciseId;
 
     @Enumerated(EnumType.STRING)
     private DayOfWeek toDay;

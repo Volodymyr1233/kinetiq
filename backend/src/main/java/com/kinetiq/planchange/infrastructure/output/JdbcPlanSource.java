@@ -6,6 +6,7 @@ import com.kinetiq.exercise.domain.model.Category;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.planchange.domain.model.EntrySnapshot;
+import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.PlanSnapshot;
 import com.kinetiq.planchange.domain.model.SessionSnapshot;
 import com.kinetiq.planchange.domain.output.PlanSource;
@@ -89,23 +90,25 @@ class JdbcPlanSource implements PlanSource {
     }
 
     @Override
-    public Map<ExerciseId, String> exerciseNames(Set<ExerciseId> exercises, Language language) {
+    public Map<ExerciseId, ExerciseLabel> exercises(Set<ExerciseId> exercises, Language language) {
         if (exercises.isEmpty()) {
             return Map.of();
         }
-        Map<ExerciseId, String> names = new HashMap<>();
+        Map<ExerciseId, ExerciseLabel> names = new HashMap<>();
         new NamedParameterJdbcTemplate(jdbc)
                 .query(
-                        "select id, name, name_pl from exercises where id in (:ids)",
+                        "select id, name, name_pl, measure from exercises where id in (:ids)",
                         new MapSqlParameterSource(
                                 "ids", exercises.stream().map(ExerciseId::value).toList()),
                         rows -> {
                             String polish = rows.getString("name_pl");
                             names.put(
                                     new ExerciseId(rows.getObject("id", UUID.class)),
-                                    language == Language.PL && polish != null && !polish.isBlank()
-                                            ? polish
-                                            : rows.getString("name"));
+                                    new ExerciseLabel(
+                                            language == Language.PL && polish != null && !polish.isBlank()
+                                                    ? polish
+                                                    : rows.getString("name"),
+                                            Measure.valueOf(rows.getString("measure"))));
                         });
         return Map.copyOf(names);
     }

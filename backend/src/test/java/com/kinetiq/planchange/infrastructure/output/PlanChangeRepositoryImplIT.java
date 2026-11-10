@@ -144,8 +144,8 @@ class PlanChangeRepositoryImplIT {
                                 new BigDecimal("7.0"))),
                 Optional.of(new RemovedSession(DayOfWeek.FRIDAY, "Full body")),
                 List.of(
-                        new SessionMove(new EntryRef(DayOfWeek.FRIDAY, 0), DayOfWeek.MONDAY),
-                        new SessionMove(new EntryRef(DayOfWeek.FRIDAY, 2), DayOfWeek.WEDNESDAY)));
+                        new SessionMove(new EntryRef(DayOfWeek.FRIDAY, 0), squat, DayOfWeek.MONDAY),
+                        new SessionMove(new EntryRef(DayOfWeek.FRIDAY, 2), row, DayOfWeek.WEDNESDAY)));
         List<Figure> figures = List.of(
                 Figure.ofWeek(FigureKind.MEAN_RPE, LocalDate.parse("2026-10-26"), new BigDecimal("8.500")),
                 Figure.bestLoad(squat, LocalDate.parse("2026-10-26"), new BigDecimal("100.000")));

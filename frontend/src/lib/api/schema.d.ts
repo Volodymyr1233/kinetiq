@@ -548,6 +548,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plan-changes/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getPlanChange"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/csrf": {
         parameters: {
             query?: never;
@@ -684,6 +700,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["ofClient"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{id}/plan-change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getOpenPlanChange"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1261,6 +1293,74 @@ export interface components {
             /** @enum {string} */
             goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
         };
+        PlanChangeExerciseResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
+        PlanChangeFigureResponse: {
+            /** @enum {string} */
+            kind: "MEAN_RPE" | "BEST_LOAD_KG" | "SESSIONS_PLANNED" | "SESSIONS_FINISHED";
+            /** Format: uuid */
+            exerciseId?: string;
+            /** Format: date */
+            weekStart: string;
+            value: number;
+        };
+        PlanChangeMoveResponse: {
+            /** Format: uuid */
+            exerciseId: string;
+            exerciseName: string;
+            /** @enum {string} */
+            fromDay: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            /** @enum {string} */
+            toDay: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+        };
+        PlanChangeRemovedSessionResponse: {
+            /** @enum {string} */
+            day: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            name: string;
+        };
+        PlanChangeResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            clientId: string;
+            clientName: string;
+            /** @enum {string} */
+            rule: "LOW_COMPLETION" | "HIGH_RPE" | "STALLED_WEIGHT";
+            /** @enum {string} */
+            state: "PENDING" | "ACCEPTED_BY_ONE" | "APPLIED" | "DECLINED" | "EXPIRED";
+            title: string;
+            reason: string;
+            /** Format: date */
+            effectiveWeek: string;
+            /** Format: date */
+            windowStart: string;
+            /** Format: date */
+            windowEnd: string;
+            targets: components["schemas"]["PlanChangeTargetResponse"][];
+            removedSession?: components["schemas"]["PlanChangeRemovedSessionResponse"];
+            moves: components["schemas"]["PlanChangeMoveResponse"][];
+            concernedExercises: components["schemas"]["PlanChangeExerciseResponse"][];
+            figures: components["schemas"]["PlanChangeFigureResponse"][];
+        };
+        PlanChangeTargetResponse: {
+            /** @enum {string} */
+            sessionDay: "MONDAY" | "TUESDAY" | "WEDNESDAY" | "THURSDAY" | "FRIDAY" | "SATURDAY" | "SUNDAY";
+            sessionName: string;
+            /** Format: int32 */
+            position: number;
+            /** Format: uuid */
+            exerciseId: string;
+            exerciseName: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            /** @enum {string} */
+            target: "SETS" | "AMOUNT" | "LOAD_KG" | "RPE" | "REST_SECONDS";
+            oldValue: number;
+            newValue: number;
+        };
         InviteListResponse: {
             invites: components["schemas"]["InviteResponse"][];
         };
@@ -1375,6 +1475,18 @@ export interface components {
             notes?: string;
             /** Format: date-time */
             submittedAt: string;
+        };
+        ClientPlanChangeResponse: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            rule: "LOW_COMPLETION" | "HIGH_RPE" | "STALLED_WEIGHT";
+            /** @enum {string} */
+            state: "PENDING" | "ACCEPTED_BY_ONE" | "APPLIED" | "DECLINED" | "EXPIRED";
+            title: string;
+            reason: string;
+            /** Format: date */
+            effectiveWeek: string;
         };
         ClientOverviewResponse: {
             /** Format: date */
@@ -2358,6 +2470,28 @@ export interface operations {
             };
         };
     };
+    getPlanChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanChangeResponse"];
+                };
+            };
+        };
+    };
     csrf: {
         parameters: {
             query?: never;
@@ -2545,6 +2679,28 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ProgressResponse"];
+                };
+            };
+        };
+    };
+    getOpenPlanChange: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientPlanChangeResponse"];
                 };
             };
         };

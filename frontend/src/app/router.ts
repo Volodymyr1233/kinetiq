@@ -132,6 +132,15 @@ export const createRoutes = (): RouteObject[] => [
         ],
       },
       {
+        path: 'plan-changes/:id',
+        HydrateFallback: BlankWhileLoading,
+        lazy: {
+          Component: async () =>
+            (await import('@/features/planchange/pages/plan-change-page'))
+              .PlanChangePage,
+        },
+      },
+      {
         path: 'approvals',
         HydrateFallback: BlankWhileLoading,
         lazy: {

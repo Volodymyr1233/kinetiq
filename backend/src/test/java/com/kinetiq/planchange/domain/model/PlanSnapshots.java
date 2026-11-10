@@ -18,6 +18,9 @@ public final class PlanSnapshots {
 
     public static final LocalDate FIRST_WEEK = LocalDate.parse("2026-09-07");
 
+    // limits never read the exercise of a move, so one stands for all
+    private static final ExerciseId MOVED = ExerciseId.random();
+
     private PlanSnapshots() {}
 
     /** An entry counting repetitions at RPE 8 with 90 seconds of rest; {@code load} may be {@code null}. */
@@ -88,6 +91,6 @@ public final class PlanSnapshots {
     }
 
     public static SessionMove move(DayOfWeek from, int position, DayOfWeek to) {
-        return new SessionMove(new EntryRef(from, position), to);
+        return new SessionMove(new EntryRef(from, position), MOVED, to);
     }
 }
