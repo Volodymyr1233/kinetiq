@@ -11,7 +11,15 @@ import com.kinetiq.planchange.domain.model.ScheduledClient;
 import com.kinetiq.planchange.domain.model.WeekTraining;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.TrainingHistory;
+import com.kinetiq.planchange.domain.rule.HighRpeFallback;
+import com.kinetiq.planchange.domain.rule.HighRpeLimits;
+import com.kinetiq.planchange.domain.rule.LowCompletionFallback;
+import com.kinetiq.planchange.domain.rule.LowCompletionLimits;
+import com.kinetiq.planchange.domain.rule.StalledWeightFallback;
+import com.kinetiq.planchange.domain.rule.StalledWeightLimits;
 import com.kinetiq.planchange.domain.service.PlanChangeDetectionService;
+import com.kinetiq.planchange.domain.service.PlanChangeDraftingService;
+import com.kinetiq.planchange.domain.service.PlanChangeLimits;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -101,9 +109,19 @@ class WeeklyClaimRollbackIT {
     static class Wiring {
 
         @Bean
-        DetectPlanChangesUseCase detectPlanChangesUseCase(TrainingHistory history, PlanChangeRepository planChanges) {
+        DetectPlanChangesUseCase detectPlanChangesUseCase(
+                TrainingHistory history, PlanChangeRepository planChanges, JdbcTemplate jdbc) {
             return new PlanChangeDetectionService(
-                    new FailsAfterClaim(history), planChanges, List.of(), Clock.fixed(NOW, ZoneOffset.UTC));
+                    new FailsAfterClaim(history),
+                    planChanges,
+                    List.of(),
+                    new JdbcPlanSource(jdbc),
+                    new PlanChangeDraftingService(
+                            new UnavailablePlanChangeDrafter(),
+                            new PlanChangeLimits(
+                                    List.of(new LowCompletionLimits(), new HighRpeLimits(), new StalledWeightLimits())),
+                            List.of(new LowCompletionFallback(), new HighRpeFallback(), new StalledWeightFallback())),
+                    Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }
 

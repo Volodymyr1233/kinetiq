@@ -4,9 +4,12 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.model.DuePlanChange;
 import com.kinetiq.planchange.domain.model.Finding;
+import com.kinetiq.planchange.domain.model.PlanChange;
+import com.kinetiq.planchange.domain.model.PlanSnapshot;
 import com.kinetiq.planchange.domain.model.ScheduledClient;
 import com.kinetiq.planchange.domain.model.WeekTraining;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
+import com.kinetiq.planchange.domain.output.PlanSource;
 import com.kinetiq.planchange.domain.output.TrainingHistory;
 import com.kinetiq.planchange.domain.rule.PlanChangeRule;
 import java.time.Clock;
@@ -29,6 +32,8 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
     private final TrainingHistory history;
     private final PlanChangeRepository planChanges;
     private final List<PlanChangeRule> rules;
+    private final PlanSource plans;
+    private final PlanChangeDraftingService drafting;
     private final Clock clock;
 
     @Override
@@ -40,9 +45,27 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
                 .toList();
     }
 
+    // ponytail: drafting runs inside this use case's transaction, so a connection is held for up to two LLM timeouts per
+    // client; move drafting out of the transaction if sweeps ever run many clients at once
     @Override
     public void check(AccountId client) {
-        chooseDue(client).ifPresent(due -> log.info("Plan change due, rule={}", due.rule()));
+        chooseDue(client).ifPresent(this::store);
+    }
+
+    // a failure leaves nothing: the week's claim rolls back with it and the next sweep tries again
+    private void store(DuePlanChange due) {
+        Optional<PlanSnapshot> plan = plans.currentPlan(due.client());
+        Instant now = clock.instant();
+        if (plan.isEmpty() || PlanChange.effectiveWeek(now, due.zone()).isAfter(plan.get().lastWeek())) {
+            log.info("Plan change not created, rule={}, reason=no-plan-week-left", due.rule());
+            return;
+        }
+        drafting.draft(plan.get(), due).ifPresentOrElse(
+                content -> {
+                    planChanges.save(PlanChange.create(due, content, plan.get().version(), now));
+                    log.info("Plan change created, rule={}", due.rule());
+                },
+                () -> log.info("Plan change not created, rule={}, reason=nothing-to-change", due.rule()));
     }
 
     /** Claims the client's check week and returns the plan change due for it, if a rule fires. */
