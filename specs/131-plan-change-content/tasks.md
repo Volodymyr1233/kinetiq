@@ -77,11 +77,11 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). The pull 
 
 **Independent test**: hand-computed results per rule, including rounding edges.
 
-- [ ] T016 [P] [US4] `PC/domain/rule/FixedTransformation` interface (`Rule rule()`, `Optional<PlanChangeContent> apply(PlanSnapshot plan, DuePlanChange due)`; empty when the formula changes nothing).
-- [ ] T017 [P] [US4] `HighRpeFallback`: for every entry of a concerned exercise `amount' = max(1, min(amount − 1, round-half-up(amount × 0.9)))`; sets, load, RPE untouched; only entries where the value changes (amount 1 stays). Tests: 10→9, 5→4 (−20%, exempt from the 15% limit), 2→1, 1 unchanged, a repeated exercise changes both entries, a seconds exercise (30→27).
-- [ ] T018 [P] [US4] `StalledWeightFallback`: for every entry of a stalled exercise with a load `load' = ceil-to-0.5(load × 1.05)`; nothing else; a result above 999.9 is skipped. Tests: 100→105, 101→106.5 (106.05 rounds up), 20→21, 1.0→1.5 (exempt from the 15% limit), bodyweight entry untouched.
-- [ ] T019 [P] [US4] `LowCompletionFallback`: removes the plan session finished least often over `due.weeks()` (count `finishedDays` per weekday); a tie goes to the latest weekday; moves nothing; empty when the plan has 2 sessions. Tests: clear minimum, tie between Tuesday and Friday (Friday), a session never finished, plan of 2.
-- [ ] T020 [US4] Test that each fallback result passes `PlanRuleLimits` and that the same input gives the same output twice. Run `./gradlew check`; commit `feat(backend): add fixed transformation per rule (#135)`.
+- [X] T016 [P] [US4] `PC/domain/rule/FixedTransformation` interface (`Rule rule()`, `Optional<PlanChangeContent> apply(PlanSnapshot plan, DuePlanChange due)`; empty when the formula changes nothing).
+- [X] T017 [P] [US4] `HighRpeFallback`: for every entry of a concerned exercise `amount' = max(1, min(amount − 1, round-half-up(amount × 0.9)))`; sets, load, RPE untouched; only entries where the value changes (amount 1 stays). Tests: 10→9, 5→4 (−20%, exempt from the 15% limit), 2→1, 1 unchanged, a repeated exercise changes both entries, a seconds exercise (30→27).
+- [X] T018 [P] [US4] `StalledWeightFallback`: for every entry of a stalled exercise with a load `load' = ceil-to-0.5(load × 1.05)`; nothing else; a result above 999.9 is skipped. Tests: 100→105, 101→106.5 (106.05 rounds up), 20→21, 1.0→1.5 (exempt from the 15% limit), bodyweight entry untouched.
+- [X] T019 [P] [US4] `LowCompletionFallback`: removes the plan session finished least often over `due.weeks()` (count `finishedDays` per weekday); a tie goes to the latest weekday; moves nothing; empty when the plan has 2 sessions. Tests: clear minimum, tie between Tuesday and Friday (Friday), a session never finished, plan of 2.
+- [X] T020 [US4] Test that each fallback result passes `PlanRuleLimits` and that the same input gives the same output twice. Run `./gradlew check`; commit `feat(backend): add fixed transformation per rule (#135)`.
 
 ---
 
