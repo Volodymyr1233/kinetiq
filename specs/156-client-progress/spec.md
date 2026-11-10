@@ -189,7 +189,7 @@ The main English and Polish texts. Polish uses informal "ty" and should be confi
 | Sessions chart | Subtitle "Sessions done by week" · Week {n} has {k} sessions left. | Podtytuł „Zrobione sesje w tygodniu” · W tygodniu {n} zostały {k} sesje. |
 | Sessions chart title (finding) | {n} of {weeks} weeks at 70% or more | {n} z {weeks} tygodni na 70% lub więcej |
 | By exercise | By exercise · Top set, kg · Average RPE | Według ćwiczeń · Najlepsza seria, kg · Średnie RPE |
-| Exercise chart title (finding) | Top set rose / fell {change} in {weeks} weeks · Top set held at {value} | Najlepsza seria wzrosła / spadła o {change} w {weeks} tyg. · Najlepsza seria bez zmian: {value} |
+| Exercise chart title (finding) | Top set rose / fell {change} in {weeks} weeks · Top set held at {value} | Najlepsza seria wzrosła / spadła o {change} w {weeks} tygodnie / tygodni · Najlepsza seria bez zmian: {value} |
 | Recent sets | Date · Top set · RPE | Data · Najlepsza seria · RPE |
 | Show as table | Show as table · Show as chart | Pokaż jako tabelę · Pokaż jako wykres |
 | Nothing logged | Log a session to see your progress here. | Zapisz sesję, a tu zobaczysz swoje postępy. |

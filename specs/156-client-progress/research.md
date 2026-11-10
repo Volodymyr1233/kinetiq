@@ -106,3 +106,17 @@ Two details came out of that check. Recharts is 3.10, not the 3.8.0 the CLI inst
 - "Show as table": the button's text says what it does next ("Show as table", "Show as chart"), so it has no `aria-pressed`, which would contradict a text that changes with the state.
 
 **Why**: The board fixes layout and copy; where it is silent or below the design system's rules (comparisons named, more than colour, 3:1 for a chosen state, fixed series colours), the design system decides.
+
+## R15. The board's "By exercise" against task #161
+
+**Decision**: Task #161 follows the board's "By exercise" (section 6.8: "load line (`chart-3`) with RPE (`chart-2`) on a secondary axis. A session table goes below"), with these differences, compared with section 3.7:
+
+- Layout: the board has one card titled "By exercise" holding the chips, a legend, the chart and the last sessions. Here "By exercise" is the heading of a section that holds the chips, then a chart card like the sessions chart, its title the finding (FR-021) one heading level below "By exercise" and its subtitle the two axes ("Top set, kg · Average RPE"), then the last sessions in a card of their own, since "Show as table" swaps only the chart's weekly numbers.
+- Chips: as on the board and as the exercise library's category chips, outlined pills with the chosen one filled with ink, and announced as chosen; 48 px tall, the client's touch target.
+- Series labels: the board names the lines in a legend. Section 3.7 labels a series at its line's end and keeps the legend as a fallback, and in a legend only colour would tell the two lines apart. Each line ends in its last value, "105 kg" and "RPE 8.0", which names the series by its unit or name and fits a phone's width in both languages, where "Najlepsza seria" would not. The label of the higher end sits above it and the lower one's below, so the two do not overlap where the lines meet.
+- Axes: the board shows the RPE axis's 5 and 10 on the right and "wk 14" under the last point. Here 5 and 10 stand on the left, since the right edge holds the line labels, and every week number stands under the chart, as on the sessions chart. The top set has no axis, as on the board; its values are in its label and in the table.
+- Target band: not on the board; the 7–8 band of FR-019 is a 10% tint of the RPE colour behind the lines (section 3.7). Section 3.7 labels a band at the right edge, but there the label met the lines' last points and labels, which usually end inside the band; "7–8" stands at its left edge instead, beside the RPE axis's 5 and 10.
+- Points: the board draws lines without points. Here each week with a value has a point, so a week whose neighbours lack the exercise still shows, and a week without the exercise leaves a gap in the line instead of a line drawn through it (FR-019).
+- Last sessions: Date · Top set · RPE, newest first, as on the board; dates as "Wed 7 Oct" in the reader's language; the table has a caption for assistive technology, which the board does not show.
+
+**Why**: As in R14, the board fixes layout and copy, and the design system decides where the board is silent or below its rules (direct labels, not colour alone, a target band, touch targets).

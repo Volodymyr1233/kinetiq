@@ -7,13 +7,14 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useProgress } from '../api/progress'
+import { ExerciseProgress } from '../components/exercise-progress'
 import { ProgressTiles } from '../components/progress-tiles'
 import { SessionsChart } from '../components/sessions-chart'
 
 const PERIODS = [4, 8, 12] as const
 type Period = (typeof PERIODS)[number]
 
-/** The client's Progress tab: the plan weeks of the chosen period in tiles and a chart. */
+/** The client's Progress tab: the plan weeks of the chosen period in tiles and charts, and each exercise's progress. */
 export function ProgressPage() {
   const { t } = useTranslation()
   const [weeks, setWeeks] = useState<Period>(8)
@@ -101,7 +102,15 @@ export function ProgressPage() {
           {t('progress.nothingLogged')}
         </p>
       ) : (
-        <SessionsChart weeks={progress.weeks} />
+        <>
+          <SessionsChart weeks={progress.weeks} />
+          {progress.exercises.length > 0 && (
+            <ExerciseProgress
+              exercises={progress.exercises}
+              weeks={progress.weeks.map((week) => week.number)}
+            />
+          )}
+        </>
       )}
     </div>
   )

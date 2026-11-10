@@ -4,9 +4,9 @@ import { Badge } from '@/components/ui/badge'
 import { Card, CardContent, CardDescription } from '@/components/ui/card'
 import { Progress as ProgressBar } from '@/components/ui/progress'
 import { cn } from '@/lib/utils'
-import { fromKg, useWeightUnit } from '@/lib/weight'
 import type { ExerciseProgress, Progress } from '../api/progress'
 import { rpePlace } from '../findings'
+import { useMeasured } from '../use-measured'
 
 const PLACE_COLOUR = {
   below: 'text-rpe-easy',
@@ -112,32 +112,6 @@ function BestSetTile({ exercise }: { exercise: ExerciseProgress }) {
       )}
     </Tile>
   )
-}
-
-/** A size of an exercise's set: a load in the reader's weight unit, or repetitions or seconds. */
-function useMeasured(measure: ExerciseProgress['measure']) {
-  const { t, i18n } = useTranslation()
-  const weightUnit = useWeightUnit()
-
-  return (size: number, isLoad: boolean) => {
-    const value = (n: number) =>
-      new Intl.NumberFormat(i18n.language, {
-        maximumFractionDigits: 1,
-      }).format(n)
-    if (isLoad) {
-      return {
-        value: value(fromKg(size, weightUnit)),
-        unit: t(`plan.units.${weightUnit}`),
-      }
-    }
-    return {
-      value: value(size),
-      unit:
-        measure === 'SECONDS'
-          ? t('progress.units.seconds')
-          : t('progress.units.reps', { count: size }),
-    }
-  }
 }
 
 function Tile({ label, children }: { label: string; children: ReactNode }) {
