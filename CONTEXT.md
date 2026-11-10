@@ -130,6 +130,10 @@ Rate of perceived exertion: how hard a set felt on a 1–10 scale. 1–6 is easy
 A client's best logged result for an exercise.
 _Avoid_: Record, achievement
 
+**Top set**:
+The best set of an exercise in a session or a week: a set with a load before one without, then the highest load, then the most repetitions or seconds.
+_Avoid_: Best set, max
+
 ### Readiness
 
 **Check-in**:
