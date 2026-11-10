@@ -3,6 +3,7 @@ package com.kinetiq.planchange.domain.rule;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.planchange.domain.model.Figure;
 import com.kinetiq.planchange.domain.model.Finding;
 import com.kinetiq.planchange.domain.model.LoggedSet;
 import com.kinetiq.planchange.domain.model.Rule;
@@ -27,7 +28,7 @@ class StalledWeightRuleTest {
     }
 
     private static WeekTraining week(int index, LoggedSet... sets) {
-        return new WeekTraining(LocalDate.parse("2026-10-19").plusWeeks(index), 3, 3, 3, List.of(sets));
+        return new WeekTraining(LocalDate.parse("2026-10-19").plusWeeks(index), 3, 3, 3, List.of(sets), List.of());
     }
 
     // one exercise, one set a week, at the given loads and RPE
@@ -82,7 +83,7 @@ class StalledWeightRuleTest {
         first.add(set(SQUAT, "100.0", 9));
 
         assertThat(rule.evaluate(List.of(
-                        new WeekTraining(LocalDate.parse("2026-10-19"), 3, 3, 3, first),
+                        new WeekTraining(LocalDate.parse("2026-10-19"), 3, 3, 3, first, List.of()),
                         week(1, set(SQUAT, "100.0", 8), set(SQUAT, "100.0", 8)),
                         week(2, set(SQUAT, "100.0", 8)))))
                 .isEmpty();
@@ -122,5 +123,20 @@ class StalledWeightRuleTest {
                 week(2, set(SQUAT, "102.0", 7))));
 
         assertThat(finding).isPresent();
+    }
+
+    @Test
+    void shouldReportTheBestLoadOfEveryWeek_forTheStalledExercisesOnly() {
+        Finding finding = rule.evaluate(List.of(
+                        week(0, set(SQUAT, "100.0", 7), set(SQUAT, "80.0", 7), set(BENCH, "60.0", 7)),
+                        week(1, set(SQUAT, "101.0", 7), set(BENCH, "65.0", 7)),
+                        week(2, set(SQUAT, "102.5", 7), set(BENCH, "70.0", 7))))
+                .orElseThrow();
+
+        assertThat(finding.figures())
+                .containsExactly(
+                        Figure.bestLoad(SQUAT, LocalDate.parse("2026-10-19"), new BigDecimal("100.0")),
+                        Figure.bestLoad(SQUAT, LocalDate.parse("2026-10-26"), new BigDecimal("101.0")),
+                        Figure.bestLoad(SQUAT, LocalDate.parse("2026-11-02"), new BigDecimal("102.5")));
     }
 }

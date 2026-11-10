@@ -2,7 +2,10 @@ package com.kinetiq.planchange.domain.rule;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.kinetiq.planchange.domain.model.Figure;
+import com.kinetiq.planchange.domain.model.FigureKind;
 import com.kinetiq.planchange.domain.model.WeekTraining;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -12,7 +15,7 @@ class LowCompletionRuleTest {
     private final LowCompletionRule rule = new LowCompletionRule();
 
     private static WeekTraining week(int index, int inPlan, int planned, int finished) {
-        return new WeekTraining(LocalDate.parse("2026-11-02").plusWeeks(index), inPlan, planned, finished, List.of());
+        return new WeekTraining(LocalDate.parse("2026-11-02").plusWeeks(index), inPlan, planned, finished, List.of(), List.of());
     }
 
     private boolean fires(WeekTraining first, WeekTraining second) {
@@ -60,5 +63,18 @@ class LowCompletionRuleTest {
     @Test
     void shouldNotFire_whenNothingWasPlanned() {
         assertThat(fires(week(0, 3, 0, 0), week(1, 3, 0, 0))).isFalse();
+    }
+
+    @Test
+    void shouldReportThePlannedAndFinishedSessionsOfEveryWeek_asTheNumbersItCompared() {
+        WeekTraining first = week(0, 3, 3, 2);
+        WeekTraining second = week(1, 3, 2, 1);
+
+        assertThat(rule.evaluate(List.of(first, second)).orElseThrow().figures())
+                .containsExactly(
+                        Figure.ofWeek(FigureKind.SESSIONS_PLANNED, first.monday(), BigDecimal.valueOf(3)),
+                        Figure.ofWeek(FigureKind.SESSIONS_FINISHED, first.monday(), BigDecimal.valueOf(2)),
+                        Figure.ofWeek(FigureKind.SESSIONS_PLANNED, second.monday(), BigDecimal.valueOf(2)),
+                        Figure.ofWeek(FigureKind.SESSIONS_FINISHED, second.monday(), BigDecimal.valueOf(1)));
     }
 }
