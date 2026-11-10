@@ -31,7 +31,7 @@ No screen yet. `./gradlew check` in `backend/`: `JdbcTrainingLogIT` proves the t
 2. Switch to 4 and 12 weeks: every figure follows; weeks before week 1 never appear.
 3. The sessions chart marks the current week as running with the sessions it has left, and its title counts the completed weeks at 70% or more. "Show as table" shows the same numbers as a table.
 4. Average RPE says within, above or below the 7–8 target in words; the comparison with the week before shows an arrow and its value.
-5. Sign in as `demo.client.draft`: the tab says the progress shows once the trainer publishes the plan.
+5. Sign in as `demo.client.draft`: the waiting state stands in for every tab until a plan is published (spec 50), Progress included. The tab's own text for a client without a published plan is proven by `progress-page.test.tsx`.
 6. Switch the client's units to lb in Settings: loads are in pounds.
 7. Check light and dark at 375 px, keyboard focus and names, English and Polish, and an empty console.
 

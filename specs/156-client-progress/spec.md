@@ -116,7 +116,7 @@ A trainer can read the same statistics for each of their own clients, so the pro
 
 - **FR-012**: The Progress tab MUST show, as on the board "Client · Progress": the plan's goal and current plan week, the period switch (4, 8, 12 weeks; 8 when it opens), the four tiles, the sessions chart and "By exercise".
 - **FR-013**: "Sessions done" MUST show the sessions done out of the sessions planned in the period, a bar of done against planned, and the comparison of FR-007.
-- **FR-014**: "Average RPE" MUST show the period's mean RPE to one decimal, whether it is within, above or below the 7–8 target, decided on the value shown (7.0 to 8.0 is within), said in words and with an arrow, never by colour alone, and the comparison of FR-007.
+- **FR-014**: "Average RPE" MUST show the period's mean RPE to one decimal, whether it is within, above or below the 7–8 target, decided on the value shown (7.0 to 8.0 is within), said in words, never by colour alone, and the comparison of FR-007 with its arrow.
 - **FR-015**: The best-set tile MUST show the first exercise in the order of FR-018: its name, its top set in the period, the comparison of FR-007, and "PR today" when FR-005 holds.
 - **FR-016**: "In a row" MUST show the weeks of FR-006 with the rule "At least 2 sessions each week".
 - **FR-017**: The sessions chart MUST show one bar per week of the period, sessions done against sessions planned, a line at 70%, the plan week numbers below, and the current week marked as running with a line saying how many sessions it has left.

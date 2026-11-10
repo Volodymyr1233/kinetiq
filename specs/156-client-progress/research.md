@@ -91,3 +91,18 @@ Two details came out of that check. Recharts is 3.10, not the 3.8.0 the CLI inst
 ## R13. Task scope against the issues
 
 **Decision**: #157 ("Completion, mean RPE and best set per exercise per week") builds the queries and the weekly figures; #158 ("Endpoint for the client's own statistics and, for trainers, their clients' statistics") builds the statistics the spec defines from those weeks and serves them; #159, #160 and #161 are the chart, the tab and "By exercise" as their issues name them, "recent sets" included. Nothing in this plan lies outside the five issues.
+
+## R14. The board "Client · Progress" against task #160
+
+**Decision**: Task #160 follows the board's layout, with these differences (compared with the design system's Card `metric`, Badge, ToggleGroup and sections 3.2, 3.7 and 6.8):
+
+- Header: the client area's header already holds the tab's title, "Progress", as the page heading. The board's line "{goal} · Week {n}" stands above that title; here it is the page's first line, under it, in the small mono capitals of the other client screens' lines of this kind (readiness card, quiz).
+- Period switch: the board's muted track with the chosen option raised, as the client's settings toggles. Like them, the chosen option also has an ink border and a heavier weight, since white on the muted track is far below 3:1.
+- Tiles: the board shows a comparison only on Average RPE ("▲ 0.6 · above 7–8 target"). Sessions done and the best set get theirs too (FR-013, FR-015), and every comparison names what it compares, "▲ 0.6 week on week", as section 6.8 asks of a KPI tile's delta ("▲ 0.6 vs last week"). Values are `text-metric`, the KPI tile value of section 3.2.
+- Average RPE: the board's one arrow belongs to the comparison. The place against 7–8 is a line of its own, in words, in `rpe-easy`, `rpe-target` or `rpe-hard`, without a second arrow that could point against the first (FR-014).
+- Sessions done bar: lime green on the board, while the shadcn `Progress` indicator is ink, so it takes `chart-1`, the completion series of section 3.7. The added `components/ui/progress.tsx` keeps `value` from the Radix root, which then announces no value; it passes it on.
+- "PR today": a lime pill on the board, the PR badge of section 6.8. The design system lists a `brand` Badge variant (section 4) that `components/ui/badge.tsx` does not have yet, so it is added there.
+- Sessions chart: as on the board, no value axis and no grid lines; bars of done as a share of planned, a dashed 70% line labelled at its right end, week numbers below. The running week is lighter and named by the line under the chart. A lighter fill alone is under 3:1 against the card, so that bar also has an outline in the series colour. Recharts 3 deprecates `Cell`, so the lighter bar is drawn through the bar's `shape`.
+- "Show as table": the button's text says what it does next ("Show as table", "Show as chart"), so it has no `aria-pressed`, which would contradict a text that changes with the state.
+
+**Why**: The board fixes layout and copy; where it is silent or below the design system's rules (comparisons named, more than colour, 3:1 for a chosen state, fixed series colours), the design system decides.
