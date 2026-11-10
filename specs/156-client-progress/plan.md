@@ -12,7 +12,7 @@ A client reads how their last 4, 8 or 12 plan weeks went on the Progress tab, an
 
 **Language/Version**: Java 25 (Spring Boot 4.1) backend; TypeScript, React 19 frontend
 
-**Primary Dependencies**: Existing: Spring MVC, Spring JDBC (`JdbcTemplate`, as the other read models), Lombok; React Router, TanStack Query, react-i18next, shadcn (`card` with its `metric` variant, `badge`, `toggle-group`, `table`, `skeleton`, `alert`, `empty`, present). New: shadcn `chart` with Recharts (#159, the version the shadcn CLI installs), shadcn `progress` (#160, the sessions bar)
+**Primary Dependencies**: Existing: Spring MVC, Spring JDBC (`JdbcTemplate`, as the other read models), Lombok; React Router, TanStack Query, react-i18next, shadcn (`card` with its `metric` variant, `badge`, `toggle-group`, `table`, `skeleton`, `alert`, `empty`, present). New: shadcn `chart` with Recharts 3.10 (#159, see research R10), shadcn `progress` (#160, the sessions bar)
 
 **Storage**: PostgreSQL, unchanged; no migration
 
