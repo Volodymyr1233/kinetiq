@@ -21,7 +21,7 @@ The same for one of the signed-in trainer's clients. Role TRAINER.
 |---|---|
 | `200` | `ProgressResponse`, equal to the client's own for the same period |
 | `400 progress.period-invalid` | `weeks` is not 4, 8 or 12 |
-| `404 client.not-found` | the client is another trainer's, or unknown; checked before anything else |
+| `404 client.not-found` | the client is another trainer's, or unknown; checked before any of the client's data is read |
 | `404 plan.not-found` | the client has no published plan |
 | `401` / `403` | not signed in / signed in as a client |
 

@@ -119,6 +119,9 @@
       "already-published": "Ten plan jest już opublikowany. Odśwież stronę, aby go zobaczyć.",
       "rebuild-limit-reached": "Wykorzystano dzisiejszy limit automatycznych budowań. Spróbuj ponownie później."
     },
+    "progress": {
+      "period-invalid": "Wybierz 4, 8 lub 12 tygodni."
+    },
     "quiz": {
       "not-found": "Ten klient nie wypełnił jeszcze quizu."
     },

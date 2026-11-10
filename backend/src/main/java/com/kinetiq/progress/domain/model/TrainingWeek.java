@@ -39,10 +39,27 @@ public record TrainingWeek(
     }
 
     /** One exercise in a week: its top set, the best of its sessions', and the sum and count of its RPE. */
-    public record ExerciseWeek(TopSet top, int rpeSum, int sets) {}
+    public record ExerciseWeek(TopSet top, int rpeSum, int sets) {
+
+        /** The mean RPE of the exercise's sets in the week, to one decimal, half up. */
+        public BigDecimal averageRpe() {
+            return mean(rpeSum, sets).orElseThrow();
+        }
+    }
 
     /** The mean RPE of the week's sets to one decimal, half up; empty without sets. */
     public Optional<BigDecimal> averageRpe() {
+        return mean(rpeSum, sets);
+    }
+
+    /** The mean RPE of every set of these weeks to one decimal, half up; empty without sets. */
+    public static Optional<BigDecimal> averageRpe(List<TrainingWeek> weeks) {
+        return mean(
+                weeks.stream().mapToInt(TrainingWeek::rpeSum).sum(),
+                weeks.stream().mapToInt(TrainingWeek::sets).sum());
+    }
+
+    private static Optional<BigDecimal> mean(int rpeSum, int sets) {
         if (sets == 0) {
             return Optional.empty();
         }

@@ -42,7 +42,7 @@
 
 ## R6. Weeks in a row
 
-**Decision**: Counted backwards from the last completed week over every plan week from week 1: a week counts when the client did at least 2 sessions, or every planned session when it had fewer than 2; the first week that does not count ends the streak. The running week adds one once it already counts. Independent of the period.
+**Decision**: Counted backwards from the last completed week over every plan week from week 1: a week counts when the client did at least 2 sessions, or every planned session when it had fewer than 2; the first week that does not count ends the streak. A week without a planned session, which only a first week published after its last session day can be, does not count. The running week adds one once it already counts. Independent of the period.
 
 **Why**: The board's rule "At least 2 sessions each week" and the spec's edge case for a first week shortened by the publish day. A running week cannot break the streak before it ends.
 

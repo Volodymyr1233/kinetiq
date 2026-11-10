@@ -500,6 +500,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["own"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plan": {
         parameters: {
             query?: never;
@@ -652,6 +668,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["quizAnswers"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/clients/{id}/progress": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["ofClient"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1137,6 +1169,72 @@ export interface components {
             /** Format: date */
             today: string;
             sessions: components["schemas"]["SessionStateResponse"][];
+        };
+        ExerciseProgressResponse: {
+            /** Format: uuid */
+            exerciseId: string;
+            name: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            best: components["schemas"]["TopSetResponse"];
+            topSetChange?: components["schemas"]["TopSetChangeResponse"];
+            prToday: boolean;
+            weeks: components["schemas"]["ExerciseWeekResponse"][];
+            recent: components["schemas"]["RecentSetResponse"][];
+        };
+        ExerciseWeekResponse: {
+            /** Format: int32 */
+            number: number;
+            top: components["schemas"]["TopSetResponse"];
+            averageRpe: number;
+        };
+        ProgressResponse: {
+            /** @enum {string} */
+            goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** Format: int32 */
+            week: number;
+            finished: boolean;
+            /** Format: int32 */
+            sessionsDone: number;
+            /** Format: int32 */
+            sessionsPlanned: number;
+            /** Format: int32 */
+            sessionsDoneChange?: number;
+            averageRpe?: number;
+            averageRpeChange?: number;
+            /** Format: int32 */
+            weeksInARow: number;
+            weeks: components["schemas"]["ProgressWeekResponse"][];
+            exercises: components["schemas"]["ExerciseProgressResponse"][];
+        };
+        ProgressWeekResponse: {
+            /** Format: int32 */
+            number: number;
+            /** Format: date */
+            startsOn: string;
+            /** Format: int32 */
+            planned: number;
+            /** Format: int32 */
+            done: number;
+            running: boolean;
+            averageRpe?: number;
+        };
+        RecentSetResponse: {
+            /** Format: date */
+            date: string;
+            top: components["schemas"]["TopSetResponse"];
+        };
+        TopSetChangeResponse: {
+            loadKg?: number;
+            /** Format: int32 */
+            amount?: number;
+        };
+        TopSetResponse: {
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
+            /** Format: int32 */
+            rpe: number;
         };
         ClientPlanResponse: {
             /** @enum {string} */
@@ -2196,6 +2294,28 @@ export interface operations {
             };
         };
     };
+    own: {
+        parameters: {
+            query: {
+                weeks: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProgressResponse"];
+                };
+            };
+        };
+    };
     getOwnPlan: {
         parameters: {
             query?: {
@@ -2401,6 +2521,30 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["QuizAnswersResponse"];
+                };
+            };
+        };
+    };
+    ofClient: {
+        parameters: {
+            query: {
+                weeks: number;
+            };
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ProgressResponse"];
                 };
             };
         };
