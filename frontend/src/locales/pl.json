@@ -1428,7 +1428,7 @@
       "title": "Skąd ta zmiana",
       "subtitle": {
         "HIGH_RPE": "Średnie RPE w kolejnych tygodniach. Reguła działa, gdy w każdym tygodniu przekracza 8.",
-        "STALLED_WEIGHT": "Najlepsze obciążenie w ćwiczeniu {{exercise}} w kolejnych tygodniach. Reguła działa, gdy wzrost jest mniejszy niż 5%.",
+        "STALLED_WEIGHT": "Najlepsze obciążenie w kolejnych tygodniach w każdym ćwiczeniu, które wskazała reguła. Reguła działa, gdy wzrost jest mniejszy niż 5%.",
         "LOW_COMPLETION": "Odsetek ukończonych zaplanowanych sesji w kolejnych tygodniach. Reguła działa poniżej 70%."
       },
       "series": {
