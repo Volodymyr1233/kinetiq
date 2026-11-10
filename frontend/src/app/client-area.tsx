@@ -133,14 +133,3 @@ function ClientTabs() {
 export function PlanReadyRoute() {
   return <PlanReadyPage settings={<SettingsSheet />} />
 }
-
-// the four tabs show this until their features are built
-export function ClientPlaceholder() {
-  const { t } = useTranslation()
-
-  return (
-    <p className="text-muted-foreground px-4 text-sm">
-      {t('placeholderPage.body')}
-    </p>
-  )
-}

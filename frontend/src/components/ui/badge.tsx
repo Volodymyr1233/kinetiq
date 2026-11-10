@@ -23,6 +23,8 @@ const badgeVariants = cva(
         info: "bg-info-muted text-info",
         // design system: today's targets are lighter than planned, never red
         adjusted: "bg-adjusted-muted text-adjusted",
+        // design system: a reward on client screens, such as a PR logged today
+        brand: "bg-brand text-brand-foreground",
         ghost:
           "hover:bg-muted hover:text-muted-foreground dark:hover:bg-muted/50",
         link: "text-primary underline-offset-4 hover:underline",

@@ -7,14 +7,6 @@ import { NotFoundPage } from '@/app/not-found-page'
 // area chunks are tiny, so a blank frame while one loads beats a flashing spinner
 const BlankWhileLoading = () => null
 
-const clientPlaceholder = (path: string): RouteObject => ({
-  path,
-  lazy: {
-    Component: async () =>
-      (await import('@/app/client-area')).ClientPlaceholder,
-  },
-})
-
 // each area and the account pages are their own chunks, downloaded on the first
 // visit; a router consumes the lazy objects it loads, so every router needs fresh routes
 export const createRoutes = (): RouteObject[] => [
@@ -283,7 +275,14 @@ export const createRoutes = (): RouteObject[] => [
                   .ClientPlanPage,
             },
           },
-          clientPlaceholder('progress'),
+          {
+            path: 'progress',
+            lazy: {
+              Component: async () =>
+                (await import('@/features/progress/pages/progress-page'))
+                  .ProgressPage,
+            },
+          },
           {
             path: 'messages',
             HydrateFallback: BlankWhileLoading,

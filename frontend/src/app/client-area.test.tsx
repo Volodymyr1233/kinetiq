@@ -11,11 +11,26 @@ import {
 } from '@/test/page'
 
 // a client with a published plan gets the area itself
-// the states of Plan and Today are empty unless a test says otherwise
-const otherCalls: Reply = (request) =>
-  new URL(request.url).pathname === '/api/v1/session-states'
-    ? json({ today: '2026-11-05', sessions: [] })
-    : new Response(null, { status: 204 })
+// the states of Plan and Today and the progress are empty unless a test says otherwise
+const otherCalls: Reply = (request) => {
+  const path = new URL(request.url).pathname
+  if (path === '/api/v1/session-states') {
+    return json({ today: '2026-11-05', sessions: [] })
+  }
+  if (path === '/api/v1/progress') {
+    return json({
+      goal: 'BUILD_MUSCLE',
+      week: 1,
+      finished: false,
+      sessionsDone: 0,
+      sessionsPlanned: 3,
+      weeksInARow: 0,
+      weeks: [],
+      exercises: [],
+    })
+  }
+  return new Response(null, { status: 204 })
+}
 
 const published = (reply: Reply = otherCalls) =>
   quizStatus('PLAN_PUBLISHED', reply)

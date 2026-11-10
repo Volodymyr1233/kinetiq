@@ -42,9 +42,6 @@
   "areaError": {
     "retry": "Spróbuj ponownie"
   },
-  "placeholderPage": {
-    "body": "Ten ekran pojawi się razem ze swoją funkcją."
-  },
   "notFound": {
     "title": "Nie znaleziono strony",
     "body": "Sprawdź adres albo wróć na stronę główną.",
@@ -1250,5 +1247,85 @@
       "announceOriginal": "Używasz celów z planu."
     }
   },
-  "targetChange": "{{planned}}, dziś {{today}}"
+  "targetChange": "{{planned}}, dziś {{today}}",
+  "progress": {
+    "loading": "Wczytywanie postępów",
+    "noPlan": "Postępy pojawią się tu, gdy trener opublikuje Twój plan.",
+    "nothingLogged": "Zapisz sesję, a tu zobaczysz swoje postępy.",
+    "retry": "Spróbuj ponownie",
+    "header": {
+      "week": "{{goal}} · Tydzień {{week, number}}",
+      "finished": "{{goal}} · Plan zakończony"
+    },
+    "period": {
+      "label": "Okres",
+      "weeks_one": "{{count, number}} tydzień",
+      "weeks_few": "{{count, number}} tygodnie",
+      "weeks_many": "{{count, number}} tygodni",
+      "weeks_other": "{{count, number}} tygodnia"
+    },
+    "tiles": {
+      "label": "Wyniki z okresu",
+      "noSets": "Brak zapisanych serii w tym okresie."
+    },
+    "sessions": {
+      "label": "Zrobione sesje",
+      "of": "z {{planned}}",
+      "value": "{{done, number}} z {{count, number}} sesji"
+    },
+    "rpe": {
+      "label": "Średnie RPE",
+      "below": "Poniżej celu 7–8",
+      "within": "W celu 7–8",
+      "above": "Powyżej celu 7–8"
+    },
+    "best": {
+      "label": "{{exercise}} – najlepsza seria",
+      "none": "Najlepsza seria",
+      "prToday": "PR dziś"
+    },
+    "inARow": {
+      "label": "Z rzędu",
+      "weeks_one": "tydzień",
+      "weeks_few": "tygodnie",
+      "weeks_many": "tygodni",
+      "weeks_other": "tygodnia",
+      "rule": "Co najmniej 2 sesje w tygodniu"
+    },
+    "change": {
+      "up": "W górę",
+      "down": "W dół",
+      "weekOnWeek": "{{change}} tydzień do tygodnia",
+      "same": "Tak samo jak tydzień wcześniej"
+    },
+    "units": {
+      "value": "{{value}} {{unit}}",
+      "reps_one": "powtórzenie",
+      "reps_few": "powtórzenia",
+      "reps_many": "powtórzeń",
+      "reps_other": "powtórzenia",
+      "seconds": "s"
+    },
+    "chart": {
+      "showTable": "Pokaż jako tabelę",
+      "showChart": "Pokaż jako wykres"
+    },
+    "sessionsChart": {
+      "title_one": "{{atTarget, number}} z {{count, number}} tygodnia na 70% lub więcej",
+      "title_few": "{{atTarget, number}} z {{count, number}} tygodni na 70% lub więcej",
+      "title_many": "{{atTarget, number}} z {{count, number}} tygodni na 70% lub więcej",
+      "title_other": "{{atTarget, number}} z {{count, number}} tygodnia na 70% lub więcej",
+      "noneCompleted": "Żaden tydzień jeszcze się nie zakończył",
+      "subtitle": "Zrobione sesje w tygodniu",
+      "left_zero": "W tygodniu {{week, number}} nie zostało już sesji.",
+      "left_one": "W tygodniu {{week, number}} została {{count, number}} sesja.",
+      "left_few": "W tygodniu {{week, number}} zostały {{count, number}} sesje.",
+      "left_many": "W tygodniu {{week, number}} zostało {{count, number}} sesji.",
+      "left_other": "W tygodniu {{week, number}} zostało {{count, number}} sesji.",
+      "description": "{{title}}. {{left}}",
+      "week": "Tydzień",
+      "done": "Zrobione",
+      "planned": "Zaplanowane"
+    }
+  }
 }
