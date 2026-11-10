@@ -33,8 +33,18 @@ const PROGRESS = {
       best: { loadKg: 102.5, amount: 5, rpe: 8 },
       topSetChange: { loadKg: 2.5 },
       prToday: true,
-      weeks: [],
-      recent: [],
+      weeks: [
+        { number: 13, top: { loadKg: 100, amount: 5, rpe: 8 }, averageRpe: 8 },
+        {
+          number: 14,
+          top: { loadKg: 102.5, amount: 5, rpe: 8 },
+          averageRpe: 8,
+        },
+      ],
+      recent: [
+        { date: '2026-11-11', top: { loadKg: 102.5, amount: 5, rpe: 8 } },
+        { date: '2026-11-04', top: { loadKg: 100, amount: 5, rpe: 8 } },
+      ],
     },
   ],
 } satisfies Progress
@@ -94,6 +104,15 @@ describe('ProgressPage', () => {
     expect(
       screen.getByRole('img', {
         name: '2 of 3 weeks at 70% or more. Week 14 has 2 sessions left.',
+      }),
+    ).toBeInTheDocument()
+    const byExercise = within(
+      screen.getByRole('region', { name: 'By exercise' }),
+    )
+    expect(byExercise.getByRole('radio', { name: 'Back squat' })).toBeChecked()
+    expect(
+      byExercise.getByRole('heading', {
+        name: 'Top set rose 2.5 kg in 2 weeks',
       }),
     ).toBeInTheDocument()
   })
@@ -184,7 +203,8 @@ describe('ProgressPage', () => {
 
   it('shows the sessions chart as a table and back', async () => {
     const user = userEvent.setup()
-    openProgress(() => json(PROGRESS))
+    // without "By exercise", whose chart and table have their own tests
+    openProgress(() => json({ ...PROGRESS, exercises: [] }))
     await tiles()
 
     await user.click(screen.getByRole('button', { name: 'Show as table' }))

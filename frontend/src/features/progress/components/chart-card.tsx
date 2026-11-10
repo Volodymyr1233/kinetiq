@@ -11,7 +11,8 @@ import {
 
 /**
  * A chart as the design system's section 3.7 asks: its finding as the title, what it shows in the subtitle, and the
- * same numbers as a table on request. `note` stays under the chart and under the table.
+ * same numbers as a table on request. `note` stays under the chart and under the table; `level` is the title's
+ * heading level.
  */
 export function ChartCard({
   title,
@@ -19,21 +20,24 @@ export function ChartCard({
   chart,
   table,
   note,
+  level = 2,
 }: {
   title: string
   subtitle: string
   chart: ReactNode
   table: ReactNode
   note?: ReactNode
+  level?: 2 | 3
 }) {
   const { t } = useTranslation()
   const [asTable, setAsTable] = useState(false)
+  const Heading = level === 2 ? 'h2' : 'h3'
 
   return (
     <Card>
       <CardHeader>
         <CardTitle>
-          <h2>{title}</h2>
+          <Heading>{title}</Heading>
         </CardTitle>
         <CardDescription>{subtitle}</CardDescription>
       </CardHeader>

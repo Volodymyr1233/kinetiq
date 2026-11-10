@@ -1268,6 +1268,27 @@
       "week": "Week",
       "done": "Done",
       "planned": "Planned"
+    },
+    "exercise": {
+      "title": "By exercise",
+      "rose_one": "Top set rose {{change}} in {{count, number}} week",
+      "rose_other": "Top set rose {{change}} in {{count, number}} weeks",
+      "fell_one": "Top set fell {{change}} in {{count, number}} week",
+      "fell_other": "Top set fell {{change}} in {{count, number}} weeks",
+      "held": "Top set held at {{value}}",
+      "subtitle": {
+        "load": "Top set, {{unit}} · Average RPE",
+        "reps": "Top set, reps · Average RPE",
+        "seconds": "Top set, seconds · Average RPE"
+      },
+      "description": "{{exercise}}: {{title}}. Average RPE {{rpe}} in week {{week, number}}.",
+      "band": "7–8",
+      "rpeValue": "RPE {{rpe}}",
+      "week": "Week",
+      "date": "Date",
+      "topSet": "Top set",
+      "rpe": "RPE",
+      "recent": "Last sessions with {{exercise}}"
     }
   }
 }

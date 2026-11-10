@@ -5,6 +5,7 @@ import type { components } from '@/lib/api/schema'
 export type Progress = components['schemas']['ProgressResponse']
 export type ProgressWeek = components['schemas']['ProgressWeekResponse']
 export type ExerciseProgress = components['schemas']['ExerciseProgressResponse']
+export type ExerciseWeek = components['schemas']['ExerciseWeekResponse']
 export type TopSet = components['schemas']['TopSetResponse']
 export type TopSetChange = components['schemas']['TopSetChangeResponse']
 

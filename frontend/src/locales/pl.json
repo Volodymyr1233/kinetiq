@@ -1326,6 +1326,31 @@
       "week": "Tydzień",
       "done": "Zrobione",
       "planned": "Zaplanowane"
+    },
+    "exercise": {
+      "title": "Według ćwiczeń",
+      "rose_one": "Najlepsza seria wzrosła o {{change}} w {{count, number}} tydzień",
+      "rose_few": "Najlepsza seria wzrosła o {{change}} w {{count, number}} tygodnie",
+      "rose_many": "Najlepsza seria wzrosła o {{change}} w {{count, number}} tygodni",
+      "rose_other": "Najlepsza seria wzrosła o {{change}} w {{count, number}} tygodnia",
+      "fell_one": "Najlepsza seria spadła o {{change}} w {{count, number}} tydzień",
+      "fell_few": "Najlepsza seria spadła o {{change}} w {{count, number}} tygodnie",
+      "fell_many": "Najlepsza seria spadła o {{change}} w {{count, number}} tygodni",
+      "fell_other": "Najlepsza seria spadła o {{change}} w {{count, number}} tygodnia",
+      "held": "Najlepsza seria bez zmian: {{value}}",
+      "subtitle": {
+        "load": "Najlepsza seria, {{unit}} · Średnie RPE",
+        "reps": "Najlepsza seria, powtórzenia · Średnie RPE",
+        "seconds": "Najlepsza seria, sekundy · Średnie RPE"
+      },
+      "description": "{{exercise}}: {{title}}. Średnie RPE {{rpe}} w tygodniu {{week, number}}.",
+      "band": "7–8",
+      "rpeValue": "RPE {{rpe}}",
+      "week": "Tydzień",
+      "date": "Data",
+      "topSet": "Najlepsza seria",
+      "rpe": "RPE",
+      "recent": "Ostatnie sesje z ćwiczeniem {{exercise}}"
     }
   }
 }
