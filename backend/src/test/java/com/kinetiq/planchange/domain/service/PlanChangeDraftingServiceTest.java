@@ -16,10 +16,14 @@ import com.kinetiq.planchange.domain.model.PlanSnapshot;
 import com.kinetiq.planchange.domain.model.ProposedContent;
 import com.kinetiq.planchange.domain.model.Rule;
 import com.kinetiq.planchange.domain.model.TargetChange;
+import ch.qos.logback.classic.Logger;
+import ch.qos.logback.classic.spi.ILoggingEvent;
+import ch.qos.logback.core.read.ListAppender;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 class PlanChangeDraftingServiceTest {
 
@@ -116,5 +120,31 @@ class PlanChangeDraftingServiceTest {
         PlanSnapshot single = plan(session(MONDAY, entry(SQUAT, 3, 1, "100.0")), session(FRIDAY));
 
         assertThat(drafter.drafting().draft(single, due)).isEmpty();
+    }
+
+    @Test
+    void shouldLogOnlyTheRuleAttemptsAndCodes_neverThePromptOrTheAnswer() {
+        Logger logger = (Logger) LoggerFactory.getLogger(PlanChangeDraftingService.class);
+        ListAppender<ILoggingEvent> logged = new ListAppender<>();
+        logged.start();
+        logger.addAppender(logged);
+        try {
+            drafter.answering(squat(3, 7))
+                    .failing(new PlanChangeDraftingFailedException("cut off"))
+                    .drafting()
+                    .draft(plan, due);
+        } finally {
+            logger.detachAppender(logged);
+        }
+
+        List<String> lines = logged.list.stream().map(ILoggingEvent::getFormattedMessage).toList();
+        assertThat(lines)
+                .containsExactly(
+                        "Plan change attempt refused, rule=HIGH_RPE, attempt=1, codes=[limit.volume-out-of-range]",
+                        "Plan change attempt failed, rule=HIGH_RPE, attempt=2",
+                        "Plan change content fixed, rule=HIGH_RPE, empty=false");
+        String prompt = drafter.asked.getFirst().system() + drafter.asked.getFirst().user();
+        assertThat(lines).noneMatch(line -> line.contains("s1e1") || prompt.contains(line));
+        assertThat(logged.list).allMatch(event -> event.getThrowableProxy() == null);
     }
 }
