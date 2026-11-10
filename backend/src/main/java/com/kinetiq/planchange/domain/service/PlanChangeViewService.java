@@ -11,6 +11,7 @@ import com.kinetiq.planchange.domain.exception.PlanChangeNotFoundException;
 import com.kinetiq.planchange.domain.input.PlanChangeSummary;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
+import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeContent;
@@ -62,11 +63,23 @@ public class PlanChangeViewService implements ViewPlanChangeUseCase {
         return accounts.find(trainer).getSettings().language();
     }
 
-    private static PlanChangeText text(
+    // only the plan the content was made from tells the sets of an entry whose amount alone changed
+    private Map<EntryRef, Long> volumes(PlanChange planChange) {
+        return plans.currentPlan(planChange.getClient())
+                .filter(plan -> plan.version() == planChange.getPlanVersion())
+                .map(plan -> planChange.getContent().changes().stream()
+                        .map(TargetChange::entry)
+                        .distinct()
+                        .filter(entry -> plan.entry(entry).isPresent())
+                        .collect(Collectors.toMap(entry -> entry, entry -> plan.entry(entry).orElseThrow().volume())))
+                .orElse(Map.of());
+    }
+
+    private PlanChangeText text(
             Language language, PlanChange planChange, Map<ExerciseId, ExerciseLabel> exercises) {
         Map<ExerciseId, String> names = exercises.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().name()));
-        return PlanChangeWording.of(language, planChange, names);
+        return PlanChangeWording.of(language, planChange, names, volumes(planChange));
     }
 
     private static Set<ExerciseId> exercisesOf(PlanChange planChange) {
