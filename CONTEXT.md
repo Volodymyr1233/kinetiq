@@ -134,6 +134,10 @@ _Avoid_: Record, achievement
 The best set of an exercise in a session or a week: a set with a load before one without, then the highest load, then the most repetitions or seconds.
 _Avoid_: Best set, max
 
+**Week streak**:
+The weeks in a row in which a client did at least 2 sessions, or every session of a week that had fewer.
+_Avoid_: Chain, combo
+
 ### Readiness
 
 **Check-in**:

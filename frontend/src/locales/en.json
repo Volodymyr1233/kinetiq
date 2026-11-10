@@ -117,6 +117,9 @@
       "already-published": "This plan is already published. Reload the page to see it.",
       "rebuild-limit-reached": "You've used today's automatic builds. Try again later."
     },
+    "progress": {
+      "period-invalid": "Choose 4, 8 or 12 weeks."
+    },
     "quiz": {
       "not-found": "This client hasn't answered the quiz yet."
     },
