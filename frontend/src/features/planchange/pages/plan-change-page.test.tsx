@@ -183,6 +183,43 @@ describe('PlanChangePage', () => {
     ])
   })
 
+  it('draws the best load of every stalled exercise', async () => {
+    const BENCH = '00000000-0000-4000-9100-000000000001'
+    renderPlanChange({
+      ...STALLED_WEIGHT,
+      concernedExercises: [
+        { id: SQUAT, name: 'Back squat' },
+        { id: BENCH, name: 'Bench press' },
+      ],
+      figures: [
+        ...STALLED_WEIGHT.figures,
+        {
+          kind: 'BEST_LOAD_KG',
+          exerciseId: BENCH,
+          weekStart: '2026-10-19',
+          value: 60,
+        },
+        {
+          kind: 'BEST_LOAD_KG',
+          exerciseId: BENCH,
+          weekStart: '2026-11-02',
+          value: 61,
+        },
+      ],
+    })
+
+    expect(
+      await screen.findByRole('img', {
+        name: 'Best load, Back squat: Oct 19: 80 kg, Oct 26: 80 kg, Nov 2: 81 kg. Rule threshold 84 kg.',
+      }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('img', {
+        name: 'Best load, Bench press: Oct 19: 60 kg, Nov 2: 61 kg. Rule threshold 63 kg.',
+      }),
+    ).toBeInTheDocument()
+  })
+
   it('shows the removed session and the moved exercise, for low completion', async () => {
     renderPlanChange(LOW_COMPLETION)
 

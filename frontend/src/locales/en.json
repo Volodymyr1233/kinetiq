@@ -1366,7 +1366,7 @@
       "title": "Why this change",
       "subtitle": {
         "HIGH_RPE": "Average RPE per week. The rule fires when it is above 8 in every week.",
-        "STALLED_WEIGHT": "Best load of {{exercise}} per week. The rule fires when it rises less than 5%.",
+        "STALLED_WEIGHT": "Best load per week of each exercise the rule found. The rule fires when it rises less than 5%.",
         "LOW_COMPLETION": "Share of planned sessions finished per week. The rule fires below 70%."
       },
       "series": {
