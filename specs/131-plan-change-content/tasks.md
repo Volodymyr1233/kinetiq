@@ -133,7 +133,7 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). The pull 
 
 ## Phase 7: Final verification and pull request
 
-- [ ] T040 Run `/speckit-analyze` and `/speckit-converge`; fix inconsistencies or add tasks.
+- [X] T040 Run `/speckit-analyze` and `/speckit-converge`; fix inconsistencies or add tasks.
 - [ ] T041 Security pass: no endpoint opened, ownership `404`s proven, prompt privacy test green, logs hold no prompt, answer, name or email (grep the new code for `log.`), error responses carry no exception text; run the `security-review` skill on the branch.
 - [ ] T042 Full gates once more (`./gradlew check`, `npm run check`), then open the pull request with `gh` (title in Conventional Commits, `Closes #131`, `Closes #132`, `Closes #133`, `Closes #134`, `Closes #135`, `Closes #136`, `Closes #289`), bind it with the ccd_pr tools.
 
@@ -153,3 +153,9 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). The pull 
 ## Implementation strategy
 
 MVP is Phases 1–4: a fired rule yields a stored, checked plan change even without an LLM. Phases 5–6 make it readable. Commit after each phase; never leave a commit that does not pass its gate.
+
+## Phase 8: Convergence
+
+- [X] T043 Show the best load of every stalled exercise in the trainer detail chart, one chart per exercise in `frontend/src/features/planchange/components/rule-chart.tsx` per US6/AC1 (partial)
+- [X] T044 Build the high RPE title percent from the total volume of the changed entries when the plan still has the version the content was made from, else the mean per entry, in `PlanChangeWording` and `PlanChangeViewService` per US5/AC2 (partial)
+- [X] T045 Test that the drafting log holds only rule, attempt and limit codes, never prompt or answer text, in `PlanChangeDraftingServiceTest` per T024 (partial)
