@@ -1,0 +1,101 @@
+---
+description: "Tasks for story #172, Client asks about a logged set (tasks #173, #174, #175)"
+---
+
+# Tasks: Client asks about a logged set
+
+**Input**: `specs/172-ask-about-set/` (spec.md, plan.md, research.md, data-model.md, contracts/api.md, quickstart.md)
+
+**Tests**: Required by the Definition of Done and principle V; each test sits with the code it covers.
+
+**Organization**: Phases follow the GitHub tasks, in order: #173 (backend and generated types, US3), #174 (frontend, US1), #175 (frontend, US2). One pull request for the story, one commit per task, merged with rebase or a merge commit.
+
+**Paths**: `B` = `backend/src/main/java/com/kinetiq`, `BT` = `backend/src/test/java/com/kinetiq`, `R` = `backend/src/main/resources/db`, `F` = `frontend/src`.
+
+## Phase 1: Setup
+
+- [X] T001 Rename the branch to `feat/172-ask-about-set` (`CLAUDE.md`, Workflow). Check that no migration `V24` exists on `master` or in an open pull request (`gh pr list --json number,files`); if one does, use the next free number everywhere below. `specs/172-ask-about-set/` goes into the commit of #173, so the spec is reviewed with the story's first commit
+
+## Phase 2: task #173, About reference on a message (US3)
+
+**Blocked by**: nothing open.
+
+**Goal**: a message may carry a reference to one of its sender's own set logs; any other reference answers `404 message.about-not-found`; both people read what the chip needs with each message (spec FR-001 to FR-010; contract: `contracts/api.md`; research R1 to R6, R13).
+
+**Independent test**: `quickstart.md` section 1.
+
+- [X] T002 [US3] `R/migration/V26__add_message_about.sql`: `alter table messages add column about_set_log_id uuid` ("`uuid`, nullable", data-model.md) and the constraint `fk_messages_about_set_log` → `set_logs (id)`. No index, with a comment saying why: nothing looks messages up by set, and a set log is never deleted
+- [X] T003 [P] [US3] `B/messaging/domain/model/AboutSet.java`: a record of `SetLogId setLog`, `SessionLogId sessionLog` (both from `sessionlog.domain.model`), `String sessionName`, `LocalDate sessionDate`, `LocalizedText exerciseName` (from `exercise.domain.model`), `int entryPosition`, `int setNumber`, `int rpe`; the compact constructor requires the object fields (research R3). Javadoc: the logged set a message is about, as it is when read
+- [X] T004 [P] [US3] `B/messaging/domain/exception/AboutSetNotFoundException.java`: code `message.about-not-found`, kind `NOT_FOUND`, a log-only message, as `MessageNotFoundException` (research R4)
+- [X] T005 [US3] `B/messaging/domain/model/Message.java`: an optional `AboutSet`, given to the constructor as a nullable last argument and read through `getAbout()` returning `Optional<AboutSet>` (no `Optional` field). `isSameSendAs` also compares the set log id of the two, so the same id with another reference, or with none, is not the same send
+- [X] T006 [US3] `B/messaging/domain/output/AboutSets.java`: port with `Optional<AboutSet> ofSender(AccountId sender, SetLogId setLog)`: the set log when it belongs to a session log whose client is `sender`, else empty. `B/messaging/domain/input/SendMessageCommand.java` gains `SetLogId about`, `null` for a message without a reference, said in its Javadoc
+- [X] T007 [US3] `B/messaging/domain/service/MessagingService.java`: `send` resolves the reference after the pair and the text and before `conversations.findOrCreate`: with `command.about()` it asks `AboutSets.ofSender(command.person(), …)` and throws `AboutSetNotFoundException` when empty; the `Message` is built with the `AboutSet`. `B/messaging/infrastructure/config/MessagingConfig.java` passes the new port. Javadoc of `send` in `ExchangeMessagesUseCase` names the refusal
+- [X] T008 [US3] `BT/messaging/domain/service/MessagingFakes.java`: a fake `AboutSets` holding sets by owner. `BT/messaging/domain/service/MessagingServiceTest.java`, a `@Nested` class for the reference: a client's own set is stored with the message and returned; another client's set answers `message.about-not-found` and stores no message and no conversation; a trainer referencing a set of their own client answers the same; an unknown set log id answers the same; the same id, text and reference again returns the stored message; the same id and text with another reference, and with none, answers `message.id-in-use`; a conversation that is not the person's answers `conversation.not-found` before the reference is looked at
+- [X] T009 [US3] `B/messaging/infrastructure/output/JdbcAboutSets.java`: `@Repository` implementing `AboutSets` with `JdbcTemplate`, one query over `set_logs`, `session_logs`, `session_log_entries` (on `session_log_id` and `entry_position` = `position`) and `exercises` (`name`, `name_pl`), reading the values of data-model.md "AboutSet". `ofSender` adds `where sl.id = ? and s.client_id = ?`; a package-private `byIds(Collection<UUID>)` returns `Map<UUID, AboutSet>` with `where sl.id = any(?)` and makes no query for an empty collection. A comment says it reads the session-log tables and no class of that feature's infrastructure (research R2)
+- [X] T010 [US3] Persistence in `B/messaging/infrastructure/output/`: `MessageEntity` gains `aboutSetLogId`; `JpaMessageRepository.insertIfAbsent` takes it and writes `about_set_log_id` (cast the parameter to `uuid`, so a `null` is typed); `MessagingMapper.toDomain(MessageEntity, AboutSet)` takes the set, `null` for none; `MessageRepositoryImpl.saveIfNew` passes the id, and `findById`, `newest` and `before` attach each message's `AboutSet` through `JdbcAboutSets.byIds`, one query for the page and none when no message of it has a reference
+- [X] T011 [US3] `BT/messaging/infrastructure/output/MessagingFixture.java` gains a set log of a client (an exercise with an English and a Polish name, a session log, its entry and one set log, inserted with SQL). New `BT/messaging/infrastructure/output/JdbcAboutSetsIT.java`: the owner gets the set with its session name and date, both exercise names, its place and RPE; another client, the owner's trainer and an unknown id get nothing. Additions to `BT/messaging/infrastructure/output/MessageRepositoryImplIT.java`: a message stored with a reference reads back with its set, by id and in a page; a message without one has none; after the set log's `rpe` is changed, the page shows the new RPE; a reference to a set log that does not exist is refused by the database
+- [X] T012 [US3] Web in `B/messaging/infrastructure/input/`: `SendMessageRequest` gains an optional `UUID aboutSetLogId`; new record `AboutResponse` with `@NotNull` `setLogId`, `sessionLogId`, `sessionName`, `sessionDate`, `exerciseName`, `entryPosition`, `setNumber`, `rpe`; `MessageResponse` gains `AboutResponse about`, left out when absent (`@JsonInclude(NON_NULL)`, as `SetLogResponse`); `MessagingWebMapper` maps it with `exerciseName().in(locale)`; `ConversationController.messages` and `send` take the request's `Locale`, as `SessionLogController` does, and `send` puts the id into the command. The Javadoc of `send` lists `404 message.about-not-found`
+- [X] T013 [US3] `BT/messaging/infrastructure/input/ConversationControllerTest.java`: a page and a sent message hold `about` with every field of the contract, and none of it for a message without a reference; `Accept-Language: pl` gives the Polish exercise name and falls back to English when there is none; `aboutSetLogId` reaches the use case in the command; `AboutSetNotFoundException` answers `404` with `message.about-not-found`; an `aboutSetLogId` that is no id answers `400 request.invalid`
+- [X] T014 [P] [US3] `errors.message.about-not-found` in `F/locales/en.json` ("This set can't be attached. Remove it and send the message again.") and `F/locales/pl.json` ("Nie można dołączyć tej serii. Usuń ją i wyślij wiadomość ponownie.")
+- [X] T015 [P] [US3] `R/dev-data/R__demo_session_logs.sql`, appended after the set logs (research R13): a conversation between Demo Client Daily (`…000000000012`) and Demo Trainer (`…000000000001`), and one message from the client ("The last set felt heavier than it should. Is that expected?") whose `about_set_log_id` is a logged set of that client's latest demo session log; fixed ids, `on conflict do nothing`. The file's header comment says so
+- [X] T016 [P] [US3] `CONTEXT.md`, under Conversation: "**About reference**: The one logged set a message is about, chosen by the sender from their own logs when writing it. _Avoid_: Context, attachment, quote"
+- [X] T017 `./gradlew check` passes (Docker running, JDK 25), including `HexagonalArchitectureTest`; with the backend running, `npm run gen:api` regenerates `F/lib/api/schema.d.ts` (`aboutSetLogId`, `AboutResponse`, `about`), and `npm run check` passes; follow `quickstart.md` section 1; commit `feat: add an about reference to a message (#173)` with `specs/172-ask-about-set/`
+
+## Phase 3: task #174, Ask-your-trainer action on a set (US1)
+
+**Blocked by**: #173.
+
+**Goal**: every logged set in the logger, locked or not, offers "Ask your trainer", which opens the conversation over the logger with the About chip in the composer; the sent message carries the reference, through Retry too (spec FR-011 to FR-017; research R7, R9 to R11, R14).
+
+**Independent test**: `quickstart.md` section 2.
+
+- [ ] T018 [US1] `F/features/messaging/api/messaging.ts`: export `type About = components['schemas']['AboutResponse']`; `useSendMessage` takes an optional `about` and sends its `setLogId` as `aboutSetLogId`
+- [ ] T019 [US1] `F/features/messaging/use-outbox.ts`: an entry keeps an optional `about`; `submit(conversation, text, about?)` stores it; the `send` callback receives it, on a Retry too. `F/features/messaging/use-outbox.test.tsx`: a failed entry with a reference is retried with the same id, text and reference
+- [ ] T020 [US1] New `F/features/messaging/components/about-chip.tsx` (research R10): the bordered chip in Kinetiq tokens (`bg-card`, `border`, `rounded-lg`, at most 80% wide, text that wraps with `wrap-anywhere`), the label "About" in the small uppercase mono style and one line from `messaging.about.text`, the session's date formatted for the UI language as a short weekday, day and month read in UTC (as `client-logs-tab.tsx` does) and the numbers with the `num` class. With `onRemove` it shows a ghost icon `Button` (`XIcon`, 48 px target) named by `messaging.about.remove`
+- [ ] T021 [US1] `F/features/messaging/components/composer.tsx`: props `about?` and `onRemoveAbout?`; the chip shows above the field, and the field takes focus when a chip arrives. Send stays disabled for an empty field (FR-016). `F/features/messaging/components/conversation.tsx` passes both through. `F/features/messaging/components/composer.test.tsx`: the chip's text, its removal, focus in the field, and Send disabled with a chip and no text
+- [ ] T022 [US1] `F/features/messaging/pages/client-messages-page.tsx`: props `about?: About` and `onAboutDone?: () => void`; a sent message goes to the outbox with the chip's reference and calls `onAboutDone`, and so does removing the chip; the outbox's `send` passes the entry's `about` to `useSendMessage`. `F/features/messaging/pages/trainer-messages-page.tsx` passes the entry's `about` the same way, so both pages share one outbox shape. `F/features/messaging/pages/client-messages-page.test.tsx`: with `about`, the request holds `aboutSetLogId` and the chip leaves the composer; after removing the chip the request holds none
+- [ ] T023 [US1] `F/features/sessionlog/components/set-row.tsx`: an optional `onAsk`. When given, and the server has the set (`set.log` exists) and no pending log of it is in another state than Synced, the row ends with a ghost icon `Button` (`MessageCircleIcon`, `size-12`) named by `sessionlog.row.ask`, in the open row and in the locked row alike; it only calls `onAsk` and does not open the row (research R9). The component's Javadoc and the locked branch's comment say the locked row has this one control
+- [ ] T024 [US1] `F/features/sessionlog/pages/logger-page.tsx`: `LoggerPage` takes an optional `onAsk(about)`, with the type from `@/lib/api/schema` (`AboutResponse`), not from the messaging feature; each row's `onAsk` builds it from the session, the entry and the set's stored log (`setLogId`, `sessionLogId`, `sessionName`, `sessionDate`, `exerciseName`, `entryPosition`, `setNumber`, `rpe`)
+- [ ] T025 [US1] Read `npx shadcn@latest docs sheet` first. `F/app/message-trainer-sheet.tsx`: the sheet's content (the `SheetContent` with its header and `ClientMessagesPage`) becomes a component both sheets use, taking `about` and `onAboutDone`; with a chip the message field takes focus, without one the sheet keeps its focus as now. New `F/app/logger-route.tsx`: `LoggerRoute` renders `LoggerPage` with `onAsk` and a controlled `Sheet` that is open while a set is being asked about or the client keeps the conversation open, and forgets the chip when it closes (research R7). `F/app/router.ts`: `/app/session` and `/app/session/:id` load `LoggerRoute`
+- [ ] T026 [P] [US1] Strings in `F/locales/en.json` and `pl.json`, as in the spec's Texts: `sessionlog.row.ask` ("Ask your trainer about set {{number}} of {{exercise}}" / "Zapytaj trenera o serię {{number}}: {{exercise}}"), `messaging.about.label` ("About" / "Dotyczy"), `messaging.about.text` ("{{session}} · {{date}} · {{exercise}}, set {{number}} · RPE {{rpe}}" / "… seria {{number}} …"), `messaging.about.remove` ("Remove the set from this message" / "Usuń serię z tej wiadomości")
+- [ ] T027 [US1] Tests. New `F/features/sessionlog/pages/ask.test.tsx`: a stored set offers the action and calls `onAsk` with that set's values; a set that is not logged, one Saved on this phone and one Not synced do not; a locked session offers it on logged rows only; without `onAsk` no row has it. `F/features/sessionlog/pages/locked.test.tsx`: on a locked session Tab reaches the back link and the Ask buttons of logged rows, nothing else (research R14). New `F/app/logger-route.test.tsx`: choosing the action opens the conversation with the chip and the focus in the field; sending posts `aboutSetLogId`; closing the sheet shows the same session with its open entry panel; opening the action again after a close starts with the new set's chip
+- [ ] T028 `npm run check` passes; with the shadcn skill and the design system open, follow `quickstart.md` section 2 in the built-in browser at 375 px and 320 px, light and dark, English and Polish, with the keyboard; check that no row scrolls sideways with the Polish badge (research R9) and that focus returns to the row's button when the sheet closes; review the result with the ui-ux-pro-max skill for WCAG 2.2 AA and fix what it finds without restyling; commit `feat(frontend): ask the trainer about a logged set (#174)`
+
+## Phase 4: task #175, About chip in both conversation views (US2)
+
+**Blocked by**: #174.
+
+**Goal**: a message with a reference shows the chip above its text in both views, as a link to the set: the client's to the logger, the trainer's to the client's Logs tab, with the set marked (spec FR-018 to FR-024; contract: `contracts/api.md`, Addresses; research R8, R10).
+
+**Independent test**: `quickstart.md` section 3.
+
+- [ ] T029 [US2] `F/features/messaging/components/about-chip.tsx`: with `to` the chip is a `Link` named by `messaging.about.open`, with the visible focus ring of the other links and a target of at least 44 px
+- [ ] T030 [US2] `F/features/messaging/components/message-list.tsx`: a line carries the `about` of its message or of its outbox entry, and shows the chip directly above the bubble on the same side, in every delivery state; a new prop `aboutHref(about)` gives the link's address; the runs and their one time are unchanged (FR-024). `F/features/messaging/components/conversation.tsx` passes `aboutHref`. `F/features/messaging/pages/client-messages-page.tsx` gives `/app/session/{sessionLogId}?set={entryPosition}-{setNumber}`; `F/features/messaging/pages/trainer-messages-page.tsx` gives `/trainer/clients/{clientId}/logs?session={sessionLogId}&set={entryPosition}-{setNumber}`
+- [ ] T031 [US2] `F/features/sessionlog/pages/logger-page.tsx` reads `set` with `useSearchParams` and gives the matching `SetRow` a `marked` prop; `F/features/sessionlog/components/set-row.tsx`: a marked row has `aria-current="true"`, a ring in Kinetiq tokens, `tabIndex={-1}`, and on mount is scrolled into view (`block: 'center'`) and focused, once. A `set` that names no row is ignored
+- [ ] T032 [US2] `F/features/sessionlog/pages/client-logs-tab.tsx`: the chosen session comes from the `session` search parameter (the key the list already uses: the session log id, or the date of a session never started) instead of component state; choosing a session sets it with `replace` and drops `set`; an unknown `session` shows the newest session as before. `F/features/sessionlog/components/session-log-table.tsx`: a `markedSet` prop marks that row as T031 does
+- [ ] T033 [P] [US2] Strings in `F/locales/en.json` and `pl.json`: `messaging.about.open` ("About {{session}}, {{date}}, {{exercise}}, set {{number}}, RPE {{rpe}}. Open this set" / "Dotyczy: {{session}}, {{date}}, {{exercise}}, seria {{number}}, RPE {{rpe}}. Otwórz tę serię")
+- [ ] T034 [US2] Tests. `F/features/messaging/components/message-list.test.tsx`: a message with a reference shows the chip as a link with the address from `aboutHref` and the full accessible name, for my message and for theirs; a Sending and a Not sent line show it; a message without one shows none; the time of a run is where it was. `F/features/messaging/pages/client-messages-page.test.tsx` and `trainer-messages-page.test.tsx`: the link's address. `F/features/sessionlog/pages/past-session.test.tsx`: `?set=0-2` marks that row with `aria-current` and focuses it, on an open and on a locked session, and a malformed `set` marks nothing. `F/features/sessionlog/pages/client-logs-tab.test.tsx`: `?session=…&set=…` shows that session with the row marked; an unknown session shows the newest; choosing another session drops the mark
+- [ ] T035 `npm run check` passes; follow `quickstart.md` section 3 in the built-in browser: the client's side at 375 px and 320 px, the trainer's at 1280 px, light and dark, English and Polish, with the keyboard, an empty console; compare the chip with the design system (6.7) and the boards "Client · Messages" and "Trainer · Messages"; review with the ui-ux-pro-max skill for WCAG 2.2 AA; commit `feat(frontend): show the about chip in both conversation views (#175)`
+
+## Phase 5: Close the story
+
+- [ ] T036 Run `/speckit-converge` and build what it finds inside the scope of #173 to #175 into the commit of its task; anything outside becomes a new task under #172
+- [ ] T037 When the user asks for it: push and open one pull request titled `feat: let a client ask about a logged set`, ending with `Closes #173`, `Closes #174`, `Closes #175` and `Closes #172`, to be merged with rebase or a merge commit
+
+## Dependencies
+
+- #174 needs the request field and the generated types of #173. #175 needs the outbox entry's `about` and the chip component of #174.
+- Inside #173: T002 before T010 and T011; T003 and T004 before T005 to T007; T007 before T008; T009 before T010; T010 before T011; T012 before T013; T017 last.
+- Inside #174: T018 before T019 and T022; T020 before T021; T021 before T022; T023 before T024; T022 and T024 before T025; T027 after T025; T028 last.
+- Inside #175: T029 before T030; T031 before T032 (the mark is the same); T034 after T030 to T032; T035 last.
+
+## Parallel opportunities
+
+- T003 and T004 are separate files; T014, T015 and T016 touch nothing else of #173.
+- T009 can be written beside T005 to T008 once T003 exists.
+- T020 and T023 are in different features; T026 beside any of #174.
+- T030 and T031 are in different features; T033 beside any of #175.
+
+## Implementation strategy
+
+Build in task order: the reference and its rule first, because the server decides whose set may be attached; then the way to attach one from the logger; then the chip and its links. User Story 3 (the rule) is complete after Phase 2, User Story 1 after Phase 3, User Story 2 after Phase 4. Each phase ends with its gate and its commit; the pull request is opened once, after Phase 5, when the user asks.

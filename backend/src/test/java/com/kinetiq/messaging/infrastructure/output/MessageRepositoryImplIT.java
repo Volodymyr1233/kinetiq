@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.Conversation;
 import com.kinetiq.messaging.domain.model.ConversationId;
 import com.kinetiq.messaging.domain.model.ConversationPair;
@@ -12,7 +13,9 @@ import com.kinetiq.messaging.domain.model.Message;
 import com.kinetiq.messaging.domain.model.MessageId;
 import com.kinetiq.messaging.domain.model.MessagePage;
 import com.kinetiq.messaging.domain.model.MessageText;
+import com.kinetiq.sessionlog.domain.model.SetLogId;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ import org.springframework.transaction.support.TransactionTemplate;
 @Import({
     TestcontainersConfiguration.class,
     MessageRepositoryImpl.class,
+    JdbcAboutSets.class,
     ConversationRepositoryImpl.class,
     MessagingMapperImpl.class
 })
@@ -47,6 +51,9 @@ class MessageRepositoryImplIT {
 
     @Autowired
     private ConversationRepositoryImpl conversations;
+
+    @Autowired
+    private JdbcAboutSets aboutSets;
 
     @Autowired
     private JdbcTemplate jdbc;
@@ -119,6 +126,65 @@ class MessageRepositoryImplIT {
         void shouldBeRefusedByTheDatabase_whenTheTextIsOnlySpaces() {
             assertThatThrownBy(() -> fixture.message(conversation.value(), client, "   ", AT))
                     .isInstanceOf(DataIntegrityViolationException.class);
+        }
+    }
+
+    @Nested
+    class AboutASet {
+
+        private static final LocalDate DAY = LocalDate.of(2026, 11, 2);
+
+        private Message about(MessageId id, UUID setLog, Instant at) {
+            AboutSet set = aboutSets.byIds(List.of(setLog)).get(setLog);
+            return new Message(id, conversation, client, new MessageText("Was this too heavy?"), at, set);
+        }
+
+        @Test
+        void shouldStoreTheSetAndReadItBackWithTheMessage() {
+            MessagingFixture.LoggedSet logged = fixture.setLog(client, DAY, 9);
+            MessageId id = newId();
+
+            assertThat(messages.saveIfNew(about(id, logged.id(), AT))).isTrue();
+
+            AboutSet found = messages.findById(id).orElseThrow().getAbout().orElseThrow();
+            assertThat(found.setLog()).isEqualTo(new SetLogId(logged.id()));
+            assertThat(found.sessionName()).isEqualTo("Lower body");
+            assertThat(found.sessionDate()).isEqualTo(DAY);
+            assertThat(found.setNumber()).isEqualTo(3);
+            assertThat(found.rpe()).isEqualTo(9);
+        }
+
+        @Test
+        void shouldAnswerAPageWithTheSetOfEachMessageThatHasOne() {
+            MessagingFixture.LoggedSet logged = fixture.setLog(client, DAY, 9);
+            messages.saveIfNew(message(newId(), "plain", AT));
+            messages.saveIfNew(about(newId(), logged.id(), AT.plusSeconds(1)));
+
+            List<Message> page = messages.newest(conversation).messages();
+
+            assertThat(page.get(0).getAbout()).isEmpty();
+            assertThat(page.get(1).getAbout().orElseThrow().setLog()).isEqualTo(new SetLogId(logged.id()));
+        }
+
+        // the reference is the set, not a copy of it: a change within the session's 24 hours shows on the message
+        @Test
+        void shouldShowTheSetAsItIsNow_whenItChangedAfterTheMessage() {
+            MessagingFixture.LoggedSet logged = fixture.setLog(client, DAY, 9);
+            messages.saveIfNew(about(newId(), logged.id(), AT));
+
+            jdbc.update("update set_logs set rpe = 7 where id = ?", logged.id());
+
+            assertThat(messages.newest(conversation).messages().getFirst().getAbout().orElseThrow().rpe())
+                    .isEqualTo(7);
+        }
+
+        @Test
+        void shouldBeRefusedByTheDatabase_whenTheSetLogDoesNotExist() {
+            MessagingFixture.LoggedSet logged = fixture.setLog(client, DAY, 9);
+            Message message = about(newId(), logged.id(), AT);
+            jdbc.update("delete from set_logs where id = ?", logged.id());
+
+            assertThatThrownBy(() -> messages.saveIfNew(message)).isInstanceOf(DataIntegrityViolationException.class);
         }
     }
 

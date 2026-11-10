@@ -1383,6 +1383,24 @@ export interface components {
             /** Format: uuid */
             id: string;
             text: string;
+            /** Format: uuid */
+            aboutSetLogId?: string;
+        };
+        AboutResponse: {
+            /** Format: uuid */
+            setLogId: string;
+            /** Format: uuid */
+            sessionLogId: string;
+            sessionName: string;
+            /** Format: date */
+            sessionDate: string;
+            exerciseName: string;
+            /** Format: int32 */
+            entryPosition: number;
+            /** Format: int32 */
+            setNumber: number;
+            /** Format: int32 */
+            rpe: number;
         };
         MessageResponse: {
             /** Format: uuid */
@@ -1391,6 +1409,7 @@ export interface components {
             mine: boolean;
             /** Format: date-time */
             sentAt: string;
+            about?: components["schemas"]["AboutResponse"];
         };
         ConfirmationLinkRequest: {
             email: string;

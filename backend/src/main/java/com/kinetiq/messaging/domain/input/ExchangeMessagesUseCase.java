@@ -26,7 +26,10 @@ public interface ExchangeMessagesUseCase {
      */
     MessagePage messages(AccountId person, AccountId client, MessageId before);
 
-    /** Sends a message, or returns the stored one when this id was sent before. */
+    /**
+     * Sends a message, or returns the stored one when this id was sent before. A message about a set that is not a
+     * logged set of the sender fails with {@code AboutSetNotFoundException}, and nothing is stored.
+     */
     Message send(SendMessageCommand command);
 
     /** Marks the conversation read for the person. Nothing happens while nobody has written. */

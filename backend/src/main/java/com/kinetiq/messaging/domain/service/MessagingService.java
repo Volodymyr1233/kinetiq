@@ -1,11 +1,13 @@
 package com.kinetiq.messaging.domain.service;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.messaging.domain.exception.AboutSetNotFoundException;
 import com.kinetiq.messaging.domain.exception.ConversationNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageIdInUseException;
 import com.kinetiq.messaging.domain.exception.MessageNotFoundException;
 import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.messaging.domain.input.SendMessageCommand;
+import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.Conversation;
 import com.kinetiq.messaging.domain.model.ConversationOverview;
 import com.kinetiq.messaging.domain.model.ConversationPair;
@@ -13,6 +15,7 @@ import com.kinetiq.messaging.domain.model.Message;
 import com.kinetiq.messaging.domain.model.MessageId;
 import com.kinetiq.messaging.domain.model.MessagePage;
 import com.kinetiq.messaging.domain.model.MessageText;
+import com.kinetiq.messaging.domain.output.AboutSets;
 import com.kinetiq.messaging.domain.output.ConversationDirectory;
 import com.kinetiq.messaging.domain.output.ConversationParticipants;
 import com.kinetiq.messaging.domain.output.ConversationRepository;
@@ -31,6 +34,7 @@ public class MessagingService implements ExchangeMessagesUseCase {
     private final ConversationRepository conversations;
     private final MessageRepository messages;
     private final ConversationDirectory directory;
+    private final AboutSets aboutSets;
     private final Clock clock;
 
     @Override
@@ -52,13 +56,14 @@ public class MessagingService implements ExchangeMessagesUseCase {
         return conversation.map(found -> messages.newest(found.getId())).orElseGet(MessagePage::empty);
     }
 
-    // the text comes first, so a refused message leaves no conversation behind
+    // the text and the set come first, so a refused message leaves no conversation behind
     @Override
     public Message send(SendMessageCommand command) {
         ConversationPair pair = pairOf(command.person(), command.client());
         MessageText text = new MessageText(command.text());
+        AboutSet about = aboutOf(command);
         Conversation conversation = conversations.findOrCreate(pair);
-        Message message = new Message(command.id(), conversation.getId(), command.person(), text, now());
+        Message message = new Message(command.id(), conversation.getId(), command.person(), text, now(), about);
         if (messages.saveIfNew(message)) {
             return message;
         }
@@ -82,6 +87,14 @@ public class MessagingService implements ExchangeMessagesUseCase {
                 .pairOf(client)
                 .filter(pair -> pair.includes(person))
                 .orElseThrow(ConversationNotFoundException::new);
+    }
+
+    // only the sender's own set: anyone else's, an unknown one and any set named by a trainer answer the same
+    private AboutSet aboutOf(SendMessageCommand command) {
+        if (command.about() == null) {
+            return null;
+        }
+        return aboutSets.ofSender(command.person(), command.about()).orElseThrow(AboutSetNotFoundException::new);
     }
 
     private Message messageIn(Optional<Conversation> conversation, MessageId id) {

@@ -50,6 +50,7 @@
       "empty": "Write something before sending.",
       "too-long": "A message can have up to 2000 characters. Shorten it and send again.",
       "id-in-use": "This message could not be sent. Write it again.",
+      "about-not-found": "This set can't be attached. Remove it and send the message again.",
       "not-found": "These earlier messages are gone. Reload the page."
     },
     "conversation": {

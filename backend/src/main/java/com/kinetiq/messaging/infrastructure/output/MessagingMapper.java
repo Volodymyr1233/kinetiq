@@ -1,6 +1,7 @@
 package com.kinetiq.messaging.infrastructure.output;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.Conversation;
 import com.kinetiq.messaging.domain.model.ConversationId;
 import com.kinetiq.messaging.domain.model.ConversationPair;
@@ -19,12 +20,14 @@ interface MessagingMapper {
                 new ConversationPair(new AccountId(entity.getClientId()), new AccountId(entity.getTrainerId())));
     }
 
-    default Message toDomain(MessageEntity entity) {
+    /** @param about the set the message is about, or {@code null} */
+    default Message toDomain(MessageEntity entity, AboutSet about) {
         return new Message(
                 new MessageId(entity.getId()),
                 new ConversationId(entity.getConversationId()),
                 new AccountId(entity.getSenderId()),
                 new MessageText(entity.getText()),
-                entity.getReceivedAt());
+                entity.getReceivedAt(),
+                about);
     }
 }
