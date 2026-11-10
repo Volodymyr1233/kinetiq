@@ -4,15 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.messaging.domain.exception.AboutSetNotFoundException;
 import com.kinetiq.messaging.domain.exception.ConversationNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageEmptyException;
 import com.kinetiq.messaging.domain.exception.MessageIdInUseException;
 import com.kinetiq.messaging.domain.exception.MessageNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageTooLongException;
 import com.kinetiq.messaging.domain.input.SendMessageCommand;
+import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.Message;
 import com.kinetiq.messaging.domain.model.MessageId;
 import com.kinetiq.messaging.domain.model.MessageText;
+import com.kinetiq.sessionlog.domain.model.SetLogId;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -37,8 +40,15 @@ class MessagingServiceTest {
     private final MessagingFakes.Conversations conversations = new MessagingFakes.Conversations();
     private final MessagingFakes.Messages messages = new MessagingFakes.Messages();
 
+    private final MessagingFakes.Sets sets = new MessagingFakes.Sets();
+
     private final MessagingService service = new MessagingService(
-            participants, conversations, messages, new MessagingFakes.Directory(), Clock.fixed(NOW, ZoneOffset.UTC));
+            participants,
+            conversations,
+            messages,
+            new MessagingFakes.Directory(),
+            sets,
+            Clock.fixed(NOW, ZoneOffset.UTC));
 
     @BeforeEach
     void setUp() {
@@ -202,6 +212,89 @@ class MessagingServiceTest {
                     .isInstanceOf(MessageTooLongException.class);
 
             assertThat(conversations.stored).isEmpty();
+        }
+    }
+
+    @Nested
+    class SendingAboutASet {
+
+        private SendMessageCommand ask(AccountId person, AccountId client, AboutSet set) {
+            return new SendMessageCommand(person, client, newId(), "Was this too heavy?", set.setLog());
+        }
+
+        @Test
+        void shouldStoreTheSetWithTheMessage_whenItIsTheSendersOwn() {
+            AboutSet annasSet = sets.logFor(anna);
+
+            Message sent = service.send(ask(anna, anna, annasSet));
+
+            assertThat(sent.getAbout()).contains(annasSet);
+            assertThat(messages.stored.get(sent.getId()).getAbout()).contains(annasSet);
+        }
+
+        @Test
+        void shouldAnswerNotFoundAndStoreNothing_whenTheSetIsAnotherClients() {
+            AboutSet basiasSet = sets.logFor(basia);
+
+            assertThatThrownBy(() -> service.send(ask(anna, anna, basiasSet)))
+                    .isInstanceOf(AboutSetNotFoundException.class);
+
+            assertThat(messages.stored).isEmpty();
+            assertThat(conversations.stored).isEmpty();
+        }
+
+        // a trainer reads their client's logs, but a message can only be about a set its sender logged
+        @Test
+        void shouldAnswerNotFoundAndStoreNothing_whenATrainerNamesTheirClientsSet() {
+            AboutSet annasSet = sets.logFor(anna);
+
+            assertThatThrownBy(() -> service.send(ask(marek, anna, annasSet)))
+                    .isInstanceOf(AboutSetNotFoundException.class);
+
+            assertThat(messages.stored).isEmpty();
+            assertThat(conversations.stored).isEmpty();
+        }
+
+        @Test
+        void shouldAnswerNotFound_whenTheSetIsUnknown() {
+            SendMessageCommand command =
+                    new SendMessageCommand(anna, anna, newId(), "hello", new SetLogId(UUID.randomUUID()));
+
+            assertThatThrownBy(() -> service.send(command)).isInstanceOf(AboutSetNotFoundException.class);
+        }
+
+        @Test
+        void shouldReturnTheStoredMessage_whenTheSameIdTextAndSetAreSentAgain() {
+            SendMessageCommand command = ask(anna, anna, sets.logFor(anna));
+            Message first = service.send(command);
+
+            Message second = service.send(command);
+
+            assertThat(second).isSameAs(first);
+            assertThat(messages.stored).hasSize(1);
+        }
+
+        @Test
+        void shouldRefuse_whenTheSameIdComesWithAnotherSetOrWithNone() {
+            AboutSet first = sets.logFor(anna);
+            AboutSet other = sets.logFor(anna);
+            MessageId id = newId();
+            service.send(new SendMessageCommand(anna, anna, id, "hello", first.setLog()));
+
+            assertThatThrownBy(() -> service.send(new SendMessageCommand(anna, anna, id, "hello", other.setLog())))
+                    .isInstanceOf(MessageIdInUseException.class);
+            assertThatThrownBy(() -> service.send(new SendMessageCommand(anna, anna, id, "hello")))
+                    .isInstanceOf(MessageIdInUseException.class);
+            assertThat(messages.stored.get(id).getAbout()).contains(first);
+        }
+
+        // access decides first, so a stranger learns nothing about a set from the answer
+        @Test
+        void shouldAnswerConversationNotFoundBeforeLookingAtTheSet() {
+            AboutSet annasSet = sets.logFor(anna);
+
+            assertThatThrownBy(() -> service.send(ask(stranger, anna, annasSet)))
+                    .isInstanceOf(ConversationNotFoundException.class);
         }
     }
 

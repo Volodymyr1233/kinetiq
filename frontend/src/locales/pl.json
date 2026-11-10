@@ -52,6 +52,7 @@
       "empty": "Napisz coś przed wysłaniem.",
       "too-long": "Wiadomość może mieć do 2000 znaków. Skróć ją i wyślij ponownie.",
       "id-in-use": "Nie udało się wysłać tej wiadomości. Napisz ją ponownie.",
+      "about-not-found": "Nie można dołączyć tej serii. Usuń ją i wyślij wiadomość ponownie.",
       "not-found": "Tych wcześniejszych wiadomości już nie ma. Odśwież stronę."
     },
     "conversation": {

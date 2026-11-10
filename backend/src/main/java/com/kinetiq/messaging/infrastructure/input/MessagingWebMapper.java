@@ -1,12 +1,14 @@
 package com.kinetiq.messaging.infrastructure.input;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.ConversationOverview;
 import com.kinetiq.messaging.domain.model.LastMessage;
 import com.kinetiq.messaging.domain.model.Message;
 import com.kinetiq.messaging.domain.model.MessagePage;
 import com.kinetiq.messaging.domain.model.PlanWeek;
 import java.util.List;
+import java.util.Locale;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 
@@ -32,16 +34,30 @@ interface MessagingWebMapper {
         return new LastMessageResponse(message.preview(), message.sentByViewer(), message.receivedAt());
     }
 
-    default MessagePageResponse toResponse(MessagePage page, AccountId reader) {
+    default MessagePageResponse toResponse(MessagePage page, AccountId reader, Locale locale) {
         return new MessagePageResponse(
-                page.messages().stream().map(message -> toResponse(message, reader)).toList(), page.hasMore());
+                page.messages().stream().map(message -> toResponse(message, reader, locale)).toList(),
+                page.hasMore());
     }
 
-    default MessageResponse toResponse(Message message, AccountId reader) {
+    default MessageResponse toResponse(Message message, AccountId reader, Locale locale) {
         return new MessageResponse(
                 message.getId().value(),
                 message.getText().value(),
                 message.getSender().equals(reader),
-                message.getReceivedAt());
+                message.getReceivedAt(),
+                message.getAbout().map(about -> toResponse(about, locale)).orElse(null));
+    }
+
+    default AboutResponse toResponse(AboutSet about, Locale locale) {
+        return new AboutResponse(
+                about.setLog().value(),
+                about.sessionLog().value(),
+                about.sessionName(),
+                about.sessionDate(),
+                about.exerciseName().in(locale),
+                about.entryPosition(),
+                about.setNumber(),
+                about.rpe());
     }
 }

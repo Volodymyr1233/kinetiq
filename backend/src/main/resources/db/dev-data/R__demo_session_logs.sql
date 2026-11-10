@@ -63,3 +63,34 @@ cross join lateral (
 ) as target
 where log.id::text like '00000000-0000-4000-9600-%'
 on conflict do nothing;
+
+-- a question from Demo Client Daily about the last set of the first exercise of their latest session, so the About
+-- chip shows in both conversation views; it is here and not with the other demo messages because repeatable
+-- migrations run in the order of their names, and the set logs above must exist first
+insert into conversations (id, client_id, trainer_id, created_at, updated_at, version)
+values ('00000000-0000-4000-8000-000000000503', '00000000-0000-4000-8000-000000000012',
+        '00000000-0000-4000-8000-000000000001', now(), now(), 0)
+on conflict do nothing;
+
+insert into messages (id, conversation_id, sender_id, text, received_at, about_set_log_id, created_at, updated_at,
+                      version)
+select '00000000-0000-4000-8000-000000000607',
+       conversation.id,
+       conversation.client_id,
+       'The last set felt heavier than it should. Is that expected?',
+       now() - interval '30 minutes',
+       asked.id,
+       now(),
+       now(),
+       0
+from conversations conversation
+cross join lateral (
+    select set_log.id
+    from set_logs set_log
+    where set_log.session_log_id = '00000000-0000-4000-9600-000000000006'::uuid
+    order by set_log.entry_position, set_log.set_number desc
+    limit 1
+) as asked
+where conversation.client_id = '00000000-0000-4000-8000-000000000012'::uuid
+  and conversation.trainer_id = '00000000-0000-4000-8000-000000000001'::uuid
+on conflict do nothing;

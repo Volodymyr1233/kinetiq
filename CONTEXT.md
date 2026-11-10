@@ -199,3 +199,7 @@ _Avoid_: New, unseen
 **Delivery state**:
 What the sender sees on their own message: Sending, Sent or Not sent. There are no read receipts.
 _Avoid_: Status, read ticks
+
+**About reference**:
+The one logged set a message is about, chosen by the sender from their own logs when writing it.
+_Avoid_: Context, attachment, quote

@@ -12,6 +12,8 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.common.infrastructure.config.SecurityConfig;
 import com.kinetiq.common.infrastructure.config.WebConfig;
+import com.kinetiq.exercise.domain.model.LocalizedText;
+import com.kinetiq.messaging.domain.exception.AboutSetNotFoundException;
 import com.kinetiq.messaging.domain.exception.ConversationNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageEmptyException;
 import com.kinetiq.messaging.domain.exception.MessageIdInUseException;
@@ -19,6 +21,7 @@ import com.kinetiq.messaging.domain.exception.MessageNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageTooLongException;
 import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.messaging.domain.input.SendMessageCommand;
+import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.ConversationId;
 import com.kinetiq.messaging.domain.model.ConversationOverview;
 import com.kinetiq.messaging.domain.model.LastMessage;
@@ -28,13 +31,17 @@ import com.kinetiq.messaging.domain.model.MessagePage;
 import com.kinetiq.messaging.domain.model.MessageText;
 import com.kinetiq.messaging.domain.model.PlanWeek;
 import com.kinetiq.quiz.domain.model.Goal;
+import com.kinetiq.sessionlog.domain.model.SessionLogId;
+import com.kinetiq.sessionlog.domain.model.SetLogId;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
@@ -52,6 +59,8 @@ class ConversationControllerTest {
     private static final RequestPostProcessor TRAINER = user(TRAINER_ID.value().toString()).roles("TRAINER");
     private static final RequestPostProcessor CLIENT = user(CLIENT_ID.value().toString()).roles("CLIENT");
     private static final UUID MESSAGE_ID = UUID.fromString("00000000-0000-4000-8000-000000000701");
+    private static final UUID SET_LOG_ID = UUID.fromString("00000000-0000-4000-8000-000000000801");
+    private static final UUID SESSION_LOG_ID = UUID.fromString("00000000-0000-4000-8000-000000000901");
     private static final Instant AT = Instant.parse("2026-11-02T09:12:00Z");
     private static final String MESSAGES = "/api/v1/conversations/" + CLIENT_ID.value() + "/messages";
     private static final String READ = "/api/v1/conversations/" + CLIENT_ID.value() + "/read";
@@ -66,6 +75,24 @@ class ConversationControllerTest {
     private static Message message(AccountId sender) {
         return new Message(
                 new MessageId(MESSAGE_ID), ConversationId.random(), sender, new MessageText("hello"), AT);
+    }
+
+    private static Message messageAbout(String polishExerciseName) {
+        return new Message(
+                new MessageId(MESSAGE_ID),
+                ConversationId.random(),
+                CLIENT_ID,
+                new MessageText("hello"),
+                AT,
+                new AboutSet(
+                        new SetLogId(SET_LOG_ID),
+                        new SessionLogId(SESSION_LOG_ID),
+                        "Lower body",
+                        LocalDate.of(2026, 11, 1),
+                        new LocalizedText("Back squat", polishExerciseName),
+                        0,
+                        3,
+                        9));
     }
 
     private MvcTestResult post(String body) {
@@ -159,6 +186,66 @@ class ConversationControllerTest {
         assertThat(result).hasStatus(HttpStatus.CREATED);
         assertThat(result).bodyJson().extractingPath("$.id").isEqualTo(MESSAGE_ID.toString());
         assertThat(result).bodyJson().extractingPath("$.mine").isEqualTo(true);
+    }
+
+    @Test
+    void shouldAnswerTheSetAMessageIsAbout_inAPageAndWhenSent() {
+        when(messaging.messages(TRAINER_ID, CLIENT_ID, null))
+                .thenReturn(new MessagePage(List.of(messageAbout("Przysiad"), message(TRAINER_ID)), false));
+        when(messaging.send(new SendMessageCommand(
+                        CLIENT_ID, CLIENT_ID, new MessageId(MESSAGE_ID), "hello", new SetLogId(SET_LOG_ID))))
+                .thenReturn(messageAbout("Przysiad"));
+
+        var page = mvc.get().uri(MESSAGES).with(TRAINER).exchange();
+        var sent = post("{\"id\":\"" + MESSAGE_ID + "\",\"text\":\"hello\",\"aboutSetLogId\":\"" + SET_LOG_ID + "\"}");
+
+        var about = assertThat(page).bodyJson();
+        about.extractingPath("$.messages[0].about.setLogId").isEqualTo(SET_LOG_ID.toString());
+        about.extractingPath("$.messages[0].about.sessionLogId").isEqualTo(SESSION_LOG_ID.toString());
+        about.extractingPath("$.messages[0].about.sessionName").isEqualTo("Lower body");
+        about.extractingPath("$.messages[0].about.sessionDate").isEqualTo("2026-11-01");
+        about.extractingPath("$.messages[0].about.exerciseName").isEqualTo("Back squat");
+        about.extractingPath("$.messages[0].about.entryPosition").isEqualTo(0);
+        about.extractingPath("$.messages[0].about.setNumber").isEqualTo(3);
+        about.extractingPath("$.messages[0].about.rpe").isEqualTo(9);
+        about.doesNotHavePath("$.messages[1].about");
+        assertThat(sent).hasStatus(HttpStatus.CREATED);
+        assertThat(sent).bodyJson().extractingPath("$.about.setLogId").isEqualTo(SET_LOG_ID.toString());
+    }
+
+    @Test
+    void shouldNameTheExerciseInPolish_whenTheRequestIsInPolishAndTheExerciseHasAPolishName() {
+        when(messaging.messages(TRAINER_ID, CLIENT_ID, null))
+                .thenReturn(new MessagePage(List.of(messageAbout("Przysiad"), messageAbout(null)), false));
+
+        var result = mvc.get()
+                .uri(MESSAGES)
+                .with(TRAINER)
+                .header(HttpHeaders.ACCEPT_LANGUAGE, "pl")
+                .exchange();
+
+        assertThat(result).bodyJson().extractingPath("$.messages[0].about.exerciseName").isEqualTo("Przysiad");
+        assertThat(result).bodyJson().extractingPath("$.messages[1].about.exerciseName").isEqualTo("Back squat");
+    }
+
+    // one answer for another client's set, an unknown one and a trainer's attempt: the use case decides, the code is one
+    @Test
+    void shouldAnswerNotFoundWithTheCode_whenTheSetIsNotTheSenders() {
+        when(messaging.send(any())).thenThrow(new AboutSetNotFoundException());
+
+        var result = post("{\"id\":\"" + MESSAGE_ID + "\",\"text\":\"hello\",\"aboutSetLogId\":\"" + SET_LOG_ID + "\"}");
+
+        assertThat(result).hasStatus(HttpStatus.NOT_FOUND);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("message.about-not-found");
+        assertThat(result).bodyJson().doesNotHavePath("$.detail");
+    }
+
+    @Test
+    void shouldAnswerBadRequest_whenTheSetLogIdIsNoId() {
+        var result = post("{\"id\":\"" + MESSAGE_ID + "\",\"text\":\"hello\",\"aboutSetLogId\":\"not-an-id\"}");
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        verifyNoInteractions(messaging);
     }
 
     @Test

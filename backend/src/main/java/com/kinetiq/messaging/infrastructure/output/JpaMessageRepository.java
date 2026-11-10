@@ -14,12 +14,15 @@ interface JpaMessageRepository extends JpaRepository<MessageEntity, UUID> {
     @Query(
             nativeQuery = true,
             value = """
-                    insert into messages (id, conversation_id, sender_id, text, received_at,
+                    insert into messages (id, conversation_id, sender_id, text, received_at, about_set_log_id,
                                           created_at, updated_at, version)
-                    values (:id, :conversation, :sender, :text, :receivedAt, now(), now(), 0)
+                    values (:id, :conversation, :sender, :text, :receivedAt, cast(:aboutSetLog as uuid),
+                            now(), now(), 0)
                     on conflict (id) do nothing
                     """)
-    int insertIfAbsent(UUID id, UUID conversation, UUID sender, String text, Instant receivedAt);
+    // the set log id is given as text and cast, so that a null has a type the database accepts
+    int insertIfAbsent(
+            UUID id, UUID conversation, UUID sender, String text, Instant receivedAt, String aboutSetLog);
 
     @Query("""
             select m from MessageEntity m

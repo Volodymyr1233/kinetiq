@@ -21,4 +21,5 @@ class MessageEntity extends BaseEntity {
     private UUID senderId;
     private String text;
     private Instant receivedAt;
+    private UUID aboutSetLogId;
 }
