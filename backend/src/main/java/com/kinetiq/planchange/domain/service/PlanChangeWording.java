@@ -31,30 +31,45 @@ public final class PlanChangeWording {
 
     /** The text of {@code planChange} in {@code language}; {@code names} holds exercise names in that language. */
     public static PlanChangeText of(Language language, PlanChange planChange, Map<ExerciseId, String> names) {
+        return of(language, planChange, names, Map.of());
+    }
+
+    /**
+     * The text of {@code planChange}, where {@code volumes} holds the sets times amount of each changed entry in the plan
+     * the content was made from, when that plan is still known; without one for every changed entry, a high RPE title
+     * gives the mean change of the entries instead of the change of their total volume.
+     */
+    public static PlanChangeText of(
+            Language language,
+            PlanChange planChange,
+            Map<ExerciseId, String> names,
+            Map<EntryRef, Long> volumes) {
         boolean polish = language == Language.PL;
         int weeks = weeks(planChange.getFigures());
         return switch (planChange.getRule()) {
-            case HIGH_RPE -> highRpe(polish, planChange, names, weeks);
+            case HIGH_RPE -> highRpe(polish, planChange, names, volumes, weeks);
             case STALLED_WEIGHT -> stalledWeight(polish, planChange, names, weeks);
             case LOW_COMPLETION -> lowCompletion(polish, planChange, weeks);
         };
     }
 
     private static PlanChangeText highRpe(
-            boolean polish, PlanChange planChange, Map<ExerciseId, String> names, int weeks) {
+            boolean polish,
+            PlanChange planChange,
+            Map<ExerciseId, String> names,
+            Map<EntryRef, Long> volumes,
+            int weeks) {
         List<TargetChange> changes = planChange.getContent().changes();
         // per entry the volume ratio is the product of the changed factors, as an unchanged one cancels out
-        // ponytail: plain mean over the changed entries, since unchanged sets are not stored; weight by volume if stored
-        Map<EntryRef, List<TargetChange>> byEntry =
-                changes.stream().collect(Collectors.groupingBy(TargetChange::entry));
-        BigDecimal ratio = byEntry.values().stream()
-                .map(entry -> entry.stream()
-                        .filter(change -> change.target() == Target.SETS || change.target() == Target.AMOUNT)
-                        .map(change -> change.newValue().divide(change.oldValue(), PRECISION))
-                        .reduce(BigDecimal.ONE, BigDecimal::multiply))
-                .reduce(BigDecimal.ZERO, BigDecimal::add)
-                .divide(BigDecimal.valueOf(Math.max(1, byEntry.size())), PRECISION);
-        String percent = wholePercent(BigDecimal.ONE.subtract(ratio));
+        Map<EntryRef, BigDecimal> ratios = changes.stream()
+                .filter(change -> change.target() == Target.SETS || change.target() == Target.AMOUNT)
+                .collect(Collectors.groupingBy(
+                        TargetChange::entry,
+                        Collectors.reducing(
+                                BigDecimal.ONE,
+                                change -> change.newValue().divide(change.oldValue(), PRECISION),
+                                BigDecimal::multiply)));
+        String percent = wholePercent(BigDecimal.ONE.subtract(totalRatio(ratios, volumes)));
         String means = joined(
                 polish,
                 figures(planChange, FigureKind.MEAN_RPE).stream().map(figure -> decimal(polish, figure.value())).toList());
@@ -69,6 +84,26 @@ public final class PlanChangeWording {
                 ? "Średnie RPE wynosiło %s w ostatnich %d tygodniach, powyżej 8.".formatted(means, weeks)
                 : "Average RPE was %s in the last %d weeks, above 8.".formatted(means, weeks);
         return new PlanChangeText(title, reason);
+    }
+
+    // the total volume after over the total before; the mean of the entries when a volume is not known
+    private static BigDecimal totalRatio(Map<EntryRef, BigDecimal> ratios, Map<EntryRef, Long> volumes) {
+        if (ratios.isEmpty()) {
+            return BigDecimal.ONE;
+        }
+        if (volumes.keySet().containsAll(ratios.keySet())) {
+            BigDecimal before = BigDecimal.ZERO;
+            BigDecimal after = BigDecimal.ZERO;
+            for (Map.Entry<EntryRef, BigDecimal> entry : ratios.entrySet()) {
+                BigDecimal volume = BigDecimal.valueOf(volumes.get(entry.getKey()));
+                before = before.add(volume);
+                after = after.add(volume.multiply(entry.getValue()));
+            }
+            return before.signum() == 0 ? BigDecimal.ONE : after.divide(before, PRECISION);
+        }
+        return ratios.values().stream()
+                .reduce(BigDecimal.ZERO, BigDecimal::add)
+                .divide(BigDecimal.valueOf(ratios.size()), PRECISION);
     }
 
     private static PlanChangeText stalledWeight(

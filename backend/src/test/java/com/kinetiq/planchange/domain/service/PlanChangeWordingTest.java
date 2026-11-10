@@ -107,6 +107,25 @@ class PlanChangeWordingTest {
     }
 
     @Test
+    void shouldGiveTheChangeOfTheTotalVolume_whenTheVolumeOfEachEntryIsKnown() {
+        // 4 x 10 = 40 to 36 and 10 x 8 = 80 to 70: 106 of 120 is 12% less, while the mean of 10% and 12.5% is 11%
+        PlanChange several = planChange(
+                Rule.HIGH_RPE,
+                PlanChangeContent.ofChanges(List.of(
+                        change(DEADLIFT, 0, Target.SETS, "4", "3"),
+                        change(DEADLIFT, 0, Target.AMOUNT, "10", "12"),
+                        change(SQUAT, 1, Target.AMOUNT, "8", "7"))),
+                HIGH_RPE.getFigures(),
+                Set.of(DEADLIFT, SQUAT));
+        Map<EntryRef, Long> volumes = Map.of(new EntryRef(MONDAY, 0), 40L, new EntryRef(MONDAY, 1), 80L);
+
+        assertThat(PlanChangeWording.of(Language.EN, several, ENGLISH, volumes).title())
+                .isEqualTo("Cut volume on 2 exercises by 12%");
+        assertThat(PlanChangeWording.of(Language.EN, several, ENGLISH, Map.of(new EntryRef(MONDAY, 0), 40L)).title())
+                .isEqualTo("Cut volume on 2 exercises by 11%");
+    }
+
+    @Test
     void shouldNameTheRiseOfTheStalledExercise_forStalledWeight() {
         PlanChange stalled = planChange(
                 Rule.STALLED_WEIGHT,
