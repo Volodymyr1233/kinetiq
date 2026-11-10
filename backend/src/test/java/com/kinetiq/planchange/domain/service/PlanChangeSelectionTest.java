@@ -53,7 +53,9 @@ class PlanChangeSelectionTest {
     }
 
     private void run(List<PlanChangeRule> rules) {
-        new PlanChangeDetectionService(history, planChanges, rules, clock).chooseDue(client).ifPresent(chosen::add);
+        new PlanChangeDetectionService(
+                        history, planChanges, rules, new FakePlanSource(), new FakePlanChangeDrafter().drafting(), clock)
+                .chooseDue(client).ifPresent(chosen::add);
     }
 
     private List<Rule> dueRules() {
