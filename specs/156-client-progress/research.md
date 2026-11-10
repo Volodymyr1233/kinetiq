@@ -70,6 +70,8 @@
 
 **Decision**: `npx shadcn@latest add chart` adds `components/ui/chart.tsx` and Recharts. It is then fitted to the design system's section 3.7: tooltips on `popover`, grid lines on `border`, axis text `text-xs` in `muted-foreground`. `lib/chart-series.ts` maps the five meanings to their token, line width and dash: completion `--chart-1` solid 2.5 px, RPE `--chart-2` solid 2.5 px, load `--chart-3` solid 2 px, wearables `--chart-4` dotted, previous period `--chart-5` dashed 4 4. The tokens already exist in `index.css` in light and dark. #159 checks a sample chart in light and dark on a page that is not committed, since no screen uses the chart before #160.
 
+Two details came out of that check. Recharts is 3.10, not the 3.8.0 the CLI installs: with 3.8.0 a `Line` loses its dash pattern when the reader prefers reduced motion, so the dotted and dashed series would differ by colour alone. The component's axis text selector is changed to `.recharts-cartesian-axis-tick-value`, the class Recharts 3 gives tick text; the shadcn selector matches nothing, which left the text in Recharts' grey. The tooltip formats its numbers in the active language instead of the browser's, so an English screen in a Polish browser shows `7.8`, not `7,8`.
+
 **Why**: Task #159 asks for the component and the five tokens; one map keeps every chart's meaning fixed (story acceptance criterion 3).
 
 **Alternatives considered**: Another chart library: `frontend/CLAUDE.md` names shadcn `chart` (Recharts).

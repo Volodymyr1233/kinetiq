@@ -55,10 +55,10 @@ description: "Tasks for story #156, Client sees their progress (tasks #157, #158
 
 **Goal**: every chart has the shadcn chart component and the five series of the design system's section 3.7, right in light and dark (spec FR-011; research R10).
 
-- [ ] T021 [US1] Before code: `npx shadcn@latest docs chart`; then `npx shadcn@latest add chart`, which adds `F/components/ui/chart.tsx` and Recharts to `frontend/package.json` and `package-lock.json`; read the files it adds
-- [ ] T022 [US1] Fit `F/components/ui/chart.tsx` to section 3.7 where its defaults differ: the tooltip on `bg-popover` with `text-popover-foreground`, grid lines on `stroke-border`, axis text `text-xs` in `fill-muted-foreground`; no hex values
-- [ ] T023 [US1] `F/lib/chart-series.ts`: the five series by meaning, each with its colour `var(--chart-n)`, line width and dash: `completion` `--chart-1` solid 2.5, `rpe` `--chart-2` solid 2.5, `load` `--chart-3` solid 2, `wearables` `--chart-4` dotted, `previous` `--chart-5` dashed `4 4`, with a doc comment naming section 3.7
-- [ ] T024 `npm run check` passes; follow `quickstart.md` section 3 on a sample chart that is not committed, in light and dark; commit `feat(frontend): add chart with the kinetiq series`
+- [X] T021 [US1] Before code: `npx shadcn@latest docs chart`; then `npx shadcn@latest add chart`, which adds `F/components/ui/chart.tsx` and Recharts to `frontend/package.json` and `package-lock.json`, and `npm install recharts@3.10.1` (research R10); read the files it adds
+- [X] T022 [US1] Fit `F/components/ui/chart.tsx` to section 3.7 where its defaults differ: the tooltip on `bg-popover` with `text-popover-foreground`, grid lines on `stroke-border`, axis text `text-xs` in `fill-muted-foreground` through `.recharts-cartesian-axis-tick-value` (research R10); no hex values. The tooltip's numbers follow the active language, as the other numbers of the app do, proven in `F/components/ui/chart.test.tsx`
+- [X] T023 [US1] `F/lib/chart-series.ts`: the five series by meaning, each with its colour `var(--chart-n)`, line width and dash: `completion` `--chart-1` solid 2.5, `rpe` `--chart-2` solid 2.5, `load` `--chart-3` solid 2, `wearables` `--chart-4` dotted, `previous` `--chart-5` dashed `4 4`, with a doc comment naming section 3.7
+- [X] T024 `npm run check` passes; follow `quickstart.md` section 3 on a sample chart that is not committed, in light and dark; commit `feat(frontend): add chart with the kinetiq series`
 
 ## Phase 5: task #160, Progress screen: tiles and sessions chart (US1)
 
