@@ -25,15 +25,28 @@ import { WeekDays } from '../components/week-days'
 
 type Client = components['schemas']['ClientResponse']
 
-/** The client page's Overview tab: this week, the recent sessions and the quiz answers. */
-export function ClientOverviewTab() {
-  const { t } = useTranslation()
+/**
+ * The client page's Overview tab: `progress`, given by another feature, then this week, the recent sessions and the
+ * quiz answers.
+ */
+export function ClientOverviewTab({ progress }: { progress?: ReactNode }) {
   const client = useOutletContext<Client>()
+
+  return (
+    <div className="flex flex-col gap-6 pt-4">
+      {progress}
+      <OverviewCards client={client} />
+    </div>
+  )
+}
+
+function OverviewCards({ client }: { client: Client }) {
+  const { t } = useTranslation()
   const query = useClientOverview(client.id)
 
   if (query.isError) {
     return (
-      <Alert variant="destructive" className="mt-4">
+      <Alert variant="destructive">
         <CircleAlertIcon aria-hidden />
         <AlertDescription>{t(errorMessageKey(query.error))}</AlertDescription>
         <AlertAction>
@@ -55,7 +68,7 @@ export function ClientOverviewTab() {
   // a published plan never goes back to a draft, so one without a week has finished
   const published = client.planState === 'PUBLISHED'
   return (
-    <div className="grid items-start gap-6 pt-4 lg:grid-cols-2">
+    <div className="grid items-start gap-6 lg:grid-cols-2">
       <OverviewCard title={t('sessionlog.overview.thisWeek')}>
         {!published ? (
           <Empty>{t('sessionlog.overview.noPlan')}</Empty>
@@ -230,7 +243,7 @@ function OverviewLoading() {
       <span className="sr-only" role="status">
         {t('sessionlog.overview.loading')}
       </span>
-      <div aria-hidden className="grid items-start gap-6 pt-4 lg:grid-cols-2">
+      <div aria-hidden className="grid items-start gap-6 lg:grid-cols-2">
         <Skeleton className="h-64" />
         <Skeleton className="h-64" />
         <Skeleton className="h-72" />

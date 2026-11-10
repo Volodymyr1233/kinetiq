@@ -14,8 +14,19 @@ const PLACE_COLOUR = {
   above: 'text-rpe-hard',
 } as const
 
-/** The four tiles of the Progress tab: sessions done, average RPE, the first exercise's best set and the week streak. */
-export function ProgressTiles({ progress }: { progress: Progress }) {
+/**
+ * The tiles of the progress: sessions done, average RPE, the first exercise's best set and the week streak. Without
+ * `rewards` there is no week streak and no "PR today", which the design system shows on client screens only.
+ */
+export function ProgressTiles({
+  progress,
+  rewards = true,
+  className,
+}: {
+  progress: Progress
+  rewards?: boolean
+  className?: string
+}) {
   const { t, i18n } = useTranslation()
   const number = (value: number, digits: number, minDigits = digits) =>
     new Intl.NumberFormat(i18n.language, {
@@ -30,7 +41,7 @@ export function ProgressTiles({ progress }: { progress: Progress }) {
   return (
     <section
       aria-label={t('progress.tiles.label')}
-      className="grid grid-cols-2 gap-3"
+      className={cn('grid grid-cols-2 gap-3', className)}
     >
       <Tile label={t('progress.sessions.label')}>
         <Figure
@@ -71,22 +82,30 @@ export function ProgressTiles({ progress }: { progress: Progress }) {
           <Empty />
         </Tile>
       ) : (
-        <BestSetTile exercise={first} />
+        <BestSetTile exercise={first} rewards={rewards} />
       )}
-      <Tile label={t('progress.inARow.label')}>
-        <Figure
-          value={number(progress.weeksInARow, 0)}
-          unit={t('progress.inARow.weeks', { count: progress.weeksInARow })}
-        />
-        <p className="text-muted-foreground text-sm">
-          {t('progress.inARow.rule')}
-        </p>
-      </Tile>
+      {rewards && (
+        <Tile label={t('progress.inARow.label')}>
+          <Figure
+            value={number(progress.weeksInARow, 0)}
+            unit={t('progress.inARow.weeks', { count: progress.weeksInARow })}
+          />
+          <p className="text-muted-foreground text-sm">
+            {t('progress.inARow.rule')}
+          </p>
+        </Tile>
+      )}
     </section>
   )
 }
 
-function BestSetTile({ exercise }: { exercise: ExerciseProgress }) {
+function BestSetTile({
+  exercise,
+  rewards,
+}: {
+  exercise: ExerciseProgress
+  rewards: boolean
+}) {
   const { t } = useTranslation()
   const measured = useMeasured(exercise.measure)
   const { best, topSetChange: change } = exercise
@@ -96,7 +115,7 @@ function BestSetTile({ exercise }: { exercise: ExerciseProgress }) {
   return (
     <Tile label={t('progress.best.label', { exercise: exercise.name })}>
       <Figure value={shown.value} unit={shown.unit} />
-      {exercise.prToday && (
+      {rewards && exercise.prToday && (
         <Badge variant="brand">{t('progress.best.prToday')}</Badge>
       )}
       {change !== undefined && (

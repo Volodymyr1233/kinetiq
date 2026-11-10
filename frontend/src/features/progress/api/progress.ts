@@ -25,3 +25,19 @@ export function useProgress(weeks: 4 | 8 | 12) {
     placeholderData: keepPreviousData,
   })
 }
+
+/** One of the signed-in trainer's clients' progress over the last 4, 8 or 12 plan weeks, the figures the client reads. */
+export function useClientProgress(clientId: string, weeks: 4 | 8 | 12) {
+  return useQuery({
+    queryKey: ['progress', 'client', clientId, weeks],
+    queryFn: async () => {
+      const { data, error } = await api.GET('/api/v1/clients/{id}/progress', {
+        params: { path: { id: clientId }, query: { weeks } },
+      })
+      if (error !== undefined) throw error
+      return data
+    },
+    // another period keeps the section as it is until its figures arrive
+    placeholderData: keepPreviousData,
+  })
+}

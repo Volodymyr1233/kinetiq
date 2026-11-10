@@ -39,8 +39,17 @@ const RunningAwareBar = (props: BarShapeProps) =>
     <Rectangle {...props} />
   )
 
-/** The sessions done each week of the period as a share of the sessions planned, against the 70% line. */
-export function SessionsChart({ weeks }: { weeks: ProgressWeek[] }) {
+/**
+ * The sessions done each week of the period as a share of the sessions planned, against the 70% line; `compact` gives
+ * its table the trainer's density.
+ */
+export function SessionsChart({
+  weeks,
+  compact = false,
+}: {
+  weeks: ProgressWeek[]
+  compact?: boolean
+}) {
   const { t, i18n } = useTranslation()
   const config = {
     share: {
@@ -117,7 +126,7 @@ export function SessionsChart({ weeks }: { weeks: ProgressWeek[] }) {
         </ChartContainer>
       }
       table={
-        <Table>
+        <Table data-density={compact ? 'compact' : undefined}>
           <TableHeader>
             <TableRow>
               <TableHead>{t('progress.sessionsChart.week')}</TableHead>

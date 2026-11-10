@@ -1204,6 +1204,11 @@
     "noPlan": "Your progress shows here once your trainer publishes your plan.",
     "nothingLogged": "Log a session to see your progress here.",
     "retry": "Try again",
+    "trainer": {
+      "label": "Progress",
+      "loading": "Loading the client's progress",
+      "nothingLogged": "No sessions logged in this period yet."
+    },
     "header": {
       "week": "{{goal}} · Week {{week, number}}",
       "finished": "{{goal}} · Plan finished"

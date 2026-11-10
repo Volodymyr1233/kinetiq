@@ -84,12 +84,17 @@ description: "Tasks for story #104, Trainer sees a client's training (tasks #105
 
 **Goal**: the Overview shows the client's progress for 4, 8 or 12 weeks with the same numbers the client sees (spec FR-013).
 
-- [ ] T036 [US4] Before code: read story #156's spec and the statistics API for trainers of #158, and record in `research.md` which figures, periods and charts the section shows and how it reads them; add the tasks that build it here, before any code of this phase
-- [ ] T037 `npm run check` passes; follow `quickstart.md` section 4; commit `feat(frontend): add progress to the client overview`
+- [X] T036 [US4] Before code: read story #156's spec and the statistics API for trainers of #158, and record in `research.md` which figures, periods and charts the section shows and how it reads them; add the tasks that build it here, before any code of this phase
+- [X] T037 [US4] `useClientProgress(clientId, weeks)` in `F/features/progress/api/progress.ts`, reading `GET /api/v1/clients/{id}/progress` through `api` with the period in the query and keeping the shown figures until another period's arrive, as `useProgress` does (research R14)
+- [X] T038 [US4] `F/features/progress/components/period-switch.tsx`: the period switch of `F/features/progress/pages/progress-page.tsx` (4, 8 or 12 weeks, with its look and comments), which the page then uses; `F/features/progress/components/progress-tiles.tsx` gains `rewards`, on by default, without which it shows no "PR today" and no "In a row" tile, and a `className` for its grid; `progress-page.test.tsx` stays green
+- [X] T039 [US4] `F/features/progress/components/client-progress-section.tsx`, as research R14 lays it out: a region named "Progress" with the period switch on 8 weeks, the tiles without rewards three in a row and, unless nothing is logged in the period ("No sessions logged in this period yet."), the sessions chart beside "By exercise" at `lg`; a skeleton while loading with a loading status; on failure the error's message (`errorMessageKey`) and "Try again"; strings under `progress.trainer` in `F/locales/en.json` and `pl.json`, as in the spec's Texts
+- [X] T040 [US4] `F/features/sessionlog/pages/client-overview-tab.tsx` takes a `progress` slot, shown above its cards while they load, fail or show; `F/app/client-overview-route.tsx` fills it with the section for a client whose plan state is `PUBLISHED`, the client from `useOutletContext`; the client page's index route in `F/app/router.ts` loads that route
+- [X] T041 [US4] Tests: `F/features/progress/components/client-progress-section.test.tsx` (the answer's figures in the tiles and charts, no "In a row" and no "PR today", choosing 4 weeks asks for 4, nothing logged says so instead of the charts, a failure offers "Try again", Polish texts); `F/features/sessionlog/pages/client-overview-tab.test.tsx`, which opens the whole app at the client page, so it covers the route too (a published plan shows the progress above the cards, also when the overview fails; a draft reads no progress); `client-page.test.tsx` stays green
+- [X] T042 `npm run check` passes; follow `quickstart.md` section 4 at 1280 px, light and dark, with the keyboard, in English and Polish; commit `feat(frontend): add progress to the client overview`
 
 ## Phase 7: Close the story
 
-- [ ] T038 On the branch of the story's last task, before its pull request is opened, run `/speckit-converge` and turn its findings into new tasks under #104; that pull request ends with `Closes #<task>` and `Closes #104`
+- [X] T043 On the branch of the story's last task, before its pull request is opened, run `/speckit-converge` and turn its findings into new tasks under #104; that pull request ends with `Closes #<task>` and `Closes #104`
 
 ## Dependencies
 
@@ -98,13 +103,19 @@ description: "Tasks for story #104, Trainer sees a client's training (tasks #105
 - Inside #106: T013 first; T014 to T017 in any order; T018 after them; T019 and T020 beside T018; T021 after T018; T022 last.
 - Inside #107: T023 before T024 and T025; T025 before T026; T027 before T028 to T030; T031 last.
 - Inside #261: T032 before T033; T033 before T034.
+- Inside #108: T036 first; T037 and T038 in any order; T039 after them; T040 after T039; T041 after T039 and T040; T042 last.
 
 ## Parallel opportunities
 
 - T003 and T005 can be written together; T002, T004 and T006 touch different files.
 - T014, T015, T016 and T017 touch different files.
 - T024 and T025 can be written together once T023 exists.
+- T037 and T038 touch different files.
 
 ## Implementation strategy
 
 Build in task order: the overview API first, since the tab and the logs reuse its rules; then the Overview tab; then the logs and the note. The progress section waits for story #156. Each task is one pull request, opened when its checks pass and the user agrees.
+
+## Phase 8: Convergence
+
+- [X] T044 Set `data-density="compact"` on the tables the trainer's progress section shows, the sessions chart's and the exercise chart's "Show as table" and the last sessions (`F/features/progress/components/sessions-chart.tsx`, `exercise-progress.tsx`), while the client's Progress tab keeps its own, per FR-017 (partial)

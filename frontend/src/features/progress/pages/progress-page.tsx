@@ -4,15 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useProgress } from '../api/progress'
 import { ExerciseProgress } from '../components/exercise-progress'
+import { PeriodSwitch, type Period } from '../components/period-switch'
 import { ProgressTiles } from '../components/progress-tiles'
 import { SessionsChart } from '../components/sessions-chart'
-
-const PERIODS = [4, 8, 12] as const
-type Period = (typeof PERIODS)[number]
 
 /** The client's Progress tab: the plan weeks of the chosen period in tiles and charts, and each exercise's progress. */
 export function ProgressPage() {
@@ -74,28 +71,7 @@ export function ProgressPage() {
           ? t('progress.header.finished', { goal })
           : t('progress.header.week', { goal, week: progress.week })}
       </p>
-      <ToggleGroup
-        type="single"
-        spacing={1}
-        value={String(weeks)}
-        // a single toggle group sends an empty value when the chosen option is chosen again; a period always has one
-        onValueChange={(next) => {
-          if (next) setWeeks(Number(next) as Period)
-        }}
-        aria-label={t('progress.period.label')}
-        className="bg-muted rounded-lg p-1"
-      >
-        {PERIODS.map((period) => (
-          <ToggleGroupItem
-            key={period}
-            value={String(period)}
-            // a border, not a ring, so the focus ring still shows on the chosen option
-            className="text-muted-foreground data-[state=on]:bg-background data-[state=on]:text-foreground data-[state=on]:border-primary h-12 border border-transparent px-4 font-normal hover:bg-transparent data-[state=on]:font-medium data-[state=on]:shadow-sm"
-          >
-            {t('progress.period.weeks', { count: period })}
-          </ToggleGroupItem>
-        ))}
-      </ToggleGroup>
+      <PeriodSwitch value={weeks} onChange={setWeeks} />
       <ProgressTiles progress={progress} />
       {nothingLogged ? (
         <p className="text-muted-foreground text-sm">
