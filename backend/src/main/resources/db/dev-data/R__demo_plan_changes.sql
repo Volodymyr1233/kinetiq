@@ -122,3 +122,36 @@ from (values ('00000000-0000-4000-9610-000000000010', '00000000-0000-4000-9600-0
 ) as figure (id, plan_change_id, kind, exercise_id, weeks_ago, value)
 join plan_changes change on change.id = figure.plan_change_id::uuid
 on conflict do nothing;
+
+-- Demo Client declined a plan change five days ago, for the schedule; the message it left is in R__demo_messages.sql
+insert into plan_changes (id, client_id, rule, state, plan_version, window_start, window_end, effective_week,
+                          removed_day, removed_name, created_at, ended_at, declined_by, decline_reason, decline_note)
+values ('00000000-0000-4000-9600-000000000006', '00000000-0000-4000-8000-000000000003', 'HIGH_RPE', 'DECLINED', 0,
+        (date_trunc('week', current_date) - interval '3 weeks')::date,
+        (date_trunc('week', current_date) - interval '1 week' - interval '1 day')::date,
+        (date_trunc('week', current_date) + interval '1 week')::date, null, null, now() - interval '6 days',
+        now() - interval '5 days', 'CLIENT', 'SCHEDULE', 'Travelling for work that week.')
+on conflict do nothing;
+
+insert into plan_change_targets (plan_change_id, session_day, position, target, exercise_id, session_name, old_value,
+                                 new_value)
+select '00000000-0000-4000-9600-000000000006'::uuid, 'MONDAY', 0, 'AMOUNT', '00000000-0000-4000-9100-000000000011'::uuid,
+       'Lower body', 8.0, 7.0
+from plan_changes change
+where change.id = '00000000-0000-4000-9600-000000000006'
+on conflict do nothing;
+
+insert into plan_change_exercises (plan_change_id, exercise_id)
+select change.id, '00000000-0000-4000-9100-000000000011'::uuid
+from plan_changes change
+where change.id = '00000000-0000-4000-9600-000000000006'
+on conflict do nothing;
+
+insert into plan_change_figures (id, plan_change_id, kind, exercise_id, week_start, value)
+select figure.id::uuid, '00000000-0000-4000-9600-000000000006'::uuid, 'MEAN_RPE', null,
+       (date_trunc('week', current_date) - make_interval(weeks => figure.weeks_ago))::date, figure.value
+from (values ('00000000-0000-4000-9610-000000000020', 3, 8.300),
+             ('00000000-0000-4000-9610-000000000021', 2, 8.500)
+) as figure (id, weeks_ago, value)
+join plan_changes change on change.id = '00000000-0000-4000-9600-000000000006'
+on conflict do nothing;

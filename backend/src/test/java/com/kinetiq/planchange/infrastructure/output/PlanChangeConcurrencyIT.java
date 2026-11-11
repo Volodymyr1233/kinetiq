@@ -1,6 +1,7 @@
 package com.kinetiq.planchange.infrastructure.output;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.mock;
 
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
@@ -15,6 +16,7 @@ import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.common.infrastructure.config.TransactionConfig;
+import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
@@ -250,13 +252,13 @@ class PlanChangeConcurrencyIT {
                 PlanChangeRepository planChanges,
                 PlanSource plans) {
             return new PlanChangeDecisionService(
-                    clients, accounts, planChanges, plans, Clock.fixed(NOW, ZoneOffset.UTC));
+                    clients, accounts, planChanges, plans, mock(ExchangeMessagesUseCase.class), Clock.fixed(NOW, ZoneOffset.UTC));
         }
 
         @Bean
         DecideOwnPlanChangeUseCase decideOwnPlanChangeUseCase(
                 CurrentAccountUseCase accounts, PlanChangeRepository planChanges, PlanSource plans) {
-            return new OwnPlanChangeDecisionService(accounts, planChanges, plans, Clock.fixed(NOW, ZoneOffset.UTC));
+            return new OwnPlanChangeDecisionService(accounts, planChanges, plans, mock(ExchangeMessagesUseCase.class), Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }
 }

@@ -2,13 +2,16 @@ package com.kinetiq.planchange.infrastructure.input;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
+import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 // every path needs the role CLIENT (SecurityConfig); the use case checks the plan change is this client's own
@@ -38,5 +41,16 @@ class ClientPlanChangeController {
     @DeleteMapping("/api/v1/plan/changes/{id}/acceptance")
     ClientPlanChangeDetailResponse undo(@PathVariable UUID id, Authentication authentication) {
         return mapper.toResponse(decisions.undo(signedIn(authentication), new PlanChangeId(id)));
+    }
+
+    /**
+     * The client keeps the current plan: the plan change ends as declined and the reason goes into the conversation with
+     * the trainer. {@code 409} when it has ended or its effective week has begun, so a repeated request posts nothing.
+     */
+    @PostMapping("/api/v1/plan/changes/{id}/declination")
+    ClientPlanChangeDetailResponse keepCurrent(
+            @PathVariable UUID id, @Valid @RequestBody KeepCurrentPlanRequest request, Authentication authentication) {
+        return mapper.toResponse(decisions.keepCurrent(
+                new KeepCurrentPlanCommand(signedIn(authentication), new PlanChangeId(id), request.reason(), request.note())));
     }
 }

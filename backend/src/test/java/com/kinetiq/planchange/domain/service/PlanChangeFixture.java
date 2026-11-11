@@ -49,6 +49,7 @@ class PlanChangeFixture {
     final FakePlanChangeRepository planChanges = new FakePlanChangeRepository();
     final FakePlanSource plans = new FakePlanSource();
     final Map<AccountId, Account> accounts = new HashMap<>();
+    final FakeExchangeMessages messages = new FakeExchangeMessages();
 
     final AccountId trainer = account("Marek Trainer", Role.TRAINER, null, Language.EN);
     final AccountId otherTrainer = account("Ina Other", Role.TRAINER, null, Language.EN);

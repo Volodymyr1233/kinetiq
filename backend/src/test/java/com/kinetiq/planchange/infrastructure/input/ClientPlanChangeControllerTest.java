@@ -1,6 +1,7 @@
 package com.kinetiq.planchange.infrastructure.input;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -18,6 +19,8 @@ import com.kinetiq.planchange.domain.exception.PlanChangeNothingToUndoException;
 import com.kinetiq.planchange.domain.exception.PlanChangeWeekBegunException;
 import com.kinetiq.planchange.domain.input.ClientPlanChangeView;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
+import com.kinetiq.planchange.domain.model.DeclineReason;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.Figure;
@@ -44,6 +47,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -173,6 +177,73 @@ class ClientPlanChangeControllerTest {
         assertRefused(accept(TRAINER), HttpStatus.FORBIDDEN, "request.not-allowed");
         assertRefused(undo(TRAINER), HttpStatus.FORBIDDEN, "request.not-allowed");
         assertRefused(mvc.post().uri(ACCEPTANCE).with(csrf()).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        verifyNoInteractions(decisions);
+    }
+
+    private static final String DECLINATION = "/api/v1/plan/changes/" + ID.value() + "/declination";
+
+    private MvcTestResult keep(RequestPostProcessor who, String body) {
+        return mvc.post()
+                .uri(DECLINATION)
+                .with(who)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .exchange();
+    }
+
+    @Test
+    void shouldKeepTheCurrentPlan_andAnswerWhoDeclinedAndWhy() {
+        PlanChange declined = PLAN_CHANGE.decline(
+                Side.CLIENT,
+                DeclineReason.INJURY,
+                "Knee",
+                Instant.parse("2026-11-12T08:00:00Z"),
+                LocalDate.parse("2026-11-12"));
+        when(decisions.keepCurrent(new KeepCurrentPlanCommand(CLIENT_ID, ID, DeclineReason.INJURY, "Knee")))
+                .thenReturn(view(declined));
+
+        MvcTestResult result = keep(CLIENT, "{\"reason\":\"INJURY\",\"note\":\"Knee\"}");
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.state").isEqualTo("DECLINED");
+        json.extractingPath("$.declinedBy").isEqualTo("CLIENT");
+        json.extractingPath("$.declineReason").isEqualTo("INJURY");
+        json.extractingPath("$.declineNote").isEqualTo("Knee");
+        json.extractingPath("$.counterpartName").isEqualTo("Marek");
+    }
+
+    @Test
+    void shouldRefuseAMissingReason_aNoteOf501Characters_andAnUnknownReason() {
+        for (String body : new String[] {
+            "{}", "{\"reason\":\"OTHER\",\"note\":\"" + "x".repeat(501) + "\"}", "{\"reason\":\"BORED\"}"
+        }) {
+            assertThat(keep(CLIENT, body)).hasStatus(HttpStatus.BAD_REQUEST);
+        }
+        verifyNoInteractions(decisions);
+    }
+
+    @Test
+    void shouldAnswerConflictOrNotFound_whenKeepingTheCurrentPlanIsRefused() {
+        doThrow(new PlanChangeEndedException()).when(decisions).keepCurrent(any());
+        assertRefused(keep(CLIENT, "{\"reason\":\"OTHER\"}"), HttpStatus.CONFLICT, "plan-change.ended");
+
+        doThrow(new PlanChangeNotFoundException()).when(decisions).keepCurrent(any());
+        assertRefused(keep(CLIENT, "{\"reason\":\"OTHER\"}"), HttpStatus.NOT_FOUND, "plan-change.not-found");
+    }
+
+    @Test
+    void shouldRefuseKeepingWithoutACsrfToken_aTrainer_andAnonymous() {
+        assertRefused(
+                mvc.post().uri(DECLINATION).with(CLIENT).contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"OTHER\"}").exchange(),
+                HttpStatus.FORBIDDEN,
+                "request.forbidden");
+        assertRefused(keep(TRAINER, "{\"reason\":\"OTHER\"}"), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(
+                mvc.post().uri(DECLINATION).with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"OTHER\"}").exchange(),
+                HttpStatus.UNAUTHORIZED,
+                "request.unauthenticated");
         verifyNoInteractions(decisions);
     }
 }

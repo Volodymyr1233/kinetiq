@@ -43,3 +43,12 @@ values ('00000000-0000-4000-8000-000000000501', '00000000-0000-4000-8000-0000000
        ('00000000-0000-4000-8000-000000000502', '00000000-0000-4000-8000-000000000005',
         now() - interval '2 days' + 58 * interval '45 minutes' + interval '1 minute')
 on conflict do nothing;
+
+-- what Demo Client wrote when keeping the current plan 5 days ago (plan change 00000000-0000-4000-9600-000000000006),
+-- as the application words it
+insert into messages (id, conversation_id, sender_id, text, received_at, created_at, updated_at, version)
+values ('00000000-0000-4000-8000-000000000606', '00000000-0000-4000-8000-000000000501',
+        '00000000-0000-4000-8000-000000000003',
+        E'Keeping the current plan instead of: Back squat: cut volume by 13%. Reason: schedule.\nTravelling for work that week.',
+        now() - interval '5 days', now(), now(), 0)
+on conflict do nothing;
