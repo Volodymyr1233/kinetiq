@@ -1714,6 +1714,8 @@ export interface components {
             week?: components["schemas"]["OverviewWeekResponse"];
             recentSessions: components["schemas"]["ClientSessionResponse"][];
             quizAnswers?: components["schemas"]["OverviewQuizAnswersResponse"];
+            readiness: components["schemas"]["ReadinessDayResponse"][];
+            recoveryDays: components["schemas"]["RecoveryDayResponse"][];
         };
         OverviewQuizAnswersResponse: {
             /** @enum {string} */
@@ -1740,6 +1742,24 @@ export interface components {
             /** Format: date */
             startsOn: string;
             sessions: components["schemas"]["ClientSessionResponse"][];
+        };
+        ReadinessDayResponse: {
+            /** Format: date */
+            date: string;
+            /** Format: int32 */
+            score?: number;
+            /** @enum {string} */
+            band?: "READY" | "TAKE_IT_EASIER" | "RECOVERY_DAY";
+        };
+        RecoveryDayResponse: {
+            /** Format: date */
+            date: string;
+            /** Format: int32 */
+            score: number;
+            causes: ("SLEEP" | "SORENESS" | "STRESS")[];
+            /** @enum {string} */
+            targets?: "LIGHTER" | "ORIGINAL";
+            session?: components["schemas"]["ClientSessionResponse"];
         };
         DraftedPlanResponse: {
             /** Format: uuid */

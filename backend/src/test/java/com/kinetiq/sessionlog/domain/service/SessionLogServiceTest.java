@@ -32,6 +32,7 @@ import com.kinetiq.readiness.domain.input.SaveCheckInCommand;
 import com.kinetiq.readiness.domain.input.TodayCheckIn;
 import com.kinetiq.readiness.domain.model.Adjustment;
 import com.kinetiq.readiness.domain.model.Answers;
+import com.kinetiq.readiness.domain.model.CheckIn;
 import com.kinetiq.readiness.domain.model.Planned;
 import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.sessionlog.domain.exception.NoSessionTodayException;
@@ -235,6 +236,11 @@ class SessionLogServiceTest {
         public Optional<Adjustment> adjustmentOn(AccountId client, LocalDate date, List<Planned> entries) {
             return Optional.ofNullable(answers.get(List.of(client, date)))
                     .flatMap(given -> Adjustment.of(given, lighterInUse, entries, WeightUnit.KG));
+        }
+
+        @Override
+        public List<CheckIn> between(AccountId client, LocalDate from, LocalDate to) {
+            throw new UnsupportedOperationException();
         }
     };
 

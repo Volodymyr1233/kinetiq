@@ -6,17 +6,26 @@ import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.exercise.domain.model.Exercise;
+import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.input.OwnPlanView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.input.ViewQuizAnswersUseCase;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
+import com.kinetiq.readiness.domain.model.Cause;
+import com.kinetiq.readiness.domain.model.CheckIn;
+import com.kinetiq.readiness.domain.model.Planned;
+import com.kinetiq.readiness.domain.model.Readiness;
+import com.kinetiq.readiness.domain.model.Target;
+import com.kinetiq.readiness.domain.model.TargetChoice;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
 import com.kinetiq.sessionlog.domain.input.ClientSessionLog;
 import com.kinetiq.sessionlog.domain.input.ViewClientTrainingUseCase;
+import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
 import com.kinetiq.sessionlog.domain.model.SessionLogHeader;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
@@ -39,12 +48,14 @@ import lombok.RequiredArgsConstructor;
 public class ClientTrainingViewService implements ViewClientTrainingUseCase {
 
     private static final int RECENT_SESSIONS = 4;
+    private static final int READINESS_DAYS = 14;
 
     private final ViewClientsUseCase clients;
     private final ViewQuizAnswersUseCase quiz;
     private final ViewOwnPlanUseCase plan;
     private final ListExercisesUseCase exercises;
     private final SessionLogRepository logs;
+    private final CheckInUseCase checkIns;
     private final Clock clock;
 
     @Override
@@ -54,6 +65,7 @@ public class ClientTrainingViewService implements ViewClientTrainingUseCase {
         LocalDate today = now.atZone(summary.getTimeZone()).toLocalDate();
         Map<LocalDate, SessionLog> byDate = byDate(client);
         Optional<OwnPlanView> view = published(summary, client);
+        Map<LocalDate, CheckIn> given = checkIns(client, today);
         return new ClientOverview(
                 today,
                 view.filter(published -> published.week() != null)
@@ -62,7 +74,9 @@ public class ClientTrainingViewService implements ViewClientTrainingUseCase {
                 newestFirst(byDate, view.map(v -> neverStarted(v, byDate, today)).orElse(List.of()), now).stream()
                         .limit(RECENT_SESSIONS)
                         .toList(),
-                quiz.answers(client).orElse(null));
+                quiz.answers(client).orElse(null),
+                readiness(given, today),
+                recoveryDays(trainer, client, given, today, now, byDate, view));
     }
 
     @Override
@@ -84,7 +98,106 @@ public class ClientTrainingViewService implements ViewClientTrainingUseCase {
         return new ClientSessionLog(
                 log,
                 started(log, clock.instant()),
-                exercises.library(trainer).stream().collect(Collectors.toMap(Exercise::getId, Function.identity())));
+                library(trainer));
+    }
+
+    private static List<ClientOverview.ReadinessDay> readiness(Map<LocalDate, CheckIn> byDate, LocalDate today) {
+        return Stream.iterate(today.minusDays(READINESS_DAYS - 1L), date -> date.plusDays(1))
+                .limit(READINESS_DAYS)
+                .map(date -> new ClientOverview.ReadinessDay(
+                        date,
+                        Optional.ofNullable(byDate.get(date))
+                                .map(CheckIn::readiness)
+                                .orElse(null)))
+                .toList();
+    }
+
+    private List<ClientOverview.RecoveryDay> recoveryDays(
+            AccountId trainer,
+            AccountId client,
+            Map<LocalDate, CheckIn> given,
+            LocalDate today,
+            Instant now,
+            Map<LocalDate, SessionLog> byDate,
+            Optional<OwnPlanView> view) {
+        return given.values().stream()
+                .filter(checkIn -> checkIn.readiness().band() == Readiness.Band.RECOVERY_DAY)
+                .sorted(Comparator.comparing(CheckIn::getDate).reversed())
+                .map(checkIn ->
+                        recoveryDay(trainer, client, checkIn, today, now, byDate.get(checkIn.getDate()), view))
+                .toList();
+    }
+
+    private ClientOverview.RecoveryDay recoveryDay(
+            AccountId trainer,
+            AccountId client,
+            CheckIn checkIn,
+            LocalDate today,
+            Instant now,
+            SessionLog log,
+            Optional<OwnPlanView> view) {
+        LocalDate date = checkIn.getDate();
+        ClientSession session = null;
+        List<Planned> planned = List.of();
+        if (log != null) {
+            session = started(log, now);
+            planned = planned(log, library(trainer));
+        } else {
+            Optional<OwnPlanView> within = view.filter(published -> withinPlan(published.plan(), date));
+            Optional<Session> onDay = within.flatMap(published -> published.plan().getSessions().stream()
+                    .filter(candidate -> candidate.day() == date.getDayOfWeek())
+                    .findFirst());
+            if (onDay.isPresent()) {
+                LocalDate publishedOn = within.orElseThrow().plan().getPublishedOn().orElseThrow();
+                session = planned(
+                        onDay.get(),
+                        date,
+                        SessionState.of(date, today, publishedOn, Optional.empty(), now).orElse(null));
+                planned = planned(onDay.get(), within.orElseThrow().library());
+            }
+        }
+        TargetChoice targets = planned.isEmpty()
+                ? null
+                : checkIns.adjustmentOn(client, date, planned)
+                        .map(adjustment -> adjustment.inUse() ? TargetChoice.LIGHTER : TargetChoice.ORIGINAL)
+                        .orElse(null);
+        return new ClientOverview.RecoveryDay(
+                date, checkIn.readiness().score(), Cause.of(checkIn.getAnswers()), targets, session);
+    }
+
+    // check-ins are kept by the client's local date, so the last 14 of them end on today
+    private Map<LocalDate, CheckIn> checkIns(AccountId client, LocalDate today) {
+        return checkIns.between(client, today.minusDays(READINESS_DAYS - 1L), today).stream()
+                .collect(Collectors.toMap(CheckIn::getDate, Function.identity()));
+    }
+
+    private static boolean withinPlan(Plan plan, LocalDate date) {
+        LocalDate publishedOn = plan.getPublishedOn().orElseThrow();
+        LocalDate end = plan.getFirstWeek().orElseThrow().plusWeeks(plan.getWeeks());
+        return !date.isBefore(publishedOn) && date.isBefore(end);
+    }
+
+    private Map<ExerciseId, Exercise> library(AccountId trainer) {
+        return exercises.library(trainer).stream().collect(Collectors.toMap(Exercise::getId, Function.identity()));
+    }
+
+    // a started session's own copy, which a later plan edit does not change
+    private static List<Planned> planned(SessionLog log, Map<ExerciseId, Exercise> library) {
+        return log.getEntries().stream()
+                .map(entry -> new Planned(target(entry), library.get(entry.exercise()).getMeasure()))
+                .toList();
+    }
+
+    private static List<Planned> planned(Session session, Map<ExerciseId, Exercise> library) {
+        return session.entries().stream()
+                .map(entry -> new Planned(
+                        new Target(entry.loadKg(), entry.amount(), entry.rpe()),
+                        library.get(entry.exercise()).getMeasure()))
+                .toList();
+    }
+
+    private static Target target(LoggedEntry entry) {
+        return new Target(entry.loadKg(), entry.amount(), entry.rpe());
     }
 
     // a client has one session log a day at most

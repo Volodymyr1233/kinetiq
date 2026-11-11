@@ -136,6 +136,11 @@ class CheckInServiceTest {
             stored.put(List.of(checkIn.getClient(), checkIn.getDate()), copy(checkIn));
             return copy(checkIn);
         }
+
+        @Override
+        public List<CheckIn> findAllByClientAndDateBetween(AccountId client, LocalDate from, LocalDate to) {
+            throw new UnsupportedOperationException();
+        }
     };
 
     private final Clock clock = new Clock() {

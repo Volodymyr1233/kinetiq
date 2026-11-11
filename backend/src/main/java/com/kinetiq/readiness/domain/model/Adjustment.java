@@ -4,7 +4,6 @@ import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.exercise.domain.model.Measure;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,8 +18,6 @@ public record Adjustment(List<Target> lighter, List<Cause> causes, boolean inUse
     private static final BigDecimal HALF_KG = new BigDecimal("0.5");
     private static final int MIN_RPE = 5;
     private static final int MIN_AMOUNT = 1;
-    private static final int POOR_SLEEP_UP_TO = 2;
-    private static final int HIGH_FROM = 4;
 
     public Adjustment {
         lighter = List.copyOf(lighter);
@@ -42,7 +39,7 @@ public record Adjustment(List<Target> lighter, List<Cause> causes, boolean inUse
         for (int position = 0; position < entries.size(); position++) {
             changes |= !lighter.get(position).equals(entries.get(position).target());
         }
-        return changes ? Optional.of(new Adjustment(lighter, causes(answers), inUse)) : Optional.empty();
+        return changes ? Optional.of(new Adjustment(lighter, Cause.of(answers), inUse)) : Optional.empty();
     }
 
     /**
@@ -87,19 +84,5 @@ public record Adjustment(List<Target> lighter, List<Cause> causes, boolean inUse
         return lighter.compareTo(kg) < 0 && lighter.compareTo(step.setScale(1, RoundingMode.HALF_UP)) >= 0
                 ? lighter
                 : kg;
-    }
-
-    private static List<Cause> causes(Answers answers) {
-        List<Cause> causes = new ArrayList<>();
-        if (answers.sleep() <= POOR_SLEEP_UP_TO) {
-            causes.add(Cause.SLEEP);
-        }
-        if (answers.soreness() >= HIGH_FROM) {
-            causes.add(Cause.SORENESS);
-        }
-        if (answers.stress() >= HIGH_FROM) {
-            causes.add(Cause.STRESS);
-        }
-        return causes;
     }
 }

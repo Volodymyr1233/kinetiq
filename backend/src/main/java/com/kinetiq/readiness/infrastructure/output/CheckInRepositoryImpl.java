@@ -4,6 +4,7 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.readiness.domain.model.CheckIn;
 import com.kinetiq.readiness.domain.output.CheckInRepository;
 import java.time.LocalDate;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -18,6 +19,13 @@ class CheckInRepositoryImpl implements CheckInRepository {
     @Override
     public Optional<CheckIn> findByClientAndDate(AccountId client, LocalDate date) {
         return jpa.findByClientIdAndCheckInDate(client.value(), date).map(mapper::toDomain);
+    }
+
+    @Override
+    public List<CheckIn> findAllByClientAndDateBetween(AccountId client, LocalDate from, LocalDate to) {
+        return jpa.findAllByClientIdAndCheckInDateBetweenOrderByCheckInDate(client.value(), from, to).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     // ponytail: two first saves of one day at the same moment both insert and the second is refused by the unique

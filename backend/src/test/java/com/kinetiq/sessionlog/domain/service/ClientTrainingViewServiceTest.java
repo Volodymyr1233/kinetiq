@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.account.domain.model.WeightUnit;
 import com.kinetiq.client.domain.exception.ClientNotFoundException;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
@@ -32,6 +33,18 @@ import com.kinetiq.quiz.domain.model.Level;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
+import com.kinetiq.readiness.domain.input.CheckInUseCase;
+import com.kinetiq.readiness.domain.input.ChooseTargetsCommand;
+import com.kinetiq.readiness.domain.input.SaveCheckInCommand;
+import com.kinetiq.readiness.domain.input.TodayCheckIn;
+import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Answers;
+import com.kinetiq.readiness.domain.model.Cause;
+import com.kinetiq.readiness.domain.model.CheckIn;
+import com.kinetiq.readiness.domain.model.CheckInId;
+import com.kinetiq.readiness.domain.model.Planned;
+import com.kinetiq.readiness.domain.model.Readiness;
+import com.kinetiq.readiness.domain.model.TargetChoice;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
@@ -52,6 +65,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -107,8 +121,8 @@ class ClientTrainingViewServiceTest {
                 name,
                 day,
                 List.of(
-                        new ExerciseEntry(ExerciseId.random(), 3, 5, new BigDecimal("100.0"), 8, 120),
-                        new ExerciseEntry(ExerciseId.random(), 2, 45, null, 7, 60)));
+                        new ExerciseEntry(SQUAT.getId(), 3, 5, new BigDecimal("100.0"), 8, 120),
+                        new ExerciseEntry(PLANK.getId(), 2, 45, null, 7, 60)));
     }
 
     private static Plan published(LocalDate firstWeek, LocalDate publishedOn, int weeks) {
@@ -184,7 +198,8 @@ class ClientTrainingViewServiceTest {
             OwnPlanView.Week shown = finished
                     ? null
                     : new OwnPlanView.Week(current, plan.getFirstWeek().orElseThrow().plusWeeks(current - 1L));
-            return new OwnPlanView(plan, shown, current, finished, true, Map.of());
+            return new OwnPlanView(
+                    plan, shown, current, finished, true, Map.of(SQUAT.getId(), SQUAT, PLANK.getId(), PLANK));
         }
 
         @Override
@@ -255,9 +270,55 @@ class ClientTrainingViewServiceTest {
         }
     };
 
+    // each check-in by date; the adjustment uses the real rule, in kg
+    private final Map<LocalDate, CheckIn> checkedIn = new HashMap<>();
+
+    private void checkIn(LocalDate date, int sleep, int soreness, int stress, TargetChoice choice) {
+        checkedIn.put(
+                date,
+                new CheckIn(CheckInId.random(), CLIENT, date, new Answers(sleep, soreness, stress), now, choice));
+    }
+
+    private final CheckInUseCase checkIns = new CheckInUseCase() {
+        @Override
+        public TodayCheckIn today(AccountId client) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TodayCheckIn save(SaveCheckInCommand command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public TodayCheckIn choose(ChooseTargetsCommand command) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Optional<Adjustment> adjustmentOn(AccountId client, LocalDate date, List<Planned> entries) {
+            return Optional.ofNullable(checkedIn.get(date))
+                    .flatMap(given -> Adjustment.of(
+                            given.getAnswers(),
+                            given.getTargetChoice() == TargetChoice.LIGHTER,
+                            entries,
+                            WeightUnit.KG));
+        }
+
+        @Override
+        public List<CheckIn> between(AccountId client, LocalDate from, LocalDate to) {
+            reads.add("checkIns");
+            return checkedIn.values().stream()
+                    .filter(given -> given.getClient().equals(client))
+                    .filter(given -> !given.getDate().isBefore(from) && !given.getDate().isAfter(to))
+                    .sorted(Comparator.comparing(CheckIn::getDate))
+                    .toList();
+        }
+    };
+
     private ClientTrainingViewService service() {
         return new ClientTrainingViewService(
-                clients, quiz, planPort, exercises, logs, Clock.fixed(now, ZoneOffset.UTC));
+                clients, quiz, planPort, exercises, logs, checkIns, Clock.fixed(now, ZoneOffset.UTC));
     }
 
     private ClientOverview overview() {
@@ -429,6 +490,133 @@ class ClientTrainingViewServiceTest {
             assertThatThrownBy(() -> service().overview(AccountId.random(), CLIENT))
                     .isInstanceOf(ClientNotFoundException.class);
             assertThat(reads).isEmpty();
+        }
+    }
+
+    @Nested
+    class ReadinessOfTheLast14Days {
+
+        @Test
+        void shouldGiveTodayAndThe13DaysBefore_oldestFirst_emptyWithoutACheckIn_andZeroWhenScoredZero() {
+            // 23:30 UTC on Tuesday is already Wednesday in Warsaw
+            now = Instant.parse("2026-11-03T23:30:00Z");
+            checkIn(LocalDate.parse("2026-10-21"), 4, 2, 1, TargetChoice.LIGHTER);
+            checkIn(LocalDate.parse("2026-10-22"), 4, 2, 1, TargetChoice.LIGHTER);
+            checkIn(WEEK_3_WEDNESDAY, 1, 5, 5, TargetChoice.LIGHTER);
+
+            List<ClientOverview.ReadinessDay> days = overview().getReadiness();
+
+            assertThat(days).hasSize(14);
+            assertThat(days.getFirst().getDate()).isEqualTo(LocalDate.parse("2026-10-22"));
+            assertThat(days.getLast().getDate()).isEqualTo(WEEK_3_WEDNESDAY);
+            assertThat(days.getFirst().getReadiness()).contains(new Readiness(83, Readiness.Band.READY));
+            assertThat(days.get(1).getReadiness()).isEmpty();
+            assertThat(days.getLast().getReadiness()).contains(new Readiness(0, Readiness.Band.RECOVERY_DAY));
+            assertThat(days).filteredOn(day -> day.getReadiness().isPresent()).hasSize(2);
+        }
+
+        @Test
+        void shouldListEachRecoveryDay_newestFirst_withItsReasonTargetsAndSession() {
+            SessionLog monday = log(
+                    LocalDate.parse("2026-10-26"), "Upper body", "2026-10-26T17:00:00Z", "2026-10-26T17:50:00Z", 7);
+            checkIn(LocalDate.parse("2026-10-26"), 2, 4, 3, TargetChoice.LIGHTER);
+            checkIn(LocalDate.parse("2026-10-28"), 1, 5, 5, TargetChoice.ORIGINAL);
+            checkIn(LocalDate.parse("2026-10-30"), 3, 3, 3, TargetChoice.LIGHTER);
+            checkIn(WEEK_3_WEDNESDAY, 2, 4, 3, TargetChoice.LIGHTER);
+
+            List<ClientOverview.RecoveryDay> days = overview().getRecoveryDays();
+
+            // Friday's 50 is Take it easier, not a recovery day
+            assertThat(days)
+                    .extracting(
+                            ClientOverview.RecoveryDay::getDate,
+                            ClientOverview.RecoveryDay::getScore,
+                            ClientOverview.RecoveryDay::getCauses,
+                            day -> day.getTargets().orElseThrow(),
+                            day -> day.getSession().orElseThrow().getState().orElseThrow())
+                    .containsExactly(
+                            tuple(
+                                    WEEK_3_WEDNESDAY,
+                                    33,
+                                    List.of(Cause.SLEEP, Cause.SORENESS),
+                                    TargetChoice.LIGHTER,
+                                    SessionState.TODAY),
+                            tuple(
+                                    LocalDate.parse("2026-10-28"),
+                                    0,
+                                    List.of(Cause.SLEEP, Cause.SORENESS, Cause.STRESS),
+                                    TargetChoice.ORIGINAL,
+                                    SessionState.MISSED),
+                            tuple(
+                                    LocalDate.parse("2026-10-26"),
+                                    33,
+                                    List.of(Cause.SLEEP, Cause.SORENESS),
+                                    TargetChoice.LIGHTER,
+                                    SessionState.DONE));
+            assertThat(days.getLast().getSession().orElseThrow().getSessionLogId()).contains(monday.getId());
+            assertThat(days.get(1).getSession().orElseThrow().getName()).isEqualTo("Lower body");
+            assertThat(days.get(1).getSession().orElseThrow().getSessionLogId()).isEmpty();
+        }
+
+        @Test
+        void shouldTakeAStartedSessionsOwnCopy_onADayThePlanDoesNotHave() {
+            // a Tuesday the plan does not have, as after the trainer moved the session
+            SessionLog moved = log(LocalDate.parse("2026-11-03"), "Moved session", "2026-11-03T17:00:00Z", null, 7);
+            checkIn(LocalDate.parse("2026-11-03"), 2, 4, 3, TargetChoice.LIGHTER);
+
+            ClientOverview.RecoveryDay day = overview().getRecoveryDays().getFirst();
+
+            assertThat(day.getTargets()).contains(TargetChoice.LIGHTER);
+            assertThat(day.getSession().orElseThrow().getSessionLogId()).contains(moved.getId());
+        }
+
+        @Test
+        void shouldHaveNoTargetsAndNoSession_onARestDay() {
+            checkIn(LocalDate.parse("2026-11-01"), 2, 4, 3, TargetChoice.LIGHTER);
+
+            ClientOverview.RecoveryDay day = overview().getRecoveryDays().getFirst();
+
+            assertThat(day.getTargets()).isEmpty();
+            assertThat(day.getSession()).isEmpty();
+        }
+
+        @Test
+        void shouldHaveNoTargets_whenNothingCouldBeLighter() {
+            SessionLog floor = SessionLog.start(
+                    CLIENT,
+                    WEEK_3_MONDAY,
+                    "Upper body",
+                    List.of(new LoggedEntry(SQUAT.getId(), 1, 1, null, 5, 60)),
+                    Instant.parse("2026-11-02T17:00:00Z"));
+            stored.add(floor);
+            checkIn(WEEK_3_MONDAY, 2, 4, 3, TargetChoice.LIGHTER);
+
+            ClientOverview.RecoveryDay day = overview().getRecoveryDays().getFirst();
+
+            assertThat(day.getTargets()).isEmpty();
+            assertThat(day.getSession().orElseThrow().getSessionLogId()).contains(floor.getId());
+        }
+
+        @Test
+        void shouldHaveNoSession_beforeThePublishDay() {
+            plan = published(WEEK_3_MONDAY, WEEK_3_WEDNESDAY, 8);
+            checkIn(WEEK_3_MONDAY, 2, 4, 3, TargetChoice.LIGHTER);
+
+            ClientOverview.RecoveryDay day = overview().getRecoveryDays().getFirst();
+
+            assertThat(day.getTargets()).isEmpty();
+            assertThat(day.getSession()).isEmpty();
+        }
+
+        @Test
+        void shouldStillGiveTheCheckIns_withoutAPublishedPlan() {
+            planState = PlanState.DRAFT;
+            checkIn(WEEK_3_WEDNESDAY, 2, 4, 3, TargetChoice.LIGHTER);
+
+            ClientOverview overview = overview();
+
+            assertThat(overview.getReadiness().getLast().getReadiness()).isPresent();
+            assertThat(overview.getRecoveryDays().getFirst().getSession()).isEmpty();
         }
     }
 
