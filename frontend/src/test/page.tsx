@@ -5,6 +5,7 @@ import { createMemoryRouter, MemoryRouter, RouterProvider } from 'react-router'
 import { vi } from 'vitest'
 import { createRoutes } from '@/app/router'
 import { registerLogSetDefaults } from '@/features/sessionlog/api/session-log'
+import { ConversationEventsSync } from '@/app/conversation-events-sync'
 import { WeightUnitProvider } from '@/app/weight-unit-provider'
 import { queryClient } from '@/lib/query-client'
 
@@ -132,9 +133,10 @@ export function renderAppAt(
     return response
   })
   const router = createMemoryRouter(createRoutes(), { initialEntries: [path] })
-  // the weight unit follows the account, as in app.tsx
+  // the weight unit and the conversation events follow the account, as in app.tsx
   render(
     <QueryClientProvider client={queryClient}>
+      <ConversationEventsSync />
       <WeightUnitProvider>
         <RouterProvider router={router} />
       </WeightUnitProvider>

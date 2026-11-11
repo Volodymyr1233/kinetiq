@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router'
 import { AccountSettingsSync } from '@/app/account-settings-sync'
+import { ConversationEventsSync } from '@/app/conversation-events-sync'
 import { router } from '@/app/router'
 import { WeightUnitProvider } from '@/app/weight-unit-provider'
 import { ThemeProvider } from '@/components/theme-provider'
@@ -12,6 +13,7 @@ export function App() {
     <ThemeProvider>
       <QueryClientProvider client={queryClient}>
         <AccountSettingsSync />
+        <ConversationEventsSync />
         <WeightUnitProvider>
           <RouterProvider router={router} />
         </WeightUnitProvider>

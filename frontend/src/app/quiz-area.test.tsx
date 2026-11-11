@@ -10,6 +10,7 @@ import {
   SIGNED_IN,
   type Reply,
 } from '@/test/page'
+import { FakeEventSource } from '@/test/event-source'
 
 const DRAFT = {
   answers: {
@@ -321,15 +322,14 @@ describe('message your trainer', () => {
   })
 
   it('shows a message the trainer sends while the sheet is open', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true })
-    const user = userEvent.setup({ advanceTimers: vi.advanceTimersByTime })
+    const user = userEvent.setup()
     const messages = [fromTrainer('a', 'Any injuries I should know about?')]
     renderAppAt('/app/quiz/waiting', SIGNED_IN.CLIENT, waitingWith(messages))
     const sheet = await openConversation(user)
     await sheet.findByText('Any injuries I should know about?')
 
     messages.push(fromTrainer('b', 'Your plan is almost ready.'))
-    await act(() => vi.advanceTimersByTimeAsync(5_000))
+    act(() => FakeEventSource.open()[0]!.emit('message', SIGNED_IN.CLIENT.id))
 
     expect(
       await sheet.findByText('Your plan is almost ready.'),

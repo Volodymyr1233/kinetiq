@@ -209,12 +209,16 @@ describe('LoggerRoute', () => {
     await waitFor(() =>
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
     )
-    const page = screen.getByRole('main')
+    // the earlier session loads after the sheet closes, so its page is looked up again until it is there
+    await waitFor(() =>
+      expect(
+        within(screen.getByRole('main')).getByRole('link', {
+          name: 'Messages',
+        }),
+      ).toHaveAttribute('href', '/app/messages'),
+    )
     expect(
-      within(page).getByRole('link', { name: 'Messages' }),
-    ).toHaveAttribute('href', '/app/messages')
-    expect(
-      within(page).queryByRole('link', { name: 'Today' }),
+      within(screen.getByRole('main')).queryByRole('link', { name: 'Today' }),
     ).not.toBeInTheDocument()
   })
 })

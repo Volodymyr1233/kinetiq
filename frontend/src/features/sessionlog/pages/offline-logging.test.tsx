@@ -125,7 +125,11 @@ const firstRow = () =>
 
 const KEY = pendingLogsKey(ACCOUNT)
 
-const goOnline = () => act(() => onlineManager.setOnline(true))
+// not awaited, as going offline: the running rest timer gives React work every second, and waiting for act to settle
+// can then outlast the test
+const goOnline = () => {
+  act(() => onlineManager.setOnline(true))
+}
 
 async function keptOnPhone() {
   await eventually(() => expect(localStorage.getItem(KEY)).not.toBeNull())
@@ -154,7 +158,7 @@ describe('logging without a connection', () => {
     expect(puts).toHaveLength(0)
     const [kept] = await keptOnPhone()
 
-    await goOnline()
+    goOnline()
 
     await eventually(() => expect(puts).toHaveLength(1))
     expect(puts[0].id).toBe(kept.state.variables.setLogId)
@@ -252,7 +256,7 @@ describe('logging without a connection', () => {
     }
     expect(puts).toHaveLength(0)
 
-    await goOnline()
+    goOnline()
 
     await eventually(() => expect(puts).toHaveLength(3))
     expect(puts.map((put) => put.body.amount)).toEqual([5, 6, 7])

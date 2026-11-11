@@ -91,8 +91,8 @@ Decisions behind [plan.md](plan.md). Library behaviour was checked against the c
 
 ## R13. Removing the fixed refreshes
 
-- **Decision**: Drop `refetchInterval` from `useConversations`, `useMessages` and `useUnreadCount`, and the constants. TanStack Query's default `refetchOnWindowFocus` (stale data refetched when the tab becomes visible) stays, and the existing `useFirstUnread` refetch on becoming visible stays.
-- **Rationale**: FR-017 and SC-004.
+- **Decision**: Drop `refetchInterval` from `useConversations`, `useMessages` and `useUnreadCount`, and the constants, and give the three `staleTime: Infinity`: they are fetched when first shown and again only when an event or the catch-up invalidates them. `stream-health.ts` records when the stream was last heard from; within 35 seconds it is current. While it is current, `useFirstUnread` reads the cache when an open conversation comes back on screen, and a send or a mark read leaves the refresh to its own event. Otherwise they ask, and `useFirstUnread` joins a load already on its way (`cancelRefetch: false`) instead of cancelling it and starting another.
+- **Rationale**: FR-017 and SC-004. The stream stays open in a hidden tab and catches up after any reconnect, so refetching on every return to the tab only repeated it, and with the server down every return made several failing requests, each retried. Opening a conversation also sent the list three times: a new observer's mount fetch, `useFirstUnread`'s `refetch()` cancelling it to start another, and React's development double effect; mark read then refreshed the list and count, and its `read` event did again. When the stream has gone quiet, `useFirstUnread` still asks, because a phone may have frozen the tab and dropped its stream.
 
 ## R14. Tests
 

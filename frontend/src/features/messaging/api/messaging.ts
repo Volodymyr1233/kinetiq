@@ -5,25 +5,26 @@ import {
   useQuery,
   useQueryClient,
   type InfiniteData,
+  type QueryClient,
 } from '@tanstack/react-query'
 import { api } from '@/lib/api/client'
 import { CONVERSATIONS, MESSAGES } from '@/lib/query-keys'
 import type { components } from '@/lib/api/schema'
+import { streamIsCurrent } from '../stream-health'
 
 export type Conversation = components['schemas']['ConversationResponse']
 export type Message = components['schemas']['MessageResponse']
 /** The logged set a message is about, as its chip shows it. */
 export type About = components['schemas']['AboutResponse']
 type MessagePage = components['schemas']['MessagePageResponse']
+export /** The most a message can hold, in UTF-16 units; the backend's `MessageText` holds the same limit. */
+const MESSAGE_MAX_LENGTH = 2000
 
-/** The most a message can hold, in UTF-16 units; the backend's `MessageText` holds the same limit. */
-export const MESSAGE_MAX_LENGTH = 2000
+export const messagesKey = (clientId: string) => [...MESSAGES, clientId]
 
-// within the 15 seconds of SC-003; the query library pauses these in a hidden tab, so nothing is fetched or read there
-const OPEN_SCREEN_REFRESH_MS = 5_000
-const NAVIGATION_REFRESH_MS = 10_000
-
-const messagesKey = (clientId: string) => [...MESSAGES, clientId]
+// fresh until an event or the stream's catch-up marks them otherwise, in a hidden tab too: asking again on coming back
+// to the tab or the network, or when another screen shows them, would only repeat what the stream said
+const KEPT_LIVE = { staleTime: Infinity }
 
 export const conversationsQuery = queryOptions({
   queryKey: [...CONVERSATIONS, 'list'],
@@ -33,13 +34,11 @@ export const conversationsQuery = queryOptions({
     if (error !== undefined) throw error
     return data
   },
+  ...KEPT_LIVE,
 })
 
 export function useConversations() {
-  return useQuery({
-    ...conversationsQuery,
-    refetchInterval: OPEN_SCREEN_REFRESH_MS,
-  })
+  return useQuery(conversationsQuery)
 }
 
 /** Returns the messages of the loaded pages, oldest to newest: the newest page comes first in the cache. */
@@ -62,27 +61,53 @@ export function useMessages(clientId: string) {
     // the first page is the newest, so the "next" page is the one further back in time
     getNextPageParam: (page) =>
       page.hasMore ? page.messages[0]?.id : undefined,
-    // ponytail: every refresh asks for all loaded pages (research R7); ask for the newest page only if thousands get loaded
-    refetchInterval: OPEN_SCREEN_REFRESH_MS,
+    ...KEPT_LIVE,
   })
 }
 
-function withMessage(
-  data: InfiniteData<MessagePage, string | undefined>,
-  message: Message,
-) {
-  const known = data.pages.some((page) =>
-    page.messages.some((other) => other.id === message.id),
-  )
-  if (known) return data
+export type LoadedMessages = InfiniteData<MessagePage, string | undefined>
+
+/** Adds the messages not loaded yet after the newest one, in their order; one already loaded shows once. */
+function withMessages(data: LoadedMessages, messages: Message[]) {
+  const known = new Set(messagesOf(data).map((message) => message.id))
+  const added = messages.filter((message) => !known.has(message.id))
+  if (added.length === 0) return data
   const [newest, ...earlier] = data.pages
   return {
     ...data,
     pages: [
-      { ...newest!, messages: [...newest!.messages, message] },
+      { ...newest!, messages: [...newest!.messages, ...added] },
       ...earlier,
     ],
   }
+}
+
+/**
+ * Brings a conversation this tab has loaded up to date after a new message in it. Earlier pages never change, so
+ * only the newest page is fetched; a gap wider than one page, after a long time offline, loads everything again.
+ */
+export async function refreshConversation(
+  queryClient: QueryClient,
+  clientId: string,
+) {
+  const key = messagesKey(clientId)
+  if (queryClient.getQueryData(key) === undefined) return
+  // a refresh that left before this message was stored must not overwrite it when it lands
+  await queryClient.cancelQueries({ queryKey: key })
+  const { data: page, error } = await api.GET(
+    '/api/v1/conversations/{clientId}/messages',
+    { params: { path: { clientId } } },
+  )
+  // the next event, a reconnect or the tab coming back on screen brings it
+  if (error !== undefined) return
+  const data = queryClient.getQueryData<LoadedMessages>(key)
+  if (data === undefined) return
+  const known = new Set(messagesOf(data).map((message) => message.id))
+  if (page.hasMore && !page.messages.some(({ id }) => known.has(id))) {
+    void queryClient.invalidateQueries({ queryKey: key })
+    return
+  }
+  queryClient.setQueryData(key, withMessages(data, page.messages))
 }
 
 export function useSendMessage() {
@@ -113,15 +138,18 @@ export function useSendMessage() {
       const key = messagesKey(clientId)
       // a refresh that left before this message was stored must not overwrite it when it lands
       await queryClient.cancelQueries({ queryKey: key })
-      queryClient.setQueryData<InfiniteData<MessagePage, string | undefined>>(
+      queryClient.setQueryData<LoadedMessages>(
         key,
-        (data) => data && withMessage(data, message),
+        (data) => data && withMessages(data, [message]),
       )
       // nothing loaded to put it in: the load failed, and asking again brings the message
       if (queryClient.getQueryData(key) === undefined) {
         void queryClient.invalidateQueries({ queryKey: key })
       }
-      void queryClient.invalidateQueries({ queryKey: CONVERSATIONS })
+      // a live stream tells this tab too, and its event refreshes the list
+      if (!streamIsCurrent()) {
+        void queryClient.invalidateQueries({ queryKey: CONVERSATIONS })
+      }
     },
   })
 }
@@ -135,7 +163,12 @@ export function useMarkRead() {
       })
       if (error !== undefined) throw error
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: CONVERSATIONS }),
+    // a live stream tells this tab too, and its event refreshes the list and the count
+    onSuccess: () => {
+      if (!streamIsCurrent()) {
+        void queryClient.invalidateQueries({ queryKey: CONVERSATIONS })
+      }
+    },
   })
 }
 
@@ -149,8 +182,8 @@ export function useUnreadCount() {
       if (error !== undefined) throw error
       return data
     },
-    refetchInterval: NAVIGATION_REFRESH_MS,
-    // the count is a nicety: a failure hides it and the next refresh tries again
+    // the count is a nicety: a failure hides it and the next event or reconnect tries again
     retry: false,
+    ...KEPT_LIVE,
   })
 }
