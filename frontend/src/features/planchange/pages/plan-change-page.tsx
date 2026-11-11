@@ -1,8 +1,17 @@
-import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react'
+import { CircleAlertIcon } from 'lucide-react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
+import {
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb'
 import { Button } from '@/components/ui/button'
 import {
   Card,
@@ -21,24 +30,33 @@ import {
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemStatus } from '@/lib/api/problem'
-import { formatDay } from '@/lib/dates'
-import { usePlanChange, type PlanChange } from '../api/plan-change'
+import { firstName } from '@/lib/first-name'
+import {
+  planChangeBadgeVariant,
+  planChangeStatus,
+} from '@/lib/plan-change-state'
+import type { DeclineReason } from '../api/client-plan-change'
+import {
+  useAcceptPlanChange,
+  useKeepCurrentPlanChange,
+  usePlanChange,
+  useUndoPlanChange,
+} from '../api/plan-change'
+import { PlanChangeDecisionPanel } from '../components/plan-change-decision-panel'
+import { PlanChangePeople } from '../components/plan-change-people'
 import { PlanChangeTable } from '../components/plan-change-table'
 import { RuleChart } from '../components/rule-chart'
 
-const BADGES = {
-  PENDING: 'info',
-  ACCEPTED_BY_ONE: 'info',
-  APPLIED: 'success',
-  DECLINED: 'secondary',
-  EXPIRED: 'outline',
-} as const satisfies Record<PlanChange['state'], string>
-
-/** A plan change of one of the trainer's clients, to read. Deciding on it comes with the approvals. */
+/** A plan change of one of the trainer's clients: what changes and why, who decided what, and the decision. */
 export function PlanChangePage() {
   const { t, i18n } = useTranslation()
   const { id } = useParams()
   const query = usePlanChange(id)
+  const accept = useAcceptPlanChange()
+  const undo = useUndoPlanChange()
+  const keep = useKeepCurrentPlanChange()
+  // the last refusal; the screen itself keeps the last state the server confirmed
+  const [error, setError] = useState<unknown>()
   const planChange = query.data
 
   // an unknown id, another trainer's client's plan change, and text that is no id at all
@@ -96,18 +114,49 @@ export function PlanChangePage() {
     )
   }
 
+  const badge = planChangeStatus(planChange, 'TRAINER')
+  const busy = accept.isPending || undo.isPending || keep.isPending
+  const run = (
+    mutation: {
+      mutate: (
+        variables: { id: string },
+        options: { onSuccess: () => void; onError: (error: unknown) => void },
+      ) => void
+    },
+    variables: { id: string },
+  ) =>
+    mutation.mutate(variables, {
+      onSuccess: () => setError(undefined),
+      onError: setError,
+    })
+
   const concerned = new Intl.ListFormat(i18n.language, {
     type: 'conjunction',
   }).format(planChange.concernedExercises.map((exercise) => exercise.name))
 
   return (
     <div className="flex flex-col gap-6 px-6 py-8">
-      <Button variant="ghost" size="sm" className="self-start" asChild>
-        <Link to={`/trainer/clients/${planChange.clientId}`}>
-          <ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
-          {t('planChange.back', { client: planChange.clientName })}
-        </Link>
-      </Button>
+      <Breadcrumb aria-label={t('planChange.breadcrumb')}>
+        <BreadcrumbList>
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to="/trainer/approvals">{t('nav.approvals')}</Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbLink asChild>
+              <Link to={`/trainer/clients/${planChange.clientId}`}>
+                {planChange.clientName}
+              </Link>
+            </BreadcrumbLink>
+          </BreadcrumbItem>
+          <BreadcrumbSeparator />
+          <BreadcrumbItem>
+            <BreadcrumbPage>{t('planChange.title')}</BreadcrumbPage>
+          </BreadcrumbItem>
+        </BreadcrumbList>
+      </Breadcrumb>
       <div className="grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <Card className="border-l-plan-change border-l-4">
           <CardHeader>
@@ -121,8 +170,10 @@ export function PlanChangePage() {
             </CardTitle>
             <CardDescription>{planChange.reason}</CardDescription>
             <CardAction>
-              <Badge variant={BADGES[planChange.state]}>
-                {t(`planChange.states.${planChange.state}`)}
+              <Badge variant={planChangeBadgeVariant[badge]}>
+                {t(`planChange.badge.${badge}`, {
+                  name: firstName(planChange.clientName),
+                })}
               </Badge>
             </CardAction>
           </CardHeader>
@@ -133,12 +184,33 @@ export function PlanChangePage() {
                 exercises: concerned,
               })}
             </p>
-            <p className="text-sm">
-              {t('planChange.effective', {
-                date: formatDay(planChange.effectiveWeek, i18n.language),
-                client: planChange.clientName,
-              })}
-            </p>
+            <PlanChangePeople
+              planChange={planChange}
+              viewer="TRAINER"
+              otherName={planChange.clientName}
+            />
+            <PlanChangeDecisionPanel
+              planChange={planChange}
+              viewer="TRAINER"
+              otherName={planChange.clientName}
+              planLink={`/trainer/clients/${planChange.clientId}/plan`}
+              busy={busy}
+              error={error}
+              onAccept={() => run(accept, { id: planChange.id })}
+              onUndo={() => run(undo, { id: planChange.id })}
+              onKeep={(reason: DeclineReason, note: string | undefined) =>
+                keep
+                  .mutateAsync({ id: planChange.id, reason, note })
+                  .then(() => {
+                    setError(undefined)
+                    return true
+                  })
+                  .catch((failure: unknown) => {
+                    setError(failure)
+                    return false
+                  })
+              }
+            />
           </CardContent>
         </Card>
         <RuleChart planChange={planChange} />

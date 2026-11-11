@@ -4,6 +4,8 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
 import java.time.Instant;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 /** The stored plan changes of clients. */
@@ -28,4 +30,10 @@ public interface PlanChangeRepository {
 
     /** The plan change of the client that has not ended, if any. */
     Optional<PlanChange> findOpen(AccountId client);
+
+    /** The plan changes with these ids, in any order. */
+    List<PlanChange> findAll(Collection<PlanChangeId> ids);
+
+    /** The latest {@code limit} plan changes of the client that ended, the latest first. */
+    List<PlanChange> findEnded(AccountId client, int limit);
 }

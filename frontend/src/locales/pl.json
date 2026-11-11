@@ -30,10 +30,10 @@
     "progress": "Postępy",
     "open": "Otwórz menu",
     "menu": "Menu",
-    "approvalsCount_one": ", {{count, number}} szkic planu czeka",
-    "approvalsCount_few": ", {{count, number}} szkice planów czekają",
-    "approvalsCount_many": ", {{count, number}} szkiców planów czeka",
-    "approvalsCount_other": ", {{count, number}} szkicu planu czeka"
+    "approvalsCount_one": ", {{count, number}} akceptacja czeka na Ciebie",
+    "approvalsCount_few": ", {{count, number}} akceptacje czekają na Ciebie",
+    "approvalsCount_many": ", {{count, number}} akceptacji czeka na Ciebie",
+    "approvalsCount_other": ", {{count, number}} akceptacji czeka na Ciebie"
   },
   "areas": {
     "trainer": "Panel trenera",
@@ -654,18 +654,31 @@
       "title": "Żaden klient nie pasuje do tego imienia i nazwiska",
       "body": "Sprawdź pisownię lub wyczyść wyszukiwanie.",
       "clear": "Wyczyść wyszukiwanie"
-    }
+    },
+    "pastPlanChanges": "Wcześniejsze zmiany planu"
   },
   "approvals": {
     "title": "Do akceptacji",
-    "intro": "Tutaj czekają nowe plany do Twojego przeglądu.",
+    "intro": "Zmiany planu wymagają Ciebie i klienta. Nowe plany wymagają Ciebie.",
     "draftedPlans": "Szkice planów",
     "loading": "Wczytywanie szkiców planów",
     "retry": "Spróbuj ponownie",
     "empty": {
       "title": "Nic do akceptacji.",
       "body": "Szkice planów pojawią się tutaj.",
-      "action": "Zobacz klientów"
+      "action": "Zobacz klientów",
+      "you": {
+        "title": "Nic do akceptacji.",
+        "body": "Zmiany planu i nowe plany pojawiają się tutaj."
+      },
+      "client": {
+        "title": "Nic nie czeka na klienta.",
+        "body": "Zaakceptowana przez Ciebie zmiana planu jest tutaj, dopóki klient nie zdecyduje."
+      },
+      "decided": {
+        "title": "Ostatnio nic nie rozstrzygnięto.",
+        "body": "Zmiany planu zakończone w ciągu ostatnich 30 dni pojawiają się tutaj."
+      }
     },
     "kinds": {
       "BUILT": "Plan do przejrzenia",
@@ -680,7 +693,19 @@
     "sessionsPerWeek_one": "{{count, number}} sesja w tygodniu",
     "sessionsPerWeek_few": "{{count, number}} sesje w tygodniu",
     "sessionsPerWeek_many": "{{count, number}} sesji w tygodniu",
-    "sessionsPerWeek_other": "{{count, number}} sesji w tygodniu"
+    "sessionsPerWeek_other": "{{count, number}} sesji w tygodniu",
+    "tabs": {
+      "label": "Filtr",
+      "you": "Czeka na Ciebie",
+      "client": "Czeka na klienta",
+      "decided": "Rozstrzygnięte"
+    },
+    "planChange": {
+      "effective": "Obowiązuje od {{date}}",
+      "expired": "Wygasła, {{date}}",
+      "declinedByYou": "Zostajesz przy obecnym planie: {{reason}}",
+      "declinedByClient": "{{name}} zostaje przy obecnym planie: {{reason}}"
+    }
   },
   "invites": {
     "title": "Otwarte zaproszenia",
@@ -1501,6 +1526,8 @@
       "SCHEDULE": "Harmonogram",
       "INJURY": "Kontuzja",
       "OTHER": "Inne"
-    }
+    },
+    "breadcrumb": "Okruszki",
+    "title": "Zmiana planu"
   }
 }

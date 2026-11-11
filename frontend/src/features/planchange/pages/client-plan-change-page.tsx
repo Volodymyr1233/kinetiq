@@ -21,7 +21,10 @@ import {
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemStatus } from '@/lib/api/problem'
-import { planChangeStatus } from '@/lib/plan-change-state'
+import {
+  planChangeBadgeVariant,
+  planChangeStatus,
+} from '@/lib/plan-change-state'
 import {
   useAcceptPlanChange,
   useClientPlanChange,
@@ -33,15 +36,6 @@ import { PlanChangeDecisionPanel } from '../components/plan-change-decision-pane
 import { PlanChangePeople } from '../components/plan-change-people'
 import { PlanChangeTable } from '../components/plan-change-table'
 import { RuleChart } from '../components/rule-chart'
-
-const BADGES = {
-  waitingForBoth: 'info',
-  waitingForYou: 'info',
-  waitingFor: 'info',
-  applied: 'success',
-  declined: 'secondary',
-  expired: 'outline',
-} as const
 
 /** A plan change of the client, at phone width: what changes and why, who decided what, and the decision. */
 export function ClientPlanChangePage() {
@@ -135,7 +129,7 @@ export function ClientPlanChangePage() {
       <Card className="border-l-plan-change border-l-4">
         <CardHeader>
           <div>
-            <Badge variant={BADGES[badge]}>
+            <Badge variant={planChangeBadgeVariant[badge]}>
               {t(`planChange.badge.${badge}`, {
                 name: planChange.counterpartName,
               })}

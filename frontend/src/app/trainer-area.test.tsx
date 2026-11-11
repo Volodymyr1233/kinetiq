@@ -45,11 +45,29 @@ describe('TrainerArea', () => {
     })
   })
 
-  describe('drafted plans count on the Approvals item', () => {
+  describe('count on the Approvals item', () => {
+    const planChange = (patch: object) => ({
+      id: '00000000-0000-4000-9600-000000000001',
+      clientId: '00000000-0000-4000-8000-000000000009',
+      clientName: 'Ola Kowalska',
+      title: 'Cut volume',
+      reason: 'RPE',
+      state: 'PENDING',
+      acceptedByTrainer: false,
+      acceptedByClient: false,
+      effectiveWeek: '2026-11-16',
+      createdAt: '2026-11-07T09:30:00Z',
+      ...patch,
+    })
+
     const drafting =
-      (count: number): Reply =>
-      (request) =>
-        new URL(request.url).pathname === '/api/v1/approvals/drafted-plans'
+      (count: number, changes: object[] = []): Reply =>
+      (request) => {
+        const path = new URL(request.url).pathname
+        if (path === '/api/v1/approvals/plan-changes') {
+          return json({ items: changes })
+        }
+        return path === '/api/v1/approvals/drafted-plans'
           ? json({
               items: Array.from({ length: count }, (_, index) => ({
                 clientId: `00000000-0000-4000-8000-00000000010${index}`,
@@ -61,14 +79,40 @@ describe('TrainerArea', () => {
               })),
             })
           : new Response(null, { status: 204 })
+      }
 
-    it('shows how many drafts wait and announces it as part of the name', async () => {
-      renderAppAt('/trainer/clients', SIGNED_IN.TRAINER, drafting(3))
+    it('adds the drafted plans and the plan changes that wait for the trainer, and announces it as part of the name', async () => {
+      renderAppAt(
+        '/trainer/clients',
+        SIGNED_IN.TRAINER,
+        drafting(2, [
+          planChange({}),
+          planChange({ state: 'ACCEPTED_BY_ONE', acceptedByClient: true }),
+        ]),
+      )
 
       const link = await screen.findByRole('link', {
-        name: 'Approvals, 3 drafted plans waiting',
+        name: 'Approvals, 4 approvals waiting for you',
       })
-      expect(within(link).getByText('3')).toBeInTheDocument()
+      expect(within(link).getByText('4')).toBeInTheDocument()
+    })
+
+    it('leaves out what waits for the client and what ended', async () => {
+      renderAppAt(
+        '/trainer/clients',
+        SIGNED_IN.TRAINER,
+        drafting(1, [
+          planChange({ state: 'ACCEPTED_BY_ONE', acceptedByTrainer: true }),
+          planChange({ state: 'DECLINED', declinedBy: 'CLIENT' }),
+          planChange({ state: 'APPLIED', acceptedByTrainer: true }),
+        ]),
+      )
+
+      expect(
+        await screen.findByRole('link', {
+          name: 'Approvals, 1 approval waiting for you',
+        }),
+      ).toBeInTheDocument()
     })
 
     it('shows nothing at 0', async () => {

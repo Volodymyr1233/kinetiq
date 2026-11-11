@@ -40,6 +40,23 @@ class PlanChangeController {
     }
 
     /**
+     * The plan changes of the trainer's own clients that wait or ended in the last 30 days, for the Approvals list.
+     */
+    @GetMapping("/api/v1/approvals/plan-changes")
+    PlanChangeApprovalsResponse getApprovals(Authentication authentication) {
+        return mapper.toResponse(planChanges.approvals(signedIn(authentication)));
+    }
+
+    /**
+     * The last 5 plan changes of the trainer's own client that ended. {@code 404} with {@code client.not-found} for
+     * another trainer's client.
+     */
+    @GetMapping("/api/v1/clients/{id}/plan-changes/ended")
+    PlanChangeApprovalsResponse getEnded(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(planChanges.ended(signedIn(authentication), new AccountId(id)));
+    }
+
+    /**
      * The trainer accepts. Accepting twice answers the unchanged plan change; {@code 409} when it has ended or its
      * effective week has begun.
      */

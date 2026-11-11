@@ -220,4 +220,110 @@ describe('ClientPage', () => {
     )
     expect(screen.queryByText('Plan change')).not.toBeInTheDocument()
   })
+
+  describe('plan change state and history', () => {
+    const open = {
+      id: '00000000-0000-4000-9600-000000000001',
+      rule: 'HIGH_RPE',
+      state: 'PENDING',
+      title: 'Back squat: cut volume by 13%',
+      reason: 'Average RPE was 8.4 and 8.6 in the last 2 weeks, above 8.',
+      effectiveWeek: '2026-11-16',
+      acceptedByTrainer: false,
+      acceptedByClient: false,
+    }
+    const ended = (id: string, patch: object) => ({
+      id: `00000000-0000-4000-9600-0000000000${id}`,
+      clientId: OLA.id,
+      clientName: 'Ola Kowalska',
+      title: `Ended ${id}`,
+      reason: 'Reason',
+      state: 'APPLIED',
+      acceptedByTrainer: true,
+      acceptedByClient: true,
+      effectiveWeek: '2026-10-19',
+      createdAt: '2026-10-12T02:00:00Z',
+      endedAt: '2026-10-14T09:00:00Z',
+      ...patch,
+    })
+
+    function renderWith(openChange: object | null, items: object[]) {
+      return renderAppAt(
+        `/trainer/clients/${OLA.id}`,
+        SIGNED_IN.TRAINER,
+        (request) => {
+          const { pathname } = new URL(request.url)
+          if (pathname === `/api/v1/clients/${OLA.id}/plan-change`) {
+            return openChange
+              ? json(openChange)
+              : problem(404, { status: 404, code: 'plan-change.not-found' })
+          }
+          if (pathname === `/api/v1/clients/${OLA.id}/plan-changes/ended`) {
+            return json({ items })
+          }
+          return backend(request)
+        },
+      )
+    }
+
+    it('says the open plan change waits for both while nobody accepted', async () => {
+      renderWith(open, [])
+
+      expect(await screen.findByText('Waiting for both')).toBeInTheDocument()
+    })
+
+    it('says the plan change waits for the trainer once the client accepted', async () => {
+      renderWith(
+        { ...open, state: 'ACCEPTED_BY_ONE', acceptedByClient: true },
+        [],
+      )
+
+      expect(await screen.findByText('Waiting for you')).toBeInTheDocument()
+    })
+
+    it('says who the trainer waits for once they accepted', async () => {
+      renderWith(
+        { ...open, state: 'ACCEPTED_BY_ONE', acceptedByTrainer: true },
+        [],
+      )
+
+      expect(await screen.findByText('Waiting for Ola')).toBeInTheDocument()
+    })
+
+    it('lists the ended plan changes under Past plan changes, each opening its detail', async () => {
+      renderWith(null, [
+        ended('04', {}),
+        ended('05', {
+          state: 'DECLINED',
+          declinedBy: 'CLIENT',
+          declineReason: 'SCHEDULE',
+          endedAt: '2026-10-10T09:00:00Z',
+        }),
+      ])
+
+      const section = await screen.findByRole('region', {
+        name: 'Past plan changes',
+      })
+      const links = within(section).getAllByRole('link')
+      expect(links.map((link) => link.getAttribute('href'))).toEqual([
+        '/trainer/plan-changes/00000000-0000-4000-9600-000000000004',
+        '/trainer/plan-changes/00000000-0000-4000-9600-000000000005',
+      ])
+      expect(links[0]).toHaveTextContent('Ended 04')
+      expect(links[0]).toHaveTextContent('Applied')
+      expect(links[0]).toHaveTextContent('Wed, Oct 14')
+      expect(links[1]).toHaveTextContent('Declined')
+    })
+
+    it('hides Past plan changes when none ended', async () => {
+      renderWith(null, [])
+
+      await screen.findByRole('heading', { name: 'Ola Kowalska' })
+      await waitFor(() =>
+        expect(
+          screen.queryByRole('region', { name: 'Past plan changes' }),
+        ).not.toBeInTheDocument(),
+      )
+    })
+  })
 })

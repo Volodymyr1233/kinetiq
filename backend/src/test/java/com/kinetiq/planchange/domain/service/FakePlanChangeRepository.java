@@ -6,6 +6,8 @@ import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -28,7 +30,7 @@ class FakePlanChangeRepository implements PlanChangeRepository {
 
     @Override
     public PlanChange save(PlanChange planChange) {
-        if (findOpen(planChange.getClient()).isPresent()) {
+        if (planChange.isOpen() && findOpen(planChange.getClient()).isPresent()) {
             throw new IllegalStateException("a second open plan change for the client");
         }
         saved.add(planChange);
@@ -49,6 +51,20 @@ class FakePlanChangeRepository implements PlanChangeRepository {
     public PlanChange update(PlanChange planChange) {
         saved.replaceAll(change -> change.getId().equals(planChange.getId()) ? planChange : change);
         return planChange;
+    }
+
+    @Override
+    public List<PlanChange> findAll(Collection<PlanChangeId> ids) {
+        return saved.stream().filter(change -> ids.contains(change.getId())).toList();
+    }
+
+    @Override
+    public List<PlanChange> findEnded(AccountId client, int limit) {
+        return saved.stream()
+                .filter(change -> change.getClient().equals(client) && !change.isOpen())
+                .sorted(Comparator.comparing((PlanChange change) -> change.getEndedAt().orElse(change.getCreatedAt())).reversed())
+                .limit(limit)
+                .toList();
     }
 
     @Override
