@@ -292,6 +292,69 @@ describe('ClientLogsTab', () => {
     )
   })
 
+  it('shows a recovery day’s lighter targets beside the planned ones, with the reason', async () => {
+    const lighter: ClientSessionLog = {
+      ...DETAILS[WEDNESDAY_LOG],
+      adjustment: { causes: ['SLEEP', 'SORENESS'], inUse: true },
+      entries: [
+        {
+          ...squat([
+            {
+              number: 1,
+              target: { loadKg: 90, amount: 5, rpe: 7 },
+              log: logged(90, 5, 7),
+            },
+            { number: 2, target: { loadKg: 90, amount: 5, rpe: 7 } },
+          ]),
+          planned: { loadKg: 100, amount: 5, rpe: 8 },
+        },
+      ],
+    }
+    openLogs((request) =>
+      new URL(request.url).pathname.endsWith(WEDNESDAY_LOG)
+        ? json(lighter)
+        : backend()(request),
+    )
+
+    expect(
+      await screen.findByText(
+        'Recovery day: poor sleep and high soreness, so the targets were lighter.',
+      ),
+    ).toBeInTheDocument()
+    const rows = screen.getAllByRole('row').slice(1)
+    // a screen reader hears both values of each changed target
+    expect(rows[1]).toHaveTextContent('5 × 100, lighter 5 × 90')
+    expect(rows[1]).toHaveTextContent('RPE 8, lighter RPE 7')
+    expect(rows[0]).toHaveTextContent('5 × 100, lighter 5 × 90')
+  })
+
+  it('says the client chose the original targets on a recovery day, with no lighter ones', async () => {
+    openLogs((request) =>
+      new URL(request.url).pathname.endsWith(WEDNESDAY_LOG)
+        ? json({
+            ...DETAILS[WEDNESDAY_LOG],
+            adjustment: { causes: ['STRESS'], inUse: false },
+          })
+        : backend()(request),
+    )
+
+    expect(
+      await screen.findByText(
+        'Recovery day: the client chose the original targets.',
+      ),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/lighter/)).not.toBeInTheDocument()
+  })
+
+  it('says nothing of a recovery day on a day without one', async () => {
+    openLogs()
+
+    expect(
+      await screen.findByText('1 of 2 sets · average RPE 9.0'),
+    ).toBeInTheDocument()
+    expect(screen.queryByText(/^Recovery day/)).not.toBeInTheDocument()
+  })
+
   it('shows the note the client wrote as plain text, and nothing for a session without one', async () => {
     const user = userEvent.setup()
     openLogs()

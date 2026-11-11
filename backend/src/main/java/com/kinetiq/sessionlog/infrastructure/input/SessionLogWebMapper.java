@@ -55,8 +55,11 @@ class SessionLogWebMapper {
                 log.getFinishedAt().orElse(null),
                 log.minutes().orElse(null),
                 log.getNote().orElse(null),
-                // the trainer's view of an adjustment is story #122; logged sets still show their own copy
-                entries(log, read.library(), null, locale));
+                entries(log, read.library(), read.adjustment(), locale),
+                read.adjustment() == null
+                        ? null
+                        : new ClientSessionLogResponse.LogAdjustmentResponse(
+                                read.adjustment().causes(), read.adjustment().inUse()));
     }
 
     ClientSessionsResponse toResponse(List<ClientSession> sessions) {

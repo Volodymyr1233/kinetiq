@@ -13,6 +13,12 @@ describe('TargetChange', () => {
     expect(screen.getByText('100 kg, today 90 kg')).toBeInTheDocument()
   })
 
+  it('says a past day’s target was lighter, not today’s', () => {
+    render(<TargetChange planned="100 kg" today="90 kg" past />)
+
+    expect(screen.getByText('100 kg, lighter 90 kg')).toBeInTheDocument()
+  })
+
   it('shows the value once when it did not change', () => {
     const { container } = render(<TargetChange planned="RPE 5" today="RPE 5" />)
 

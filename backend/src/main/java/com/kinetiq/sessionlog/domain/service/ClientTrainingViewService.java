@@ -95,10 +95,13 @@ public class ClientTrainingViewService implements ViewClientTrainingUseCase {
     public ClientSessionLog sessionLog(AccountId trainer, AccountId client, SessionLogId id) {
         clients.getClient(trainer, client);
         SessionLog log = logs.findByIdAndClient(id, client).orElseThrow(SessionLogNotFoundException::new);
+        Map<ExerciseId, Exercise> library = library(trainer);
         return new ClientSessionLog(
                 log,
                 started(log, clock.instant()),
-                library(trainer));
+                library,
+                checkIns.adjustmentOn(client, log.getDate(), planned(log, library))
+                        .orElse(null));
     }
 
     private static List<ClientOverview.ReadinessDay> readiness(Map<LocalDate, CheckIn> byDate, LocalDate today) {

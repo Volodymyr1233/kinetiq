@@ -66,7 +66,7 @@ When the trainer opens the log of a session trained on a recovery day with the l
 
 **Why this priority**: The entry of User Story 2 links here. Without it the trainer would see the lighter targets as if they were the plan, which hides the old value that every change the system makes must show (constitution IV).
 
-**Independent Test**: Open the log of 3 Oct from User Story 2: the back squat reads 100 → 90 kg and RPE 8 → 7, the line reads "Recovery day: poor sleep and high soreness, so the targets were lighter.", and logged sets show the targets they were logged against. Open a log of a recovery day with the original targets: the line reads "Recovery day: the client used the original targets." and no arrows show.
+**Independent Test**: Open the log of 3 Oct from User Story 2: the back squat reads 100 → 90 kg and RPE 8 → 7, the line reads "Recovery day: poor sleep and high soreness, so the targets were lighter.", and logged sets show the targets they were logged against. Open a log of a recovery day with the original targets: the line reads "Recovery day: the client chose the original targets." and no arrows show.
 
 **Acceptance Scenarios**:
 
@@ -128,7 +128,7 @@ When the trainer opens the log of a session trained on a recovery day with the l
 **Lighter targets in the trainer's session log** (task #290)
 
 - **FR-015**: A trainer's session log of a day whose lighter targets are in use MUST give, for each entry whose target is lighter, the planned target as well as the lighter one, worked out over the session's own copy (spec `117-recovery-day-targets` FR-006); the targets of planned sets not yet logged MUST be the lighter ones, and logged sets MUST keep the targets they were logged against.
-- **FR-016**: The trainer's session log view MUST show each lighter target as the planned value struck through, an arrow and the lighter value, and on a recovery day a line under the title: "Recovery day: {reason}, so the targets were lighter." while the lighter targets are in use, "Recovery day: the client used the original targets." when they are not. A day with no adjustment shows no line.
+- **FR-016**: The trainer's session log view MUST show each lighter target as the planned value struck through, an arrow and the lighter value, and on a recovery day a line under the title: "Recovery day: {reason}, so the targets were lighter." while the lighter targets are in use, "Recovery day: the client chose the original targets." when they are not. A day with no adjustment shows no line.
 
 **Both**
 
@@ -161,6 +161,8 @@ When the trainer opens the log of a session trained on a recovery day with the l
 | Board | Bar labels are day numbers only | Day numbers, with today marked | Today is the column a trainer looks for first; the full date is in the text alternative. |
 | Board | KPI tile "Readiness today" | Not added | The strip's last column is today; the KPI row above is the client's progress (spec `156-client-progress`). |
 | Board, #122 | Nothing about the session log | The trainer's session log shows planned → lighter targets and the reason (User Story 3, task #290) | The entry links there, and the trainer's log showed lighter targets as if they were the plan; constitution IV asks that a change made by the system shows the old value, the new value and the reason. |
+| Board | Legend with band names only | Each band name with its range (70+, 45–69, 0–44) | In the light theme Ready and Take it easier differ in hue but hardly in lightness; with the score written on each bar, the range lets anyone tell the bands apart without colour (WCAG 1.4.1). |
+| Spec 117 | A screen reader hears "planned, today new" | In the trainer's session log it hears "planned, lighter new" | The log is of a day gone by; "today" would be wrong there. |
 
 ## Assumptions
 
