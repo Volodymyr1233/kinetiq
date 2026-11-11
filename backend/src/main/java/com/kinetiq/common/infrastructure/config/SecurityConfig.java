@@ -37,8 +37,10 @@ public class SecurityConfig {
     SecurityFilterChain securityFilterChain(
             HttpSecurity http, SecurityContextRepository contextRepository, CsrfTokenRepository csrfTokens) {
         return http.authorizeHttpRequests(requests -> requests
-                        // without this the container's error dispatch is rejected and every error becomes 401
-                        .dispatcherTypeMatchers(DispatcherType.ERROR)
+                        // without this the container's error dispatch is rejected and every error becomes 401; an
+                        // async dispatch only finishes a request already authorized, such as an event stream ending
+                        // after its sign-in, which would otherwise get a 401 written into a running response
+                        .dispatcherTypeMatchers(DispatcherType.ASYNC, DispatcherType.ERROR)
                         .permitAll()
                         .requestMatchers("/actuator/health")
                         .permitAll()

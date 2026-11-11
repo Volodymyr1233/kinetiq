@@ -4,6 +4,7 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.Conversation;
+import com.kinetiq.messaging.domain.model.ConversationChange;
 import com.kinetiq.messaging.domain.model.ConversationId;
 import com.kinetiq.messaging.domain.model.ConversationOverview;
 import com.kinetiq.messaging.domain.model.ConversationPair;
@@ -12,6 +13,7 @@ import com.kinetiq.messaging.domain.model.MessageId;
 import com.kinetiq.messaging.domain.model.MessagePage;
 import com.kinetiq.messaging.domain.output.AboutSets;
 import com.kinetiq.messaging.domain.output.ConversationDirectory;
+import com.kinetiq.messaging.domain.output.ConversationEvents;
 import com.kinetiq.messaging.domain.output.ConversationParticipants;
 import com.kinetiq.messaging.domain.output.ConversationRepository;
 import com.kinetiq.messaging.domain.output.MessageRepository;
@@ -139,6 +141,16 @@ final class MessagingFakes {
         @Override
         public int unreadTotal(AccountId person) {
             return 0;
+        }
+    }
+
+    static class Events implements ConversationEvents {
+
+        final List<ConversationChange> published = new ArrayList<>();
+
+        @Override
+        public void publish(ConversationChange change) {
+            published.add(change);
         }
     }
 }
