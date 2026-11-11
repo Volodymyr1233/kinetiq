@@ -12,6 +12,8 @@ import com.kinetiq.messaging.domain.exception.MessageNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageTooLongException;
 import com.kinetiq.messaging.domain.input.SendMessageCommand;
 import com.kinetiq.messaging.domain.model.AboutSet;
+import com.kinetiq.messaging.domain.model.ConversationChange;
+import com.kinetiq.messaging.domain.model.ConversationChange.Kind;
 import com.kinetiq.messaging.domain.model.Message;
 import com.kinetiq.messaging.domain.model.MessageId;
 import com.kinetiq.messaging.domain.model.MessageText;
@@ -41,6 +43,7 @@ class MessagingServiceTest {
     private final MessagingFakes.Messages messages = new MessagingFakes.Messages();
 
     private final MessagingFakes.Sets sets = new MessagingFakes.Sets();
+    private final MessagingFakes.Events events = new MessagingFakes.Events();
 
     private final MessagingService service = new MessagingService(
             participants,
@@ -48,6 +51,7 @@ class MessagingServiceTest {
             messages,
             new MessagingFakes.Directory(),
             sets,
+            events,
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     @BeforeEach
@@ -365,6 +369,72 @@ class MessagingServiceTest {
 
             assertThat(conversations.reads.get(sent.getConversation())).containsOnlyKeys(anna);
             assertThat(conversations.reads.get(sent.getConversation()).get(anna)).isEqualTo(NOW_IN_MICROS);
+        }
+    }
+
+    @Nested
+    class Notices {
+
+        @Test
+        void shouldTellBothPeople_whenTheClientSendsAMessage() {
+            service.send(send(anna, anna, "hello"));
+
+            assertThat(events.published)
+                    .containsExactlyInAnyOrder(
+                            new ConversationChange(anna, anna, Kind.MESSAGE),
+                            new ConversationChange(marek, anna, Kind.MESSAGE));
+        }
+
+        @Test
+        void shouldTellBothPeople_whenTheTrainerSendsAMessage() {
+            service.send(send(marek, anna, "hello"));
+
+            assertThat(events.published)
+                    .containsExactlyInAnyOrder(
+                            new ConversationChange(anna, anna, Kind.MESSAGE),
+                            new ConversationChange(marek, anna, Kind.MESSAGE));
+        }
+
+        @Test
+        void shouldTellNobody_whenTheSameSendIsRepeated() {
+            MessageId id = newId();
+            service.send(new SendMessageCommand(anna, anna, id, "hello"));
+            events.published.clear();
+
+            service.send(new SendMessageCommand(anna, anna, id, "hello"));
+
+            assertThat(events.published).isEmpty();
+        }
+
+        @Test
+        void shouldTellNobody_whenASendIsRefused() {
+            assertThatThrownBy(() -> service.send(send(anna, anna, "   "))).isInstanceOf(MessageEmptyException.class);
+            assertThatThrownBy(() -> service.send(send(anna, anna, "a".repeat(2001))))
+                    .isInstanceOf(MessageTooLongException.class);
+            assertThatThrownBy(() -> service.send(
+                            new SendMessageCommand(anna, anna, newId(), "hello", sets.logFor(basia).setLog())))
+                    .isInstanceOf(AboutSetNotFoundException.class);
+            assertThatThrownBy(() -> service.send(send(basia, anna, "hello")))
+                    .isInstanceOf(ConversationNotFoundException.class);
+
+            assertThat(events.published).isEmpty();
+        }
+
+        @Test
+        void shouldTellOnlyTheReader_whenAConversationIsMarkedRead() {
+            service.send(send(marek, anna, "hello"));
+            events.published.clear();
+
+            service.markRead(anna, anna);
+
+            assertThat(events.published).containsExactly(new ConversationChange(anna, anna, Kind.READ));
+        }
+
+        @Test
+        void shouldTellNobody_whenAConversationWithoutMessagesIsMarkedRead() {
+            service.markRead(marek, anna);
+
+            assertThat(events.published).isEmpty();
         }
     }
 }

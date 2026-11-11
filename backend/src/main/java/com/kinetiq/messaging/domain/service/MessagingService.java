@@ -9,6 +9,8 @@ import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.messaging.domain.input.SendMessageCommand;
 import com.kinetiq.messaging.domain.model.AboutSet;
 import com.kinetiq.messaging.domain.model.Conversation;
+import com.kinetiq.messaging.domain.model.ConversationChange;
+import com.kinetiq.messaging.domain.model.ConversationChange.Kind;
 import com.kinetiq.messaging.domain.model.ConversationOverview;
 import com.kinetiq.messaging.domain.model.ConversationPair;
 import com.kinetiq.messaging.domain.model.Message;
@@ -17,6 +19,7 @@ import com.kinetiq.messaging.domain.model.MessagePage;
 import com.kinetiq.messaging.domain.model.MessageText;
 import com.kinetiq.messaging.domain.output.AboutSets;
 import com.kinetiq.messaging.domain.output.ConversationDirectory;
+import com.kinetiq.messaging.domain.output.ConversationEvents;
 import com.kinetiq.messaging.domain.output.ConversationParticipants;
 import com.kinetiq.messaging.domain.output.ConversationRepository;
 import com.kinetiq.messaging.domain.output.MessageRepository;
@@ -35,6 +38,7 @@ public class MessagingService implements ExchangeMessagesUseCase {
     private final MessageRepository messages;
     private final ConversationDirectory directory;
     private final AboutSets aboutSets;
+    private final ConversationEvents events;
     private final Clock clock;
 
     @Override
@@ -65,6 +69,9 @@ public class MessagingService implements ExchangeMessagesUseCase {
         Conversation conversation = conversations.findOrCreate(pair);
         Message message = new Message(command.id(), conversation.getId(), command.person(), text, now(), about);
         if (messages.saveIfNew(message)) {
+            // the sender too, so their other tabs and devices show it
+            events.publish(new ConversationChange(pair.client(), pair.client(), Kind.MESSAGE));
+            events.publish(new ConversationChange(pair.trainer(), pair.client(), Kind.MESSAGE));
             return message;
         }
         Message stored = messages.findById(command.id()).orElseThrow(MessageIdInUseException::new);
@@ -76,9 +83,11 @@ public class MessagingService implements ExchangeMessagesUseCase {
 
     @Override
     public void markRead(AccountId person, AccountId client) {
-        conversations
-                .find(pairOf(person, client))
-                .ifPresent(conversation -> conversations.markRead(conversation.getId(), person, now()));
+        conversations.find(pairOf(person, client)).ifPresent(conversation -> {
+            conversations.markRead(conversation.getId(), person, now());
+            // only the reader: the other person is never told, there are no read receipts
+            events.publish(new ConversationChange(person, client, Kind.READ));
+        });
     }
 
     // the one access rule: every operation on a conversation starts here
