@@ -1,7 +1,9 @@
 package com.kinetiq.planchange.infrastructure.output;
 
+import com.kinetiq.planchange.domain.model.DeclineReason;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Rule;
+import com.kinetiq.planchange.domain.model.Side;
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -50,6 +52,16 @@ class PlanChangeEntity {
     private String removedName;
     private Instant createdAt;
     private Instant endedAt;
+    private Instant trainerAcceptedAt;
+    private Instant clientAcceptedAt;
+
+    @Enumerated(EnumType.STRING)
+    private Side declinedBy;
+
+    @Enumerated(EnumType.STRING)
+    private DeclineReason declineReason;
+
+    private String declineNote;
 
     @ElementCollection
     @CollectionTable(name = "plan_change_targets", joinColumns = @JoinColumn(name = "plan_change_id"))

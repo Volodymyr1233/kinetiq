@@ -2,6 +2,7 @@ package com.kinetiq.planchange.infrastructure.output;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.planchange.domain.model.Decision;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.Figure;
 import com.kinetiq.planchange.domain.model.PlanChange;
@@ -59,7 +60,12 @@ interface PlanChangeMapper {
                         .toList(),
                 entity.getExercises().stream().map(ExerciseId::new).collect(Collectors.toSet()),
                 entity.getCreatedAt(),
-                entity.getEndedAt());
+                entity.getEndedAt(),
+                entity.getTrainerAcceptedAt(),
+                entity.getClientAcceptedAt(),
+                entity.getDeclinedBy() == null
+                        ? null
+                        : new Decision(entity.getDeclinedBy(), entity.getDeclineReason(), entity.getDeclineNote()));
     }
 
     private TargetChange toDomain(PlanChangeTargetEmbeddable target) {
@@ -85,7 +91,6 @@ interface PlanChangeMapper {
         entity.setId(planChange.getId().value());
         entity.setClientId(planChange.getClient().value());
         entity.setRule(planChange.getRule());
-        entity.setState(planChange.getState());
         entity.setPlanVersion(planChange.getPlanVersion());
         entity.setWindowStart(planChange.getWindowStart());
         entity.setWindowEnd(planChange.getWindowEnd());
@@ -96,7 +101,7 @@ interface PlanChangeMapper {
             entity.setRemovedName(removed.name());
         });
         entity.setCreatedAt(planChange.getCreatedAt());
-        entity.setEndedAt(planChange.getEndedAt().orElse(null));
+        applyDecision(planChange, entity);
         entity.setTargets(new ArrayList<>(content.changes().stream().map(this::toEmbeddable).toList()));
         entity.setMoves(new ArrayList<>(content.moves().stream().map(this::toEmbeddable).toList()));
         entity.setFigures(new ArrayList<>(planChange.getFigures().stream().map(this::toEmbeddable).toList()));
@@ -104,6 +109,18 @@ interface PlanChangeMapper {
                 .map(ExerciseId::value)
                 .toList()));
         return entity;
+    }
+
+    // the columns a decision changes; the rest of a stored plan change never does
+    default void applyDecision(PlanChange planChange, PlanChangeEntity entity) {
+        entity.setState(planChange.getState());
+        entity.setEndedAt(planChange.getEndedAt().orElse(null));
+        entity.setTrainerAcceptedAt(planChange.getTrainerAcceptedAt().orElse(null));
+        entity.setClientAcceptedAt(planChange.getClientAcceptedAt().orElse(null));
+        Optional<Decision> decision = planChange.getDecision();
+        entity.setDeclinedBy(decision.map(Decision::by).orElse(null));
+        entity.setDeclineReason(decision.map(Decision::reason).orElse(null));
+        entity.setDeclineNote(decision.map(Decision::note).orElse(null));
     }
 
     private PlanChangeTargetEmbeddable toEmbeddable(TargetChange change) {

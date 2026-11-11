@@ -3,6 +3,9 @@ package com.kinetiq.planchange.infrastructure.config;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
+import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.ViewOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
 import com.kinetiq.planchange.domain.output.PlanChangeDrafter;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
@@ -17,7 +20,10 @@ import com.kinetiq.planchange.domain.rule.LowCompletionRule;
 import com.kinetiq.planchange.domain.rule.StalledWeightFallback;
 import com.kinetiq.planchange.domain.rule.StalledWeightLimits;
 import com.kinetiq.planchange.domain.rule.StalledWeightRule;
+import com.kinetiq.planchange.domain.service.ClientPlanChangeViewService;
 import com.kinetiq.planchange.domain.service.PlanChangeDetectionService;
+import com.kinetiq.planchange.domain.service.OwnPlanChangeDecisionService;
+import com.kinetiq.planchange.domain.service.PlanChangeDecisionService;
 import com.kinetiq.planchange.domain.service.PlanChangeDraftingService;
 import com.kinetiq.planchange.domain.service.PlanChangeLimits;
 import com.kinetiq.planchange.domain.service.PlanChangeViewService;
@@ -64,6 +70,27 @@ class PlanChangeConfig {
             PlanChangeRepository planChanges,
             PlanSource plans) {
         return new PlanChangeViewService(clients, accounts, planChanges, plans);
+    }
+
+    @Bean
+    DecidePlanChangeUseCase decidePlanChangeUseCase(
+            ViewClientsUseCase clients,
+            CurrentAccountUseCase accounts,
+            PlanChangeRepository planChanges,
+            PlanSource plans) {
+        return new PlanChangeDecisionService(clients, accounts, planChanges, plans, Clock.systemUTC());
+    }
+
+    @Bean
+    DecideOwnPlanChangeUseCase decideOwnPlanChangeUseCase(
+            CurrentAccountUseCase accounts, PlanChangeRepository planChanges, PlanSource plans) {
+        return new OwnPlanChangeDecisionService(accounts, planChanges, plans, Clock.systemUTC());
+    }
+
+    @Bean
+    ViewOwnPlanChangeUseCase viewOwnPlanChangeUseCase(
+            CurrentAccountUseCase accounts, PlanChangeRepository planChanges, PlanSource plans) {
+        return new ClientPlanChangeViewService(accounts, planChanges, plans);
     }
 
     // the chat model is the drafter's own, not a bean, so it cannot be mistaken for the plan drafting one

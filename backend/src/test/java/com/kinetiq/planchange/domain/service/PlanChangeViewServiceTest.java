@@ -101,6 +101,9 @@ class PlanChangeViewServiceTest {
                     Figure.ofWeek(FigureKind.MEAN_RPE, LocalDate.parse("2026-11-02"), new BigDecimal("8.7"))),
             Set.of(SQUAT),
             Instant.parse("2026-11-09T02:00:00Z"),
+            null,
+            null,
+            null,
             null));
 
     PlanChangeViewServiceTest() {

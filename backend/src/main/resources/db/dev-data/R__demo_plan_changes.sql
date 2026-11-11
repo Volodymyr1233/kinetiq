@@ -64,3 +64,61 @@ from (values ('00000000-0000-4000-9610-000000000001', '00000000-0000-4000-9600-0
 ) as figure (id, plan_change_id, kind, exercise_id, weeks_ago, value)
 join plan_changes change on change.id = figure.plan_change_id::uuid
 on conflict do nothing;
+
+-- decided plan changes, for clients of Demo Trainer who have no open one:
+-- Demo Client Closing: stalled weight, accepted by the trainer three hours ago and waiting for the client (the squat of
+-- Full body rises 5%, 40 to 42 kg)
+-- Demo Client Finished: high RPE, applied three weeks ago by both (the squat of Strength loses a repetition, 6 to 5)
+insert into plan_changes (id, client_id, rule, state, plan_version, window_start, window_end, effective_week,
+                          removed_day, removed_name, created_at, ended_at, trainer_accepted_at, client_accepted_at)
+values ('00000000-0000-4000-9600-000000000004', '00000000-0000-4000-8000-000000000013', 'STALLED_WEIGHT',
+        'ACCEPTED_BY_ONE', 0, (date_trunc('week', current_date) - interval '3 weeks')::date,
+        (date_trunc('week', current_date) - interval '1 day')::date,
+        (date_trunc('week', current_date) + interval '1 week')::date, null, null, now() - interval '1 day', null,
+        now() - interval '3 hours', null),
+       ('00000000-0000-4000-9600-000000000005', '00000000-0000-4000-8000-000000000009', 'HIGH_RPE', 'APPLIED', 0,
+        (date_trunc('week', current_date) - interval '5 weeks')::date,
+        (date_trunc('week', current_date) - interval '3 weeks' - interval '1 day')::date,
+        (date_trunc('week', current_date) - interval '2 weeks')::date, null, null,
+        date_trunc('week', current_date) - interval '3 weeks' + interval '2 hours',
+        date_trunc('week', current_date) - interval '3 weeks' + interval '2 days',
+        date_trunc('week', current_date) - interval '3 weeks' + interval '1 day',
+        date_trunc('week', current_date) - interval '3 weeks' + interval '2 days')
+on conflict do nothing;
+
+insert into plan_change_targets (plan_change_id, session_day, position, target, exercise_id, session_name, old_value,
+                                 new_value)
+select target.plan_change_id::uuid, target.session_day, target.position, target.target, target.exercise_id::uuid,
+       target.session_name, target.old_value, target.new_value
+from (values ('00000000-0000-4000-9600-000000000004', 'MONDAY', 0, 'LOAD_KG', '00000000-0000-4000-9100-000000000011',
+              'Full body', 40.0, 42.0),
+             ('00000000-0000-4000-9600-000000000005', 'SATURDAY', 0, 'AMOUNT', '00000000-0000-4000-9100-000000000011',
+              'Strength', 6.0, 5.0)
+) as target (plan_change_id, session_day, position, target, exercise_id, session_name, old_value, new_value)
+join plan_changes change on change.id = target.plan_change_id::uuid
+on conflict do nothing;
+
+insert into plan_change_exercises (plan_change_id, exercise_id)
+select concerned.plan_change_id::uuid, concerned.exercise_id::uuid
+from (values ('00000000-0000-4000-9600-000000000004', '00000000-0000-4000-9100-000000000011'),
+             ('00000000-0000-4000-9600-000000000005', '00000000-0000-4000-9100-000000000011')
+) as concerned (plan_change_id, exercise_id)
+join plan_changes change on change.id = concerned.plan_change_id::uuid
+on conflict do nothing;
+
+insert into plan_change_figures (id, plan_change_id, kind, exercise_id, week_start, value)
+select figure.id::uuid, figure.plan_change_id::uuid, figure.kind, figure.exercise_id::uuid,
+       (date_trunc('week', current_date) - make_interval(weeks => figure.weeks_ago))::date, figure.value
+from (values ('00000000-0000-4000-9610-000000000010', '00000000-0000-4000-9600-000000000004', 'BEST_LOAD_KG',
+              '00000000-0000-4000-9100-000000000011', 3, 40.000),
+             ('00000000-0000-4000-9610-000000000011', '00000000-0000-4000-9600-000000000004', 'BEST_LOAD_KG',
+              '00000000-0000-4000-9100-000000000011', 2, 40.000),
+             ('00000000-0000-4000-9610-000000000012', '00000000-0000-4000-9600-000000000004', 'BEST_LOAD_KG',
+              '00000000-0000-4000-9100-000000000011', 1, 41.000),
+             ('00000000-0000-4000-9610-000000000013', '00000000-0000-4000-9600-000000000005', 'MEAN_RPE', null, 5,
+              8.400),
+             ('00000000-0000-4000-9610-000000000014', '00000000-0000-4000-9600-000000000005', 'MEAN_RPE', null, 4,
+              8.600)
+) as figure (id, plan_change_id, kind, exercise_id, weeks_ago, value)
+join plan_changes change on change.id = figure.plan_change_id::uuid
+on conflict do nothing;

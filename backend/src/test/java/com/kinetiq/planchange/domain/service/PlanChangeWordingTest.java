@@ -62,7 +62,10 @@ class PlanChangeWordingTest {
                 figures,
                 concerned,
                 Instant.parse("2026-11-09T02:00:00Z"),
-                null);
+                null,
+            null,
+            null,
+            null);
     }
 
     private static TargetChange change(ExerciseId exercise, int position, Target target, String from, String to) {

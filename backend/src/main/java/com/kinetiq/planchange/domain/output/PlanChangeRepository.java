@@ -9,7 +9,7 @@ import java.util.Optional;
 /** The stored plan changes of clients. */
 public interface PlanChangeRepository {
 
-    /** Whether the client has a plan change that has not ended; an accepted one ends when its effective week begins. */
+    /** Whether the client has a plan change that has not ended; applied and declined ones have ended. */
     boolean hasOpen(AccountId client);
 
     /** When the latest plan change of the client ended; empty when none has. */
@@ -19,6 +19,12 @@ public interface PlanChangeRepository {
     PlanChange save(PlanChange planChange);
 
     Optional<PlanChange> find(PlanChangeId id);
+
+    /** Finds the plan change and locks it until the end of the transaction, so decisions on it follow one another. */
+    Optional<PlanChange> findForUpdate(PlanChangeId id);
+
+    /** Stores the decision columns, the state and the end time of a plan change that is stored already. */
+    PlanChange update(PlanChange planChange);
 
     /** The plan change of the client that has not ended, if any. */
     Optional<PlanChange> findOpen(AccountId client);
