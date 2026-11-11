@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next'
 import { Link, Outlet, useLocation, useNavigate, useParams } from 'react-router'
 import { PlanChangeCard } from '@/components/plan-change-card'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
+import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import {
   Empty,
@@ -14,7 +15,18 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { errorMessageKey } from '@/lib/api/problem'
-import { isNotFound, useClient, useOpenPlanChange } from '../api/clients'
+import { formatDay } from '@/lib/dates'
+import { firstName } from '@/lib/first-name'
+import {
+  planChangeBadgeVariant,
+  planChangeStatus,
+} from '@/lib/plan-change-state'
+import {
+  isNotFound,
+  useClient,
+  useEndedPlanChanges,
+  useOpenPlanChange,
+} from '../api/clients'
 import { PlanStateBadge } from '../components/plan-state-badge'
 
 const TABS = ['overview', 'plan', 'logs', 'messages'] as const
@@ -101,7 +113,8 @@ export function ClientPage() {
               })}
             </p>
           </header>
-          <OpenPlanChange clientId={client.id} />
+          <OpenPlanChange clientId={client.id} clientName={client.name} />
+          <PastPlanChanges clientId={client.id} />
           {/* each tab is its own address, so a reload or a shared link lands on the same tab */}
           <Tabs
             value={active}
@@ -131,7 +144,13 @@ export function ClientPage() {
 }
 
 // shown only while the client has a plan change waiting; a failed read leaves the page as it was
-function OpenPlanChange({ clientId }: { clientId: string }) {
+function OpenPlanChange({
+  clientId,
+  clientName,
+}: {
+  clientId: string
+  clientName: string
+}) {
   const planChange = useOpenPlanChange(clientId).data
   if (!planChange) return null
   return (
@@ -140,7 +159,54 @@ function OpenPlanChange({ clientId }: { clientId: string }) {
       reason={planChange.reason}
       effectiveWeek={planChange.effectiveWeek}
       to={`/trainer/plan-changes/${planChange.id}`}
+      status={planChangeStatus(planChange, 'TRAINER')}
+      name={firstName(clientName)}
     />
+  )
+}
+
+// the last 5 that ended, each opening its detail; hidden while there are none
+function PastPlanChanges({ clientId }: { clientId: string }) {
+  const { t, i18n } = useTranslation()
+  const ended = useEndedPlanChanges(clientId).data
+  if (!ended?.length) return null
+  return (
+    <section
+      aria-labelledby="past-plan-changes"
+      className="flex flex-col gap-2"
+    >
+      <h2 id="past-plan-changes" className="font-heading text-lg font-medium">
+        {t('clients.pastPlanChanges')}
+      </h2>
+      <ul className="flex flex-col gap-2">
+        {ended.map((change) => {
+          const status = planChangeStatus(change, 'TRAINER')
+          return (
+            <li key={change.id}>
+              <Link
+                to={`/trainer/plan-changes/${change.id}`}
+                className="bg-card hover:bg-muted focus-visible:border-ring focus-visible:ring-ring/50 flex items-center justify-between gap-4 rounded-lg border px-4 py-3 outline-none focus-visible:ring-[3px]"
+              >
+                <span className="min-w-0 font-medium">{change.title}</span>
+                <span className="flex shrink-0 items-center gap-3">
+                  <Badge variant={planChangeBadgeVariant[status]}>
+                    {t(`planChange.badge.${status}`, {
+                      name: firstName(change.clientName),
+                    })}
+                  </Badge>
+                  <span className="text-muted-foreground text-sm">
+                    {formatDay(
+                      (change.endedAt ?? change.createdAt).slice(0, 10),
+                      i18n.language,
+                    )}
+                  </span>
+                </span>
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </section>
   )
 }
 

@@ -804,6 +804,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/{id}/plan-changes/ended": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getEnded"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/clients/{id}/plan-change": {
         parameters: {
             query?: never;
@@ -828,6 +844,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["overview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/approvals/plan-changes": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["getApprovals"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1616,6 +1648,32 @@ export interface components {
             notes?: string;
             /** Format: date-time */
             submittedAt: string;
+        };
+        PlanChangeApprovalResponse: {
+            /** Format: uuid */
+            id: string;
+            /** Format: uuid */
+            clientId: string;
+            clientName: string;
+            title: string;
+            reason: string;
+            /** @enum {string} */
+            state: "PENDING" | "ACCEPTED_BY_ONE" | "APPLIED" | "DECLINED" | "EXPIRED";
+            acceptedByTrainer: boolean;
+            acceptedByClient: boolean;
+            /** @enum {string} */
+            declinedBy?: "TRAINER" | "CLIENT";
+            /** @enum {string} */
+            declineReason?: "TOO_EASY" | "TOO_HARD" | "SCHEDULE" | "INJURY" | "OTHER";
+            /** Format: date */
+            effectiveWeek: string;
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: date-time */
+            endedAt?: string;
+        };
+        PlanChangeApprovalsResponse: {
+            items: components["schemas"]["PlanChangeApprovalResponse"][];
         };
         ClientPlanChangeResponse: {
             /** Format: uuid */
@@ -3008,6 +3066,28 @@ export interface operations {
             };
         };
     };
+    getEnded: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanChangeApprovalsResponse"];
+                };
+            };
+        };
+    };
     getOpenPlanChange: {
         parameters: {
             query?: never;
@@ -3048,6 +3128,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClientOverviewResponse"];
+                };
+            };
+        };
+    };
+    getApprovals: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanChangeApprovalsResponse"];
                 };
             };
         };

@@ -277,6 +277,38 @@ class PlanChangeRepositoryImplIT {
         assertThat(read.getClientAcceptedAt()).isEmpty();
     }
 
+    @Test
+    void shouldFindTheEndedOnesOfAClient_latestFirst_limited_withoutTheOpenOneOrAnotherClients() {
+        AccountId client = insertClient();
+        AccountId other = insertClient();
+        Instant base = Instant.parse("2026-11-01T10:00:00Z");
+        List<PlanChange> ended = new java.util.ArrayList<>();
+        for (int day = 0; day < 4; day++) {
+            ended.add(repository.save(pending(client).decline(
+                    Side.CLIENT, DeclineReason.OTHER, null, base.plusSeconds(86_400L * day), LocalDate.parse("2026-11-03"))));
+        }
+        repository.save(pending(client));
+        repository.save(pending(other).decline(Side.CLIENT, DeclineReason.OTHER, null, base, LocalDate.parse("2026-11-03")));
+        entityManager.clear();
+
+        List<PlanChange> found = repository.findEnded(client, 3);
+
+        assertThat(found).extracting(PlanChange::getId).containsExactly(ended.get(3).getId(), ended.get(2).getId(), ended.get(1).getId());
+    }
+
+    @Test
+    void shouldFindSeveralPlanChangesById_andSkipAnUnknownId() {
+        AccountId client = insertClient();
+        PlanChange first = repository.save(pending(client).decline(
+                Side.CLIENT, DeclineReason.OTHER, null, CREATED, LocalDate.parse("2026-11-03")));
+        PlanChange second = repository.save(pending(client));
+        entityManager.clear();
+
+        List<PlanChange> found = repository.findAll(List.of(first.getId(), second.getId(), PlanChangeId.random()));
+
+        assertThat(found).extracting(PlanChange::getId).containsExactlyInAnyOrder(first.getId(), second.getId());
+    }
+
     // one statement per run: the first refusal aborts the test transaction
     @ParameterizedTest
     @ValueSource(strings = {

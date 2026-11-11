@@ -39,7 +39,7 @@ describe('routes', () => {
       '/trainer/clients',
       SIGNED_IN.TRAINER,
       (request) =>
-        new URL(request.url).pathname === '/api/v1/approvals/drafted-plans'
+        new URL(request.url).pathname.startsWith('/api/v1/approvals/')
           ? json({ items: [] })
           : json({ invites: [] }),
     )

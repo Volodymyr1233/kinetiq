@@ -19,6 +19,7 @@ import com.kinetiq.planchange.domain.exception.PlanChangeNotFoundException;
 import com.kinetiq.planchange.domain.exception.PlanChangeNothingToUndoException;
 import com.kinetiq.planchange.domain.exception.PlanChangeWeekBegunException;
 import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.PlanChangeApprovalView;
 import com.kinetiq.planchange.domain.input.PlanChangeSummary;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
@@ -258,6 +259,58 @@ class PlanChangeControllerTest {
     void shouldAskToSignIn_whenNobodyIsSignedIn() {
         assertRefused(mvc.get().uri(DETAIL).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
         assertRefused(mvc.get().uri(OPEN).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        verifyNoInteractions(planChanges);
+    }
+
+    private static final String APPROVALS = "/api/v1/approvals/plan-changes";
+    private static final String ENDED = "/api/v1/clients/" + CLIENT_ID.value() + "/plan-changes/ended";
+
+    private static PlanChangeApprovalView approvalRow(PlanChange planChange) {
+        return new PlanChangeApprovalView(planChange, "Ola Nowak", TEXT);
+    }
+
+    @Test
+    void shouldListTheApprovals_withWhoDecidedAndHowItEnded() {
+        PlanChange declined = PLAN_CHANGE.decline(
+                Side.CLIENT, DeclineReason.TOO_HARD, null, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"));
+        when(planChanges.approvals(TRAINER_ID)).thenReturn(List.of(approvalRow(ACCEPTED), approvalRow(declined)));
+
+        MvcTestResult result = mvc.get().uri(APPROVALS).with(TRAINER).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.items[0].clientName").isEqualTo("Ola Nowak");
+        json.extractingPath("$.items[0].clientId").isEqualTo(CLIENT_ID.value().toString());
+        json.extractingPath("$.items[0].title").isEqualTo(TEXT.title());
+        json.extractingPath("$.items[0].state").isEqualTo("ACCEPTED_BY_ONE");
+        json.extractingPath("$.items[0].acceptedByTrainer").isEqualTo(true);
+        json.extractingPath("$.items[0].effectiveWeek").isEqualTo("2026-11-16");
+        json.doesNotHavePath("$.items[0].declinedBy");
+        json.doesNotHavePath("$.items[0].endedAt");
+        json.extractingPath("$.items[1].state").isEqualTo("DECLINED");
+        json.extractingPath("$.items[1].declinedBy").isEqualTo("CLIENT");
+        json.extractingPath("$.items[1].declineReason").isEqualTo("TOO_HARD");
+        json.extractingPath("$.items[1].endedAt").isEqualTo("2026-11-12T08:00:00Z");
+    }
+
+    @Test
+    void shouldListTheEndedOnesOfAClient_orRefuseAnotherTrainersClient() {
+        when(planChanges.ended(TRAINER_ID, CLIENT_ID)).thenReturn(List.of());
+
+        MvcTestResult empty = mvc.get().uri(ENDED).with(TRAINER).exchange();
+        assertThat(empty).hasStatus(HttpStatus.OK);
+        assertThat(empty).bodyJson().extractingPath("$.items").asArray().isEmpty();
+
+        doThrow(new ClientNotFoundException()).when(planChanges).ended(TRAINER_ID, CLIENT_ID);
+        assertRefused(mvc.get().uri(ENDED).with(TRAINER).exchange(), HttpStatus.NOT_FOUND, "client.not-found");
+    }
+
+    @Test
+    void shouldRefuseTheLists_forAClient_andAnonymous() {
+        assertRefused(mvc.get().uri(APPROVALS).with(CLIENT).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(ENDED).with(CLIENT).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(APPROVALS).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        assertRefused(mvc.get().uri(ENDED).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
         verifyNoInteractions(planChanges);
     }
 

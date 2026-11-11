@@ -8,10 +8,12 @@ import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -20,6 +22,10 @@ class PlanChangeRepositoryImpl implements PlanChangeRepository {
 
     private static final List<PlanChangeState> OPEN = Arrays.stream(PlanChangeState.values())
             .filter(PlanChangeState::isOpen)
+            .toList();
+
+    private static final List<PlanChangeState> ENDED = Arrays.stream(PlanChangeState.values())
+            .filter(state -> !state.isOpen())
             .toList();
 
     private final JpaPlanChangeRepository jpa;
@@ -64,6 +70,20 @@ class PlanChangeRepositoryImpl implements PlanChangeRepository {
         mapper.applyDecision(planChange, entity);
         jpa.saveAndFlush(entity);
         return planChange;
+    }
+
+    @Override
+    public List<PlanChange> findAll(Collection<PlanChangeId> ids) {
+        return jpa.findAllById(ids.stream().map(PlanChangeId::value).toList()).stream()
+                .map(mapper::toDomain)
+                .toList();
+    }
+
+    @Override
+    public List<PlanChange> findEnded(AccountId client, int limit) {
+        return jpa.findLatestIn(client.value(), ENDED, PageRequest.ofSize(limit)).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override

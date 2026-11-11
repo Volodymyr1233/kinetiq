@@ -145,7 +145,7 @@ describe('PlanChangePage', () => {
       await screen.findByRole('heading', { name: HIGH_RPE.title, level: 1 }),
     ).toBeInTheDocument()
     expect(screen.getByText(HIGH_RPE.reason)).toBeInTheDocument()
-    expect(screen.getByText('Waiting for a decision')).toBeInTheDocument()
+    expect(screen.getByText('Waiting for both')).toBeInTheDocument()
     const [, row] = screen.getAllByRole('row')
     expect(cells(row)).toEqual([
       'Back squat',
@@ -264,7 +264,7 @@ describe('PlanChangePage', () => {
     await i18n.changeLanguage('pl')
     renderPlanChange(HIGH_RPE, { ...SIGNED_IN.TRAINER, language: 'PL' })
 
-    expect(await screen.findByText('Czeka na decyzję')).toBeInTheDocument()
+    expect(await screen.findByText('Czeka na obie strony')).toBeInTheDocument()
     const [, row] = screen.getAllByRole('row')
     expect(cells(row)).toEqual([
       'Back squat',

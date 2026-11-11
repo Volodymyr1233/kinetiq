@@ -6,3 +6,6 @@ export const CONVERSATIONS = ['conversations']
 
 /** Every loaded conversation; a message posted by another feature, such as a plan change decline, refreshes them. */
 export const MESSAGES = ['messages']
+
+/** Everything the Approvals list and its count hold: drafted plans and plan changes. */
+export const APPROVALS = ['approvals']

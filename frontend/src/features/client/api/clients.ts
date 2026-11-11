@@ -58,3 +58,22 @@ export function isNotFound(error: unknown) {
       : undefined
   return status === 404 || status === 400
 }
+
+export type EndedPlanChange =
+  components['schemas']['PlanChangeApprovalResponse']
+
+/** The last 5 plan changes of the client that ended, the latest first. */
+export function useEndedPlanChanges(id: string | undefined) {
+  return useQuery({
+    queryKey: ['clients', id, 'plan-changes', 'ended'],
+    queryFn: async () => {
+      const { data, error } = await api.GET(
+        '/api/v1/clients/{id}/plan-changes/ended',
+        { params: { path: { id: id! } } },
+      )
+      if (error !== undefined) throw error
+      return data.items
+    },
+    enabled: id !== undefined,
+  })
+}

@@ -27,14 +27,20 @@ import { SignOutButton } from '@/features/account/components/sign-out-button'
 import { useUnreadCount } from '@/features/messaging/api/messaging'
 import { UnreadCount } from '@/features/messaging/components/unread-count'
 import { useDraftedPlans } from '@/features/plan/api/drafted-plans'
+import { usePlanChangeApprovals } from '@/features/plan/api/plan-change-approvals'
+import { waitsForDecisionOf } from '@/lib/plan-change-state'
 import { Badge } from '@/components/ui/badge'
 
-// plan changes are a later story, so the count is only of drafted plans; like the unread count, the whole number is
-// hidden text that joins the link's name
-function DraftedPlansCount() {
+// drafted plans and the plan changes that wait for the trainer; like the unread count, the whole number is hidden text
+// that joins the link's name
+function ApprovalsCount() {
   const { t } = useTranslation()
-  const { data } = useDraftedPlans()
-  const count = data?.items.length ?? 0
+  const drafts = useDraftedPlans().data
+  const changes = usePlanChangeApprovals().data
+  const count =
+    (drafts?.items.length ?? 0) +
+    (changes?.items.filter((change) => waitsForDecisionOf(change, 'TRAINER'))
+      .length ?? 0)
   if (count <= 0) return null
   return (
     <>
@@ -89,7 +95,7 @@ function TrainerSidebar({ activePath }: { activePath?: string }) {
                     <NavLink to={path} onClick={() => setOpenMobile(false)}>
                       <Icon aria-hidden />
                       <span>{t(labelKey)}</span>
-                      {path === 'approvals' && <DraftedPlansCount />}
+                      {path === 'approvals' && <ApprovalsCount />}
                       {path === 'messages' && (
                         <UnreadCount
                           count={unread?.count ?? 0}

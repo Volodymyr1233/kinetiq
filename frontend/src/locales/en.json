@@ -30,8 +30,8 @@
     "progress": "Progress",
     "open": "Open menu",
     "menu": "Menu",
-    "approvalsCount_one": ", {{count, number}} drafted plan waiting",
-    "approvalsCount_other": ", {{count, number}} drafted plans waiting"
+    "approvalsCount_one": ", {{count, number}} approval waiting for you",
+    "approvalsCount_other": ", {{count, number}} approvals waiting for you"
   },
   "areas": {
     "trainer": "Trainer area",
@@ -642,18 +642,31 @@
       "title": "No client matches that name",
       "body": "Check the spelling or clear the search.",
       "clear": "Clear search"
-    }
+    },
+    "pastPlanChanges": "Past plan changes"
   },
   "approvals": {
     "title": "Approvals",
-    "intro": "New plans wait here for your review.",
+    "intro": "Plan changes need you and the client. New plans need you.",
     "draftedPlans": "Drafted plans",
     "loading": "Loading drafted plans",
     "retry": "Try again",
     "empty": {
       "title": "Nothing to approve.",
       "body": "Drafted plans show up here.",
-      "action": "View clients"
+      "action": "View clients",
+      "you": {
+        "title": "Nothing to approve.",
+        "body": "Plan changes and new plans show up here."
+      },
+      "client": {
+        "title": "Nothing waits for a client.",
+        "body": "A plan change you accepted shows up here until the client decides."
+      },
+      "decided": {
+        "title": "Nothing decided lately.",
+        "body": "Plan changes that ended in the last 30 days show up here."
+      }
     },
     "kinds": {
       "BUILT": "Plan to review",
@@ -664,7 +677,19 @@
     "weeks_one": "{{count, number}} week",
     "weeks_other": "{{count, number}} weeks",
     "sessionsPerWeek_one": "{{count, number}} session a week",
-    "sessionsPerWeek_other": "{{count, number}} sessions a week"
+    "sessionsPerWeek_other": "{{count, number}} sessions a week",
+    "tabs": {
+      "label": "Filter",
+      "you": "Waiting for you",
+      "client": "Waiting for client",
+      "decided": "Decided"
+    },
+    "planChange": {
+      "effective": "Takes effect {{date}}",
+      "expired": "Expired, {{date}}",
+      "declinedByYou": "You kept the current plan: {{reason}}",
+      "declinedByClient": "{{name}} kept the current plan: {{reason}}"
+    }
   },
   "invites": {
     "title": "Open invites",
@@ -1439,6 +1464,8 @@
       "SCHEDULE": "Schedule",
       "INJURY": "Injury",
       "OTHER": "Other"
-    }
+    },
+    "breadcrumb": "Breadcrumb",
+    "title": "Plan change"
   }
 }

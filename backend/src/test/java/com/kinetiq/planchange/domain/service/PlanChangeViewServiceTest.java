@@ -17,7 +17,12 @@ import com.kinetiq.common.domain.model.Email;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.planchange.domain.exception.PlanChangeNotFoundException;
+import com.kinetiq.planchange.domain.input.PlanChangeApprovalView;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
+import com.kinetiq.planchange.domain.model.DeclineReason;
+import com.kinetiq.planchange.domain.model.Decision;
+import com.kinetiq.planchange.domain.model.Side;
+import com.kinetiq.planchange.domain.output.PlanChangeApprovals;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.Figure;
@@ -83,7 +88,11 @@ class PlanChangeViewServiceTest {
         }
     };
 
-    private final PlanChangeViewService service = new PlanChangeViewService(clients, accounts, planChanges, plans);
+    private final FakePlanChangeApprovals approvals = new FakePlanChangeApprovals();
+    private final MutableClock clock = new MutableClock("2026-11-12T10:00:00Z");
+
+    private final PlanChangeViewService service =
+            new PlanChangeViewService(clients, accounts, planChanges, plans, approvals, clock);
 
     private final PlanChange stored = planChanges.save(new PlanChange(
             PlanChangeId.random(),
@@ -149,5 +158,82 @@ class PlanChangeViewServiceTest {
 
         planChanges.saved.clear();
         assertThatThrownBy(() -> service.openOf(TRAINER, CLIENT)).isInstanceOf(PlanChangeNotFoundException.class);
+    }
+
+    private PlanChange declinedAt(String endedAt) {
+        return planChanges.save(new PlanChange(
+                PlanChangeId.random(),
+                CLIENT,
+                Rule.HIGH_RPE,
+                PlanChangeState.DECLINED,
+                1,
+                LocalDate.parse("2026-10-26"),
+                LocalDate.parse("2026-11-08"),
+                LocalDate.parse("2026-11-16"),
+                stored.getContent(),
+                stored.getFigures(),
+                Set.of(SQUAT),
+                Instant.parse("2026-10-01T02:00:00Z"),
+                Instant.parse(endedAt),
+                null,
+                null,
+                new Decision(Side.CLIENT, DeclineReason.OTHER, null)));
+    }
+
+    @Test
+    void shouldListTheApprovals_inTheOrderGiven_withClientNamesAndTheTrainersLanguage() {
+        PlanChange declined = declinedAt("2026-11-10T09:00:00Z");
+        approvals.entries.add(new PlanChangeApprovals.Entry(stored.getId(), "Ola Nowak"));
+        approvals.entries.add(new PlanChangeApprovals.Entry(declined.getId(), "Ola Nowak"));
+
+        List<PlanChangeApprovalView> views = service.approvals(POLISH_TRAINER);
+
+        assertThat(views).extracting(view -> view.planChange().getId()).containsExactly(stored.getId(), declined.getId());
+        assertThat(views).extracting(PlanChangeApprovalView::clientName).containsOnly("Ola Nowak");
+        assertThat(views.getFirst().text().title()).isEqualTo("Back squat PL: obniż objętość o 10%");
+        assertThat(approvals.askedBy).isEqualTo(POLISH_TRAINER);
+    }
+
+    @Test
+    void shouldAskForThoseEndedInTheLast30Days_countedFromNow() {
+        service.approvals(TRAINER);
+
+        assertThat(approvals.askedSince).isEqualTo(Instant.parse("2026-10-13T10:00:00Z"));
+    }
+
+    @Test
+    void shouldListNothing_whenThereIsNothingToShow() {
+        assertThat(service.approvals(TRAINER)).isEmpty();
+    }
+
+    @Test
+    void shouldListTheLast5EndedOfAnOwnClient_latestFirst() {
+        for (int day = 1; day <= 7; day++) {
+            declinedAt("2026-11-0" + day + "T09:00:00Z");
+        }
+
+        List<PlanChangeApprovalView> ended = service.ended(TRAINER, CLIENT);
+
+        assertThat(ended).hasSize(5);
+        assertThat(ended).extracting(view -> view.planChange().getEndedAt().orElseThrow())
+                .containsExactly(
+                        Instant.parse("2026-11-07T09:00:00Z"),
+                        Instant.parse("2026-11-06T09:00:00Z"),
+                        Instant.parse("2026-11-05T09:00:00Z"),
+                        Instant.parse("2026-11-04T09:00:00Z"),
+                        Instant.parse("2026-11-03T09:00:00Z"));
+        assertThat(ended).extracting(PlanChangeApprovalView::clientName).containsOnly("Ola Nowak");
+    }
+
+    @Test
+    void shouldNotListTheOpenOne_amongTheEnded() {
+        assertThat(service.ended(TRAINER, CLIENT)).isEmpty();
+    }
+
+    @Test
+    void shouldRefuseTheEnded_ofAnotherTrainersClient() {
+        declinedAt("2026-11-03T09:00:00Z");
+
+        assertThatThrownBy(() -> service.ended(OTHER_TRAINER, CLIENT)).isInstanceOf(ClientNotFoundException.class);
     }
 }

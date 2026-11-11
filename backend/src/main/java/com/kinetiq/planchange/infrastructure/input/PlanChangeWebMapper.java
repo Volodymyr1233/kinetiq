@@ -3,6 +3,7 @@ package com.kinetiq.planchange.infrastructure.input;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.planchange.domain.input.ClientPlanChangeView;
+import com.kinetiq.planchange.domain.input.PlanChangeApprovalView;
 import com.kinetiq.planchange.domain.input.PlanChangeSummary;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.model.Decision;
@@ -140,6 +141,29 @@ interface PlanChangeWebMapper {
                         figure.weekStart(),
                         figure.value()))
                 .toList();
+    }
+
+    default PlanChangeApprovalsResponse toResponse(List<PlanChangeApprovalView> views) {
+        return new PlanChangeApprovalsResponse(views.stream().map(this::toResponse).toList());
+    }
+
+    default PlanChangeApprovalResponse toResponse(PlanChangeApprovalView view) {
+        PlanChange planChange = view.planChange();
+        Decision decision = planChange.getDecision().orElse(null);
+        return new PlanChangeApprovalResponse(
+                planChange.getId().value(),
+                planChange.getClient().value(),
+                view.clientName(),
+                view.text().title(),
+                view.text().reason(),
+                planChange.getState(),
+                planChange.acceptedBy(Side.TRAINER),
+                planChange.acceptedBy(Side.CLIENT),
+                decision == null ? null : decision.by(),
+                decision == null ? null : decision.reason(),
+                planChange.getEffectiveWeek(),
+                planChange.getCreatedAt(),
+                planChange.getEndedAt().orElse(null));
     }
 
     // an exercise deleted from the library since keeps a place in the table

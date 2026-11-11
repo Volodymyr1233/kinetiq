@@ -9,6 +9,7 @@ import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.ViewOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
 import com.kinetiq.planchange.domain.output.PlanChangeDrafter;
+import com.kinetiq.planchange.domain.output.PlanChangeApprovals;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.PlanSource;
 import com.kinetiq.planchange.domain.output.TrainingHistory;
@@ -69,8 +70,9 @@ class PlanChangeConfig {
             ViewClientsUseCase clients,
             CurrentAccountUseCase accounts,
             PlanChangeRepository planChanges,
-            PlanSource plans) {
-        return new PlanChangeViewService(clients, accounts, planChanges, plans);
+            PlanSource plans,
+            PlanChangeApprovals approvals) {
+        return new PlanChangeViewService(clients, accounts, planChanges, plans, approvals, Clock.systemUTC());
     }
 
     @Bean

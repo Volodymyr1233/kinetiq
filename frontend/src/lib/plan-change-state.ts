@@ -53,3 +53,13 @@ export function planChangeStatus(
       return 'expired'
   }
 }
+
+/** The badge variant of each status: waiting is information, applied is good news, the rest only closes. */
+export const planChangeBadgeVariant = {
+  waitingForBoth: 'info',
+  waitingForYou: 'info',
+  waitingFor: 'info',
+  applied: 'success',
+  declined: 'secondary',
+  expired: 'outline',
+} as const satisfies Record<PlanChangeStatus, string>
