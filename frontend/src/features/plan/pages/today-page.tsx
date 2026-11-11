@@ -15,6 +15,7 @@ import { useOwnPlan } from '../api/client-plan'
 import { useSessionStates, type SessionStateEntry } from '../api/session-states'
 import { useToday } from '../api/today'
 import { EntryRow } from '../components/entry-row'
+import { OpenPlanChangeCard } from '../components/open-plan-change-card'
 import { estimatedMinutes } from '../plan-draft'
 
 /**
@@ -103,6 +104,7 @@ export function TodayPage({
   return (
     <div className="flex flex-col gap-4 px-4">
       <p className="text-muted-foreground">{date}</p>
+      <OpenPlanChangeCard />
 
       {today.state === 'SESSION' && today.session && (
         <>

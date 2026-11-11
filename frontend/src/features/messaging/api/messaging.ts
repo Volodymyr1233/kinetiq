@@ -7,6 +7,7 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query'
 import { api } from '@/lib/api/client'
+import { CONVERSATIONS, MESSAGES } from '@/lib/query-keys'
 import type { components } from '@/lib/api/schema'
 
 export type Conversation = components['schemas']['ConversationResponse']
@@ -20,9 +21,7 @@ export const MESSAGE_MAX_LENGTH = 2000
 const OPEN_SCREEN_REFRESH_MS = 5_000
 const NAVIGATION_REFRESH_MS = 10_000
 
-// the list and the count share a root, because everything that changes one changes the other
-const CONVERSATIONS = ['conversations']
-const messagesKey = (clientId: string) => ['messages', clientId]
+const messagesKey = (clientId: string) => [...MESSAGES, clientId]
 
 export const conversationsQuery = queryOptions({
   queryKey: [...CONVERSATIONS, 'list'],

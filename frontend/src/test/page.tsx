@@ -142,3 +142,16 @@ export function renderAppAt(
   )
   return { requests, router }
 }
+
+/** Answers the client's open plan change with `planChange`, or "none" when it is `null`, and every other call with `reply`. */
+export function withOpenPlanChange(
+  planChange: object | null,
+  reply: Reply,
+): Reply {
+  return (request) =>
+    new URL(request.url).pathname === '/api/v1/plan/changes/current'
+      ? planChange
+        ? json(planChange)
+        : problem(404, { status: 404, code: 'plan-change.not-found' })
+      : reply(request)
+}

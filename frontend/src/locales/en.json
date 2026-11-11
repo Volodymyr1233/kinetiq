@@ -133,7 +133,10 @@
       "no-adjustment": "Today’s targets are as planned, so there is nothing to switch."
     },
     "plan-change": {
-      "not-found": "This plan change does not exist, or is not for one of your clients."
+      "not-found": "This plan change does not exist, or is not for one of your clients.",
+      "ended": "This plan change has ended, so nobody can decide on it any more.",
+      "nothing-to-undo": "There is no acceptance of yours to undo.",
+      "week-begun": "The week of this plan change has already started, so it can no longer be decided."
     }
   },
   "account": {
@@ -1377,6 +1380,65 @@
       "point": "{{week}}: {{value}}",
       "description": "{{series}}: {{values}}. Rule threshold {{threshold}}.",
       "threshold": "Rule threshold, {{value}}"
+    },
+    "badge": {
+      "waitingForBoth": "Waiting for both",
+      "waitingForYou": "Waiting for you",
+      "waitingFor": "Waiting for {{name}}",
+      "applied": "Applied",
+      "declined": "Declined",
+      "expired": "Expired"
+    },
+    "client": {
+      "title": "Plan change",
+      "back": "Back to plan",
+      "effective": "Takes effect {{date}} if you both accept.",
+      "stays": "Everything else in your plan stays the same.",
+      "notFound": {
+        "title": "Plan change not found",
+        "body": "This plan change does not exist, or is not yours.",
+        "action": "Back to plan"
+      }
+    },
+    "people": {
+      "you": "You",
+      "row": "{{name}} · {{state}}",
+      "heading": "Who decided",
+      "accepted": "accepted",
+      "undecided": "not decided",
+      "kept": "kept current plan"
+    },
+    "actions": {
+      "accept": "Accept change",
+      "keep": "Keep current plan",
+      "undo": "Undo",
+      "seePlan": "See plan"
+    },
+    "outcome": {
+      "waiting": "You accepted. Waiting for {{name}}.",
+      "otherAccepted": "{{name}} accepted. Your decision is next.",
+      "applied": "You both accepted. Takes effect {{date}}.",
+      "keptByYouClient": "You kept the current plan: {{reason}}. {{name}} sees your reason in your chat.",
+      "keptByYouTrainer": "You kept the current plan: {{reason}}. {{name}} sees your reason in the chat.",
+      "keptByOther": "{{name}} kept the current plan: {{reason}}.",
+      "note": "Note: {{note}}",
+      "expired": "The week started before you both decided. The plan didn't change."
+    },
+    "keep": {
+      "title": "Keep the current plan?",
+      "description": "The change won't happen. {{name}} gets your reason.",
+      "reason": "Reason",
+      "note": "Note (optional)",
+      "notePlaceholder": "Add a note",
+      "submit": "Keep current plan",
+      "back": "Back"
+    },
+    "reason": {
+      "TOO_EASY": "Too easy",
+      "TOO_HARD": "Too hard",
+      "SCHEDULE": "Schedule",
+      "INJURY": "Injury",
+      "OTHER": "Other"
     }
   }
 }

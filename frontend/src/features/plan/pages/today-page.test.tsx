@@ -1,12 +1,18 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import {
+  json,
+  problem,
+  stubApi,
+  withOpenPlanChange,
+  type Reply,
+} from '@/test/page'
 import { TodayPage } from './today-page'
 
 const SESSION = {
@@ -79,8 +85,9 @@ function openToday(
   reply: Reply,
   unit: WeightUnit = 'KG',
   beforeSession?: ReactNode,
+  openChange: object | null = null,
 ) {
-  const requests = stubApi(reply)
+  const requests = stubApi(withOpenPlanChange(openChange, reply))
   render(
     <QueryClientProvider
       client={
@@ -97,8 +104,51 @@ function openToday(
   return requests
 }
 
+const OPEN_CHANGE = {
+  id: '00000000-0000-4000-9600-000000000001',
+  counterpartName: 'Marek',
+  rule: 'HIGH_RPE',
+  state: 'PENDING',
+  title: 'Back squat: cut volume by 13%',
+  reason: 'Average RPE was 8.4 and 8.6 in the last 2 weeks, above 8.',
+  effectiveWeek: '2026-11-16',
+  acceptedByTrainer: false,
+  acceptedByClient: false,
+}
+
 describe('TodayPage', () => {
   afterEach(() => i18n.changeLanguage('en'))
+
+  it('shows the open plan change as a card that waits for both, and links to it', async () => {
+    openToday(sessionDay, 'KG', undefined, OPEN_CHANGE)
+
+    const card = (
+      await screen.findByRole('heading', { name: OPEN_CHANGE.title })
+    ).closest('[data-slot="card"]') as HTMLElement
+    expect(within(card).getByText('Waiting for both')).toBeInTheDocument()
+    expect(
+      within(card).getByRole('link', { name: 'Open plan change' }),
+    ).toHaveAttribute('href', `/app/plan/change/${OPEN_CHANGE.id}`)
+  })
+
+  it('reads Waiting for you once the trainer accepted', async () => {
+    openToday(sessionDay, 'KG', undefined, {
+      ...OPEN_CHANGE,
+      state: 'ACCEPTED_BY_ONE',
+      acceptedByTrainer: true,
+    })
+
+    expect(await screen.findByText('Waiting for you')).toBeInTheDocument()
+  })
+
+  it('shows no plan change card when there is none open', async () => {
+    openToday(sessionDay)
+
+    await screen.findByText('Thursday, November 5')
+    expect(
+      screen.queryByRole('link', { name: 'Open plan change' }),
+    ).not.toBeInTheDocument()
+  })
 
   it('shows the date and the session with every exercise and its targets', async () => {
     openToday(sessionDay)
@@ -389,7 +439,7 @@ describe('TodayPage', () => {
   })
 
   it("shows each changed target as planned and today's, with the adjusted session's mark, reason and note", async () => {
-    stubApi(sessionDay)
+    stubApi(withOpenPlanChange(null, sessionDay))
     render(
       <QueryClientProvider
         client={

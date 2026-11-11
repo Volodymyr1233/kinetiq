@@ -24,7 +24,14 @@ type Row = {
  * Every change of a plan change as a row: what it touches, where in the plan, the value now (struck through), the new
  * value and the change. A removed session and the entries that move out of it are rows too.
  */
-export function PlanChangeTable({ planChange }: { planChange: PlanChange }) {
+export function PlanChangeTable({
+  planChange,
+  list = false,
+}: {
+  planChange: Pick<PlanChange, 'rule' | 'targets' | 'removedSession' | 'moves'>
+  /** One item per change instead of table columns, for a phone. */
+  list?: boolean
+}) {
   const { t, i18n } = useTranslation()
   const unit = useWeightUnit()
   const locale = i18n.language
@@ -92,6 +99,29 @@ export function PlanChangeTable({ planChange }: { planChange: PlanChange }) {
       change: t('planChange.table.moved'),
     })),
   ]
+
+  if (list) {
+    return (
+      <ul className="flex flex-col gap-3">
+        {rows.map((row) => (
+          <li
+            key={row.key}
+            className="grid grid-cols-[minmax(0,1fr)_auto] items-baseline gap-x-3"
+          >
+            <span className="font-medium">{row.name}</span>
+            <span className="num text-end">{row.change}</span>
+            <span className="text-muted-foreground text-sm">{row.session}</span>
+            <span className="num text-end">
+              {/* struck through, and a screen reader hears it as the value now */}
+              <s className="text-muted-foreground">{row.now}</s>
+              {' → '}
+              <b>{row.next}</b>
+            </span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
 
   return (
     <Table data-density="compact">

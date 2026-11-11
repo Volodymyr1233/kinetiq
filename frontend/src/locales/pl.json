@@ -135,7 +135,10 @@
       "no-adjustment": "Dzisiejsze cele są zgodne z planem, więc nie ma czego przełączać."
     },
     "plan-change": {
-      "not-found": "Ta zmiana planu nie istnieje albo nie dotyczy Twojego klienta."
+      "not-found": "Ta zmiana planu nie istnieje albo nie dotyczy Twojego klienta.",
+      "ended": "Ta zmiana planu jest już zakończona, więc nikt nie może już o niej decydować.",
+      "nothing-to-undo": "Nie masz akceptacji do cofnięcia.",
+      "week-begun": "Tydzień tej zmiany planu już się zaczął, więc nie można już o niej decydować."
     }
   },
   "account": {
@@ -1439,6 +1442,65 @@
       "point": "{{week}}: {{value}}",
       "description": "{{series}}: {{values}}. Próg reguły {{threshold}}.",
       "threshold": "Próg reguły, {{value}}"
+    },
+    "badge": {
+      "waitingForBoth": "Czeka na obie strony",
+      "waitingForYou": "Czeka na Ciebie",
+      "waitingFor": "Oczekuje: {{name}}",
+      "applied": "Wprowadzona",
+      "declined": "Odrzucona",
+      "expired": "Wygasła"
+    },
+    "client": {
+      "title": "Zmiana planu",
+      "back": "Wróć do planu",
+      "effective": "Obowiązuje od {{date}}, jeśli oboje zaakceptujecie.",
+      "stays": "Cała reszta Twojego planu zostaje bez zmian.",
+      "notFound": {
+        "title": "Nie znaleziono zmiany planu",
+        "body": "Ta zmiana planu nie istnieje albo nie jest Twoja.",
+        "action": "Wróć do planu"
+      }
+    },
+    "people": {
+      "you": "Ty",
+      "row": "{{name}} · {{state}}",
+      "heading": "Kto zdecydował",
+      "accepted": "zaakceptowano",
+      "undecided": "bez decyzji",
+      "kept": "zostaje przy obecnym planie"
+    },
+    "actions": {
+      "accept": "Zaakceptuj zmianę",
+      "keep": "Zostań przy obecnym planie",
+      "undo": "Cofnij",
+      "seePlan": "Zobacz plan"
+    },
+    "outcome": {
+      "waiting": "Zaakceptowano. Czekamy na: {{name}}.",
+      "otherAccepted": "Zaakceptowano przez: {{name}}. Teraz Twoja decyzja.",
+      "applied": "Oboje zaakceptowaliście. Obowiązuje od {{date}}.",
+      "keptByYouClient": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w waszym czacie.",
+      "keptByYouTrainer": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w czacie.",
+      "keptByOther": "{{name}} zostaje przy obecnym planie: {{reason}}.",
+      "note": "Notatka: {{note}}",
+      "expired": "Tydzień zaczął się, zanim oboje zdecydowaliście. Plan się nie zmienił."
+    },
+    "keep": {
+      "title": "Zostać przy obecnym planie?",
+      "description": "Zmiana nie zostanie wprowadzona. {{name}} zobaczy Twój powód.",
+      "reason": "Powód",
+      "note": "Notatka (opcjonalnie)",
+      "notePlaceholder": "Dodaj notatkę",
+      "submit": "Zostań przy obecnym planie",
+      "back": "Wróć"
+    },
+    "reason": {
+      "TOO_EASY": "Za łatwy",
+      "TOO_HARD": "Za trudny",
+      "SCHEDULE": "Harmonogram",
+      "INJURY": "Kontuzja",
+      "OTHER": "Inne"
     }
   }
 }

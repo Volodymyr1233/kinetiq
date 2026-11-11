@@ -4,11 +4,13 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
+import com.kinetiq.planchange.domain.input.ViewOwnPlanChangeUseCase;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,12 +21,30 @@ import org.springframework.web.bind.annotation.RestController;
 @RequiredArgsConstructor
 class ClientPlanChangeController {
 
+    private final ViewOwnPlanChangeUseCase planChanges;
     private final DecideOwnPlanChangeUseCase decisions;
     private final PlanChangeWebMapper mapper;
 
     // sign-in stores the account id as the principal's name
     private static AccountId signedIn(Authentication authentication) {
         return new AccountId(UUID.fromString(authentication.getName()));
+    }
+
+    /**
+     * The client's plan change that has not ended. {@code 404} with {@code plan-change.not-found} when there is none.
+     */
+    @GetMapping("/api/v1/plan/changes/current")
+    ClientPlanChangeDetailResponse getCurrent(Authentication authentication) {
+        return mapper.toResponse(planChanges.current(signedIn(authentication)));
+    }
+
+    /**
+     * One of the client's own plan changes, ended ones too. {@code 404} with {@code plan-change.not-found} for an unknown
+     * one and another client's alike.
+     */
+    @GetMapping("/api/v1/plan/changes/{id}")
+    ClientPlanChangeDetailResponse getPlanChange(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(planChanges.get(signedIn(authentication), new PlanChangeId(id)));
     }
 
     /**

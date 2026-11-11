@@ -12,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useAcknowledgePlan, useOwnPlan } from '../api/client-plan'
 import { useSessionStates } from '../api/session-states'
+import { OpenPlanChangeCard } from '../components/open-plan-change-card'
 import { WeekStrip } from '../components/week-strip'
 
 // a plan week is a whole number from 1; anything else in the address means the current week
@@ -91,6 +92,7 @@ export function ClientPlanPage() {
 
   return (
     <div className="flex flex-col gap-4 px-4">
+      <OpenPlanChangeCard />
       {plan.finished && (
         <div className="flex flex-col gap-1">
           <h2 className="font-heading text-xl font-semibold">

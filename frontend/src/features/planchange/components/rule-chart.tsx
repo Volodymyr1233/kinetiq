@@ -31,7 +31,11 @@ const SERIES = {
  * The numbers that made the rule fire, one point a week, against the rule's threshold as a dashed line. The chart's
  * label says every value in words. Stalled weight shows a chart for each exercise the rule found.
  */
-export function RuleChart({ planChange }: { planChange: PlanChange }) {
+export function RuleChart({
+  planChange,
+}: {
+  planChange: Pick<PlanChange, 'rule' | 'figures' | 'concernedExercises'>
+}) {
   const { t, i18n } = useTranslation()
   const unit = useWeightUnit()
   const locale = i18n.language
