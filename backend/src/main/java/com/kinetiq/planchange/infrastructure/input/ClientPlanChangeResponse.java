@@ -14,4 +14,6 @@ record ClientPlanChangeResponse(
         @NotNull PlanChangeState state,
         @NotNull String title,
         @NotNull String reason,
-        @NotNull LocalDate effectiveWeek) {}
+        @NotNull LocalDate effectiveWeek,
+        @NotNull boolean acceptedByTrainer,
+        @NotNull boolean acceptedByClient) {}

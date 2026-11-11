@@ -11,6 +11,8 @@ const BASE = {
   clientId: CLIENT_ID,
   clientName: 'Ola Kowalska',
   state: 'PENDING',
+  acceptedByTrainer: false,
+  acceptedByClient: false,
   effectiveWeek: '2026-11-16',
   windowStart: '2026-10-26',
   windowEnd: '2026-11-08',

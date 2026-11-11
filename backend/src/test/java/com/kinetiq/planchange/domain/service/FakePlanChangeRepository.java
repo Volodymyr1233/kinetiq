@@ -41,6 +41,17 @@ class FakePlanChangeRepository implements PlanChangeRepository {
     }
 
     @Override
+    public Optional<PlanChange> findForUpdate(PlanChangeId id) {
+        return find(id);
+    }
+
+    @Override
+    public PlanChange update(PlanChange planChange) {
+        saved.replaceAll(change -> change.getId().equals(planChange.getId()) ? planChange : change);
+        return planChange;
+    }
+
+    @Override
     public Optional<PlanChange> findOpen(AccountId client) {
         return saved.stream()
                 .filter(change -> change.getClient().equals(client) && change.isOpen())

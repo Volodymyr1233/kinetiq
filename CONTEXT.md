@@ -170,8 +170,15 @@ _Avoid_: Draft, which is an unpublished plan
 **Effective week**:
 The week from which an accepted plan change applies: the one after the plan change was created.
 
+**Applied**:
+The state of a plan change that trainer and client both accepted; it takes effect from its effective week.
+
 **Expired**:
 The end of a plan change that trainer and client did not both accept before its effective week began.
+
+**Decline reason**:
+One of Too easy, Too hard, Schedule, Injury or Other, chosen when a person keeps the current plan instead of accepting a plan change.
+_Avoid_: Rejection reason
 
 **Approval**:
 A decision waiting for the trainer: a plan change to accept or decline, or a drafted plan to publish.

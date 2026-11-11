@@ -2,6 +2,9 @@ package com.kinetiq.planchange.domain.model;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.planchange.domain.exception.PlanChangeEndedException;
+import com.kinetiq.planchange.domain.exception.PlanChangeNothingToUndoException;
+import com.kinetiq.planchange.domain.exception.PlanChangeWeekBegunException;
 import java.time.DayOfWeek;
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,7 +40,19 @@ public class PlanChange {
     @Getter(AccessLevel.NONE)
     private final Instant endedAt;
 
-    /** Rebuilds a stored plan change; {@code endedAt} is {@code null} while it is open. */
+    @Getter(AccessLevel.NONE)
+    private final Instant trainerAcceptedAt;
+
+    @Getter(AccessLevel.NONE)
+    private final Instant clientAcceptedAt;
+
+    @Getter(AccessLevel.NONE)
+    private final Decision decision;
+
+    /**
+     * Rebuilds a stored plan change; {@code endedAt} is {@code null} while it is open, an acceptance time while that
+     * person has not accepted, and {@code decision} while it is not declined.
+     */
     public PlanChange(
             PlanChangeId id,
             AccountId client,
@@ -51,7 +66,10 @@ public class PlanChange {
             List<Figure> figures,
             Set<ExerciseId> concernedExercises,
             Instant createdAt,
-            Instant endedAt) {
+            Instant endedAt,
+            Instant trainerAcceptedAt,
+            Instant clientAcceptedAt,
+            Decision decision) {
         this.id = Objects.requireNonNull(id);
         this.client = Objects.requireNonNull(client);
         this.rule = Objects.requireNonNull(rule);
@@ -68,6 +86,9 @@ public class PlanChange {
         this.concernedExercises = Set.copyOf(concernedExercises);
         this.createdAt = Objects.requireNonNull(createdAt);
         this.endedAt = endedAt;
+        this.trainerAcceptedAt = trainerAcceptedAt;
+        this.clientAcceptedAt = clientAcceptedAt;
+        this.decision = decision;
     }
 
     /**
@@ -88,6 +109,9 @@ public class PlanChange {
                 due.figures(),
                 due.exercises(),
                 now,
+                null,
+                null,
+                null,
                 null);
     }
 
@@ -103,5 +127,78 @@ public class PlanChange {
     /** When the plan change ended; empty while it is open. */
     public Optional<Instant> getEndedAt() {
         return Optional.ofNullable(endedAt);
+    }
+
+    /** When the trainer accepted; empty while they have not. */
+    public Optional<Instant> getTrainerAcceptedAt() {
+        return Optional.ofNullable(trainerAcceptedAt);
+    }
+
+    /** When the client accepted; empty while they have not. */
+    public Optional<Instant> getClientAcceptedAt() {
+        return Optional.ofNullable(clientAcceptedAt);
+    }
+
+    /** How a declined plan change ended; empty for any other. */
+    public Optional<Decision> getDecision() {
+        return Optional.ofNullable(decision);
+    }
+
+    public boolean acceptedBy(Side side) {
+        return acceptedAt(side) != null;
+    }
+
+    /**
+     * Records the acceptance of {@code side}; when the other side accepted already, the plan change is applied. A
+     * second acceptance by the same side changes nothing.
+     *
+     * @param today the day it is for the client, who lives in their own time zone
+     */
+    public PlanChange accept(Side side, Instant now, LocalDate today) {
+        requireDecidable(today);
+        if (acceptedBy(side)) {
+            return this;
+        }
+        Instant trainerAt = side == Side.TRAINER ? now : trainerAcceptedAt;
+        Instant clientAt = side == Side.CLIENT ? now : clientAcceptedAt;
+        boolean both = trainerAt != null && clientAt != null;
+        PlanChangeState next = both ? PlanChangeState.APPLIED : PlanChangeState.ACCEPTED_BY_ONE;
+        return with(next, both ? now : null, trainerAt, clientAt, null);
+    }
+
+    /** Takes back the acceptance of {@code side}, while the other side has not accepted. */
+    public PlanChange undo(Side side) {
+        if (!state.isOpen()) {
+            throw new PlanChangeEndedException();
+        }
+        if (state != PlanChangeState.ACCEPTED_BY_ONE || !acceptedBy(side)) {
+            throw new PlanChangeNothingToUndoException();
+        }
+        return with(PlanChangeState.PENDING, null, null, null, null);
+    }
+
+    /** Ends the plan change as declined: {@code side} keeps the current plan for {@code reason}. */
+    public PlanChange decline(Side side, DeclineReason reason, String note, Instant now, LocalDate today) {
+        requireDecidable(today);
+        return with(PlanChangeState.DECLINED, now, trainerAcceptedAt, clientAcceptedAt, new Decision(side, reason, note));
+    }
+
+    private Instant acceptedAt(Side side) {
+        return side == Side.TRAINER ? trainerAcceptedAt : clientAcceptedAt;
+    }
+
+    private void requireDecidable(LocalDate today) {
+        if (!state.isOpen()) {
+            throw new PlanChangeEndedException();
+        }
+        if (!today.isBefore(effectiveWeek)) {
+            throw new PlanChangeWeekBegunException();
+        }
+    }
+
+    private PlanChange with(PlanChangeState newState, Instant newEndedAt, Instant trainerAt, Instant clientAt, Decision newDecision) {
+        return new PlanChange(
+                id, this.client, rule, newState, planVersion, windowStart, windowEnd, effectiveWeek, content, figures,
+                concernedExercises, createdAt, newEndedAt, trainerAt, clientAt, newDecision);
     }
 }

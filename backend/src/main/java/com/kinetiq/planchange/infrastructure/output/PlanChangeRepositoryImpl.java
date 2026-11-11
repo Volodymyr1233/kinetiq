@@ -5,6 +5,8 @@ import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.LockModeType;
 import java.time.Instant;
 import java.util.Arrays;
 import java.util.List;
@@ -22,6 +24,7 @@ class PlanChangeRepositoryImpl implements PlanChangeRepository {
 
     private final JpaPlanChangeRepository jpa;
     private final PlanChangeMapper mapper;
+    private final EntityManager entityManager;
 
     @Override
     public boolean hasOpen(AccountId client) {
@@ -43,6 +46,24 @@ class PlanChangeRepositoryImpl implements PlanChangeRepository {
     @Override
     public Optional<PlanChange> find(PlanChangeId id) {
         return jpa.findById(id.value()).map(mapper::toDomain);
+    }
+
+    // refreshed under the lock: a copy loaded earlier in this transaction would hide what the holder of the lock stored
+    @Override
+    public Optional<PlanChange> findForUpdate(PlanChangeId id) {
+        return jpa.findById(id.value()).map(entity -> {
+            entityManager.refresh(entity, LockModeType.PESSIMISTIC_WRITE);
+            return mapper.toDomain(entity);
+        });
+    }
+
+    // only the decision columns change, so the content rows of the plan change are left alone
+    @Override
+    public PlanChange update(PlanChange planChange) {
+        PlanChangeEntity entity = jpa.findById(planChange.getId().value()).orElseThrow();
+        mapper.applyDecision(planChange, entity);
+        jpa.saveAndFlush(entity);
+        return planChange;
     }
 
     @Override

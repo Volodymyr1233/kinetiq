@@ -6,6 +6,8 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.exercise.domain.model.ExerciseId;
+import com.kinetiq.planchange.domain.model.DeclineReason;
+import com.kinetiq.planchange.domain.model.Decision;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.Figure;
 import com.kinetiq.planchange.domain.model.FigureKind;
@@ -15,6 +17,7 @@ import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.RemovedSession;
 import com.kinetiq.planchange.domain.model.Rule;
+import com.kinetiq.planchange.domain.model.Side;
 import com.kinetiq.planchange.domain.model.SessionMove;
 import com.kinetiq.planchange.domain.model.Target;
 import com.kinetiq.planchange.domain.model.TargetChange;
@@ -28,6 +31,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.data.jpa.test.autoconfigure.DataJpaTest;
 import jakarta.persistence.EntityManager;
@@ -103,7 +108,10 @@ class PlanChangeRepositoryImplIT {
                 List.of(),
                 Set.of(),
                 CREATED,
-                endedAt);
+                endedAt,
+                null,
+                null,
+                null);
     }
 
     private PlanChange pending(AccountId client) {
@@ -162,6 +170,9 @@ class PlanChangeRepositoryImplIT {
                 figures,
                 Set.of(squat, row),
                 CREATED,
+                null,
+                null,
+                null,
                 null);
 
         repository.save(stored);
@@ -190,9 +201,9 @@ class PlanChangeRepositoryImplIT {
     @Test
     void shouldStoreAnOpenPlanChange_whenTheClientsEarlierOneHasEnded() {
         AccountId client = insertClient();
-        PlanChange ended = pending(client);
-        repository.save(planChange(
-                client, PlanChangeState.DECLINED, ended.getContent(), Instant.parse("2026-11-03T10:00:00Z")));
+        PlanChange declined = pending(client).decline(
+                Side.CLIENT, DeclineReason.OTHER, null, Instant.parse("2026-11-03T10:00:00Z"), LocalDate.parse("2026-11-03"));
+        repository.save(declined);
 
         assertThat(repository.hasOpen(client)).isFalse();
         PlanChange open = repository.save(pending(client));
@@ -207,14 +218,81 @@ class PlanChangeRepositoryImplIT {
         repository.save(pending(client));
         assertThat(repository.lastEndedAt(client)).isEmpty();
 
-        PlanChangeContent content = pending(client).getContent();
         jdbc.update(
                 "update plan_changes set state = 'EXPIRED', ended_at = ? where client_id = ?",
                 Timestamp.from(Instant.parse("2026-11-02T23:00:00Z")),
                 client.value());
-        repository.save(planChange(client, PlanChangeState.DECLINED, content, Instant.parse("2026-10-20T10:00:00Z")));
+        repository.save(pending(client).decline(
+                Side.CLIENT, DeclineReason.OTHER, null, Instant.parse("2026-10-20T10:00:00Z"), LocalDate.parse("2026-10-20")));
 
         assertThat(repository.lastEndedAt(client)).contains(Instant.parse("2026-11-02T23:00:00Z"));
+    }
+
+    @Test
+    void shouldReadBackWhoAcceptedAndWhen_afterAnUpdate_withTheContentUntouched() {
+        AccountId client = insertClient();
+        PlanChange stored = repository.save(pending(client));
+        Instant at = Instant.parse("2026-11-12T08:00:00.123456Z");
+
+        repository.update(stored.accept(Side.TRAINER, at, LocalDate.parse("2026-11-12")));
+        entityManager.clear();
+        PlanChange read = repository.find(stored.getId()).orElseThrow();
+
+        assertThat(read.getState()).isEqualTo(PlanChangeState.ACCEPTED_BY_ONE);
+        assertThat(read.getTrainerAcceptedAt()).contains(at);
+        assertThat(read.getClientAcceptedAt()).isEmpty();
+        assertThat(read.getEndedAt()).isEmpty();
+        assertThat(read.getContent()).usingRecursiveComparison().withComparatorForType(BigDecimal::compareTo, BigDecimal.class).isEqualTo(stored.getContent());
+    }
+
+    @Test
+    void shouldReadBackADeclinedPlanChange_withWhoWhyTheNoteAndTheEnd() {
+        AccountId client = insertClient();
+        PlanChange stored = repository.save(pending(client));
+        Instant at = Instant.parse("2026-11-12T08:00:00Z");
+
+        repository.update(stored.accept(Side.CLIENT, at, LocalDate.parse("2026-11-12"))
+                .decline(Side.TRAINER, DeclineReason.SCHEDULE, "Away that week", at.plusSeconds(60), LocalDate.parse("2026-11-12")));
+        entityManager.clear();
+        PlanChange read = repository.find(stored.getId()).orElseThrow();
+
+        assertThat(read.getState()).isEqualTo(PlanChangeState.DECLINED);
+        assertThat(read.getDecision()).contains(new Decision(Side.TRAINER, DeclineReason.SCHEDULE, "Away that week"));
+        assertThat(read.getEndedAt()).contains(at.plusSeconds(60));
+        assertThat(read.acceptedBy(Side.CLIENT)).isTrue();
+        assertThat(repository.hasOpen(client)).isFalse();
+    }
+
+    @Test
+    void shouldTakeAcceptanceBack_whenAnUndoIsStored() {
+        AccountId client = insertClient();
+        PlanChange stored = repository.save(pending(client));
+        PlanChange accepted = repository.update(stored.accept(Side.CLIENT, CREATED, LocalDate.parse("2026-11-12")));
+
+        repository.update(accepted.undo(Side.CLIENT));
+        entityManager.clear();
+
+        PlanChange read = repository.find(stored.getId()).orElseThrow();
+        assertThat(read.getState()).isEqualTo(PlanChangeState.PENDING);
+        assertThat(read.getClientAcceptedAt()).isEmpty();
+    }
+
+    // one statement per run: the first refusal aborts the test transaction
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "state = 'APPLIED'",
+        "state = 'DECLINED'",
+        "state = 'ACCEPTED_BY_ONE'",
+        "trainer_accepted_at = now()",
+        "decline_note = 'x'",
+        "declined_by = 'CLIENT'",
+        "state = 'DECLINED', declined_by = 'CLIENT', decline_reason = 'BORED'"
+    })
+    void shouldRefuseAChange_thatLeavesTheStateDisagreeingWithTheDecisionColumns(String assignment) {
+        PlanChange stored = repository.save(pending(insertClient()));
+
+        assertThatThrownBy(() -> jdbc.update("update plan_changes set " + assignment + " where id = ?", stored.getId().value()))
+                .isInstanceOf(DataIntegrityViolationException.class);
     }
 
     @Test

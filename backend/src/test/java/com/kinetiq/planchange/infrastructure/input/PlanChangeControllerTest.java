@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 
 import com.kinetiq.account.domain.model.AccountId;
@@ -12,7 +13,11 @@ import com.kinetiq.common.infrastructure.config.SecurityConfig;
 import com.kinetiq.common.infrastructure.config.WebConfig;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.Measure;
+import com.kinetiq.planchange.domain.exception.PlanChangeEndedException;
 import com.kinetiq.planchange.domain.exception.PlanChangeNotFoundException;
+import com.kinetiq.planchange.domain.exception.PlanChangeNothingToUndoException;
+import com.kinetiq.planchange.domain.exception.PlanChangeWeekBegunException;
+import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.PlanChangeSummary;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
@@ -26,6 +31,7 @@ import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.PlanChangeText;
 import com.kinetiq.planchange.domain.model.Rule;
+import com.kinetiq.planchange.domain.model.Side;
 import com.kinetiq.planchange.domain.model.Target;
 import com.kinetiq.planchange.domain.model.TargetChange;
 import java.math.BigDecimal;
@@ -78,6 +84,9 @@ class PlanChangeControllerTest {
             List.of(Figure.ofWeek(FigureKind.MEAN_RPE, LocalDate.parse("2026-10-26"), new BigDecimal("8.400"))),
             Set.of(SQUAT),
             Instant.parse("2026-11-09T02:00:00Z"),
+            null,
+            null,
+            null,
             null);
     private static final PlanChangeText TEXT =
             new PlanChangeText("Back squat: cut volume by 13%", "Average RPE was 8.4 in the last 1 weeks, above 8.");
@@ -87,6 +96,9 @@ class PlanChangeControllerTest {
 
     @MockitoBean
     private ViewPlanChangeUseCase planChanges;
+
+    @MockitoBean
+    private DecidePlanChangeUseCase decisions;
 
     private static void assertRefused(MvcTestResult result, HttpStatus status, String code) {
         assertThat(result).hasStatus(status);
@@ -153,6 +165,80 @@ class PlanChangeControllerTest {
 
         doThrow(new PlanChangeNotFoundException()).when(planChanges).openOf(TRAINER_ID, CLIENT_ID);
         assertRefused(mvc.get().uri(OPEN).with(TRAINER).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
+    }
+
+    private static final String ACCEPTANCE = DETAIL + "/acceptance";
+    private static final PlanChange ACCEPTED =
+            PLAN_CHANGE.accept(Side.TRAINER, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"));
+
+    private static PlanChangeView view(PlanChange planChange) {
+        return new PlanChangeView(
+                planChange, "Ola Nowak", TEXT, Map.of(SQUAT, new ExerciseLabel("Back squat", Measure.REPS)));
+    }
+
+    private MvcTestResult accept(RequestPostProcessor who) {
+        return mvc.post().uri(ACCEPTANCE).with(who).with(csrf()).exchange();
+    }
+
+    private MvcTestResult undo(RequestPostProcessor who) {
+        return mvc.delete().uri(ACCEPTANCE).with(who).with(csrf()).exchange();
+    }
+
+    @Test
+    void shouldAnswerTheAcceptedPlanChange_withWhoAccepted() {
+        when(decisions.accept(TRAINER_ID, ID)).thenReturn(view(ACCEPTED));
+
+        MvcTestResult result = accept(TRAINER);
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.state").isEqualTo("ACCEPTED_BY_ONE");
+        json.extractingPath("$.acceptedByTrainer").isEqualTo(true);
+        json.extractingPath("$.acceptedByClient").isEqualTo(false);
+        json.doesNotHavePath("$.declinedBy");
+        json.doesNotHavePath("$.endedAt");
+    }
+
+    @Test
+    void shouldAnswerTheUndonePlanChange() {
+        when(decisions.undo(TRAINER_ID, ID)).thenReturn(view(PLAN_CHANGE));
+
+        MvcTestResult result = undo(TRAINER);
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.state").isEqualTo("PENDING");
+        assertThat(result).bodyJson().extractingPath("$.acceptedByTrainer").isEqualTo(false);
+    }
+
+    @Test
+    void shouldAnswerNotFound_whenDecidingOnAnUnknownOrAnotherTrainersPlanChange() {
+        when(decisions.accept(TRAINER_ID, ID)).thenThrow(new PlanChangeNotFoundException());
+        when(decisions.undo(TRAINER_ID, ID)).thenThrow(new PlanChangeNotFoundException());
+
+        assertRefused(accept(TRAINER), HttpStatus.NOT_FOUND, "plan-change.not-found");
+        assertRefused(undo(TRAINER), HttpStatus.NOT_FOUND, "plan-change.not-found");
+    }
+
+    @Test
+    void shouldAnswerConflictWithItsCode_whenTheDecisionIsRefused() {
+        when(decisions.accept(TRAINER_ID, ID)).thenThrow(new PlanChangeEndedException());
+        when(decisions.undo(TRAINER_ID, ID)).thenThrow(new PlanChangeNothingToUndoException());
+
+        assertRefused(accept(TRAINER), HttpStatus.CONFLICT, "plan-change.ended");
+        assertRefused(undo(TRAINER), HttpStatus.CONFLICT, "plan-change.nothing-to-undo");
+
+        doThrow(new PlanChangeWeekBegunException()).when(decisions).accept(TRAINER_ID, ID);
+        assertRefused(accept(TRAINER), HttpStatus.CONFLICT, "plan-change.week-begun");
+    }
+
+    @Test
+    void shouldRefuseTheDecisionsWithoutACsrfToken_aClient_andAnonymous_withoutCallingTheUseCase() {
+        assertRefused(mvc.post().uri(ACCEPTANCE).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.forbidden");
+        assertRefused(mvc.delete().uri(ACCEPTANCE).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.forbidden");
+        assertRefused(accept(CLIENT), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(undo(CLIENT), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.post().uri(ACCEPTANCE).with(csrf()).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        verifyNoInteractions(decisions);
     }
 
     @Test
