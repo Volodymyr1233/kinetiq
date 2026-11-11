@@ -79,6 +79,8 @@ const OVERVIEW: ClientOverview = {
     notes: 'Left knee gets stiff on deep squats',
     submittedAt: '2026-10-01T10:00:00Z',
   },
+  readiness: [],
+  recoveryDays: [],
 }
 
 // the progress section's own figures are tested with it; here only where it stands
@@ -218,6 +220,8 @@ describe('ClientOverviewTab', () => {
       today: OVERVIEW.today,
       recentSessions: [],
       quizAnswers: OVERVIEW.quizAnswers,
+      readiness: [],
+      recoveryDays: [],
     })
 
     expect(
@@ -254,6 +258,8 @@ describe('ClientOverviewTab', () => {
       today: OVERVIEW.today,
       week: OVERVIEW.week,
       recentSessions: [],
+      readiness: [],
+      recoveryDays: [],
     })
 
     expect(

@@ -74,6 +74,11 @@ public class CheckInService implements CheckInUseCase {
         return checkIns.findByClientAndDate(client, date).flatMap(checkIn -> adjustment(client, checkIn, entries));
     }
 
+    @Override
+    public List<CheckIn> between(AccountId client, LocalDate from, LocalDate to) {
+        return checkIns.findAllByClientAndDateBetween(client, from, to);
+    }
+
     private TodayView openToday(AccountId client) {
         TodayView today = plan.today(client);
         if (today.state() != TodayView.State.SESSION) {

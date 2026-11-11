@@ -82,6 +82,21 @@ class CheckInRepositoryImplIT {
     }
 
     @Test
+    void shouldFindTheCheckInsBetweenTwoDates_bothIncluded_oldestFirst_andOnlyTheClients() {
+        AccountId client = insertClient();
+        AccountId other = insertClient();
+        for (int days : new int[] {0, 3, 1, 4, 5}) {
+            repository.save(CheckIn.give(client, DATE.minusDays(days), new Answers(4, 2, 1), NOW));
+        }
+        repository.save(CheckIn.give(other, DATE.minusDays(2), new Answers(4, 2, 1), NOW));
+        flushAndClear();
+
+        assertThat(repository.findAllByClientAndDateBetween(client, DATE.minusDays(4), DATE.minusDays(1)))
+                .extracting(CheckIn::getDate)
+                .containsExactly(DATE.minusDays(4), DATE.minusDays(3), DATE.minusDays(1));
+    }
+
+    @Test
     void shouldKeepOneRow_whenTheCheckInIsChanged() {
         AccountId client = insertClient();
         repository.save(CheckIn.give(client, DATE, new Answers(4, 2, 1), NOW));

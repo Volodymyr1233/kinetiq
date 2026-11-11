@@ -2,6 +2,7 @@ package com.kinetiq.readiness.domain.input;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.CheckIn;
 import com.kinetiq.readiness.domain.model.Planned;
 import java.time.LocalDate;
 import java.util.List;
@@ -35,4 +36,10 @@ public interface CheckInUseCase {
      * without a check-in or when nothing gets lighter.
      */
     Optional<Adjustment> adjustmentOn(AccountId client, LocalDate date, List<Planned> entries);
+
+    /**
+     * The client's check-ins from {@code from} to {@code to}, both included, oldest first. The caller has checked that it
+     * may read this client.
+     */
+    List<CheckIn> between(AccountId client, LocalDate from, LocalDate to);
 }

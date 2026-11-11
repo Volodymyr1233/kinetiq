@@ -4,6 +4,7 @@ import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.readiness.domain.model.Adjustment;
+import com.kinetiq.readiness.domain.model.Readiness;
 import com.kinetiq.readiness.domain.model.Target;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
@@ -159,22 +160,38 @@ class SessionLogWebMapper {
                                 week.number(), week.startsOn(), toResponses(week.sessions())))
                         .orElse(null),
                 toResponses(overview.getRecentSessions()),
-                overview.getQuizAnswers().map(this::toResponse).orElse(null));
+                overview.getQuizAnswers().map(this::toResponse).orElse(null),
+                overview.getReadiness().stream()
+                        .map(day -> new ClientOverviewResponse.ReadinessDayResponse(
+                                day.getDate(),
+                                day.getReadiness().map(Readiness::score).orElse(null),
+                                day.getReadiness().map(Readiness::band).orElse(null)))
+                        .toList(),
+                overview.getRecoveryDays().stream()
+                        .map(day -> new ClientOverviewResponse.RecoveryDayResponse(
+                                day.getDate(),
+                                day.getScore(),
+                                day.getCauses(),
+                                day.getTargets().orElse(null),
+                                day.getSession().map(this::toResponse).orElse(null)))
+                        .toList());
     }
 
     private List<ClientOverviewResponse.ClientSessionResponse> toResponses(List<ClientSession> sessions) {
-        return sessions.stream()
-                .map(session -> new ClientOverviewResponse.ClientSessionResponse(
-                        session.getDate(),
-                        session.getDate().getDayOfWeek(),
-                        session.getName(),
-                        session.getState().orElse(null),
-                        session.isLocked(),
-                        session.getSetsLogged(),
-                        session.getSetsPlanned(),
-                        session.getAverageRpe().orElse(null),
-                        session.getSessionLogId().map(SessionLogId::value).orElse(null)))
-                .toList();
+        return sessions.stream().map(this::toResponse).toList();
+    }
+
+    private ClientOverviewResponse.ClientSessionResponse toResponse(ClientSession session) {
+        return new ClientOverviewResponse.ClientSessionResponse(
+                session.getDate(),
+                session.getDate().getDayOfWeek(),
+                session.getName(),
+                session.getState().orElse(null),
+                session.isLocked(),
+                session.getSetsLogged(),
+                session.getSetsPlanned(),
+                session.getAverageRpe().orElse(null),
+                session.getSessionLogId().map(SessionLogId::value).orElse(null));
     }
 
     // likes in their declared order, as the client feature answers them

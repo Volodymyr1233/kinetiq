@@ -20,7 +20,10 @@ import com.kinetiq.quiz.domain.model.Level;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
+import com.kinetiq.readiness.domain.model.Cause;
+import com.kinetiq.readiness.domain.model.Readiness;
 import com.kinetiq.readiness.domain.model.Target;
+import com.kinetiq.readiness.domain.model.TargetChoice;
 import com.kinetiq.sessionlog.domain.exception.SessionLogNotFoundException;
 import com.kinetiq.sessionlog.domain.input.ClientOverview;
 import com.kinetiq.sessionlog.domain.input.ClientSession;
@@ -122,7 +125,9 @@ class ClientTrainingControllerTest {
                                             done(),
                                             neverStarted(LocalDate.parse("2026-11-04"), SessionState.TODAY))),
                             List.of(done(), neverStarted(LocalDate.parse("2026-10-28"), SessionState.MISSED)),
-                            answers()));
+                            answers(),
+                            List.of(),
+                            List.of()));
 
             var result = mvc.get().uri(OVERVIEW).with(TRAINER).exchange();
 
@@ -162,7 +167,9 @@ class ClientTrainingControllerTest {
                             LocalDate.parse("2026-11-04"),
                             null,
                             List.of(neverStarted(LocalDate.parse("2026-11-02"), null)),
-                            null));
+                            null,
+                            List.of(),
+                            List.of()));
 
             var result = mvc.get().uri(OVERVIEW).with(TRAINER).exchange();
 
@@ -170,6 +177,61 @@ class ClientTrainingControllerTest {
             assertThat(result).bodyJson().doesNotHavePath("$.week");
             assertThat(result).bodyJson().doesNotHavePath("$.quizAnswers");
             assertThat(result).bodyJson().doesNotHavePath("$.recentSessions[0].state");
+        }
+
+        @Test
+        void shouldAnswerTheReadinessOfEachDay_andTheRecoveryDays() {
+            when(training.overview(TRAINER_ID, CLIENT_ID))
+                    .thenReturn(new ClientOverview(
+                            LocalDate.parse("2026-11-04"),
+                            null,
+                            List.of(),
+                            null,
+                            List.of(
+                                    new ClientOverview.ReadinessDay(
+                                            LocalDate.parse("2026-11-02"),
+                                            new Readiness(33, Readiness.Band.RECOVERY_DAY)),
+                                    new ClientOverview.ReadinessDay(LocalDate.parse("2026-11-03"), null),
+                                    new ClientOverview.ReadinessDay(
+                                            LocalDate.parse("2026-11-04"),
+                                            new Readiness(0, Readiness.Band.RECOVERY_DAY))),
+                            List.of(
+                                    new ClientOverview.RecoveryDay(
+                                            LocalDate.parse("2026-11-04"),
+                                            0,
+                                            List.of(Cause.SLEEP, Cause.SORENESS, Cause.STRESS),
+                                            null,
+                                            null),
+                                    new ClientOverview.RecoveryDay(
+                                            LocalDate.parse("2026-11-02"),
+                                            33,
+                                            List.of(Cause.SLEEP, Cause.SORENESS),
+                                            TargetChoice.ORIGINAL,
+                                            done()))));
+
+            var result = mvc.get().uri(OVERVIEW).with(TRAINER).exchange();
+
+            assertThat(result).hasStatus(HttpStatus.OK);
+            assertThat(result).bodyJson().extractingPath("$.readiness[0].date").isEqualTo("2026-11-02");
+            assertThat(result).bodyJson().extractingPath("$.readiness[0].score").isEqualTo(33);
+            assertThat(result).bodyJson().extractingPath("$.readiness[0].band").isEqualTo("RECOVERY_DAY");
+            assertThat(result).bodyJson().doesNotHavePath("$.readiness[1].score");
+            assertThat(result).bodyJson().doesNotHavePath("$.readiness[1].band");
+            assertThat(result).bodyJson().extractingPath("$.readiness[2].score").isEqualTo(0);
+            assertThat(result)
+                    .bodyJson()
+                    .extractingPath("$.recoveryDays[0].causes")
+                    .asList()
+                    .containsExactly("SLEEP", "SORENESS", "STRESS");
+            assertThat(result).bodyJson().doesNotHavePath("$.recoveryDays[0].targets");
+            assertThat(result).bodyJson().doesNotHavePath("$.recoveryDays[0].session");
+            assertThat(result).bodyJson().extractingPath("$.recoveryDays[1].score").isEqualTo(33);
+            assertThat(result).bodyJson().extractingPath("$.recoveryDays[1].targets").isEqualTo("ORIGINAL");
+            assertThat(result).bodyJson().extractingPath("$.recoveryDays[1].session.state").isEqualTo("DONE");
+            assertThat(result)
+                    .bodyJson()
+                    .extractingPath("$.recoveryDays[1].session.sessionLogId")
+                    .isEqualTo(LOG_ID.toString());
         }
 
         @Test
