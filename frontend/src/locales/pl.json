@@ -833,6 +833,9 @@
       "noLoad": "Bez obciążenia",
       "notLogged": "Nie zapisano",
       "notStarted": "Nie rozpoczęto",
+      "rpeTarget": "RPE {{value}}",
+      "lighter": "Dzień regeneracji: {{causes}}, więc cele były lżejsze.",
+      "original": "Dzień regeneracji: wybrano cele z planu.",
       "changeable": "{{name}} może jeszcze zmieniać te logi do {{time}}.",
       "noteFrom": "Notatka od: {{name}}",
       "loading": "Wczytywanie logów",
@@ -1314,6 +1317,7 @@
     }
   },
   "targetChange": "{{planned}}, dziś {{today}}",
+  "targetChangePast": "{{planned}}, lżej {{today}}",
   "progress": {
     "loading": "Wczytywanie postępów",
     "noPlan": "Postępy pojawią się tu, gdy trener opublikuje Twój plan.",

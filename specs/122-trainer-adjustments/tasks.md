@@ -139,21 +139,21 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
 
 **Independent test**: `ClientTrainingViewServiceTest`, `ClientTrainingControllerTest` and `session-log-table.test.tsx` with an adjusted log, an original-targets log and a plain log.
 
-- [ ] T022 [US3] `S/domain/input/ClientSessionLog.java`: add a nullable `Adjustment adjustment` component, as `StartedSession` holds one (no `Optional` fields, backend rule), with Javadoc "the adjustment of the log's date over the log's own copy; absent without one". `S/domain/service/ClientTrainingViewService.java` `sessionLog`: compute it with `checkIns.adjustmentOn(client, log.getDate(), plannedOf(log, library))` using T007's helper.
-- [ ] T023 [US3] `S/infrastructure/input/ClientSessionLogResponse.java`: add `LogAdjustmentResponse adjustment` with `@JsonInclude(NON_NULL)` and `record LogAdjustmentResponse(@NotNull List<Cause> causes, @NotNull boolean inUse)` (not `AdjustmentResponse`: springdoc names schemas by simple name, and readiness already has one). `S/infrastructure/input/SessionLogWebMapper.java`: pass `read.adjustment()` to `entries(...)` instead of `null`, delete the "story #122" comment, and map `adjustment`.
-- [ ] T024 [US3] [US4] Tests:
+- [X] T022 [US3] `S/domain/input/ClientSessionLog.java`: add a nullable `Adjustment adjustment` component, as `StartedSession` holds one (no `Optional` fields, backend rule), with Javadoc "the adjustment of the log's date over the log's own copy; absent without one". `S/domain/service/ClientTrainingViewService.java` `sessionLog`: compute it with `checkIns.adjustmentOn(client, log.getDate(), plannedOf(log, library))` using T007's helper.
+- [X] T023 [US3] `S/infrastructure/input/ClientSessionLogResponse.java`: add `LogAdjustmentResponse adjustment` with `@JsonInclude(NON_NULL)` and `record LogAdjustmentResponse(@NotNull List<Cause> causes, @NotNull boolean inUse)` (not `AdjustmentResponse`: springdoc names schemas by simple name, and readiness already has one). `S/infrastructure/input/SessionLogWebMapper.java`: pass `read.adjustment()` to `entries(...)` instead of `null`, delete the "story #122" comment, and map `adjustment`.
+- [X] T024 [US3] [US4] Tests:
   - `ST/domain/service/ClientTrainingViewServiceTest.java`, `sessionLog`: a recovery day with lighter targets gives an adjustment with `inUse` true; original targets gives `inUse` false; a Ready day and a day without a check-in give none; another trainer's client gives `ClientNotFoundException`.
   - `ST/infrastructure/input/ClientTrainingControllerTest.java`: an adjusted log has `adjustment.causes` and `inUse`, an entry with `planned` 100 kg/8 and an unlogged set target of 90 kg/7, and a logged set keeps its copied target. A log without an adjustment leaves out `adjustment` and `planned`.
-- [ ] T025 Run `./gradlew check`, which must pass. Start the backend and run `npm run gen:api`.
-- [ ] T026 [P] [US3] `FS/components/session-log-table.tsx`: take `Entry['planned']`. In the target cell, when `entry.planned` exists, render `TargetChange` with `planned` formatted as the cell formats `set.target` and `today` as the formatted `set.target`. When `entry.planned.rpe !== set.target.rpe`, add a second line `TargetChange` "RPE {{planned}}" → "RPE {{today}}" in `text-xs`. Otherwise render the cell as today. Add the key `sessionlog.logs.rpeTarget`: "RPE {{value}}" / "RPE {{value}}".
-- [ ] T027 [P] [US3] `FS/pages/client-logs-tab.tsx` `ChosenSession`: under the `CardDescription`, when `log.adjustment` exists, show a `p` in `text-muted-foreground`:
+- [X] T025 Run `./gradlew check`, which must pass. Start the backend and run `npm run gen:api`.
+- [X] T026 [P] [US3] `FS/components/session-log-table.tsx`: take `Entry['planned']`. In the target cell, when `entry.planned` exists, render `TargetChange` with `planned` formatted as the cell formats `set.target` and `today` as the formatted `set.target`. When `entry.planned.rpe !== set.target.rpe`, add a second line `TargetChange` "RPE {{planned}}" → "RPE {{today}}" in `text-xs`. Otherwise render the cell as today. Add the key `sessionlog.logs.rpeTarget`: "RPE {{value}}" / "RPE {{value}}".
+- [X] T027 [P] [US3] `FS/pages/client-logs-tab.tsx` `ChosenSession`: under the `CardDescription`, when `log.adjustment` exists, show a `p` in `text-muted-foreground`:
   - `sessionlog.logs.lighter`: "Recovery day: {{causes}}, so the targets were lighter." / "Dzień regeneracji: {{causes}}, więc cele były lżejsze." (causes in lower case, joined with `Intl.ListFormat`).
-  - or `sessionlog.logs.original`: "Recovery day: the client used the original targets." / "Dzień regeneracji: wybrano pierwotne cele." (impersonal, so no gendered past tense).
-- [ ] T028 [US3] Tests: `FS/components/session-log-table.test.tsx` (new, or in `client-logs-tab.test.tsx`): an adjusted entry is read as "planned 100 kg, today 90 kg"-style text via `TargetChange`'s `sr-only`, with no arrow when `planned` is absent. `client-logs-tab.test.tsx`: the lighter line with causes, the original line, and no line without `adjustment`. Run `npm run check`, which must pass. Commit `feat: show lighter targets in the trainer's session log (#290)`, with `schema.d.ts`.
+  - or `sessionlog.logs.original`: "Recovery day: the client chose the original targets." / "Dzień regeneracji: wybrano pierwotne cele." (impersonal, so no gendered past tense).
+- [X] T028 [US3] Tests: `FS/components/session-log-table.test.tsx` (new, or in `client-logs-tab.test.tsx`): an adjusted entry is read as "planned 100 kg, today 90 kg"-style text via `TargetChange`'s `sr-only`, with no arrow when `planned` is absent. `client-logs-tab.test.tsx`: the lighter line with causes, the original line, and no line without `adjustment`. Run `npm run check`, which must pass. Commit `feat: show lighter targets in the trainer's session log (#290)`, with `schema.d.ts`.
 
 ## Phase 5: Polish and verification
 
-- [ ] T029 Run quickstart.md scenarios 1 to 10 in the built-in browser at 1280 px (and 768 px for scenario 9), in light and dark, EN and PL. Check:
+- [X] T029 Run quickstart.md scenarios 1 to 10 in the built-in browser at 1280 px (and 768 px for scenario 9), in light and dark, EN and PL. Check:
   - no console errors;
   - the readiness scale with nothing red;
   - text alternatives in the accessibility tree;
@@ -162,7 +162,7 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
   - planned → lighter in the log.
 
   Recreate the local database first so the demo dates are current. Take screenshots for the pull request.
-- [ ] T030 Review with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX:
+- [X] T030 Review with the `ui-ux-pro-max` skill for WCAG 2.2 AA and UX:
   - contrast of the score labels and day labels on the card in both themes;
   - bar colours against the card (non-text contrast, 3:1);
   - the legend;
@@ -170,7 +170,7 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
   - the entry layout at 1280 and 768 px.
 
   Fix findings without restyling the design system.
-- [ ] T031 Run `/speckit-converge`, then the backend `./gradlew check` and the frontend `npm run check` one last time. Open the story's pull request `feat: show a client's readiness and adjustments to the trainer`, with `Closes #122`, `Closes #123`, `Closes #124` and `Closes #290`, to be merged by rebase or a merge commit.
+- [X] T031 Run `/speckit-converge`, then the backend `./gradlew check` and the frontend `npm run check` one last time. Open the story's pull request `feat: show a client's readiness and adjustments to the trainer`, with `Closes #122`, `Closes #123`, `Closes #124` and `Closes #290`, to be merged by rebase or a merge commit. (Converge and both gates done; pushing and the pull request are left to the user.)
 
 ## Dependencies
 
@@ -192,3 +192,8 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
 - MVP: #123 and #124, the story's acceptance criterion. The trainer sees 14 days of readiness and every recovery day with whether the client reverted (US1, US2, US4).
 - Then #290 makes the link from an entry land on a log that shows the old and new values (US3, constitution IV).
 - Each phase ends green (`./gradlew check`, `npm run check`) and with its own commit.
+
+## Phase 6: Convergence
+
+- [X] T032 Record in spec.md "Departures from the story and the board" the legend band ranges (70+, 45–69, 0–44, so bands read without colour) and the trainer log's screen-reader wording "lighter" instead of "today" (`TargetChange past`) per FR-008, FR-016 (unrequested)
+- [X] T033 Rename the export of `frontend/src/features/sessionlog/components/readiness-strip.tsx` from `ReadinessCard` to `ReadinessStrip`, so it does not share a name with `features/readiness` `ReadinessCard`, per plan: frontend structure (partial)

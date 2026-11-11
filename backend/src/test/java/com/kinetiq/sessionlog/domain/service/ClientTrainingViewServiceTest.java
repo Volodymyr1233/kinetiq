@@ -672,6 +672,28 @@ class ClientTrainingViewServiceTest {
         }
 
         @Test
+        void shouldGiveTheAdjustmentOfItsDay_overTheLogsOwnCopy() {
+            SessionLog monday = log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 7);
+            checkIn(WEEK_3_MONDAY, 2, 4, 3, TargetChoice.ORIGINAL);
+
+            ClientSessionLog read = service().sessionLog(TRAINER, CLIENT, monday.getId());
+
+            assertThat(read.adjustment().inUse()).isFalse();
+            assertThat(read.adjustment().causes()).containsExactly(Cause.SLEEP, Cause.SORENESS);
+            assertThat(read.adjustment().lighter().getFirst().loadKg()).isEqualByComparingTo("90.0");
+        }
+
+        @Test
+        void shouldGiveNoAdjustment_withoutARecoveryDay() {
+            SessionLog monday = log(WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 7);
+            SessionLog wednesday = log(WEEK_3_WEDNESDAY, "Lower body", "2026-11-04T08:00:00Z", null, 7);
+            checkIn(WEEK_3_WEDNESDAY, 4, 2, 1, TargetChoice.LIGHTER);
+
+            assertThat(service().sessionLog(TRAINER, CLIENT, monday.getId()).adjustment()).isNull();
+            assertThat(service().sessionLog(TRAINER, CLIENT, wednesday.getId()).adjustment()).isNull();
+        }
+
+        @Test
         void shouldNotFindAnotherClientsLog_underAnOwnClient() {
             SessionLog foreign = log(
                     AccountId.random(), WEEK_3_MONDAY, "Upper body", "2026-11-02T17:00:00Z", null, 8);

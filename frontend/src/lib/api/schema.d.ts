@@ -1648,6 +1648,11 @@ export interface components {
             minutes?: number;
             note?: string;
             entries: components["schemas"]["LoggedEntryResponse"][];
+            adjustment?: components["schemas"]["LogAdjustmentResponse"];
+        };
+        LogAdjustmentResponse: {
+            causes: ("SLEEP" | "SORENESS" | "STRESS")[];
+            inUse: boolean;
         };
         QuizAnswersResponse: {
             /** @enum {string} */

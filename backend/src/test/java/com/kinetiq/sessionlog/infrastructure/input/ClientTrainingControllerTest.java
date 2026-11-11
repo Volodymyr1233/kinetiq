@@ -20,6 +20,7 @@ import com.kinetiq.quiz.domain.model.Level;
 import com.kinetiq.quiz.domain.model.Like;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
 import com.kinetiq.quiz.domain.model.QuizSubmissionId;
+import com.kinetiq.readiness.domain.model.Adjustment;
 import com.kinetiq.readiness.domain.model.Cause;
 import com.kinetiq.readiness.domain.model.Readiness;
 import com.kinetiq.readiness.domain.model.Target;
@@ -326,7 +327,7 @@ class ClientTrainingControllerTest {
         void shouldAnswerEachPlannedSet_withItsTargetAndItsLog_inTheRequestsLanguage() {
             when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
                     .thenReturn(new ClientSessionLog(
-                            upperBody(STARTED.plusSeconds(48 * 60)), done(), Map.of(SQUAT.getId(), SQUAT)));
+                            upperBody(STARTED.plusSeconds(48 * 60)), done(), Map.of(SQUAT.getId(), SQUAT), null));
 
             var result = mvc.get()
                     .uri(uri(LOG_ID))
@@ -353,6 +354,7 @@ class ClientTrainingControllerTest {
             assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].number").isEqualTo(2);
             assertThat(result).bodyJson().doesNotHavePath("$.entries[0].sets[1].log");
             assertThat(result).bodyJson().doesNotHavePath("$.note");
+            assertThat(result).bodyJson().doesNotHavePath("$.adjustment");
         }
 
         @Test
@@ -366,7 +368,7 @@ class ClientTrainingControllerTest {
                     new Target(new BigDecimal("90.0"), 5, 7),
                     STARTED);
             when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
-                    .thenReturn(new ClientSessionLog(log, done(), Map.of(SQUAT.getId(), SQUAT)));
+                    .thenReturn(new ClientSessionLog(log, done(), Map.of(SQUAT.getId(), SQUAT), null));
 
             var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
 
@@ -376,11 +378,50 @@ class ClientTrainingControllerTest {
         }
 
         @Test
+        void shouldAnswerThePlannedAndTheLighterTargets_onARecoveryDayWithTheLighterTargetsInUse() {
+            Adjustment lighter = new Adjustment(
+                    List.of(new Target(new BigDecimal("90.0"), 5, 7)), List.of(Cause.SLEEP, Cause.SORENESS), true);
+            when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
+                    .thenReturn(new ClientSessionLog(
+                            upperBody(null), done(), Map.of(SQUAT.getId(), SQUAT), lighter));
+
+            var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
+
+            assertThat(result)
+                    .bodyJson()
+                    .extractingPath("$.adjustment.causes")
+                    .asList()
+                    .containsExactly("SLEEP", "SORENESS");
+            assertThat(result).bodyJson().extractingPath("$.adjustment.inUse").isEqualTo(true);
+            assertThat(result).bodyJson().extractingPath("$.entries[0].planned.loadKg").isEqualTo(100.0);
+            assertThat(result).bodyJson().extractingPath("$.entries[0].planned.rpe").isEqualTo(8);
+            // the logged set keeps the targets it was logged against; the one not logged has the lighter ones
+            assertThat(result).bodyJson().extractingPath("$.entries[0].sets[0].target.loadKg").isEqualTo(100.0);
+            assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].target.loadKg").isEqualTo(90.0);
+            assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].target.rpe").isEqualTo(7);
+        }
+
+        @Test
+        void shouldAnswerThePlannedTargetsOnly_whenTheClientChoseTheOriginalTargets() {
+            Adjustment original = new Adjustment(
+                    List.of(new Target(new BigDecimal("90.0"), 5, 7)), List.of(Cause.SLEEP, Cause.SORENESS), false);
+            when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
+                    .thenReturn(new ClientSessionLog(
+                            upperBody(null), done(), Map.of(SQUAT.getId(), SQUAT), original));
+
+            var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
+
+            assertThat(result).bodyJson().extractingPath("$.adjustment.inUse").isEqualTo(false);
+            assertThat(result).bodyJson().doesNotHavePath("$.entries[0].planned");
+            assertThat(result).bodyJson().extractingPath("$.entries[0].sets[1].target.loadKg").isEqualTo(100.0);
+        }
+
+        @Test
         void shouldAnswerTheNoteTheClientWroteForTheirTrainer() {
             SessionLog log = upperBody(STARTED.plusSeconds(48 * 60));
             log.writeNote("Knee felt fine.\nLast set was hard.", STARTED.plusSeconds(50 * 60));
             when(training.sessionLog(TRAINER_ID, CLIENT_ID, new SessionLogId(LOG_ID)))
-                    .thenReturn(new ClientSessionLog(log, done(), Map.of(SQUAT.getId(), SQUAT)));
+                    .thenReturn(new ClientSessionLog(log, done(), Map.of(SQUAT.getId(), SQUAT), null));
 
             var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
 
@@ -402,7 +443,8 @@ class ClientTrainingControllerTest {
                                     2,
                                     new BigDecimal("9.0"),
                                     new SessionLogId(LOG_ID)),
-                            Map.of(SQUAT.getId(), SQUAT)));
+                            Map.of(SQUAT.getId(), SQUAT),
+                            null));
 
             var result = mvc.get().uri(uri(LOG_ID)).with(TRAINER).exchange();
 

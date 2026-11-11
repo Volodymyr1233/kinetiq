@@ -815,6 +815,9 @@
       "noLoad": "No load",
       "notLogged": "Not logged",
       "notStarted": "Not started",
+      "rpeTarget": "RPE {{value}}",
+      "lighter": "Recovery day: {{causes}}, so the targets were lighter.",
+      "original": "Recovery day: the client chose the original targets.",
       "changeable": "{{name}} can still change these logs until {{time}}.",
       "noteFrom": "Note from {{name}}",
       "loading": "Loading the logs",
@@ -1271,6 +1274,7 @@
     }
   },
   "targetChange": "{{planned}}, today {{today}}",
+  "targetChangePast": "{{planned}}, lighter {{today}}",
   "progress": {
     "loading": "Loading your progress",
     "noPlan": "Your progress shows here once your trainer publishes your plan.",

@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next'
+import { TargetChange } from '@/components/target-change'
 import {
   Table,
   TableBody,
@@ -42,6 +43,16 @@ export function SessionLogTable({
       ? t('sessionlog.logs.seconds', { value })
       : number.format(value)
   const load = (kg: number) => number.format(fromKg(kg, unit))
+  const target = (
+    { loadKg, amount: value }: { loadKg?: number; amount: number },
+    measure: Entry['measure'],
+  ) =>
+    loadKg === undefined
+      ? amount(value, measure)
+      : t('sessionlog.logs.target', {
+          amount: amount(value, measure),
+          load: load(loadKg),
+        })
   const hasSeconds = entries.some((entry) => entry.measure === 'SECONDS')
 
   return (
@@ -90,12 +101,31 @@ export function SessionLogTable({
               </TableCell>
               <TableCell className="num text-right">{set.number}</TableCell>
               <TableCell className="num text-right">
-                {set.target.loadKg === undefined
-                  ? amount(set.target.amount, entry.measure)
-                  : t('sessionlog.logs.target', {
-                      amount: amount(set.target.amount, entry.measure),
-                      load: load(set.target.loadKg),
-                    })}
+                {entry.planned ? (
+                  // a recovery day's lighter target beside the planned one, as the client saw it
+                  <span className="inline-flex flex-col items-end gap-0.5">
+                    <TargetChange
+                      past
+                      planned={target(entry.planned, entry.measure)}
+                      today={target(set.target, entry.measure)}
+                    />
+                    {entry.planned.rpe !== set.target.rpe && (
+                      <span className="text-xs">
+                        <TargetChange
+                          past
+                          planned={t('sessionlog.logs.rpeTarget', {
+                            value: entry.planned.rpe,
+                          })}
+                          today={t('sessionlog.logs.rpeTarget', {
+                            value: set.target.rpe,
+                          })}
+                        />
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  target(set.target, entry.measure)
+                )}
               </TableCell>
               {set.log === undefined ? (
                 <TableCell

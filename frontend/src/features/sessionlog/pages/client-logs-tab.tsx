@@ -17,6 +17,7 @@ import { errorMessageKey } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
 import { locksAt } from '@/lib/edit-window'
 import { firstName } from '@/lib/first-name'
+import { useCauseList } from '@/lib/readiness'
 import { cn } from '@/lib/utils'
 import {
   useClientSessionLog,
@@ -191,6 +192,7 @@ function ChosenSession({
 }) {
   const { t } = useTranslation()
   const format = useFormats()
+  const causeList = useCauseList()
   const query = useClientSessionLog(client.id, session.sessionLogId)
   const log = query.data
   const figures = (log: ClientSessionLog) => {
@@ -223,6 +225,15 @@ function ChosenSession({
         </CardTitle>
         {log && (
           <CardDescription className="num">{figures(log)}</CardDescription>
+        )}
+        {log?.adjustment && (
+          <CardDescription>
+            {log.adjustment.inUse
+              ? t('sessionlog.logs.lighter', {
+                  causes: causeList(log.adjustment.causes),
+                })
+              : t('sessionlog.logs.original')}
+          </CardDescription>
         )}
       </CardHeader>
       <CardContent className="gap-4">
