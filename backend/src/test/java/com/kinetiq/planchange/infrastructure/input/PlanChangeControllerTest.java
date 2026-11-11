@@ -1,6 +1,7 @@
 package com.kinetiq.planchange.infrastructure.input;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
@@ -21,6 +22,8 @@ import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.PlanChangeSummary;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
+import com.kinetiq.planchange.domain.model.DeclineReason;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.Figure;
@@ -43,10 +46,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.assertj.MockMvcTester;
 import org.springframework.test.web.servlet.assertj.MvcTestResult;
@@ -253,5 +259,104 @@ class PlanChangeControllerTest {
         assertRefused(mvc.get().uri(DETAIL).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
         assertRefused(mvc.get().uri(OPEN).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
         verifyNoInteractions(planChanges);
+    }
+
+    private static final String DECLINATION = DETAIL + "/declination";
+
+    private MvcTestResult keep(RequestPostProcessor who, String body) {
+        return mvc.post()
+                .uri(DECLINATION)
+                .with(who)
+                .with(csrf())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(body)
+                .exchange();
+    }
+
+    @Test
+    void shouldKeepTheCurrentPlan_withTheReasonAndTheNote_andAnswerWhoDeclined() {
+        PlanChange declined = PLAN_CHANGE.decline(
+                Side.TRAINER,
+                DeclineReason.SCHEDULE,
+                "Away that week",
+                Instant.parse("2026-11-12T08:00:00Z"),
+                LocalDate.parse("2026-11-12"));
+        when(decisions.keepCurrent(new KeepCurrentPlanCommand(TRAINER_ID, ID, DeclineReason.SCHEDULE, "Away that week")))
+                .thenReturn(view(declined));
+
+        MvcTestResult result = keep(TRAINER, "{\"reason\":\"SCHEDULE\",\"note\":\"Away that week\"}");
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        var json = assertThat(result).bodyJson();
+        json.extractingPath("$.state").isEqualTo("DECLINED");
+        json.extractingPath("$.declinedBy").isEqualTo("TRAINER");
+        json.extractingPath("$.declineReason").isEqualTo("SCHEDULE");
+        json.extractingPath("$.declineNote").isEqualTo("Away that week");
+        json.extractingPath("$.endedAt").isEqualTo("2026-11-12T08:00:00Z");
+    }
+
+    @Test
+    void shouldAcceptAMissingNote() {
+        when(decisions.keepCurrent(new KeepCurrentPlanCommand(TRAINER_ID, ID, DeclineReason.OTHER, null)))
+                .thenReturn(view(PLAN_CHANGE));
+
+        assertThat(keep(TRAINER, "{\"reason\":\"OTHER\"}")).hasStatus(HttpStatus.OK);
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"{}", "{\"reason\":null}"})
+    void shouldRefuseAMissingReason_namingTheField(String body) {
+        MvcTestResult result = keep(TRAINER, body);
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.errors").asArray().anySatisfy(error ->
+                assertThat(error).asString().contains("field=reason"));
+        verifyNoInteractions(decisions);
+    }
+
+    @Test
+    void shouldRefuseAnUnknownReason_withoutReadingTheBody() {
+        MvcTestResult result = keep(TRAINER, "{\"reason\":\"BORED\"}");
+
+        assertThat(result).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(result).bodyJson().extractingPath("$.code").isEqualTo("request.invalid");
+        verifyNoInteractions(decisions);
+    }
+
+    @Test
+    void shouldRefuseANoteOf501Characters_andAcceptOneOf500() {
+        MvcTestResult tooLong = keep(TRAINER, "{\"reason\":\"OTHER\",\"note\":\"" + "x".repeat(501) + "\"}");
+
+        assertThat(tooLong).hasStatus(HttpStatus.BAD_REQUEST);
+        assertThat(tooLong).bodyJson().extractingPath("$.errors").asArray().anySatisfy(error ->
+                assertThat(error).asString().contains("field=note"));
+        verifyNoInteractions(decisions);
+
+        when(decisions.keepCurrent(new KeepCurrentPlanCommand(TRAINER_ID, ID, DeclineReason.OTHER, "x".repeat(500))))
+                .thenReturn(view(PLAN_CHANGE));
+        assertThat(keep(TRAINER, "{\"reason\":\"OTHER\",\"note\":\"" + "x".repeat(500) + "\"}")).hasStatus(HttpStatus.OK);
+    }
+
+    @Test
+    void shouldAnswerConflictOrNotFound_whenKeepingTheCurrentPlanIsRefused() {
+        doThrow(new PlanChangeEndedException()).when(decisions).keepCurrent(any());
+        assertRefused(keep(TRAINER, "{\"reason\":\"OTHER\"}"), HttpStatus.CONFLICT, "plan-change.ended");
+
+        doThrow(new PlanChangeNotFoundException()).when(decisions).keepCurrent(any());
+        assertRefused(keep(TRAINER, "{\"reason\":\"OTHER\"}"), HttpStatus.NOT_FOUND, "plan-change.not-found");
+    }
+
+    @Test
+    void shouldRefuseKeepingWithoutACsrfToken_aClient_andAnonymous() {
+        assertRefused(
+                mvc.post().uri(DECLINATION).with(TRAINER).contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"OTHER\"}").exchange(),
+                HttpStatus.FORBIDDEN,
+                "request.forbidden");
+        assertRefused(keep(CLIENT, "{\"reason\":\"OTHER\"}"), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(
+                mvc.post().uri(DECLINATION).with(csrf()).contentType(MediaType.APPLICATION_JSON).content("{\"reason\":\"OTHER\"}").exchange(),
+                HttpStatus.UNAUTHORIZED,
+                "request.unauthenticated");
+        verifyNoInteractions(decisions);
     }
 }

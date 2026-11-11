@@ -44,7 +44,7 @@ All endpoints require a signed-in account; none is public. State-changing calls 
 | 409 | `plan-change.ended` | the plan change is applied, declined or expired |
 | 409 | `plan-change.nothing-to-undo` | undo by a person who has not accepted |
 | 409 | `plan-change.week-begun` | the effective Monday has begun |
-| 400 | `request.invalid` | missing or unknown reason, note over 500 characters |
+| 400 | `request.invalid` | missing reason or note over 500 characters (`errors` names the field); an unknown reason is rejected before validation, without `errors` |
 
 Idempotence: `POST …/acceptance` by someone who already accepted returns `200` with the unchanged state; `DELETE` by someone who has not accepted is `409 plan-change.nothing-to-undo`; a repeated `…/declination` after it ended is `409 plan-change.ended` and posts nothing.
 

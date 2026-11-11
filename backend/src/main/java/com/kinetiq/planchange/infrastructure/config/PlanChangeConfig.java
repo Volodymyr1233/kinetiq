@@ -2,6 +2,7 @@ package com.kinetiq.planchange.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
+import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
@@ -77,14 +78,18 @@ class PlanChangeConfig {
             ViewClientsUseCase clients,
             CurrentAccountUseCase accounts,
             PlanChangeRepository planChanges,
-            PlanSource plans) {
-        return new PlanChangeDecisionService(clients, accounts, planChanges, plans, Clock.systemUTC());
+            PlanSource plans,
+            ExchangeMessagesUseCase messages) {
+        return new PlanChangeDecisionService(clients, accounts, planChanges, plans, messages, Clock.systemUTC());
     }
 
     @Bean
     DecideOwnPlanChangeUseCase decideOwnPlanChangeUseCase(
-            CurrentAccountUseCase accounts, PlanChangeRepository planChanges, PlanSource plans) {
-        return new OwnPlanChangeDecisionService(accounts, planChanges, plans, Clock.systemUTC());
+            CurrentAccountUseCase accounts,
+            PlanChangeRepository planChanges,
+            PlanSource plans,
+            ExchangeMessagesUseCase messages) {
+        return new OwnPlanChangeDecisionService(accounts, planChanges, plans, messages, Clock.systemUTC());
     }
 
     @Bean

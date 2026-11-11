@@ -5,8 +5,10 @@ import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.client.domain.exception.ClientNotFoundException;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
+import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.planchange.domain.exception.PlanChangeNotFoundException;
 import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
+import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
@@ -28,11 +30,12 @@ public class PlanChangeDecisionService implements DecidePlanChangeUseCase {
             CurrentAccountUseCase accounts,
             PlanChangeRepository planChanges,
             PlanSource plans,
+            ExchangeMessagesUseCase messages,
             Clock clock) {
         this.clients = clients;
         this.planChanges = planChanges;
         this.texts = new PlanChangeTexts(plans, accounts);
-        this.decider = new PlanChangeDecider(planChanges, clock);
+        this.decider = new PlanChangeDecider(planChanges, texts, messages, clock);
     }
 
     @Override
@@ -45,6 +48,12 @@ public class PlanChangeDecisionService implements DecidePlanChangeUseCase {
     public PlanChangeView undo(AccountId trainer, PlanChangeId id) {
         ClientSummary client = ownClient(trainer, id);
         return view(trainer, client, decider.undo(id, Side.TRAINER));
+    }
+
+    @Override
+    public PlanChangeView keepCurrent(KeepCurrentPlanCommand command) {
+        ClientSummary client = ownClient(command.person(), command.id());
+        return view(command.person(), client, decider.keepCurrent(command, Side.TRAINER, client.getTimeZone()));
     }
 
     // another trainer's plan change is not found either, so it cannot be told apart from a missing one

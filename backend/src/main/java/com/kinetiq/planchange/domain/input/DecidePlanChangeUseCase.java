@@ -15,4 +15,10 @@ public interface DecidePlanChangeUseCase {
 
     /** Takes the trainer's acceptance back, while the client has not accepted. */
     PlanChangeView undo(AccountId trainer, PlanChangeId id);
+
+    /**
+     * Ends the plan change as declined and posts the reason into the conversation with the client, in the same step. A
+     * second call is refused, so it posts nothing more.
+     */
+    PlanChangeView keepCurrent(KeepCurrentPlanCommand command);
 }

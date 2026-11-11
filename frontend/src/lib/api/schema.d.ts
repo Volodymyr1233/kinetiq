@@ -196,6 +196,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/plan/changes/{id}/declination": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["keepCurrent"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/plan/changes/{id}/acceptance": {
         parameters: {
             query?: never;
@@ -222,6 +238,22 @@ export interface paths {
         get?: never;
         put?: never;
         post: operations["acknowledgePlan"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/plan-changes/{id}/declination": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["keepCurrent_1"];
         delete?: never;
         options?: never;
         head?: never;
@@ -1111,6 +1143,11 @@ export interface components {
             /** @enum {string} */
             status: "NOT_SUBMITTED" | "DRAFTING_PLAN" | "WAITING_FOR_PLAN" | "PLAN_PUBLISHED";
         };
+        KeepCurrentPlanRequest: {
+            /** @enum {string} */
+            reason: "TOO_EASY" | "TOO_HARD" | "SCHEDULE" | "INJURY" | "OTHER";
+            note?: string;
+        };
         ClientPlanChangeDetailResponse: {
             /** Format: uuid */
             id: string;
@@ -1965,6 +2002,32 @@ export interface operations {
             };
         };
     };
+    keepCurrent: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KeepCurrentPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["ClientPlanChangeDetailResponse"];
+                };
+            };
+        };
+    };
     accept: {
         parameters: {
             query?: never;
@@ -2024,6 +2087,32 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content?: never;
+            };
+        };
+    };
+    keepCurrent_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["KeepCurrentPlanRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["PlanChangeResponse"];
+                };
             };
         };
     };
