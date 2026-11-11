@@ -172,15 +172,70 @@ function backend(sessions: ClientSession[] = SESSIONS): Reply {
 function openLogs(
   reply: Reply = backend(),
   account: object = SIGNED_IN.TRAINER,
+  search = '',
 ) {
-  return renderAppAt(`/trainer/clients/${ANNA.id}/logs`, account, reply)
+  return renderAppAt(
+    `/trainer/clients/${ANNA.id}/logs${search}`,
+    account,
+    reply,
+  )
 }
+
+const marked = () =>
+  screen
+    .queryAllByRole('row')
+    .filter((row) => row.getAttribute('aria-current') === 'true')
 
 const sessionList = async () =>
   within(await screen.findByRole('list', { name: 'Sessions' }))
 
 describe('ClientLogsTab', () => {
   afterEach(() => i18n.changeLanguage('en'))
+
+  it('shows the session and marks the set an address names, as a message about it links to', async () => {
+    openLogs(backend(), SIGNED_IN.TRAINER, `?session=${MONDAY_LOG}&set=0-2`)
+
+    expect(
+      await screen.findByRole('heading', { name: 'Upper body · Mon, Nov 2' }),
+    ).toBeInTheDocument()
+    await screen.findByRole('table')
+    expect(marked()).toHaveLength(1)
+    expect(marked()[0]).toHaveTextContent(/Back squat.*2/)
+    expect(marked()[0]).toHaveFocus()
+    expect(
+      (await sessionList()).getByRole('button', { name: /^Upper body/ }),
+    ).toHaveAttribute('aria-current', 'true')
+  })
+
+  it('shows the newest session when the address names an unknown one', async () => {
+    openLogs(backend(), SIGNED_IN.TRAINER, '?session=nothing&set=0-1')
+
+    expect(
+      await screen.findByRole('heading', { name: 'Lower body · Wed, Nov 4' }),
+    ).toBeInTheDocument()
+    await screen.findByRole('table')
+    expect(marked()).toHaveLength(0)
+  })
+
+  it('drops the mark when another session is chosen', async () => {
+    const { router } = openLogs(
+      backend(),
+      SIGNED_IN.TRAINER,
+      `?session=${MONDAY_LOG}&set=0-2`,
+    )
+    await screen.findByRole('table')
+
+    await userEvent.click(
+      (await sessionList()).getByRole('button', { name: /^Full body/ }),
+    )
+
+    expect(
+      await screen.findByRole('heading', { name: 'Full body · Fri, Oct 30' }),
+    ).toBeInTheDocument()
+    await screen.findByRole('table')
+    expect(router.state.location.search).toBe(`?session=${FRIDAY_LOG}`)
+    expect(marked()).toHaveLength(0)
+  })
 
   it('lists every session newest first, each labelled, and shows the newest', async () => {
     openLogs()

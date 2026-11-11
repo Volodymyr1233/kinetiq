@@ -20,6 +20,7 @@ import {
   valuesOf,
   type Values,
 } from '../set-values'
+import { MARKED, reveal } from '../marked-set'
 import { EntryPanel } from './entry-panel'
 import { SyncBadge } from './sync-badge'
 
@@ -39,6 +40,7 @@ export function SetRow({
   onToggle,
   onLogged,
   onAsk,
+  marked = false,
 }: {
   sessionId: string
   entry: LoggedEntry
@@ -49,6 +51,8 @@ export function SetRow({
   // told when a set is logged for the first time, so the rest after it can start; a change does not start one
   onLogged: (restSeconds: number) => void
   onAsk?: () => void
+  // the set an address names, as a message about it links to
+  marked?: boolean
 }) {
   const { t } = useTranslation()
   const unit = useWeightUnit()
@@ -158,6 +162,13 @@ export function SetRow({
       </Button>
     )
 
+  const markedProps = marked && {
+    ref: reveal,
+    tabIndex: -1,
+    'aria-current': 'true' as const,
+    className: MARKED,
+  }
+
   // the mark and the buttons after the values; on a narrow screen they go under them instead of squeezing them
   const trailing = 'ml-auto flex min-h-12 shrink-0 items-center gap-2'
 
@@ -197,7 +208,7 @@ export function SetRow({
     // page's message says it in words. A log still
     // kept on the phone shows where it stands, and can be discarded, but not retried: the session can no longer change
     return (
-      <li>
+      <li {...markedProps}>
         <div
           className={cn(
             'flex min-h-14 flex-wrap items-center gap-x-2 px-4 py-1',
@@ -233,7 +244,7 @@ export function SetRow({
   }
 
   return (
-    <li>
+    <li {...markedProps}>
       <div
         className={cn(
           'flex min-h-14 flex-wrap items-center gap-x-2 px-4 py-1',

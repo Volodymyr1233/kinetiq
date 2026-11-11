@@ -175,6 +175,9 @@ export function TrainerMessagesPage() {
               onSend={(text) => outbox.submit(open.clientId, text)}
               onRetry={outbox.retry}
               composerHint={t('messaging.trainer.shortcutHint')}
+              aboutHref={(set) =>
+                `/trainer/clients/${open.clientId}/logs?session=${set.sessionLogId}&set=${set.entryPosition}-${set.setNumber}`
+              }
             />
           </>
         ) : rows ? (

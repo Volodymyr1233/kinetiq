@@ -61,9 +61,9 @@ Decisions taken while planning. Each: what, why, what else was considered.
 - Client: `/app/session/{sessionLogId}?set={entryPosition}-{setNumber}`, the address of spec 101 with one search parameter.
 - Trainer: `/trainer/clients/{clientId}/logs?session={sessionLogId}&set={entryPosition}-{setNumber}`. The Logs tab's chosen session moves from component state to the `session` parameter; choosing another session sets it and drops `set`.
 
-The row named by `set` gets `aria-current="true"`, a ring around it, is scrolled into view once and takes focus (`tabIndex={-1}`). An unknown or malformed `set` or `session` is ignored.
+The client's chip passes the page it is left from, so the logger's back link returns to Messages instead of Today. The row named by `set` gets `aria-current="true"`, a ring around it, gets the light lime of a chosen tab (`bg-brand-muted`), which flashes in, with a line on its left edge, is scrolled into view once and takes focus (`tabIndex={-1}`). An unknown or malformed `set` or `session` is ignored.
 
-**Why**: URL state is the next step after local state (`frontend/CLAUDE.md`), and FR-020 asks for an address that survives a reload. The place of a set (entry position and set number) is what both screens key their rows by, so no lookup by set log id is needed. A ring is a line, not only a colour, and `aria-current` says it to assistive technology (FR-021). `useSearchParams` is already used by the Plan tab; React Router's documentation confirms the API is unchanged.
+**Why**: URL state is the next step after local state (`frontend/CLAUDE.md`), and FR-020 asks for an address that survives a reload. The place of a set (entry position and set number) is what both screens key their rows by, so no lookup by set log id is needed. The left line is a line, not only a colour, and `aria-current` says it to assistive technology (FR-021). `useSearchParams` is already used by the Plan tab; React Router's documentation confirms the API is unchanged.
 
 **Rejected**: A hash (`#set-2-3`): the logger's rows render after the session loads, so the browser's own scroll to a hash misses them, and the trainer's tab needs the session as well.
 

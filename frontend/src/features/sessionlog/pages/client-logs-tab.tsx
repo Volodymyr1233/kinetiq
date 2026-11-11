@@ -1,7 +1,7 @@
 import { CircleAlertIcon } from 'lucide-react'
-import { Fragment, useState } from 'react'
+import { Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
-import { useOutletContext } from 'react-router'
+import { useOutletContext, useSearchParams } from 'react-router'
 import { SessionStateBadge } from '@/components/session-state-badge'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -25,6 +25,7 @@ import {
   type ClientSessionLog,
 } from '../api/client-training'
 import { SessionLogTable } from '../components/session-log-table'
+import { setPlaceOf, type SetPlace } from '../marked-set'
 
 type Client = components['schemas']['ClientResponse']
 
@@ -45,7 +46,9 @@ export function ClientLogsTab() {
 function Logs({ client }: { client: Client }) {
   const { t } = useTranslation()
   const query = useClientSessions(client.id)
-  const [chosen, setChosen] = useState<string>()
+  // in the address, so a message about a set can link to its session, and a reload shows the same
+  const [params, setParams] = useSearchParams()
+  const chosen = params.get('session')
 
   if (query.isError) {
     return <LoadFailed error={query.error} onRetry={query.refetch} />
@@ -91,14 +94,25 @@ function Logs({ client }: { client: Client }) {
                 <SessionButton
                   session={session}
                   current={session === selected}
-                  onChoose={() => setChosen(keyOf(session))}
+                  // another session drops the set an address named
+                  onChoose={() =>
+                    setParams({ session: keyOf(session) }, { replace: true })
+                  }
                 />
               </li>
             ))}
           </ul>
         </CardContent>
       </Card>
-      <ChosenSession client={client} session={selected} />
+      <ChosenSession
+        client={client}
+        session={selected}
+        marked={
+          selected === sessions.find((session) => keyOf(session) === chosen)
+            ? setPlaceOf(params.get('set'))
+            : undefined
+        }
+      />
     </div>
   )
 }
@@ -169,9 +183,11 @@ function SessionButton({
 function ChosenSession({
   client,
   session,
+  marked,
 }: {
   client: Client
   session: ClientSession
+  marked?: SetPlace
 }) {
   const { t } = useTranslation()
   const format = useFormats()
@@ -236,7 +252,7 @@ function ChosenSession({
                 <p className="wrap-anywhere whitespace-pre-wrap">{log.note}</p>
               </div>
             )}
-            <SessionLogTable entries={log.entries} />
+            <SessionLogTable entries={log.entries} marked={marked} />
             {!log.locked && (
               <p className="text-muted-foreground text-sm">
                 {t('sessionlog.logs.changeable', {

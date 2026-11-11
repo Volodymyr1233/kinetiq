@@ -23,7 +23,10 @@ const loggedSet = (number: number, id: string) => ({
 
 const server: Reply = quizStatus('PLAN_PUBLISHED', async (request) => {
   const { pathname } = new URL(request.url)
-  if (pathname === '/api/v1/session-logs') {
+  if (
+    pathname === '/api/v1/session-logs' ||
+    pathname === `/api/v1/session-logs/${SESSION}`
+  ) {
     return json({
       id: SESSION,
       date: '2026-11-07',
@@ -55,8 +58,21 @@ const server: Reply = quizStatus('PLAN_PUBLISHED', async (request) => {
     return json({ messages: [], hasMore: false })
   }
   if (pathname === MESSAGES && request.method === 'POST') {
-    const { id, text } = await request.json()
-    return json({ id, text, mine: true, sentAt: new Date().toISOString() }, 201)
+    const { id, text, aboutSetLogId } = await request.json()
+    const about = aboutSetLogId && {
+      setLogId: aboutSetLogId,
+      sessionLogId: SESSION,
+      sessionName: 'Lower body',
+      sessionDate: '2026-11-07',
+      exerciseName: 'Back squat',
+      entryPosition: 0,
+      setNumber: 1,
+      rpe: 9,
+    }
+    return json(
+      { id, text, about, mine: true, sentAt: new Date().toISOString() },
+      201,
+    )
   }
   return new Response(null, { status: 204 })
 })
@@ -174,5 +190,31 @@ describe('LoggerRoute', () => {
     expect(
       within(again).getByRole('textbox', { name: 'Message Marek' }),
     ).toHaveValue('Half written')
+  })
+
+  it('opens a set from a chip in the conversation with a way back to Messages', async () => {
+    const user = userEvent.setup()
+    renderAppAt('/app/session', SIGNED_IN.CLIENT, server)
+    await user.click(await ask(2))
+    const sheet = await screen.findByRole('dialog', { name: 'Messages' })
+    await user.type(
+      await within(sheet).findByRole('textbox', { name: 'Message Marek' }),
+      'Was this too heavy?{Enter}',
+    )
+
+    await user.click(
+      await within(sheet).findByRole('link', { name: /Open this set/ }),
+    )
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument(),
+    )
+    const page = screen.getByRole('main')
+    expect(
+      within(page).getByRole('link', { name: 'Messages' }),
+    ).toHaveAttribute('href', '/app/messages')
+    expect(
+      within(page).queryByRole('link', { name: 'Today' }),
+    ).not.toBeInTheDocument()
   })
 })

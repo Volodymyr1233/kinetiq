@@ -1130,7 +1130,8 @@
     "about": {
       "label": "About",
       "text": "{{session}} · {{date}} · {{exercise}}, set {{number}} · RPE {{rpe, number}}",
-      "remove": "Remove the set from this message"
+      "remove": "Remove the set from this message",
+      "open": "Open this set"
     },
     "trainer": {
       "listLabel": "Conversations",

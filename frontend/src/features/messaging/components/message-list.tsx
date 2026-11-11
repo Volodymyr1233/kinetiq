@@ -3,9 +3,10 @@ import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { cn } from '@/lib/utils'
-import type { Message } from '../api/messaging'
+import type { About, Message } from '../api/messaging'
 import { dayLabel, sameDay, timeOfDay } from '../message-time'
 import type { OutboxEntry } from '../use-outbox'
+import { AboutChip } from './about-chip'
 
 // how near the bottom still counts as reading the newest message, in px
 const NEAR_BOTTOM = 48
@@ -16,6 +17,7 @@ type Line = {
   mine: boolean
   at: Date
   state: 'sent' | OutboxEntry['status']
+  about?: About
 }
 
 function linesOf(messages: Message[], outbox: OutboxEntry[], now: Date) {
@@ -27,6 +29,7 @@ function linesOf(messages: Message[], outbox: OutboxEntry[], now: Date) {
       mine: message.mine,
       at: new Date(message.sentAt),
       state: 'sent',
+      about: message.about,
     })),
     // an attempt whose answer was lost can already be back from the server; it shows once
     ...outbox
@@ -37,6 +40,7 @@ function linesOf(messages: Message[], outbox: OutboxEntry[], now: Date) {
         mine: true,
         at: now,
         state: entry.status,
+        about: entry.about,
       })),
   ]
 }
@@ -53,6 +57,7 @@ export function MessageList({
   onRetry,
   peerName,
   now,
+  aboutHref,
 }: {
   messages: Message[]
   firstUnreadId?: string
@@ -64,6 +69,8 @@ export function MessageList({
   onRetry: (id: string) => void
   peerName: string
   now: Date
+  // where the chip of a message about a set leads
+  aboutHref: (about: About) => string
 }) {
   const { t, i18n } = useTranslation()
   const list = useRef<HTMLDivElement>(null)
@@ -198,6 +205,14 @@ export function MessageList({
                 <p className="text-muted-foreground my-2 text-center text-xs">
                   {dayLabel(line.at, now, i18n.language, t)}
                 </p>
+              )}
+              {line.about && (
+                <AboutChip
+                  about={line.about}
+                  to={aboutHref(line.about)}
+                  // set apart from the message above, so it reads as part of the one below
+                  className={cn('mt-2', line.mine ? 'self-end' : 'self-start')}
+                />
               )}
               <p
                 className={cn(

@@ -23,6 +23,7 @@ export function Conversation({
   onRetry,
   composerHint,
   ask,
+  aboutHref,
 }: {
   clientId: string
   name: string
@@ -31,6 +32,7 @@ export function Conversation({
   onRetry: (id: string) => void
   composerHint?: string
   ask?: About
+  aboutHref: (about: About) => string
 }) {
   const { t } = useTranslation()
   const query = useMessages(clientId)
@@ -73,6 +75,7 @@ export function Conversation({
           onLoadEarlier={() => void query.fetchNextPage()}
           onRetry={onRetry}
           peerName={peerName}
+          aboutHref={aboutHref}
           // the moment of the last refresh, so "Today" turns over with the next one
           now={new Date(query.dataUpdatedAt)}
         />

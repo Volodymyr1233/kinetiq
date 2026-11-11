@@ -67,6 +67,53 @@ function openPastSession(
   return requests
 }
 
+// a message about a set links to the logger with the set's place
+function openAtSet(set: string, startedAt: Date) {
+  stubApi(serving(startedAt))
+  const router = createMemoryRouter(
+    [{ path: '/app/session/:id', Component: LoggerPage }],
+    { initialEntries: [`/app/session/${ID}?set=${set}`] },
+  )
+  render(
+    <QueryClientProvider client={loggerClient()}>
+      <RouterProvider router={router} />
+    </QueryClientProvider>,
+  )
+}
+
+describe('a set named in the address', () => {
+  it.each([
+    ['open', 12],
+    ['locked', 25],
+  ])(
+    'marks that set of a session that is %s, and gives it the focus',
+    async (_, hours) => {
+      openAtSet('0-1', new Date(Date.now() - hours * HOUR))
+
+      await screen.findByRole('heading', { name: 'Lower body' })
+      const row = within(
+        screen.getByRole('region', { name: 'Back squat' }),
+      ).getByRole('listitem')
+      expect(row).toHaveAttribute('aria-current', 'true')
+      expect(row).toHaveFocus()
+    },
+  )
+
+  it.each(['0-2', '1-1', 'set-3', ''])(
+    'marks nothing for %j, which names no set',
+    async (set) => {
+      openAtSet(set, new Date())
+
+      await screen.findByRole('heading', { name: 'Lower body' })
+      expect(
+        within(screen.getByRole('region', { name: 'Back squat' })).getByRole(
+          'listitem',
+        ),
+      ).not.toHaveAttribute('aria-current')
+    },
+  )
+})
+
 describe('the logger on an earlier session', () => {
   it('reads the session of the id in the address and starts nothing', async () => {
     const requests = openPastSession(serving(new Date(Date.now() - 12 * HOUR)))
@@ -116,6 +163,14 @@ describe('the logger on an earlier session', () => {
       'href',
       '/app/plan?week=5',
     )
+  })
+
+  it('goes back to Messages when it was opened from a message about a set', async () => {
+    openPastSession(serving(new Date(Date.now() - 12 * HOUR)), '/app/messages')
+
+    expect(
+      await screen.findByRole('link', { name: 'Messages' }),
+    ).toHaveAttribute('href', '/app/messages')
   })
 
   it('goes back to Today when it was not opened from the Plan tab', async () => {

@@ -269,6 +269,17 @@
 
   --ease-out: var(--ease-out);
   --ease-in: var(--ease-in);
+
+  /* a set a link leads to: a brighter flash that settles on its tint */
+  --animate-marked: marked 900ms var(--ease-out);
+  @keyframes marked {
+    from {
+      background-color: transparent;
+    }
+    30% {
+      background-color: color-mix(in oklch, var(--brand) 40%, transparent);
+    }
+  }
 }
 
 @layer base {

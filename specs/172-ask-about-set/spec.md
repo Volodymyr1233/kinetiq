@@ -44,7 +44,7 @@ A message that carries a reference shows an About chip above its text in the cli
 
 1. **Given** a message with a reference, **When** either person reads the conversation, **Then** an About chip sits directly above that message's text, on the sender's side, reading the label "About" and then the session's name, the session's date, the exercise, the set number and the RPE.
 2. **Given** a message without a reference, **When** it is shown, **Then** it looks as it did before this story.
-3. **Given** the chip on the client's screen, **When** the client chooses it, **Then** the logger opens on that session, read-only if it is locked, with that set's row brought into view and marked.
+3. **Given** the chip on the client's screen, **When** the client chooses it, **Then** the logger opens on that session, read-only if it is locked, with that set's row brought into view and marked, and its back link leads to Messages, also when the chip was chosen in the conversation over a session.
 4. **Given** the chip on the trainer's screen, **When** the trainer chooses it, **Then** the client's Logs tab opens with that session chosen and that set's row brought into view and marked. The address holds the session and the set, so a reload shows the same.
 5. **Given** the client changed the set after asking, while its session was not locked, **When** either person reads the conversation, **Then** the chip shows the set as it is now, the same values the link leads to.
 6. **Given** a message with a reference is still Sending or is Not sent, **When** the client looks at it, **Then** its chip is already shown above it.
@@ -177,7 +177,7 @@ The main English and Polish texts. Polish uses informal "ty" and should be confi
 | Action on a logged set: an icon button, this is its accessible name | Ask your trainer about set {number} of {exercise} | Zapytaj trenera o serię {number}: {exercise} |
 | Chip label | About | Dotyczy |
 | Chip content | {session} · {date} · {exercise}, set {number} · RPE {rpe} | {session} · {date} · {exercise}, seria {number} · RPE {rpe} |
-| Chip link, accessible name | About {session}, {date}, {exercise}, set {number}, RPE {rpe}. Open this set | Dotyczy: {session}, {date}, {exercise}, seria {number}, RPE {rpe}. Otwórz tę serię |
+| Chip link: read after what the chip shows, so its name holds the visible text | Open this set | Otwórz tę serię |
 | Remove the chip from the composer | Remove the set from this message | Usuń serię z tej wiadomości |
 | Refused reference | This set can't be attached. Remove it and send the message again. | Nie można dołączyć tej serii. Usuń ją i wyślij wiadomość ponownie. |
 
