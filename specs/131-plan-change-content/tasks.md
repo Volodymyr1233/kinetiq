@@ -134,8 +134,8 @@ No `Co-Authored-By` or other attribution footer (project `CLAUDE.md`). The pull 
 ## Phase 7: Final verification and pull request
 
 - [X] T040 Run `/speckit-analyze` and `/speckit-converge`; fix inconsistencies or add tasks.
-- [ ] T041 Security pass: no endpoint opened, ownership `404`s proven, prompt privacy test green, logs hold no prompt, answer, name or email (grep the new code for `log.`), error responses carry no exception text; run the `security-review` skill on the branch.
-- [ ] T042 Full gates once more (`./gradlew check`, `npm run check`), then open the pull request with `gh` (title in Conventional Commits, `Closes #131`, `Closes #132`, `Closes #133`, `Closes #134`, `Closes #135`, `Closes #136`, `Closes #289`), bind it with the ccd_pr tools.
+- [X] T041 Security pass: no endpoint opened, ownership `404`s proven, prompt privacy test green, logs hold no prompt, answer, name or email (grep the new code for `log.`), error responses carry no exception text; run the `security-review` skill on the branch.
+- [X] T042 Full gates once more (`./gradlew check`, `npm run check`), then open the pull request with `gh` (title in Conventional Commits, `Closes #131`, `Closes #132`, `Closes #133`, `Closes #134`, `Closes #135`, `Closes #136`, `Closes #289`), bind it with the ccd_pr tools.
 
 ---
 
