@@ -1,7 +1,15 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
-import { json, problem, renderAppAt, SIGNED_IN, type Reply } from '@/test/page'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { FakeEventSource } from '@/test/event-source'
+import {
+  json,
+  pathsOf,
+  problem,
+  renderAppAt,
+  SIGNED_IN,
+  type Reply,
+} from '@/test/page'
 
 const ANNA = '00000000-0000-4000-8000-000000000003'
 const PIOTR = '00000000-0000-4000-8000-000000000005'
@@ -90,7 +98,85 @@ const list = () => screen.findByRole('navigation', { name: 'Conversations' })
 const composer = (name: string) =>
   screen.findByRole('textbox', { name: `Message ${name}` })
 
+const LIST = '/api/v1/conversations'
+const ANNAS_MESSAGES = `/api/v1/conversations/${ANNA}/messages`
+const asked = (requests: Request[], path: string, from = 0) =>
+  pathsOf(requests.slice(from)).filter((other) => other === path).length
+
+function showTab(state: 'hidden' | 'visible') {
+  vi.spyOn(document, 'visibilityState', 'get').mockReturnValue(state)
+  act(() => document.dispatchEvent(new Event('visibilitychange')))
+}
+
+/** Anna's conversation open and read, with the stream live, or never heard from when `live` is false. */
+async function openAnnaWithTheStream(live: boolean) {
+  const { requests } = renderAppAt(
+    `/trainer/messages/${ANNA}`,
+    SIGNED_IN.TRAINER,
+    server(),
+  )
+  await screen.findByRole('log', { name: 'Messages with Anna' })
+  if (live) act(() => FakeEventSource.open()[0]!.connect())
+  await waitFor(() => expect(reads(requests)).toHaveLength(1))
+  if (live) act(() => FakeEventSource.open()[0]!.emit('read', ANNA))
+  await within(await list()).findByRole('link', {
+    name: /^Anna Kowalska(?!, 2 unread)/,
+  })
+  return requests
+}
+
 describe('TrainerMessagesPage', () => {
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('asks for a conversation once when it opens, and lets the stream refresh the list after it is read', async () => {
+    const { requests } = renderAppAt(
+      '/trainer/messages',
+      SIGNED_IN.TRAINER,
+      server(),
+    )
+    const rows = within(await list())
+    act(() => FakeEventSource.open()[0]!.connect())
+    const link = await rows.findByRole('link', {
+      name: /^Anna Kowalska, 2 unread/,
+    })
+    await waitFor(() => expect(asked(requests, LIST)).toBe(2))
+    const from = requests.length
+
+    await userEvent.click(link)
+    await waitFor(() => expect(reads(requests)).toHaveLength(1))
+    act(() => FakeEventSource.open()[0]!.emit('read', ANNA))
+
+    expect(
+      await rows.findByRole('link', { name: /^Anna Kowalska(?!, 2 unread)/ }),
+    ).toBeInTheDocument()
+    expect(asked(requests, ANNAS_MESSAGES, from)).toBe(1)
+    expect(asked(requests, LIST, from)).toBe(1)
+  })
+
+  it('asks nothing again when the tab comes back while the stream is live', async () => {
+    const requests = await openAnnaWithTheStream(true)
+    const from = requests.length
+
+    showTab('hidden')
+    showTab('visible')
+    await new Promise((resolve) => setTimeout(resolve, 100))
+
+    expect(pathsOf(requests.slice(from))).toEqual([])
+  })
+
+  it('asks for the open conversation again when the tab comes back after the stream went quiet', async () => {
+    const requests = await openAnnaWithTheStream(false)
+    const from = requests.length
+
+    showTab('hidden')
+    showTab('visible')
+
+    await waitFor(() => expect(asked(requests, ANNAS_MESSAGES, from)).toBe(1))
+    expect(asked(requests, LIST, from)).toBe(1)
+  })
+
   it('opens with the list and a prompt, and marks nothing read', async () => {
     const { requests } = renderAppAt(
       '/trainer/messages',

@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, configure } from '@testing-library/react'
-import { afterEach, vi } from 'vitest'
+import { afterEach, beforeEach, vi } from 'vitest'
 import '@/lib/i18n'
+import { FakeEventSource } from './event-source'
 
 // lazy route chunks take seconds to load in a cold, busy run; the default wait is one second
 configure({ asyncUtilTimeout: 8000 })
@@ -26,6 +27,12 @@ globalThis.ResizeObserver ??= class {
 Element.prototype.setPointerCapture ??= () => {}
 Element.prototype.releasePointerCapture ??= () => {}
 Element.prototype.hasPointerCapture ??= () => false
+
+// jsdom has no EventSource; the app opens one for every signed-in person
+beforeEach(() => {
+  FakeEventSource.instances = []
+  vi.stubGlobal('EventSource', FakeEventSource)
+})
 
 afterEach(() => {
   cleanup()
