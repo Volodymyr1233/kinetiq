@@ -119,7 +119,7 @@ Phases 3 and 4 also contain the backend read endpoints their screens need, so th
 - [X] T033 Run `./gradlew check` in `backend/` and `npm run check` in `frontend/`; report the real result.
 - [X] T034 Walk through every scenario of `quickstart.md` in the built-in browser with the real backend: both roles, both languages, both themes, 375px and 1280px, keyboard, console. Check every state of the story's machine except `expired` (story #143), and that each decision changes the other person's indicators on their next load: client accepts → trainer's "Waiting for you" row and nav count; trainer accepts → client's card; decline → the message and the unread badge of the other person.
 - [X] T035 Security pass over every new endpoint: wrong role → `403`, another person's plan change → `404` on all of them (read, accept, undo, declination, approvals, ended, current), missing or wrong CSRF token, unknown or missing reason, 501-character note, note with markup shown as text, no stack trace or exception text in any problem detail, no personal data in logs or in any prompt (the decision flow sends nothing to an LLM). Record the result in the pull request description.
-- [ ] T036 Check `CONTEXT.md` has every term the code and UI use (Decline reason, Applied); open the pull request with `Closes #137`, `Closes #138`, `Closes #139`, `Closes #140`, `Closes #141`, `Closes #142`, listing the inconsistencies left to story #143 from `research.md` §10.
+- [X] T036 Check `CONTEXT.md` has every term the code and UI use (Decline reason, Applied); open the pull request with `Closes #137`, `Closes #138`, `Closes #139`, `Closes #140`, `Closes #141`, `Closes #142`, listing the inconsistencies left to story #143 from `research.md` §10.
 
 ---
 
