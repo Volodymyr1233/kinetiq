@@ -4,7 +4,13 @@ import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import {
+  json,
+  problem,
+  stubApi,
+  withOpenPlanChange,
+  type Reply,
+} from '@/test/page'
 import { ClientPlanPage } from './client-plan-page'
 import { PlanReadyPage } from './plan-ready-page'
 
@@ -22,7 +28,7 @@ const PLAN = {
 }
 
 function openReady(reply: Reply) {
-  const requests = stubApi(reply)
+  const requests = stubApi(withOpenPlanChange(null, reply))
   // the same addresses as in app/router.ts; a feature does not import the app (frontend/CLAUDE.md)
   const router = createMemoryRouter(
     [

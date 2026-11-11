@@ -20,6 +20,7 @@ import com.kinetiq.planchange.domain.exception.PlanChangeWeekBegunException;
 import com.kinetiq.planchange.domain.input.ClientPlanChangeView;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
+import com.kinetiq.planchange.domain.input.ViewOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.model.DeclineReason;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
@@ -98,6 +99,9 @@ class ClientPlanChangeControllerTest {
 
     @MockitoBean
     private DecideOwnPlanChangeUseCase decisions;
+
+    @MockitoBean
+    private ViewOwnPlanChangeUseCase planChanges;
 
     private static ClientPlanChangeView view(PlanChange planChange) {
         return new ClientPlanChangeView(
@@ -178,6 +182,44 @@ class ClientPlanChangeControllerTest {
         assertRefused(undo(TRAINER), HttpStatus.FORBIDDEN, "request.not-allowed");
         assertRefused(mvc.post().uri(ACCEPTANCE).with(csrf()).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
         verifyNoInteractions(decisions);
+    }
+
+    private static final String CURRENT = "/api/v1/plan/changes/current";
+    private static final String DETAIL = "/api/v1/plan/changes/" + ID.value();
+
+    @Test
+    void shouldAnswerTheCurrentPlanChange_andOneByIdWithTheSameBody() {
+        when(planChanges.current(CLIENT_ID)).thenReturn(view(PLAN_CHANGE));
+        when(planChanges.get(CLIENT_ID, ID)).thenReturn(view(PLAN_CHANGE));
+
+        for (String path : new String[] {CURRENT, DETAIL}) {
+            MvcTestResult result = mvc.get().uri(path).with(CLIENT).exchange();
+
+            assertThat(result).hasStatus(HttpStatus.OK);
+            var json = assertThat(result).bodyJson();
+            json.extractingPath("$.id").isEqualTo(ID.value().toString());
+            json.extractingPath("$.counterpartName").isEqualTo("Marek");
+            json.extractingPath("$.title").isEqualTo(TEXT.title());
+            json.extractingPath("$.effectiveWeek").isEqualTo("2026-11-16");
+            json.extractingPath("$.targets[0].newValue").isEqualTo(7.0);
+        }
+    }
+
+    @Test
+    void shouldAnswerNotFound_whenThereIsNoCurrentPlanChange_orTheOneAskedForIsNotTheClients() {
+        when(planChanges.current(CLIENT_ID)).thenThrow(new PlanChangeNotFoundException());
+        when(planChanges.get(CLIENT_ID, ID)).thenThrow(new PlanChangeNotFoundException());
+
+        assertRefused(mvc.get().uri(CURRENT).with(CLIENT).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
+        assertRefused(mvc.get().uri(DETAIL).with(CLIENT).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
+    }
+
+    @Test
+    void shouldRefuseTheReads_forATrainer_andAnonymous() {
+        assertRefused(mvc.get().uri(CURRENT).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(DETAIL).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(CURRENT).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        verifyNoInteractions(planChanges);
     }
 
     private static final String DECLINATION = "/api/v1/plan/changes/" + ID.value() + "/declination";

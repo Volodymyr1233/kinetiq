@@ -12,6 +12,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { formatDay } from '@/lib/dates'
+import type { PlanChangeStatus } from '@/lib/plan-change-state'
 
 /**
  * A plan change waiting for a decision, as a client page shows it: what changes, why, when, and a link to its detail.
@@ -22,11 +23,17 @@ export function PlanChangeCard({
   reason,
   effectiveWeek,
   to,
+  status,
+  name,
 }: {
   title: string
   reason: string
   effectiveWeek: string
   to: string
+  /** What it waits for; without it the badge only names the card. */
+  status?: PlanChangeStatus
+  /** The other person, for "Waiting for {{name}}". */
+  name?: string
 }) {
   const { t, i18n } = useTranslation()
 
@@ -38,7 +45,11 @@ export function PlanChangeCard({
         </CardTitle>
         <CardDescription>{reason}</CardDescription>
         <CardAction>
-          <Badge variant="info">{t('planChange.card.label')}</Badge>
+          <Badge variant="info">
+            {status
+              ? t(`planChange.badge.${status}`, { name })
+              : t('planChange.card.label')}
+          </Badge>
         </CardAction>
       </CardHeader>
       <CardContent className="flex flex-col items-start gap-3">

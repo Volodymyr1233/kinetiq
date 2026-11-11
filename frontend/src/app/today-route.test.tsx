@@ -67,6 +67,9 @@ function openToday(
     if (path === '/api/v1/session-states') {
       return json({ today: '2026-11-09', sessions: [] })
     }
+    if (path === '/api/v1/plan/changes/current') {
+      return problem(404, { status: 404, code: 'plan-change.not-found' })
+    }
     return json(TODAY)
   })
   render(

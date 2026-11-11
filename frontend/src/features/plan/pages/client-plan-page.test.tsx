@@ -5,7 +5,13 @@ import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { WeightUnitContext, type WeightUnit } from '@/lib/weight'
-import { json, problem, stubApi, type Reply } from '@/test/page'
+import {
+  json,
+  problem,
+  stubApi,
+  withOpenPlanChange,
+  type Reply,
+} from '@/test/page'
 import { ClientPlanPage } from './client-plan-page'
 
 const SESSIONS = [
@@ -93,8 +99,9 @@ function openPlan(
   reply: Reply,
   address = '/app/plan',
   unit: WeightUnit = 'KG',
+  openChange: object | null = null,
 ) {
-  const requests = stubApi(reply)
+  const requests = stubApi(withOpenPlanChange(openChange, reply))
   const router = createMemoryRouter(
     [
       { path: '/app/plan', Component: ClientPlanPage },
@@ -126,8 +133,51 @@ const acknowledgements = (requests: Request[]) =>
 const asked = (requests: Request[]) =>
   requests.map((request) => new URL(request.url).searchParams.get('week'))
 
+const OPEN_CHANGE = {
+  id: '00000000-0000-4000-9600-000000000001',
+  counterpartName: 'Marek',
+  rule: 'HIGH_RPE',
+  state: 'PENDING',
+  title: 'Back squat: cut volume by 13%',
+  reason: 'Average RPE was 8.4 and 8.6 in the last 2 weeks, above 8.',
+  effectiveWeek: '2026-11-16',
+  acceptedByTrainer: false,
+  acceptedByClient: false,
+}
+
 describe('ClientPlanPage', () => {
   afterEach(() => i18n.changeLanguage('en'))
+
+  it('shows the open plan change as a card that waits for both, and links to it', async () => {
+    openPlan(servePlan, '/app/plan', 'KG', OPEN_CHANGE)
+
+    const card = (
+      await screen.findByRole('heading', { name: OPEN_CHANGE.title })
+    ).closest('[data-slot="card"]') as HTMLElement
+    expect(within(card).getByText('Waiting for both')).toBeInTheDocument()
+    expect(
+      within(card).getByRole('link', { name: 'Open plan change' }),
+    ).toHaveAttribute('href', `/app/plan/change/${OPEN_CHANGE.id}`)
+  })
+
+  it('reads Waiting for you once the trainer accepted, and Waiting for the trainer after the client did', async () => {
+    openPlan(servePlan, '/app/plan', 'KG', {
+      ...OPEN_CHANGE,
+      state: 'ACCEPTED_BY_ONE',
+      acceptedByTrainer: true,
+    })
+
+    expect(await screen.findByText('Waiting for you')).toBeInTheDocument()
+  })
+
+  it('shows no plan change card when there is none open', async () => {
+    openPlan(servePlan)
+
+    await screen.findByText('Week 6 of 12')
+    expect(
+      screen.queryByRole('link', { name: 'Open plan change' }),
+    ).not.toBeInTheDocument()
+  })
 
   it('shows the current week with its sessions on their days and rest days between', async () => {
     openPlan(servePlan)

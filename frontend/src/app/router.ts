@@ -284,6 +284,15 @@ export const createRoutes = (): RouteObject[] => [
             },
           },
           {
+            path: 'plan/change/:id',
+            lazy: {
+              Component: async () =>
+                (
+                  await import('@/features/planchange/pages/client-plan-change-page')
+                ).ClientPlanChangePage,
+            },
+          },
+          {
             path: 'progress',
             lazy: {
               Component: async () =>
