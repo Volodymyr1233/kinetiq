@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -66,6 +66,12 @@ export function PlanChangeDecisionPanel({
 }) {
   const { t, i18n } = useTranslation()
   const [keepOpen, setKeepOpen] = useState(false)
+  const keepButton = useRef<HTMLButtonElement>(null)
+  // the sheet and the dialog have no trigger of their own, so focus goes back to the button that opened them
+  const returnFocus = (event: Event) => {
+    event.preventDefault()
+    keepButton.current?.focus()
+  }
   const touch = viewer === 'CLIENT'
   const size = touch ? 'touch' : 'default'
   const date = formatDay(planChange.effectiveWeek, i18n.language)
@@ -101,6 +107,7 @@ export function PlanChangeDecisionPanel({
         )}
         <div className={touch ? 'grid grid-cols-2 gap-2' : 'flex gap-2'}>
           <Button
+            ref={keepButton}
             variant="outline"
             size={size}
             disabled={busy}
@@ -172,7 +179,11 @@ export function PlanChangeDecisionPanel({
       </div>
       {touch ? (
         <Sheet open={open} onOpenChange={setKeepOpen}>
-          <SheetContent side="bottom" className="gap-4 px-4 pb-6">
+          <SheetContent
+            side="bottom"
+            className="gap-4 px-4 pb-6"
+            onCloseAutoFocus={returnFocus}
+          >
             <SheetHeader className="px-0">
               <SheetTitle>{title}</SheetTitle>
               <SheetDescription>{description}</SheetDescription>
@@ -182,7 +193,7 @@ export function PlanChangeDecisionPanel({
         </Sheet>
       ) : (
         <Dialog open={open} onOpenChange={setKeepOpen}>
-          <DialogContent>
+          <DialogContent onCloseAutoFocus={returnFocus}>
             <DialogHeader>
               <DialogTitle>{title}</DialogTitle>
               <DialogDescription>{description}</DialogDescription>
