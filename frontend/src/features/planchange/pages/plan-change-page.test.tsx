@@ -217,7 +217,7 @@ describe('PlanChangePage', () => {
     ).toBeInTheDocument()
     expect(
       screen.getByRole('img', {
-        name: 'Best load, Bench press: Oct 19: 60 kg, Nov 2: 61 kg. Rule threshold 63 kg.',
+        name: 'Best load, Bench press: Oct 19: 60 kg, Oct 26: no logs, Nov 2: 61 kg. Rule threshold 63 kg.',
       }),
     ).toBeInTheDocument()
   })

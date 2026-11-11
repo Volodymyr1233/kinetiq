@@ -143,7 +143,7 @@ export function ClientPlanChangePage() {
           <CardDescription>{planChange.reason}</CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
-          <RuleChart planChange={planChange} />
+          <RuleChart compact planChange={planChange} />
           <PlanChangeTable list planChange={planChange} />
           <p className="text-muted-foreground text-sm">
             {t('planChange.client.stays')}

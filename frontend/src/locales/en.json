@@ -1404,7 +1404,12 @@
       },
       "point": "{{week}}: {{value}}",
       "description": "{{series}}: {{values}}. Rule threshold {{threshold}}.",
-      "threshold": "Rule threshold, {{value}}"
+      "threshold": "Rule threshold, {{value}}",
+      "noLogs": "{{week}}: no logs",
+      "noLogsShort": "No logs",
+      "showTable": "Show as table",
+      "hideTable": "Hide table",
+      "week": "Week"
     },
     "badge": {
       "waitingForBoth": "Waiting for both",

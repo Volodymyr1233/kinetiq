@@ -1,5 +1,15 @@
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Line, LineChart, ReferenceLine, XAxis, YAxis } from 'recharts'
+import {
+  CartesianGrid,
+  LabelList,
+  Line,
+  LineChart,
+  ReferenceLine,
+  XAxis,
+  YAxis,
+} from 'recharts'
+import { Button } from '@/components/ui/button'
 import {
   Card,
   CardContent,
@@ -7,14 +17,32 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card'
-import { ChartContainer, type ChartConfig } from '@/components/ui/chart'
+import {
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+  type ChartConfig,
+} from '@/components/ui/chart'
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table'
 import { chartSeries } from '@/lib/chart-series'
-import { formatShortDate } from '@/lib/dates'
+import { formatShortDate, localDate } from '@/lib/dates'
 import { fromKg, useWeightUnit } from '@/lib/weight'
 import type { PlanChange } from '../api/plan-change'
 
-type Point = { week: string; value: number }
+// a week without logs has no value, so the line breaks there instead of dropping to zero
+type Point = { week: string; value: number | null }
 type Series = { exercise?: string; points: Point[]; threshold: number }
+type ChartedPlanChange = Pick<
+  PlanChange,
+  'rule' | 'figures' | 'concernedExercises' | 'windowStart' | 'windowEnd'
+>
 
 // the thresholds the rules compare against (spec 125)
 const RPE_LIMIT = 8
@@ -27,14 +55,35 @@ const SERIES = {
   LOW_COMPLETION: chartSeries.completion,
 } as const
 
+const isoDate = (date: Date) =>
+  `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`
+
+// every Monday of the window the rule looked at, and any week a figure is for outside it
+function weeksOf(planChange: ChartedPlanChange) {
+  const weeks = new Set(planChange.figures.map((figure) => figure.weekStart))
+  const last = localDate(planChange.windowEnd)
+  for (
+    const week = localDate(planChange.windowStart);
+    week <= last;
+    week.setDate(week.getDate() + 7)
+  ) {
+    weeks.add(isoDate(week))
+  }
+  return [...weeks].sort()
+}
+
 /**
- * The numbers that made the rule fire, one point a week, against the rule's threshold as a dashed line. The chart's
- * label says every value in words. Stalled weight shows a chart for each exercise the rule found.
+ * The numbers that made the rule fire, one point a week, against the rule's threshold as a dashed line; a week without
+ * logs is a gap. The chart's label says every value in words, and the values can be shown as a table. Stalled weight
+ * shows a chart for each exercise the rule found. `compact` is the phone's version: the same chart without its card,
+ * axis scale and legend.
  */
 export function RuleChart({
   planChange,
+  compact = false,
 }: {
-  planChange: Pick<PlanChange, 'rule' | 'figures' | 'concernedExercises'>
+  planChange: ChartedPlanChange
+  compact?: boolean
 }) {
   const { t, i18n } = useTranslation()
   const unit = useWeightUnit()
@@ -45,43 +94,53 @@ export function RuleChart({
     style: 'percent',
     maximumFractionDigits: 0,
   })
+  const weeks = weeksOf(planChange)
   const of = (kind: PlanChange['figures'][number]['kind']) =>
-    planChange.figures
-      .filter((figure) => figure.kind === kind)
-      .sort((a, b) => a.weekStart.localeCompare(b.weekStart))
+    planChange.figures.filter((figure) => figure.kind === kind)
+  // the value a figure gives for a week, or nothing
+  const on = (
+    figures: PlanChange['figures'],
+    week: string,
+  ): number | undefined =>
+    figures.find((figure) => figure.weekStart === week)?.value
 
   // stalled weight draws one chart per exercise the rule found; the other rules one chart for the week figures
   const series: Series[] = []
   if (rule === 'HIGH_RPE') {
+    const rpe = of('MEAN_RPE')
     series.push({
-      points: of('MEAN_RPE').map((figure) => ({
-        week: figure.weekStart,
-        value: figure.value,
-      })),
+      points: weeks.map((week) => ({ week, value: on(rpe, week) ?? null })),
       threshold: RPE_LIMIT,
     })
   } else if (rule === 'STALLED_WEIGHT') {
     for (const exercise of planChange.concernedExercises) {
-      const points = of('BEST_LOAD_KG')
-        .filter((figure) => figure.exerciseId === exercise.id)
-        .map((figure) => ({
-          week: figure.weekStart,
-          value: fromKg(figure.value, unit),
-        }))
+      const best = of('BEST_LOAD_KG').filter(
+        (figure) => figure.exerciseId === exercise.id,
+      )
+      const points = weeks.map((week) => {
+        const load = on(best, week)
+        return { week, value: load === undefined ? null : fromKg(load, unit) }
+      })
+      const first = points.find((point) => point.value !== null)
       series.push({
         exercise: exercise.name,
         points,
-        threshold: (points[0]?.value ?? 0) * REQUIRED_RISE,
+        threshold: (first?.value ?? 0) * REQUIRED_RISE,
       })
     }
   } else {
     const planned = of('SESSIONS_PLANNED')
+    const finished = of('SESSIONS_FINISHED')
     series.push({
-      points: of('SESSIONS_FINISHED').map((figure) => {
-        const week = planned.find((plan) => plan.weekStart === figure.weekStart)
+      points: weeks.map((week) => {
+        const plan = on(planned, week)
+        const done = on(finished, week)
         return {
-          week: figure.weekStart,
-          value: week && week.value > 0 ? figure.value / week.value : 0,
+          week,
+          value:
+            plan !== undefined && plan > 0 && done !== undefined
+              ? done / plan
+              : null,
         }
       }),
       threshold: COMPLETION_TARGET,
@@ -97,6 +156,18 @@ export function RuleChart({
           })
         : share.format(value)
 
+  const charts = series.map((one) => (
+    <SeriesChart
+      key={one.exercise ?? rule}
+      rule={rule}
+      series={one}
+      format={format}
+      compact={compact}
+    />
+  ))
+
+  if (compact) return <div className="flex flex-col gap-3">{charts}</div>
+
   return (
     <Card>
       <CardHeader>
@@ -107,41 +178,37 @@ export function RuleChart({
           {t(`planChange.chart.subtitle.${rule}`)}
         </CardDescription>
       </CardHeader>
-      <CardContent className="flex flex-col gap-3">
-        {series.map((one) => (
-          <SeriesChart
-            key={one.exercise ?? rule}
-            rule={rule}
-            series={one}
-            format={format}
-          />
-        ))}
-      </CardContent>
+      <CardContent className="flex flex-col gap-3">{charts}</CardContent>
     </Card>
   )
 }
 
-/** One series against its threshold, with its legend. */
+/** One series against its threshold, with its legend and, off the phone, its values as a table. */
 function SeriesChart({
   rule,
   series,
   format,
+  compact,
 }: {
   rule: PlanChange['rule']
   series: Series
   format: (value: number) => string
+  compact: boolean
 }) {
   const { t, i18n } = useTranslation()
+  const [table, setTable] = useState(false)
   const data = series.points.map((point) => ({
     ...point,
     label: formatShortDate(point.week, i18n.language),
   }))
   const values = data
     .map((point) =>
-      t('planChange.chart.point', {
-        week: point.label,
-        value: format(point.value),
-      }),
+      point.value === null
+        ? t('planChange.chart.noLogs', { week: point.label })
+        : t('planChange.chart.point', {
+            week: point.label,
+            value: format(point.value),
+          }),
     )
     .join(', ')
   const config = {
@@ -152,7 +219,10 @@ function SeriesChart({
       color: SERIES[rule].color,
     },
   } satisfies ChartConfig
-  const all = [...data.map((point) => point.value), series.threshold]
+  const present = data.flatMap((point) =>
+    point.value === null ? [] : [point.value],
+  )
+  const all = [...present, series.threshold]
   const domain =
     rule === 'LOW_COMPLETION'
       ? [0, 1]
@@ -171,32 +241,62 @@ function SeriesChart({
           values,
           threshold: format(series.threshold),
         })}
-        className="num aspect-auto h-44 w-full"
+        className={
+          compact
+            ? 'num aspect-auto h-24 w-full'
+            : 'num aspect-auto h-44 w-full'
+        }
       >
         <LineChart
           data={data}
-          margin={{ top: 16, right: 28, bottom: 0, left: 0 }}
+          margin={{
+            top: 20,
+            right: compact ? 16 : 28,
+            bottom: 0,
+            left: compact ? 16 : 0,
+          }}
           // the label holds the numbers for screen readers
           accessibilityLayer={false}
         >
+          {!compact && (
+            <CartesianGrid vertical={false} stroke="var(--border)" />
+          )}
           <XAxis
             dataKey="label"
             interval={0}
+            padding={{ left: 16, right: 16 }}
             tickLine={false}
             axisLine={false}
             tickMargin={8}
           />
           <YAxis
             domain={domain}
+            hide={compact}
             tickFormatter={format}
             width={rule === 'STALLED_WEIGHT' ? 64 : 44}
             tickLine={false}
             axisLine={false}
           />
+          <ChartTooltip
+            cursor={false}
+            content={
+              <ChartTooltipContent
+                hideIndicator
+                formatter={(value) => (
+                  <span className="flex items-center gap-2">
+                    <span className="text-muted-foreground">
+                      {config.value.label}
+                    </span>
+                    <span className="font-medium">{format(Number(value))}</span>
+                  </span>
+                )}
+              />
+            }
+          />
           <ReferenceLine
             y={series.threshold}
-            stroke="var(--foreground)"
-            strokeDasharray="3 3"
+            stroke="var(--muted-foreground)"
+            strokeDasharray="4 4"
           />
           <Line
             dataKey="value"
@@ -204,27 +304,80 @@ function SeriesChart({
             stroke="var(--color-value)"
             strokeWidth={SERIES[rule].strokeWidth}
             dot={{ r: 4, fill: 'var(--color-value)' }}
+            connectNulls={false}
             isAnimationActive={false}
-          />
+          >
+            {/* each point says its value, so nothing needs the legend or the hover to be read */}
+            <LabelList
+              dataKey="value"
+              position="top"
+              offset={8}
+              className="fill-foreground text-xs"
+              formatter={(value: unknown) =>
+                typeof value === 'number' ? format(value) : ''
+              }
+            />
+          </Line>
         </LineChart>
       </ChartContainer>
       <ul className="text-muted-foreground flex flex-wrap gap-x-4 gap-y-1 text-sm">
+        {!compact && (
+          <li className="flex items-center gap-2">
+            <span
+              aria-hidden
+              className="inline-block h-0.5 w-4"
+              style={{ background: SERIES[rule].color }}
+            />
+            {config.value.label}
+          </li>
+        )}
         <li className="flex items-center gap-2">
           <span
             aria-hidden
-            className="inline-block h-0.5 w-4"
-            style={{ background: SERIES[rule].color }}
-          />
-          {config.value.label}
-        </li>
-        <li className="flex items-center gap-2">
-          <span
-            aria-hidden
-            className="border-foreground inline-block w-4 border-t-2 border-dashed"
+            className="border-muted-foreground inline-block w-4 border-t-2 border-dashed"
           />
           {t('planChange.chart.threshold', { value: format(series.threshold) })}
         </li>
       </ul>
+      {!compact && (
+        <>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="self-start"
+            aria-pressed={table}
+            onClick={() => setTable(!table)}
+          >
+            {table
+              ? t('planChange.chart.hideTable')
+              : t('planChange.chart.showTable')}
+          </Button>
+          {table && (
+            <Table data-density="compact">
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t('planChange.chart.week')}</TableHead>
+                  <TableHead className="text-end">
+                    {config.value.label}
+                  </TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {data.map((point) => (
+                  <TableRow key={point.week}>
+                    <TableCell>{point.label}</TableCell>
+                    <TableCell className="num text-end">
+                      {point.value === null
+                        ? t('planChange.chart.noLogsShort')
+                        : format(point.value)}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </>
+      )}
     </div>
   )
 }

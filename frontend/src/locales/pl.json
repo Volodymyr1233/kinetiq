@@ -1466,7 +1466,12 @@
       },
       "point": "{{week}}: {{value}}",
       "description": "{{series}}: {{values}}. Próg reguły {{threshold}}.",
-      "threshold": "Próg reguły, {{value}}"
+      "threshold": "Próg reguły, {{value}}",
+      "noLogs": "{{week}}: brak zapisów",
+      "noLogsShort": "Brak zapisów",
+      "showTable": "Pokaż jako tabelę",
+      "hideTable": "Ukryj tabelę",
+      "week": "Tydzień"
     },
     "badge": {
       "waitingForBoth": "Czeka na obie strony",
