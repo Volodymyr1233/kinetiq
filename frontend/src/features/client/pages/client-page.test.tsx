@@ -25,7 +25,12 @@ function backend(request: Request) {
   )
   if (own) return json(own)
   if (pathname.endsWith('/overview'))
-    return json({ today: '2026-11-04', recentSessions: [] })
+    return json({
+      today: '2026-11-04',
+      recentSessions: [],
+      readiness: [],
+      recoveryDays: [],
+    })
   return problem(404, { status: 404, code: 'client.not-found' })
 }
 

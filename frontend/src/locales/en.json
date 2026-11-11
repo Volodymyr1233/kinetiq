@@ -771,7 +771,28 @@
       "finished": "The plan has finished.",
       "noSessions": "No sessions yet.",
       "noAnswers": "No quiz answers yet.",
-      "loading": "Loading the overview"
+      "loading": "Loading the overview",
+      "readiness": {
+        "title": "Readiness, last 14 days",
+        "legend": "Readiness bands",
+        "day": "{{date}}: {{score}}, {{band}}",
+        "noCheckIn": "{{date}}: no check-in",
+        "today": "Today",
+        "noCheckIns": "No check-ins in the last 14 days.",
+        "noRecoveryDays": "No recovery days in the last 14 days.",
+        "recoveryDays": "Recovery days",
+        "score": "Readiness {{score}}",
+        "range": {
+          "READY": "70+",
+          "TAKE_IT_EASIER": "45–69",
+          "RECOVERY_DAY": "0–44"
+        },
+        "targets": {
+          "LIGHTER": "Lighter targets",
+          "ORIGINAL": "Original targets",
+          "none": "No lighter targets"
+        }
+      }
     },
     "logs": {
       "sessions": "Sessions",

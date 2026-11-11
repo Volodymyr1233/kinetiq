@@ -4,6 +4,7 @@ import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
+import { useCauseList } from '@/lib/readiness'
 import {
   useChooseTargets,
   type Adjustment,
@@ -103,15 +104,16 @@ export function AdjustmentMark({
 
 /** One sentence naming the answers that made today's targets lighter, in the order the answers are asked. */
 export function AdjustmentReason({ causes }: { causes: Adjustment['causes'] }) {
-  const { t, i18n } = useTranslation()
-  const list = new Intl.ListFormat(i18n.language, {
-    type: 'conjunction',
-  }).format(causes.map((cause) => t(`readiness.adjustment.cause.${cause}`)))
-  // the list opens the sentence, so its first letter is a capital in the UI language
-  const opening =
-    list.charAt(0).toLocaleUpperCase(i18n.language) + list.slice(1)
+  const { t } = useTranslation()
+  const causeList = useCauseList()
 
-  return <p>{t('readiness.adjustment.reason', { causes: opening })}</p>
+  return (
+    <p>
+      {t('readiness.adjustment.reason', {
+        causes: causeList(causes, { opening: true }),
+      })}
+    </p>
+  )
 }
 
 /** Says that only today's targets change, under the session's action. */

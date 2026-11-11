@@ -21,6 +21,7 @@ import {
   type ClientOverview,
   type ClientSession,
 } from '../api/client-training'
+import { ReadinessStrip } from '../components/readiness-strip'
 import { WeekDays } from '../components/week-days'
 
 type Client = components['schemas']['ClientResponse']
@@ -69,6 +70,7 @@ function OverviewCards({ client }: { client: Client }) {
   const published = client.planState === 'PUBLISHED'
   return (
     <div className="grid items-start gap-6 lg:grid-cols-2">
+      <ReadinessStrip overview={overview} />
       <OverviewCard title={t('sessionlog.overview.thisWeek')}>
         {!published ? (
           <Empty>{t('sessionlog.overview.noPlan')}</Empty>
@@ -244,6 +246,7 @@ function OverviewLoading() {
         {t('sessionlog.overview.loading')}
       </span>
       <div aria-hidden className="grid items-start gap-6 lg:grid-cols-2">
+        <Skeleton className="h-72" />
         <Skeleton className="h-64" />
         <Skeleton className="h-64" />
         <Skeleton className="h-72" />
