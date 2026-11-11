@@ -56,6 +56,7 @@ class PlanChangeFixture {
     final AccountId client = account("Ola Nowak", Role.CLIENT, trainer, Language.EN);
     final AccountId polishClient = account("Ewa Kowal", Role.CLIENT, trainer, Language.PL);
     final AccountId otherClient = account("Jan Obcy", Role.CLIENT, otherTrainer, Language.EN);
+    final AccountId clientWithoutTrainer = account("Kasia Sama", Role.CLIENT, null, Language.EN);
 
     // a trainer reads only their own clients
     final ViewClientsUseCase clients = new ViewClientsUseCase() {

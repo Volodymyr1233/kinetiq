@@ -47,7 +47,7 @@ public class PlanChangeDecisionService implements DecidePlanChangeUseCase {
     @Override
     public PlanChangeView undo(AccountId trainer, PlanChangeId id) {
         ClientSummary client = ownClient(trainer, id);
-        return view(trainer, client, decider.undo(id, Side.TRAINER));
+        return view(trainer, client, decider.undo(id, Side.TRAINER, client.getTimeZone()));
     }
 
     @Override

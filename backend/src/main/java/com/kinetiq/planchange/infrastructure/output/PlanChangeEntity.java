@@ -23,6 +23,7 @@ import java.util.Set;
 import java.util.UUID;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.BatchSize;
 
 @Getter
 @Setter
@@ -64,18 +65,22 @@ class PlanChangeEntity {
     private String declineNote;
 
     @ElementCollection
+    @BatchSize(size = 50)
     @CollectionTable(name = "plan_change_targets", joinColumns = @JoinColumn(name = "plan_change_id"))
     private List<PlanChangeTargetEmbeddable> targets = new ArrayList<>();
 
     @ElementCollection
+    @BatchSize(size = 50)
     @CollectionTable(name = "plan_change_moves", joinColumns = @JoinColumn(name = "plan_change_id"))
     private List<PlanChangeMoveEmbeddable> moves = new ArrayList<>();
 
     @ElementCollection
+    @BatchSize(size = 50)
     @CollectionTable(name = "plan_change_figures", joinColumns = @JoinColumn(name = "plan_change_id"))
     private List<PlanChangeFigureEmbeddable> figures = new ArrayList<>();
 
     @ElementCollection
+    @BatchSize(size = 50)
     @CollectionTable(name = "plan_change_exercises", joinColumns = @JoinColumn(name = "plan_change_id"))
     @Column(name = "exercise_id")
     private Set<UUID> exercises = new HashSet<>();

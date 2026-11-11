@@ -275,7 +275,11 @@ describe('ClientPlanChangePage', () => {
       within(sheet).getByRole('button', { name: 'Keep current plan' }),
     )
 
-    await screen.findByText(/You kept the current plan: Injury/)
+    const outcome = await screen.findByText(/You kept the current plan: Injury/)
+    // the button that opened the sheet is gone, so focus lands on the outcome instead of on the page
+    await waitFor(() =>
+      expect(document.activeElement).toContainElement(outcome),
+    )
     const post = requests.find((request) => request.method === 'POST')!
     expect(await bodyOf(post)).toEqual({ reason: 'INJURY' })
   })

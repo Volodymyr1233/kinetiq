@@ -38,8 +38,9 @@ class PlanChangeDecider {
         return decide(id, change -> change.accept(side, now, LocalDate.ofInstant(now, zone)));
     }
 
-    PlanChange undo(PlanChangeId id, Side side) {
-        return decide(id, change -> change.undo(side));
+    PlanChange undo(PlanChangeId id, Side side, ZoneId zone) {
+        LocalDate today = LocalDate.ofInstant(clock.instant(), zone);
+        return decide(id, change -> change.undo(side, today));
     }
 
     /**

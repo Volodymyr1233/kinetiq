@@ -1,5 +1,4 @@
 import { ArrowLeftIcon, CircleAlertIcon } from 'lucide-react'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
@@ -30,8 +29,8 @@ import {
   useClientPlanChange,
   useKeepCurrentPlan,
   useUndoPlanChange,
-  type DeclineReason,
 } from '../api/client-plan-change'
+import { usePlanChangeDecisions } from '../api/use-plan-change-decisions'
 import { PlanChangeDecisionPanel } from '../components/plan-change-decision-panel'
 import { PlanChangePeople } from '../components/plan-change-people'
 import { PlanChangeTable } from '../components/plan-change-table'
@@ -45,8 +44,7 @@ export function ClientPlanChangePage() {
   const accept = useAcceptPlanChange()
   const undo = useUndoPlanChange()
   const keep = useKeepCurrentPlan()
-  // the last refusal; the screen itself keeps the last state the server confirmed
-  const [error, setError] = useState<unknown>()
+  const decisions = usePlanChangeDecisions(accept, undo, keep)
   const planChange = query.data
 
   // an unknown id, another client's plan change, and text that is no id at all
@@ -103,21 +101,6 @@ export function ClientPlanChangePage() {
   }
 
   const badge = planChangeStatus(planChange, 'CLIENT')
-  const busy = accept.isPending || undo.isPending || keep.isPending
-  const run = <Variables,>(
-    mutation: {
-      mutate: (
-        variables: Variables,
-        options: { onSuccess: () => void; onError: (error: unknown) => void },
-      ) => void
-    },
-    variables: Variables,
-  ) =>
-    mutation.mutate(variables, {
-      onSuccess: () => setError(undefined),
-      onError: setError,
-    })
-
   return (
     <div className="flex flex-col gap-4 px-4">
       <Button variant="ghost" className="-ms-2 self-start" asChild>
@@ -158,21 +141,12 @@ export function ClientPlanChangePage() {
             viewer="CLIENT"
             otherName={planChange.counterpartName}
             planLink="/app/plan"
-            busy={busy}
-            error={error}
-            onAccept={() => run(accept, { id: planChange.id })}
-            onUndo={() => run(undo, { id: planChange.id })}
-            onKeep={(reason: DeclineReason, note: string | undefined) =>
-              keep
-                .mutateAsync({ id: planChange.id, reason, note })
-                .then(() => {
-                  setError(undefined)
-                  return true
-                })
-                .catch((failure: unknown) => {
-                  setError(failure)
-                  return false
-                })
+            busy={decisions.busy}
+            error={decisions.error}
+            onAccept={() => decisions.accept(planChange.id)}
+            onUndo={() => decisions.undo(planChange.id)}
+            onKeep={(reason, note) =>
+              decisions.keep(planChange.id, reason, note)
             }
           />
         </CardContent>
