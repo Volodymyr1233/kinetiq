@@ -18,6 +18,8 @@ spring:
   mvc:
     problemdetails:
       enabled: true
+    # the message of a refused request can hold what the person typed, such as a note; none of it goes to the log
+    log-resolved-exception: false
   messages:
     # an unsupported language falls back to messages.properties (English), not to the server's locale
     fallback-to-system-locale: false
