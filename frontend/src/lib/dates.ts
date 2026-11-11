@@ -13,6 +13,15 @@ export function formatDay(iso: string, locale: string): string {
   }).format(localDate(iso))
 }
 
+/** The day an instant such as `2026-10-14T23:30:00Z` falls on in the viewer's time zone, as {@link formatDay} writes it. */
+export function formatInstantDay(instant: string, locale: string): string {
+  return new Intl.DateTimeFormat(locale, {
+    weekday: 'short',
+    day: 'numeric',
+    month: 'short',
+  }).format(new Date(instant))
+}
+
 /** A day of a week as a short date such as "26 Oct", for chart axes. */
 export function formatShortDate(iso: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, {

@@ -67,10 +67,12 @@ export function PlanChangeDecisionPanel({
   const { t, i18n } = useTranslation()
   const [keepOpen, setKeepOpen] = useState(false)
   const keepButton = useRef<HTMLButtonElement>(null)
-  // the sheet and the dialog have no trigger of their own, so focus goes back to the button that opened them
+  const outcome = useRef<HTMLDivElement>(null)
+  // the sheet and the dialog have no trigger of their own, so focus goes back to the button that opened them; once the
+  // plan change was declined that button is gone and focus goes to what replaced it
   const returnFocus = (event: Event) => {
     event.preventDefault()
-    keepButton.current?.focus()
+    ;(keepButton.current ?? outcome.current)?.focus()
   }
   const touch = viewer === 'CLIENT'
   const size = touch ? 'touch' : 'default'
@@ -173,7 +175,13 @@ export function PlanChangeDecisionPanel({
   const open = waitsForDecisionOf(planChange, viewer) && keepOpen
   return (
     <div className="flex flex-col gap-3">
-      {body}
+      <div
+        ref={outcome}
+        tabIndex={-1}
+        className="flex flex-col gap-3 outline-none"
+      >
+        {body}
+      </div>
       <div aria-live="polite" className="text-destructive text-sm empty:hidden">
         {!open && errorText}
       </div>

@@ -44,7 +44,8 @@ public class OwnPlanChangeDecisionService implements DecideOwnPlanChangeUseCase 
     @Override
     public ClientPlanChangeView undo(AccountId client, PlanChangeId id) {
         requireOwn(client, id);
-        return texts.clientView(decider.undo(id, Side.CLIENT));
+        ZoneId zone = accounts.find(client).getTimeZone();
+        return texts.clientView(decider.undo(id, Side.CLIENT, zone));
     }
 
     @Override

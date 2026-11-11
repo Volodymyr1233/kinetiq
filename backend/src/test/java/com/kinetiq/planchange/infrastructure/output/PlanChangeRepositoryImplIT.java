@@ -269,7 +269,7 @@ class PlanChangeRepositoryImplIT {
         PlanChange stored = repository.save(pending(client));
         PlanChange accepted = repository.update(stored.accept(Side.CLIENT, CREATED, LocalDate.parse("2026-11-12")));
 
-        repository.update(accepted.undo(Side.CLIENT));
+        repository.update(accepted.undo(Side.CLIENT, LocalDate.parse("2026-11-12")));
         entityManager.clear();
 
         PlanChange read = repository.find(stored.getId()).orElseThrow();

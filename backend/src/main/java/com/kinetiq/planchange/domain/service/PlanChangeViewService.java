@@ -2,7 +2,6 @@ package com.kinetiq.planchange.domain.service;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.model.AccountId;
-import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.client.domain.exception.ClientNotFoundException;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
@@ -13,6 +12,7 @@ import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
 import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
+import com.kinetiq.planchange.domain.model.PlanChangeText;
 import com.kinetiq.planchange.domain.output.PlanChangeApprovals;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.PlanSource;
@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class PlanChangeViewService implements ViewPlanChangeUseCase {
 
@@ -76,21 +77,24 @@ public class PlanChangeViewService implements ViewPlanChangeUseCase {
         List<PlanChangeApprovals.Entry> entries = approvals.forTrainer(trainer, clock.instant().minus(DECIDED_WINDOW));
         Map<PlanChangeId, PlanChange> found = planChanges.findAll(entries.stream().map(PlanChangeApprovals.Entry::id).toList()).stream()
                 .collect(Collectors.toMap(PlanChange::getId, Function.identity()));
-        Language language = texts.languageOf(trainer);
-        return entries.stream()
-                // a plan change gone between the two reads has nothing to show
-                .filter(entry -> found.containsKey(entry.id()))
-                .map(entry -> new PlanChangeApprovalView(
-                        found.get(entry.id()), entry.clientName(), texts.text(language, found.get(entry.id()))))
+        // a plan change gone between the two reads has nothing to show
+        List<PlanChangeApprovals.Entry> shown =
+                entries.stream().filter(entry -> found.containsKey(entry.id())).toList();
+        List<PlanChangeText> written = texts.texts(
+                texts.languageOf(trainer), shown.stream().map(entry -> found.get(entry.id())).toList());
+        return IntStream.range(0, shown.size())
+                .mapToObj(i -> new PlanChangeApprovalView(
+                        found.get(shown.get(i).id()), shown.get(i).clientName(), written.get(i)))
                 .toList();
     }
 
     @Override
     public List<PlanChangeApprovalView> ended(AccountId trainer, AccountId client) {
         String name = clients.getClient(trainer, client).getName();
-        Language language = texts.languageOf(trainer);
-        return planChanges.findEnded(client, ENDED_SHOWN).stream()
-                .map(planChange -> new PlanChangeApprovalView(planChange, name, texts.text(language, planChange)))
+        List<PlanChange> ended = planChanges.findEnded(client, ENDED_SHOWN);
+        List<PlanChangeText> written = texts.texts(texts.languageOf(trainer), ended);
+        return IntStream.range(0, ended.size())
+                .mapToObj(i -> new PlanChangeApprovalView(ended.get(i), name, written.get(i)))
                 .toList();
     }
 }

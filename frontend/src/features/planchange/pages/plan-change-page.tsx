@@ -1,5 +1,4 @@
 import { CircleAlertIcon } from 'lucide-react'
-import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useParams } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
@@ -35,13 +34,13 @@ import {
   planChangeBadgeVariant,
   planChangeStatus,
 } from '@/lib/plan-change-state'
-import type { DeclineReason } from '../api/client-plan-change'
 import {
   useAcceptPlanChange,
   useKeepCurrentPlanChange,
   usePlanChange,
   useUndoPlanChange,
 } from '../api/plan-change'
+import { usePlanChangeDecisions } from '../api/use-plan-change-decisions'
 import { PlanChangeDecisionPanel } from '../components/plan-change-decision-panel'
 import { PlanChangePeople } from '../components/plan-change-people'
 import { PlanChangeTable } from '../components/plan-change-table'
@@ -55,8 +54,7 @@ export function PlanChangePage() {
   const accept = useAcceptPlanChange()
   const undo = useUndoPlanChange()
   const keep = useKeepCurrentPlanChange()
-  // the last refusal; the screen itself keeps the last state the server confirmed
-  const [error, setError] = useState<unknown>()
+  const decisions = usePlanChangeDecisions(accept, undo, keep)
   const planChange = query.data
 
   // an unknown id, another trainer's client's plan change, and text that is no id at all
@@ -115,21 +113,6 @@ export function PlanChangePage() {
   }
 
   const badge = planChangeStatus(planChange, 'TRAINER')
-  const busy = accept.isPending || undo.isPending || keep.isPending
-  const run = (
-    mutation: {
-      mutate: (
-        variables: { id: string },
-        options: { onSuccess: () => void; onError: (error: unknown) => void },
-      ) => void
-    },
-    variables: { id: string },
-  ) =>
-    mutation.mutate(variables, {
-      onSuccess: () => setError(undefined),
-      onError: setError,
-    })
-
   const concerned = new Intl.ListFormat(i18n.language, {
     type: 'conjunction',
   }).format(planChange.concernedExercises.map((exercise) => exercise.name))
@@ -194,21 +177,12 @@ export function PlanChangePage() {
               viewer="TRAINER"
               otherName={planChange.clientName}
               planLink={`/trainer/clients/${planChange.clientId}/plan`}
-              busy={busy}
-              error={error}
-              onAccept={() => run(accept, { id: planChange.id })}
-              onUndo={() => run(undo, { id: planChange.id })}
-              onKeep={(reason: DeclineReason, note: string | undefined) =>
-                keep
-                  .mutateAsync({ id: planChange.id, reason, note })
-                  .then(() => {
-                    setError(undefined)
-                    return true
-                  })
-                  .catch((failure: unknown) => {
-                    setError(failure)
-                    return false
-                  })
+              busy={decisions.busy}
+              error={decisions.error}
+              onAccept={() => decisions.accept(planChange.id)}
+              onUndo={() => decisions.undo(planChange.id)}
+              onKeep={(reason, note) =>
+                decisions.keep(planChange.id, reason, note)
               }
             />
           </CardContent>

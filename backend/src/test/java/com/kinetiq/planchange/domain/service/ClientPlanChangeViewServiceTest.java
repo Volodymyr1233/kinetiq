@@ -46,6 +46,14 @@ class ClientPlanChangeViewServiceTest {
     }
 
     @Test
+    void shouldAnswerNotFound_whenTheClientHasNoTrainerAnymore() {
+        PlanChange stored = world.pendingFor(world.clientWithoutTrainer);
+
+        assertThatThrownBy(() -> service.get(world.clientWithoutTrainer, stored.getId()))
+                .isInstanceOf(PlanChangeNotFoundException.class);
+    }
+
+    @Test
     void shouldShowAnEndedPlanChangeById_butNotAsTheCurrentOne() {
         PlanChange pending = world.pendingFor(world.client);
         PlanChange declined = pending.decline(

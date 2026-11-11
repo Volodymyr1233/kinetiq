@@ -128,7 +128,7 @@ class PlanChangeDecisionTest {
         @Test
         void shouldBePendingAgainWithNobodysAcceptance_whenTheAcceptorUndoes() {
             for (Side side : Side.values()) {
-                PlanChange undone = acceptedBy(side).undo(side);
+                PlanChange undone = acceptedBy(side).undo(side, TODAY);
 
                 assertThat(undone.getState()).isEqualTo(PlanChangeState.PENDING);
                 assertThat(undone.acceptedBy(Side.TRAINER)).isFalse();
@@ -138,13 +138,13 @@ class PlanChangeDecisionTest {
 
         @Test
         void shouldBeRefused_whenTheOtherSideAcceptedNotTheOneUndoing() {
-            assertThatThrownBy(() -> acceptedBy(Side.CLIENT).undo(Side.TRAINER))
+            assertThatThrownBy(() -> acceptedBy(Side.CLIENT).undo(Side.TRAINER, TODAY))
                     .isInstanceOf(PlanChangeNothingToUndoException.class);
         }
 
         @Test
         void shouldBeRefused_whenNobodyAcceptedYet() {
-            assertThatThrownBy(() -> pending().undo(Side.CLIENT)).isInstanceOf(PlanChangeNothingToUndoException.class);
+            assertThatThrownBy(() -> pending().undo(Side.CLIENT, TODAY)).isInstanceOf(PlanChangeNothingToUndoException.class);
         }
 
         @Test
@@ -152,15 +152,23 @@ class PlanChangeDecisionTest {
             PlanChange applied = acceptedBy(Side.TRAINER).accept(Side.CLIENT, SECOND, TODAY);
 
             for (Side side : Side.values()) {
-                assertThatThrownBy(() -> applied.undo(side)).isInstanceOf(PlanChangeEndedException.class);
+                assertThatThrownBy(() -> applied.undo(side, TODAY)).isInstanceOf(PlanChangeEndedException.class);
             }
+        }
+
+        @Test
+        void shouldBeRefused_whenTheEffectiveWeekHasBegun() {
+            PlanChange accepted = acceptedBy(Side.TRAINER);
+
+            assertThatThrownBy(() -> accepted.undo(Side.TRAINER, EFFECTIVE))
+                    .isInstanceOf(PlanChangeWeekBegunException.class);
         }
 
         @Test
         void shouldBeRefusedAsEnded_whenItIsDeclined() {
             PlanChange declined = pending().decline(Side.TRAINER, DeclineReason.INJURY, null, FIRST, TODAY);
 
-            assertThatThrownBy(() -> declined.undo(Side.TRAINER)).isInstanceOf(PlanChangeEndedException.class);
+            assertThatThrownBy(() -> declined.undo(Side.TRAINER, TODAY)).isInstanceOf(PlanChangeEndedException.class);
         }
     }
 

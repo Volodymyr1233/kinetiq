@@ -15,7 +15,7 @@ import {
 import { Skeleton } from '@/components/ui/skeleton'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { errorMessageKey } from '@/lib/api/problem'
-import { formatDay } from '@/lib/dates'
+import { formatInstantDay } from '@/lib/dates'
 import { firstName } from '@/lib/first-name'
 import {
   planChangeBadgeVariant,
@@ -195,8 +195,8 @@ function PastPlanChanges({ clientId }: { clientId: string }) {
                     })}
                   </Badge>
                   <span className="text-muted-foreground text-sm">
-                    {formatDay(
-                      (change.endedAt ?? change.createdAt).slice(0, 10),
+                    {formatInstantDay(
+                      change.endedAt ?? change.createdAt,
                       i18n.language,
                     )}
                   </span>

@@ -166,11 +166,12 @@ public class PlanChange {
         return with(next, both ? now : null, trainerAt, clientAt, null);
     }
 
-    /** Takes back the acceptance of {@code side}, while the other side has not accepted. */
-    public PlanChange undo(Side side) {
-        if (!state.isOpen()) {
-            throw new PlanChangeEndedException();
-        }
+    /**
+     * Takes back the acceptance of {@code side}, while the other side has not accepted and the effective week has not
+     * begun.
+     */
+    public PlanChange undo(Side side, LocalDate today) {
+        requireDecidable(today);
         if (state != PlanChangeState.ACCEPTED_BY_ONE || !acceptedBy(side)) {
             throw new PlanChangeNothingToUndoException();
         }
