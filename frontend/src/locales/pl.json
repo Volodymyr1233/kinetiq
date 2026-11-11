@@ -1171,7 +1171,8 @@
     "about": {
       "label": "Dotyczy",
       "text": "{{session}} · {{date}} · {{exercise}}, seria {{number}} · RPE {{rpe, number}}",
-      "remove": "Usuń serię z tej wiadomości"
+      "remove": "Usuń serię z tej wiadomości",
+      "open": "Otwórz tę serię"
     },
     "trainer": {
       "listLabel": "Rozmowy",

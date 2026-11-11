@@ -63,6 +63,9 @@ export function ClientMessagesPage({ ask }: { ask?: About }) {
           outbox.submit(conversation.clientId, text, about)
         }
         onRetry={outbox.retry}
+        aboutHref={(set) =>
+          `/app/session/${set.sessionLogId}?set=${set.entryPosition}-${set.setNumber}`
+        }
       />
     </div>
   )

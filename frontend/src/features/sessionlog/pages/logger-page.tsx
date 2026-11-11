@@ -1,7 +1,13 @@
 import { ArrowLeftIcon, CircleAlertIcon, LockIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { Link, Navigate, useLocation, useParams } from 'react-router'
+import {
+  Link,
+  Navigate,
+  useLocation,
+  useParams,
+  useSearchParams,
+} from 'react-router'
 import {
   Alert,
   AlertAction,
@@ -25,6 +31,7 @@ import {
   type SessionLog,
   type SyncState,
 } from '../api/session-log'
+import { isPlace, setPlaceOf } from '../marked-set'
 import { FinishFooter } from '../components/finish-footer'
 import { OfflineBanner } from '../components/offline-banner'
 import { RestTimer } from '../components/rest-timer'
@@ -41,16 +48,25 @@ const restEnds = new Map<string, number>()
 // a rest day, a finished plan and no plan leave nothing to log: the client goes back to Today
 const NOTHING_TO_LOG = ['session-log.no-session-today', 'plan.not-found']
 
-// the Plan card passes its address, week included, so going back returns to that week
+// the Plan card passes its address, week included, so going back returns to that week; a message about a set passes
+// the Messages tab
 function planAddress(state: unknown): string | undefined {
   const from =
     typeof state === 'object' && state !== null && 'from' in state
       ? state.from
       : undefined
-  return typeof from === 'string' && from.startsWith('/app/plan')
+  return typeof from === 'string' &&
+    (from.startsWith('/app/plan') || from === '/app/messages')
     ? from
     : undefined
 }
+
+const backLabel = (from: string | undefined) =>
+  from === undefined
+    ? 'sessionlog.back'
+    : from === '/app/messages'
+      ? 'nav.messages'
+      : 'sessionlog.backToPlan'
 
 /**
  * The session logger: today's session, or the client's session of the id in the address, with one row for each planned
@@ -117,6 +133,8 @@ function Session({
 }) {
   const { t, i18n } = useTranslation()
   const plan = planAddress(useLocation().state)
+  // a message about a set links here with that set's place
+  const marked = setPlaceOf(useSearchParams()[0].get('set'))
   // one entry panel is open at a time
   const [openSet, setOpenSet] = useState<string | null>(null)
   const [restEndsAt, showRest] = useState(
@@ -157,7 +175,7 @@ function Session({
       <Button variant="ghost" size="touch" asChild className="self-start px-2">
         <Link to={plan ?? '/app/today'}>
           <ArrowLeftIcon aria-hidden />
-          {t(plan === undefined ? 'sessionlog.back' : 'sessionlog.backToPlan')}
+          {t(backLabel(plan))}
         </Link>
       </Button>
       <header className="flex flex-col gap-1">
@@ -218,6 +236,7 @@ function Session({
                   entry={entry}
                   set={set}
                   open={openSet === key}
+                  marked={isPlace(marked, entry.position, set.number)}
                   locked={locked}
                   onToggle={() => setOpenSet(openSet === key ? null : key)}
                   onLogged={(restSeconds) =>

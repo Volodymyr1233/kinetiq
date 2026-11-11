@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router'
 import { describe, expect, it, vi } from 'vitest'
 import type { Message } from '../api/messaging'
 import type { OutboxEntry } from '../use-outbox'
@@ -27,22 +28,95 @@ function renderList(
     onLoadEarlier?: () => void
   } = {},
 ) {
+  // the chip of a message about a set is a link
   render(
-    <MessageList
-      messages={messages}
-      firstUnreadId={firstUnreadId}
-      outbox={outbox}
-      hasMore={hasMore}
-      onLoadEarlier={onLoadEarlier}
-      onRetry={onRetry}
-      peerName="Marek"
-      now={NOW}
-    />,
+    <MemoryRouter>
+      <MessageList
+        messages={messages}
+        firstUnreadId={firstUnreadId}
+        outbox={outbox}
+        hasMore={hasMore}
+        onLoadEarlier={onLoadEarlier}
+        onRetry={onRetry}
+        peerName="Marek"
+        now={NOW}
+        aboutHref={(about) => `/sets/${about.setLogId}`}
+      />
+    </MemoryRouter>,
   )
   return screen.getByRole('log', { name: 'Messages with Marek' })
 }
 
+const ABOUT = {
+  setLogId: '00000000-0000-4000-b000-000000000001',
+  sessionLogId: '00000000-0000-4000-a000-000000000001',
+  sessionName: 'Lower body',
+  sessionDate: '2026-11-01',
+  exerciseName: 'Back squat',
+  entryPosition: 0,
+  setNumber: 3,
+  rpe: 9,
+}
+const CHIP =
+  /^About Lower body · Sun, Nov 1 · Back squat, set 3 · RPE 9 Open this set$/
+
 describe('MessageList', () => {
+  it('shows the set a message is about above it, as a link to that set, on either side', () => {
+    renderList([
+      {
+        ...message('1', 'Too heavy?', true, '2026-11-02T09:00:00'),
+        about: ABOUT,
+      },
+      {
+        ...message('2', 'Looks fine.', false, '2026-11-02T09:05:00'),
+        about: ABOUT,
+      },
+      message('3', 'Thanks', true, '2026-11-02T09:06:00'),
+    ])
+
+    const chips = screen.getAllByRole('link', { name: CHIP })
+    expect(chips).toHaveLength(2)
+    expect(chips[0]).toHaveAttribute('href', `/sets/${ABOUT.setLogId}`)
+    // the chip comes right before the message it belongs to
+    expect(chips[0]!.nextElementSibling).toHaveTextContent('You: Too heavy?')
+    expect(chips[1]!.nextElementSibling).toHaveTextContent('Marek: Looks fine.')
+  })
+
+  it('shows the set on a message that is still sending or was not sent', () => {
+    renderList([], {
+      outbox: [
+        {
+          id: 'a',
+          conversation: 'anna',
+          text: 'One',
+          about: ABOUT,
+          status: 'sending',
+        },
+        {
+          id: 'b',
+          conversation: 'anna',
+          text: 'Two',
+          about: ABOUT,
+          status: 'failed',
+        },
+      ],
+    })
+
+    expect(screen.getAllByRole('link', { name: CHIP })).toHaveLength(2)
+    expect(screen.getByText('Sending…')).toBeInTheDocument()
+    expect(screen.getByText('Not sent')).toBeInTheDocument()
+  })
+
+  it('keeps the time under the last message of a run when a message of it is about a set', () => {
+    renderList([
+      { ...message('1', 'one', true, '2026-11-02T09:00:00'), about: ABOUT },
+      message('2', 'two', true, '2026-11-02T09:01:00'),
+    ])
+
+    expect(screen.getAllByText(/^Sent · /)).toHaveLength(1)
+    expect(screen.getByText('two').parentElement).toHaveTextContent(/Sent · /)
+  })
+
   it('shows messages in order with the newest last and marks them for a screen reader', () => {
     const list = renderList([
       message('1', 'first', false, '2026-11-02T09:00:00'),

@@ -10,6 +10,7 @@ import {
 import { cn } from '@/lib/utils'
 import { fromKg, useWeightUnit } from '@/lib/weight'
 import type { ClientSessionLog } from '../api/client-training'
+import { isPlace, MARKED, reveal, type SetPlace } from '../marked-set'
 
 type Entry = ClientSessionLog['entries'][number]
 
@@ -23,7 +24,14 @@ function rpeTone(logged: number, target: number) {
  * Every planned set of a session against its target, one row per set, as the trainer reads a client's log. Loads are
  * in the trainer's unit; an exercise measured in seconds shows its amounts in seconds.
  */
-export function SessionLogTable({ entries }: { entries: Entry[] }) {
+export function SessionLogTable({
+  entries,
+  marked,
+}: {
+  entries: Entry[]
+  // the set an address names, as a message about it links to
+  marked?: SetPlace
+}) {
   const { t, i18n } = useTranslation()
   const unit = useWeightUnit()
   const number = new Intl.NumberFormat(i18n.language, {
@@ -65,7 +73,15 @@ export function SessionLogTable({ entries }: { entries: Entry[] }) {
       <TableBody>
         {entries.flatMap((entry) =>
           entry.sets.map((set) => (
-            <TableRow key={`${entry.position}-${set.number}`}>
+            <TableRow
+              key={`${entry.position}-${set.number}`}
+              {...(isPlace(marked, entry.position, set.number) && {
+                ref: reveal,
+                tabIndex: -1,
+                'aria-current': 'true' as const,
+                className: MARKED,
+              })}
+            >
               <TableCell className="font-medium">
                 {/* the name shows once per exercise, and is still read out on every row */}
                 <span className={cn(set.number > 1 && 'sr-only')}>
