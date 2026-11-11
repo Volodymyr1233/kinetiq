@@ -789,7 +789,28 @@
       "finished": "Plan się zakończył.",
       "noSessions": "Brak sesji.",
       "noAnswers": "Brak odpowiedzi z quizu.",
-      "loading": "Wczytywanie przeglądu"
+      "loading": "Wczytywanie przeglądu",
+      "readiness": {
+        "title": "Gotowość, ostatnie 14 dni",
+        "legend": "Zakresy gotowości",
+        "day": "{{date}}: {{score}}, {{band}}",
+        "noCheckIn": "{{date}}: brak check-inu",
+        "today": "Dziś",
+        "noCheckIns": "Brak check-inów w ostatnich 14 dniach.",
+        "noRecoveryDays": "Brak dni regeneracji w ostatnich 14 dniach.",
+        "recoveryDays": "Dni regeneracji",
+        "score": "Gotowość {{score}}",
+        "range": {
+          "READY": "70+",
+          "TAKE_IT_EASIER": "45–69",
+          "RECOVERY_DAY": "0–44"
+        },
+        "targets": {
+          "LIGHTER": "Lżejsze cele",
+          "ORIGINAL": "Cele z planu",
+          "none": "Bez lżejszych celów"
+        }
+      }
     },
     "logs": {
       "sessions": "Sesje",

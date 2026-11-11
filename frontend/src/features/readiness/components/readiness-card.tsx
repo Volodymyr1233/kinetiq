@@ -2,15 +2,9 @@ import { useEffect, useId, useRef } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { BAND_STYLE } from '@/lib/readiness'
 import { cn } from '@/lib/utils'
 import type { CheckIn } from '../api/check-in'
-
-// the readiness scale, never red: a low score is not an error
-const BAND_STYLE = {
-  READY: { surface: 'bg-ready-high-muted', dot: 'bg-ready-high' },
-  TAKE_IT_EASIER: { surface: 'bg-ready-mid-muted', dot: 'bg-ready-mid' },
-  RECOVERY_DAY: { surface: 'bg-ready-low-muted', dot: 'bg-ready-low' },
-} as const
 
 type ReadinessCardProps = {
   checkIn: CheckIn

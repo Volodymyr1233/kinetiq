@@ -91,8 +91,8 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
 
 **Independent test**: `readiness-strip.test.tsx` renders the strip and entries from a fixture, and `client-logs-tab.test.tsx` opens `?session=<id>`.
 
-- [ ] T013 [P] [US1] `F/lib/readiness.ts`: move `BAND_STYLE` (band → `{ surface, dot }`) from `F/features/readiness/components/readiness-card.tsx`, with its comment "the readiness scale, never red: a low score is not an error", and add `bar: 'bg-ready-high' | 'bg-ready-mid' | 'bg-ready-low'` if `dot` cannot serve the bar. `readiness-card.tsx` imports it, with no behaviour change.
-- [ ] T014 [P] [US1] [US2] `F/locales/en.json` and `F/locales/pl.json`, under `sessionlog.overview.readiness`:
+- [X] T013 [P] [US1] `F/lib/readiness.ts`: move `BAND_STYLE` (band → `{ surface, dot }`) from `F/features/readiness/components/readiness-card.tsx`, with its comment "the readiness scale, never red: a low score is not an error", and add `bar: 'bg-ready-high' | 'bg-ready-mid' | 'bg-ready-low'` if `dot` cannot serve the bar. `readiness-card.tsx` imports it, with no behaviour change.
+- [X] T014 [P] [US1] [US2] `F/locales/en.json` and `F/locales/pl.json`, under `sessionlog.overview.readiness`:
   - `title`: "Readiness, last 14 days" / "Gotowość, ostatnie 14 dni"
   - `legend`: "Bands" / "Zakresy" (the legend list's accessible name)
   - `day`: "{{date}}: {{score}}, {{band}}" / same pattern
@@ -108,30 +108,30 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
   - `score`: "Readiness {{score}}" / "Gotowość {{score}}" (the entry's score, for screen readers)
 
   Reuse `readiness.card.band.*.name` and `readiness.adjustment.cause.*`. Match the Polish words "check-in", "cel" and "dzień regeneracji" to their existing uses in `pl.json`.
-- [ ] T015 [US1] `FS/components/readiness-strip.tsx`: `ReadinessCard({ overview })` as a `Card` with `role="region"` named by its `h2` title, the same pattern as `OverviewCard`.
+- [X] T015 [US1] `FS/components/readiness-strip.tsx`: `ReadinessCard({ overview })` as a `Card` with `role="region"` named by its `h2` title, the same pattern as `OverviewCard`.
   - Header: the title and a legend `<ul>` of three items, each a `size-2 rounded-full` dot in the band colour and the band name.
   - Strip: an `<ol className="grid grid-cols-14 …">` with one `<li>` per `overview.readiness` item. Each item has an `aria-hidden` column: a fixed-height track (`h-28`, `flex items-end`), a bar of `height: max(score, 3)%` in the band colour with `rounded-t-sm`, the score above it in `num text-xs`, and the day of the month below in `text-muted-foreground text-[10px]`. Today's column is the last, with its label "Today" in `font-semibold`. Each item also has one `sr-only` text: `day` or `noCheckIn`, with the date formatted weekday-day-month in `timeZone: 'UTC'` as `useFormats` does.
   - A day without a check-in has no bar and no number (FR-010).
   - With no check-in in the 14 days, the card shows `noCheckIns` only (FR-012).
   - Inline style is allowed only for the bar height; use semantic classes otherwise.
-- [ ] T016 [US2] Same file, under the strip: an `h3` "Recovery days" and a `<ul className="divide-y">` of `overview.recoveryDays` in API order. Each `<li>` shows:
+- [X] T016 [US2] Same file, under the strip: an `h3` "Recovery days" and a `<ul className="divide-y">` of `overview.recoveryDays` in API order. Each `<li>` shows:
   - the date in the weekday-day-month format and the score in `num` with `sr-only` `score`;
   - the reason, from `Intl.ListFormat(language, { type: 'conjunction' })` over the translated causes, first letter capitalised for the locale, as the client's adjustment reason does (reuse its helper if it lives in `F/lib`; otherwise move it there);
   - the outcome text (`targets.LIGHTER`, `targets.ORIGINAL` or `targets.none`) in `text-muted-foreground`;
   - the session: its name as a `Link` to `../logs?session=<sessionLogId>` (relative to the client route, matching how the "All logs" button links to `logs`) when `sessionLogId` exists, plain text otherwise, followed by `SessionStateBadge`.
 
   With check-ins but no recovery day, show `noRecoveryDays` (FR-012). Text wraps, with no fixed widths, so that at 768 px nothing scrolls sideways.
-- [ ] T017 [US1] `FS/pages/client-overview-tab.tsx`: render `<ReadinessCard overview={overview} />` as the first child of the grid, before "This week" (Clarification Q3). Add a fourth `Skeleton` first in `OverviewLoading`.
-- [ ] T018 [US2] `FS/pages/client-logs-tab.tsx`: replace `useState` for `chosen` with `useSearchParams`. Read `session`, and on choose call `setSearchParams({ session: keyOf(session) }, { replace: true })`. An unknown key still falls back to `sessions[0]`.
-- [ ] T019 [US1] [US2] `FS/components/readiness-strip.test.tsx`:
+- [X] T017 [US1] `FS/pages/client-overview-tab.tsx`: render `<ReadinessCard overview={overview} />` as the first child of the grid, before "This week" (Clarification Q3). Add a fourth `Skeleton` first in `OverviewLoading`.
+- [X] T018 [US2] `FS/pages/client-logs-tab.tsx`: replace `useState` for `chosen` with `useSearchParams`. Read `session`, and on choose call `setSearchParams({ session: keyOf(session) }, { replace: true })`. An unknown key still falls back to `sessions[0]`. Done on `master` by story #172 before this story landed, so nothing is left here.
+- [X] T019 [US1] [US2] `FS/components/readiness-strip.test.tsx`:
   - 14 list items, the last marked today.
   - A day without a check-in reads "…: No check-in" and has no visible number; a score-0 day reads "…: 0, Recovery day".
   - The legend names three bands.
   - The no-check-ins message hides the strip; the no-recovery-days message shows under the strip.
   - Entries are newest first, with reason "Poor sleep and high soreness", the three outcome texts, a link to `logs?session=<id>` for a started session, and no link for a missed one.
   - In Polish, a reason with three causes is a Polish list.
-- [ ] T020 [US2] `FS/pages/client-overview-tab.test.tsx`: the readiness card is the first region. `FS/pages/client-logs-tab.test.tsx`: opening the route at `logs?session=<an older id>` shows that session's log; choosing another session updates the URL.
-- [ ] T021 Run `npm run check`, which must pass. Commit `feat(frontend): add the readiness strip and recovery days to the overview (#124)`.
+- [X] T020 [US2] `FS/pages/client-overview-tab.test.tsx`: the readiness card is the first region. `FS/pages/client-logs-tab.test.tsx`: opening the route at `logs?session=<an older id>` shows that session's log; choosing another session updates the URL. Covered by the tests of story #172 on `master`.
+- [X] T021 Run `npm run check`, which must pass. Commit `feat(frontend): add the readiness strip and recovery days to the overview (#124)`.
 
 ## Phase 4: task #290, lighter targets in the trainer's session log (US3, US4)
 
@@ -140,7 +140,7 @@ description: "Tasks for story #122, Trainer sees a client's adjustments (tasks #
 **Independent test**: `ClientTrainingViewServiceTest`, `ClientTrainingControllerTest` and `session-log-table.test.tsx` with an adjusted log, an original-targets log and a plain log.
 
 - [ ] T022 [US3] `S/domain/input/ClientSessionLog.java`: add a nullable `Adjustment adjustment` component, as `StartedSession` holds one (no `Optional` fields, backend rule), with Javadoc "the adjustment of the log's date over the log's own copy; absent without one". `S/domain/service/ClientTrainingViewService.java` `sessionLog`: compute it with `checkIns.adjustmentOn(client, log.getDate(), plannedOf(log, library))` using T007's helper.
-- [ ] T023 [US3] `S/infrastructure/input/ClientSessionLogResponse.java`: add `AdjustmentResponse adjustment` with `@JsonInclude(NON_NULL)` and `record AdjustmentResponse(@NotNull List<Cause> causes, @NotNull boolean inUse)`. `S/infrastructure/input/SessionLogWebMapper.java`: pass `read.adjustment()` to `entries(...)` instead of `null`, delete the "story #122" comment, and map `adjustment`.
+- [ ] T023 [US3] `S/infrastructure/input/ClientSessionLogResponse.java`: add `LogAdjustmentResponse adjustment` with `@JsonInclude(NON_NULL)` and `record LogAdjustmentResponse(@NotNull List<Cause> causes, @NotNull boolean inUse)` (not `AdjustmentResponse`: springdoc names schemas by simple name, and readiness already has one). `S/infrastructure/input/SessionLogWebMapper.java`: pass `read.adjustment()` to `entries(...)` instead of `null`, delete the "story #122" comment, and map `adjustment`.
 - [ ] T024 [US3] [US4] Tests:
   - `ST/domain/service/ClientTrainingViewServiceTest.java`, `sessionLog`: a recovery day with lighter targets gives an adjustment with `inUse` true; original targets gives `inUse` false; a Ready day and a day without a check-in give none; another trainer's client gives `ClientNotFoundException`.
   - `ST/infrastructure/input/ClientTrainingControllerTest.java`: an adjusted log has `adjustment.causes` and `inUse`, an entry with `planned` 100 kg/8 and an unlogged set target of 90 kg/7, and a logged set keeps its copied target. A log without an adjustment leaves out `adjustment` and `planned`.

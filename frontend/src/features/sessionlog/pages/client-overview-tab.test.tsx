@@ -214,6 +214,48 @@ describe('ClientOverviewTab', () => {
     )
   })
 
+  it('shows the readiness of the last 14 days first, and opens a recovery day’s log in the Logs tab', async () => {
+    const user = userEvent.setup()
+    const days: ClientOverview['readiness'] = Array.from(
+      { length: 14 },
+      (_, index) => ({
+        date: new Date(Date.UTC(2026, 9, 22 + index))
+          .toISOString()
+          .slice(0, 10),
+      }),
+    )
+    days[11] = { date: '2026-11-02', score: 33, band: 'RECOVERY_DAY' }
+    const { router } = openOverview(ANNA, {
+      ...OVERVIEW,
+      readiness: days,
+      recoveryDays: [
+        {
+          date: '2026-11-02',
+          score: 33,
+          causes: ['SLEEP', 'SORENESS'],
+          targets: 'LIGHTER',
+          session: MONDAY,
+        },
+      ],
+    })
+
+    const readiness = await card('Readiness, last 14 days')
+    expect(
+      readiness.compareDocumentPosition(await card('This week')) &
+        Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    await user.click(
+      within(readiness).getByRole('link', { name: 'Upper body' }),
+    )
+
+    await waitFor(() =>
+      expect(router.state.location.pathname).toBe(
+        `/trainer/clients/${ANNA.id}/logs`,
+      ),
+    )
+    expect(router.state.location.search).toBe(`?session=${MONDAY.sessionLogId}`)
+  })
+
   it('says there is no published plan yet, and still shows the quiz answers', async () => {
     const draft: Client = { ...ANNA, planState: 'DRAFT' }
     const { requests } = openOverview(draft, {
