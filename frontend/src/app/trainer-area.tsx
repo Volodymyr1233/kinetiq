@@ -140,7 +140,10 @@ export function TrainerArea() {
     <SidebarProvider>
       <TrainerSidebar activePath={active?.path} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="bg-background sticky top-0 z-10 flex h-14 items-center gap-2 border-b px-6">
+        <header
+          data-slot="trainer-header"
+          className="bg-background sticky top-0 z-10 flex h-14 items-center gap-2 border-b px-6"
+        >
           <SidebarTrigger aria-label={t('nav.open')} className="md:hidden" />
           <p className="text-sm font-medium">{title}</p>
         </header>

@@ -282,7 +282,8 @@ function QuizSteps({ settings }: { settings?: ReactNode }) {
           ))}
         </div>
       </header>
-      <main className="flex flex-1 flex-col gap-6 py-6">
+      {/* the margin keeps whatever takes focus clear of the sticky footer */}
+      <main className="flex flex-1 flex-col gap-6 py-6 [&_*]:scroll-mb-32">
         <div className="flex flex-col gap-2">
           <h1
             id={HEADING_ID}

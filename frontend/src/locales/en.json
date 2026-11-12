@@ -162,6 +162,7 @@
       "CLIENT": "Client"
     },
     "signInPage": {
+      "deleted": "Your account was deleted.",
       "title": "Sign in",
       "description": "Trainers and clients sign in here.",
       "email": "Email",
@@ -294,6 +295,19 @@
       "theme": "Theme",
       "themeHint": "System follows your phone.",
       "autosave": "Changes save right away."
+    },
+    "delete": {
+      "title": "Delete account",
+      "button": "Delete account",
+      "dialogTitle": "Delete your account?",
+      "trainerDescription": "This erases your account, your own exercises and your invites. It can't be undone.",
+      "clientDescription": "This erases your account, your plan, your check-ins, your logs and your conversation with {{trainer}}. Sets saved on this phone are discarded. It can't be undone.",
+      "password": "Password",
+      "clientDescriptionNoName": "This erases your account, your plan, your check-ins, your logs and your conversation with your trainer. Sets saved on this phone are discarded. It can't be undone.",
+      "passwordHelp": "Enter your password to confirm.",
+      "cancel": "Cancel",
+      "confirm": "Delete account",
+      "loading": "Checking whether your account can be deleted"
     }
   },
   "exercises": {
