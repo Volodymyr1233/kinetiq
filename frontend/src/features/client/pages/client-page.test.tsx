@@ -168,7 +168,7 @@ describe('ClientPage', () => {
   it('is opened from the clients table by the client’s name', async () => {
     const user = userEvent.setup()
     const { router } = renderAppAt(
-      '/trainer/clients',
+      '/trainer/clients/all',
       SIGNED_IN.TRAINER,
       backend,
     )

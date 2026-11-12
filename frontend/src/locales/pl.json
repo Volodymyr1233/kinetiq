@@ -1567,5 +1567,110 @@
     },
     "breadcrumb": "Okruszki",
     "title": "Zmiana planu"
+  },
+  "overview": {
+    "loading": "Wczytywanie przeglądu",
+    "dateLine": "{{day}} · tydzień {{week}}",
+    "status": {
+      "AT_RISK": "Zagrożony",
+      "WATCH": "Do obserwacji",
+      "PLAN_TO_REVIEW": "Plan do przeglądu",
+      "NO_PLAN": "Bez planu",
+      "ON_TRACK": "Na dobrej drodze"
+    },
+    "tiles": {
+      "label": "Ten tydzień u Twoich klientów",
+      "active": "Aktywni klienci",
+      "ofClients_one": "z {{count, number}} klienta",
+      "ofClients_few": "z {{count, number}} klientów",
+      "ofClients_many": "z {{count, number}} klientów",
+      "ofClients_other": "z {{count, number}} klienta",
+      "sessions": "Sesje zrobione w tym tygodniu",
+      "ofPlanned": "z {{planned}}",
+      "sessionsValue_one": "{{done, number}} z {{count, number}} sesji zrobione",
+      "sessionsValue_few": "{{done, number}} z {{count, number}} sesji zrobione",
+      "sessionsValue_many": "{{done, number}} z {{count, number}} sesji zrobione",
+      "sessionsValue_other": "{{done, number}} z {{count, number}} sesji zrobione",
+      "rpe": "Średnie RPE",
+      "noSets": "Brak serii w tym tygodniu",
+      "vsLastWeek": "{{change}} w porównaniu z zeszłym tygodniem",
+      "same": "Tak samo jak w zeszłym tygodniu",
+      "up": "Wzrost",
+      "down": "Spadek",
+      "waiting": "Czeka na Ciebie",
+      "waitingParts": "{{changes}}, {{plans}}",
+      "planChanges_one": "{{count, number}} zmiana planu",
+      "planChanges_few": "{{count, number}} zmiany planu",
+      "planChanges_many": "{{count, number}} zmian planu",
+      "planChanges_other": "{{count, number}} zmiany planu",
+      "newPlans_one": "{{count, number}} nowy plan",
+      "newPlans_few": "{{count, number}} nowe plany",
+      "newPlans_many": "{{count, number}} nowych planów",
+      "newPlans_other": "{{count, number}} nowego planu"
+    },
+    "alerts": {
+      "title": "Wymaga uwagi",
+      "none": "Teraz nic nie czeka na Ciebie.",
+      "lowCompletion_one": "{{name}}: {{done, number}} z {{count, number}} sesji w 4 tygodnie",
+      "lowCompletion_few": "{{name}}: {{done, number}} z {{count, number}} sesji w 4 tygodnie",
+      "lowCompletion_many": "{{name}}: {{done, number}} z {{count, number}} sesji w 4 tygodnie",
+      "lowCompletion_other": "{{name}}: {{done, number}} z {{count, number}} sesji w 4 tygodnie",
+      "highRpe": "{{name}}: średnie RPE {{rpe}} w ostatnich 2 tygodniach",
+      "sentence": "{{text}}.",
+      "planChange": "{{name}}: otwarta zmiana planu",
+      "waiting": {
+        "TRAINER": "{{title}} – czeka na Twoją decyzję.",
+        "CLIENT": "{{title}} – czeka na decyzję: {{name}}.",
+        "BOTH": "{{title}} – czeka na decyzję Was obojga."
+      },
+      "draft": {
+        "BUILT": "{{name}}: plan czeka na przegląd",
+        "FAILED": "{{name}}: nie udało się automatycznie zbudować planu",
+        "SAVED": "{{name}}: szkic nie jest jeszcze opublikowany"
+      },
+      "draftSeen": "{{name}} zobaczy go po publikacji.",
+      "noLog_one": "{{name}} nic nie zapisuje od {{count, number}} dnia",
+      "noLog_few": "{{name}} nic nie zapisuje od {{count, number}} dni",
+      "noLog_many": "{{name}} nic nie zapisuje od {{count, number}} dni",
+      "noLog_other": "{{name}} nic nie zapisuje od {{count, number}} dnia",
+      "lastSession": "Ostatnia sesja: {{session}}, {{date}}.",
+      "noLogSincePublished": "Nic nie zapisano od publikacji planu {{date}}.",
+      "planEnds": "{{name}}: plan kończy się {{date}}",
+      "planEnded": "{{name}}: plan skończył się {{date}}",
+      "planNext": "Przedłuż go albo zaplanuj, co {{name}} trenuje dalej.",
+      "recoveryDay": "{{name}} ma dzień regeneracji",
+      "lighter": "Gotowość {{score}}. Lżejsze cele na dziś.",
+      "original": "Gotowość {{score}}. {{name}} zostaje przy pierwotnych celach."
+    },
+    "actions": {
+      "open": "Otwórz",
+      "planChange": "Otwórz zmianę planu",
+      "reviewPlan": "Przejrzyj plan",
+      "openPlan": "Otwórz plan",
+      "message": "Napisz",
+      "labelled": "{{action}}, {{name}}"
+    },
+    "table": {
+      "title": "Klienci",
+      "viewAll_one": "Zobacz wszystkich ({{count, number}})",
+      "viewAll_few": "Zobacz wszystkich ({{count, number}})",
+      "viewAll_many": "Zobacz wszystkich ({{count, number}})",
+      "viewAll_other": "Zobacz wszystkich ({{count, number}})"
+    },
+    "columns": {
+      "client": "Klient",
+      "sessions": "Sesje, 4 tyg.",
+      "rpe": "Śr. RPE, 2 tyg.",
+      "readiness": "Gotowość dziś",
+      "status": "Status"
+    },
+    "plan": {
+      "week": "Tydzień {{week, number}} z {{weeks, number}}",
+      "finished": "Zakończony"
+    },
+    "sessions": "{{done, number}}/{{due, number}}",
+    "noLogs": "Brak zapisów",
+    "noCheckIn": "Brak check-inu",
+    "lighterTargets": "Lżejsze cele"
   }
 }

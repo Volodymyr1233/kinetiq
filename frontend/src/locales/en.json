@@ -1505,5 +1505,96 @@
     },
     "breadcrumb": "Breadcrumb",
     "title": "Plan change"
+  },
+  "overview": {
+    "loading": "Loading the overview",
+    "dateLine": "{{day}} · week of {{week}}",
+    "status": {
+      "AT_RISK": "At risk",
+      "WATCH": "Watch",
+      "PLAN_TO_REVIEW": "Plan to review",
+      "NO_PLAN": "No plan",
+      "ON_TRACK": "On track"
+    },
+    "tiles": {
+      "label": "This week across your clients",
+      "active": "Active clients",
+      "ofClients_one": "of {{count, number}} client",
+      "ofClients_other": "of {{count, number}} clients",
+      "sessions": "Sessions done this week",
+      "ofPlanned": "of {{planned}}",
+      "sessionsValue_one": "{{done, number}} of {{count, number}} session done",
+      "sessionsValue_other": "{{done, number}} of {{count, number}} sessions done",
+      "rpe": "Average RPE",
+      "noSets": "No sets logged this week",
+      "vsLastWeek": "{{change}} vs last week",
+      "same": "Same as last week",
+      "up": "Up",
+      "down": "Down",
+      "waiting": "Waiting for you",
+      "waitingParts": "{{changes}}, {{plans}}",
+      "planChanges_one": "{{count, number}} plan change",
+      "planChanges_other": "{{count, number}} plan changes",
+      "newPlans_one": "{{count, number}} new plan",
+      "newPlans_other": "{{count, number}} new plans"
+    },
+    "alerts": {
+      "title": "Needs attention",
+      "none": "Nothing needs you right now.",
+      "lowCompletion_one": "{{name}} did {{done, number}} of {{count, number}} session in 4 weeks",
+      "lowCompletion_other": "{{name}} did {{done, number}} of {{count, number}} sessions in 4 weeks",
+      "highRpe": "{{name}}'s average RPE is {{rpe}} over 2 weeks",
+      "sentence": "{{text}}.",
+      "planChange": "A plan change for {{name}} is open",
+      "waiting": {
+        "TRAINER": "{{title}} is waiting for you.",
+        "CLIENT": "{{title}} is waiting for {{name}}.",
+        "BOTH": "{{title}} is waiting for both of you."
+      },
+      "draft": {
+        "BUILT": "{{name}}'s plan is ready to review",
+        "FAILED": "{{name}}'s plan couldn't be built automatically",
+        "SAVED": "{{name}}'s draft isn't published yet"
+      },
+      "draftSeen": "{{name}} sees it after you publish.",
+      "noLog_one": "{{name}} hasn't logged for {{count, number}} day",
+      "noLog_other": "{{name}} hasn't logged for {{count, number}} days",
+      "lastSession": "Last session: {{session}}, {{date}}.",
+      "noLogSincePublished": "Nothing logged since the plan was published on {{date}}.",
+      "planEnds": "{{name}}'s plan ends on {{date}}",
+      "planEnded": "{{name}}'s plan ended on {{date}}",
+      "planNext": "Extend it or plan what {{name}} trains next.",
+      "recoveryDay": "{{name}} has a recovery day",
+      "lighter": "Readiness {{score}}. Lighter targets for today.",
+      "original": "Readiness {{score}}. {{name}} kept the original targets."
+    },
+    "actions": {
+      "open": "Open",
+      "planChange": "Open plan change",
+      "reviewPlan": "Review plan",
+      "openPlan": "Open plan",
+      "message": "Message",
+      "labelled": "{{action}}, {{name}}"
+    },
+    "table": {
+      "title": "Clients",
+      "viewAll_one": "View all {{count, number}}",
+      "viewAll_other": "View all {{count, number}}"
+    },
+    "columns": {
+      "client": "Client",
+      "sessions": "Sessions, 4 wk",
+      "rpe": "Avg RPE, 2 wk",
+      "readiness": "Readiness today",
+      "status": "Status"
+    },
+    "plan": {
+      "week": "Week {{week, number}} of {{weeks, number}}",
+      "finished": "Finished"
+    },
+    "sessions": "{{done, number}}/{{due, number}}",
+    "noLogs": "No logs yet",
+    "noCheckIn": "No check-in",
+    "lighterTargets": "Lighter targets"
   }
 }

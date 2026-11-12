@@ -82,7 +82,7 @@ describe('InvitesPage', () => {
 
     expect(
       await screen.findByRole('link', { name: 'All clients' }),
-    ).toHaveAttribute('href', '/trainer/clients')
+    ).toHaveAttribute('href', '/trainer/clients/all')
   })
 
   describe('list', () => {

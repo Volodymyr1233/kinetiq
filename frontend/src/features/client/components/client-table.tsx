@@ -40,7 +40,7 @@ export function ClientTable({ clients }: { clients: Client[] }) {
           <TableRow key={client.id}>
             <TableCell className="font-medium">
               <Link
-                to={client.id}
+                to={`/trainer/clients/${client.id}`}
                 className="focus-visible:ring-ring/50 rounded-sm underline-offset-4 hover:underline focus-visible:ring-3 focus-visible:outline-none"
               >
                 {client.name}

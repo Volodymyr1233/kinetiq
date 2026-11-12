@@ -49,3 +49,38 @@ export function weekdayName(day: Weekday, locale: string): string {
     new Date(2024, 0, 1 + DAYS.indexOf(day)),
   )
 }
+
+const MINUTE_MS = 60 * 1000
+const MINUTES_PER_HOUR = 60
+const MINUTES_PER_DAY = 24 * MINUTES_PER_HOUR
+
+/**
+ * How long ago an instant was, such as "5 minutes ago", "2 hours ago" or "Yesterday", in the given locale and sentence
+ * case: minutes within an hour, hours within a day, then calendar days in the viewer's time zone.
+ */
+export function timeAgo(instant: string, now: Date, locale: string): string {
+  const text = relative(instant, now, locale)
+  return text.charAt(0).toLocaleUpperCase(locale) + text.slice(1)
+}
+
+function relative(instant: string, now: Date, locale: string): string {
+  const then = new Date(instant)
+  const format = new Intl.RelativeTimeFormat(locale, { numeric: 'auto' })
+  const minutes = Math.max(
+    0,
+    Math.floor((now.getTime() - then.getTime()) / MINUTE_MS),
+  )
+  // "now" rather than "this minute"
+  if (minutes === 0) return format.format(0, 'second')
+  if (minutes < MINUTES_PER_HOUR) return format.format(-minutes, 'minute')
+  if (minutes < MINUTES_PER_DAY) {
+    return format.format(-Math.floor(minutes / MINUTES_PER_HOUR), 'hour')
+  }
+  const day = (date: Date) =>
+    new Date(date.getFullYear(), date.getMonth(), date.getDate()).getTime()
+  // rounded because a day can have 23 or 25 hours
+  return format.format(
+    -Math.round((day(now) - day(then)) / (MINUTES_PER_DAY * MINUTE_MS)),
+    'day',
+  )
+}

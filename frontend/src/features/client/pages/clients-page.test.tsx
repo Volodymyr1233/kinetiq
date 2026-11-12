@@ -124,7 +124,7 @@ describe('ClientsPage', () => {
     expect(await screen.findByText('No clients yet')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Invite client' })).toHaveAttribute(
       'href',
-      '/invites',
+      '/trainer/clients/invites',
     )
     expect(screen.queryByRole('searchbox')).not.toBeInTheDocument()
   })
