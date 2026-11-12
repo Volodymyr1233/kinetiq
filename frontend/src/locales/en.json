@@ -77,7 +77,10 @@
       "credentials-invalid": "Email or password is wrong. Check both and try again.",
       "email-not-confirmed": "Confirm your email first, then sign in.",
       "sign-in-locked": "Too many attempts. Try again later.",
-      "password-reset-link-invalid": "This link no longer works. Request a new one."
+      "password-reset-link-invalid": "This link no longer works. Request a new one.",
+      "password-incorrect": "That password is incorrect.",
+      "has-clients_one": "You have {{count, number}} client. You can delete your account once none are left.",
+      "has-clients_other": "You have {{count, number}} clients. You can delete your account once none are left."
     },
     "invite": {
       "account-exists": "This email already has an account.",

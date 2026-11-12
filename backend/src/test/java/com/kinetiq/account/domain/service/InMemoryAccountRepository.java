@@ -85,4 +85,14 @@ class InMemoryAccountRepository implements AccountRepository {
                         .isPresent());
         return before - byEmail.size();
     }
+
+    @Override
+    public int countClientsOf(AccountId trainerId) {
+        return findClientsOf(trainerId).size();
+    }
+
+    @Override
+    public void delete(AccountId id) {
+        byEmail.values().removeIf(account -> account.getId().equals(id));
+    }
 }

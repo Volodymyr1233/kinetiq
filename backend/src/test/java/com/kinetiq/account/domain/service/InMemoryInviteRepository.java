@@ -62,4 +62,9 @@ class InMemoryInviteRepository implements InviteRepository {
                 && invite.getExpiresAt().isBefore(before));
         return count - byId.size();
     }
+
+    @Override
+    public void deleteByTrainerAndEmail(AccountId trainerId, Email email) {
+        byId.values().removeIf(invite -> invite.getTrainerId().equals(trainerId) && invite.getEmail().equals(email));
+    }
 }

@@ -28,4 +28,7 @@ public interface InviteRepository {
      * that expired before it. Answers how many there were.
      */
     int deleteEnded(Instant before);
+
+    /** Deletes every invite of the trainer for the email, whatever its state. */
+    void deleteByTrainerAndEmail(AccountId trainerId, Email email);
 }

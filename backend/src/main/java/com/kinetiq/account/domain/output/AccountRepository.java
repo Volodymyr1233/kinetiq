@@ -29,4 +29,12 @@ public interface AccountRepository {
      * {@code linkExpiredBefore}, and answers how many there were. Client accounts are never deleted here.
      */
     int deleteUnconfirmedTrainers(Instant linkExpiredBefore);
+
+    int countClientsOf(AccountId trainerId);
+
+    /**
+     * Deletes the account; the database erases everything that exists only because of it. Throws
+     * {@code TrainerHasClientsException} when a client is still linked to it, also one who joined a moment ago.
+     */
+    void delete(AccountId id);
 }

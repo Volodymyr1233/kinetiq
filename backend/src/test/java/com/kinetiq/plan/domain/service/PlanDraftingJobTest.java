@@ -6,9 +6,11 @@ import com.kinetiq.plan.domain.exception.PlanGenerationFailedException;
 import com.kinetiq.plan.domain.exception.PlanGeneratorUnavailableException;
 import com.kinetiq.plan.domain.model.AutomaticDraft;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.PlanPromptMessages;
 import com.kinetiq.quiz.domain.model.Goal;
 import java.time.Clock;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -167,5 +169,23 @@ class PlanDraftingJobTest {
                 .doesNotContain(DraftingFixture.NOTES, "SENTINEL")
                 .doesNotContain(fixture.client.value().toString(), fixture.trainer.value().toString())
                 .doesNotContain("Zdzis", "Qwerty", "Bogumi", "Asdfg");
+    }
+
+    @Test
+    void shouldNotSendASecondPrompt_whenTheClientDeletedTheirAccountDuringTheFirst() {
+        List<PlanPromptMessages> received = new ArrayList<>();
+        PlanDraftingJob deletedMeanwhile = new PlanDraftingJob(
+                service,
+                messages -> {
+                    received.add(messages);
+                    // the deletion erases the quiz answers with the account
+                    fixture.answered = false;
+                    throw new PlanGenerationFailedException("timed out");
+                },
+                Duration.ZERO);
+
+        deletedMeanwhile.run(fixture.client);
+
+        assertThat(received).hasSize(1);
     }
 }

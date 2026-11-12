@@ -1,6 +1,7 @@
 package com.kinetiq.account.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.account.domain.input.DeleteAccountUseCase;
 import com.kinetiq.account.domain.input.EraseExpiredDataUseCase;
 import com.kinetiq.account.domain.input.ManageInvitesUseCase;
 import com.kinetiq.account.domain.input.ResetPasswordUseCase;
@@ -11,6 +12,7 @@ import com.kinetiq.account.domain.output.AccountSessions;
 import com.kinetiq.account.domain.output.FailedSignInsRepository;
 import com.kinetiq.account.domain.output.InviteRepository;
 import com.kinetiq.account.domain.output.PasswordHasher;
+import com.kinetiq.account.domain.service.AccountDeletionService;
 import com.kinetiq.account.domain.service.CurrentAccountService;
 import com.kinetiq.account.domain.service.InviteManagementService;
 import com.kinetiq.account.domain.service.PasswordResetService;
@@ -59,6 +61,16 @@ class AccountConfig {
     @Bean
     CurrentAccountUseCase currentAccountUseCase(AccountRepository accounts) {
         return new CurrentAccountService(accounts);
+    }
+
+    @Bean
+    DeleteAccountUseCase deleteAccountUseCase(
+            AccountRepository accounts,
+            InviteRepository invites,
+            PasswordHasher hasher,
+            FailedSignInsRepository failedSignIns,
+            AccountSessions sessions) {
+        return new AccountDeletionService(accounts, invites, hasher, failedSignIns, sessions, Clock.systemUTC());
     }
 
     @Bean

@@ -57,4 +57,9 @@ class InviteRepositoryImpl implements InviteRepository {
     public int deleteEnded(Instant before) {
         return jpa.deleteEnded(before);
     }
+
+    @Override
+    public void deleteByTrainerAndEmail(AccountId trainerId, Email email) {
+        jpa.deleteByTrainerAndEmail(trainerId.value(), email.value());
+    }
 }

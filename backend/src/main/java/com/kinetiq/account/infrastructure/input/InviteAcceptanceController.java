@@ -27,6 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 class InviteAcceptanceController {
 
     private static final String UNIQUE_EMAIL = "uq_accounts_email";
+    private static final String CLIENT_TRAINER = "fk_accounts_trainer";
 
     private final SignUpUseCase signUp;
     private final AccountWebMapper mapper;
@@ -62,8 +63,9 @@ class InviteAcceptanceController {
         } catch (OptimisticLockingFailureException e) {
             throw new InviteLinkInvalidException();
         } catch (DataIntegrityViolationException e) {
-            // the loser of two simultaneous joins; any other violation is a bug and stays a 500
-            if (!violates(e, UNIQUE_EMAIL)) {
+            // the loser of two simultaneous joins, or a join whose trainer was deleted at the same moment; any other
+            // violation is a bug and stays a 500
+            if (!violates(e, UNIQUE_EMAIL) && !violates(e, CLIENT_TRAINER)) {
                 throw e;
             }
             throw new InviteLinkInvalidException();
