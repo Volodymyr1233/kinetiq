@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type ReactNode } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { z } from 'zod'
 import { LeaveGuard } from '@/components/leave-guard'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -308,6 +309,12 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
           </Button>
         </div>
       </form>
+      <Link
+        to="/privacy"
+        className="text-muted-foreground hover:text-foreground self-start text-sm underline underline-offset-3"
+      >
+        {t('settings.privacyNotice')}
+      </Link>
     </div>
   )
 }

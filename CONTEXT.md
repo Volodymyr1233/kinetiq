@@ -30,6 +30,9 @@ _Avoid_: Verification code, activation link
 A single-use link with which a trainer lets a person join as their client.
 _Avoid_: Invitation code, referral
 
+**Privacy notice**:
+The public page that tells a person which of their data Kinetiq keeps, why, who receives it, for how long and how to delete it.
+
 **Client status**:
 The trainer's at-a-glance verdict on a client: On track, Watch, At risk, Plan to review or No plan.
 
