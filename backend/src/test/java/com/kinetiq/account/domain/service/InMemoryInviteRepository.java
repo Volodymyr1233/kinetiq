@@ -16,6 +16,8 @@ import java.util.Optional;
 class InMemoryInviteRepository implements InviteRepository {
 
     final Map<InviteId, Invite> byId = new LinkedHashMap<>();
+    // the domain does not know when a used or revoked invite ended, so the cut-off is recorded for the test
+    Instant endedBefore;
 
     @Override
     public void save(Invite invite) {
@@ -50,5 +52,14 @@ class InMemoryInviteRepository implements InviteRepository {
                 .filter(invite -> invite.getEmailTokenHash().equals(tokenHash)
                         || invite.getLinkTokenHash().equals(tokenHash))
                 .findFirst();
+    }
+
+    @Override
+    public int deleteEnded(Instant before) {
+        endedBefore = before;
+        int count = byId.size();
+        byId.values().removeIf(invite -> invite.getStatus() == InviteStatus.OPEN
+                && invite.getExpiresAt().isBefore(before));
+        return count - byId.size();
     }
 }

@@ -1,6 +1,7 @@
 package com.kinetiq.account.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.account.domain.input.EraseExpiredDataUseCase;
 import com.kinetiq.account.domain.input.ManageInvitesUseCase;
 import com.kinetiq.account.domain.input.ResetPasswordUseCase;
 import com.kinetiq.account.domain.input.SignInUseCase;
@@ -13,6 +14,7 @@ import com.kinetiq.account.domain.output.PasswordHasher;
 import com.kinetiq.account.domain.service.CurrentAccountService;
 import com.kinetiq.account.domain.service.InviteManagementService;
 import com.kinetiq.account.domain.service.PasswordResetService;
+import com.kinetiq.account.domain.service.RetentionService;
 import com.kinetiq.account.domain.service.SignInService;
 import com.kinetiq.account.domain.service.SignUpService;
 import com.kinetiq.common.domain.output.MailSender;
@@ -57,6 +59,11 @@ class AccountConfig {
     @Bean
     CurrentAccountUseCase currentAccountUseCase(AccountRepository accounts) {
         return new CurrentAccountService(accounts);
+    }
+
+    @Bean
+    EraseExpiredDataUseCase eraseExpiredDataUseCase(AccountRepository accounts, InviteRepository invites) {
+        return new RetentionService(accounts, invites, Clock.systemUTC());
     }
 
     @Bean

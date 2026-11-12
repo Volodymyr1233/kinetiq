@@ -52,4 +52,9 @@ class InviteRepositoryImpl implements InviteRepository {
     public Optional<Invite> findByTokenHash(String tokenHash) {
         return jpa.findByTokenHash(tokenHash).map(mapper::toDomain);
     }
+
+    @Override
+    public int deleteEnded(Instant before) {
+        return jpa.deleteEnded(before);
+    }
 }

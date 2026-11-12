@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 interface JpaInviteRepository extends JpaRepository<InviteEntity, UUID> {
@@ -17,4 +18,14 @@ interface JpaInviteRepository extends JpaRepository<InviteEntity, UUID> {
 
     @Query("select i from InviteEntity i where i.emailTokenHash = :hash or i.linkTokenHash = :hash")
     Optional<InviteEntity> findByTokenHash(String hash);
+
+    // a used or revoked invite was last changed when it ended; an open one ends when it expires
+    @Modifying
+    @Query(
+            nativeQuery = true,
+            value = """
+                    delete from invites
+                    where (status <> 'OPEN' and updated_at < :before) or (status = 'OPEN' and expires_at < :before)
+                    """)
+    int deleteEnded(Instant before);
 }
