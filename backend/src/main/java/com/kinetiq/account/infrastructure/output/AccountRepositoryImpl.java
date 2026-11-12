@@ -4,6 +4,7 @@ import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
+import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
@@ -54,5 +55,10 @@ class AccountRepositoryImpl implements AccountRepository {
         return jpa.findByTrainerIdOrderByNameAsc(trainerId.value()).stream()
                 .map(mapper::toDomain)
                 .toList();
+    }
+
+    @Override
+    public int deleteUnconfirmedTrainers(Instant linkExpiredBefore) {
+        return jpa.deleteUnconfirmedTrainers(linkExpiredBefore);
     }
 }

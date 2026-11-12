@@ -22,4 +22,10 @@ public interface InviteRepository {
 
     /** Returns the invite whose email secret or link secret has this hash. */
     Optional<Invite> findByTokenHash(String tokenHash);
+
+    /**
+     * Deletes the invites that ended before {@code before}: used or revoked ones last changed before it, and open ones
+     * that expired before it. Answers how many there were.
+     */
+    int deleteEnded(Instant before);
 }

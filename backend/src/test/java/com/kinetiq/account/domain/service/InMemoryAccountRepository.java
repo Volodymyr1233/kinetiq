@@ -4,8 +4,10 @@ import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.EmailConfirmation;
 import com.kinetiq.account.domain.model.PasswordReset;
+import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.account.domain.output.AccountRepository;
 import com.kinetiq.common.domain.model.Email;
+import java.time.Instant;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
@@ -71,5 +73,16 @@ class InMemoryAccountRepository implements AccountRepository {
                 .filter(account -> account.getTrainerId().filter(trainerId::equals).isPresent())
                 .sorted(Comparator.comparing(Account::getName))
                 .toList();
+    }
+
+    @Override
+    public int deleteUnconfirmedTrainers(Instant linkExpiredBefore) {
+        int before = byEmail.size();
+        byEmail.values().removeIf(account -> account.getRole() == Role.TRAINER
+                && !account.isEmailConfirmed()
+                && account.getConfirmation()
+                        .filter(link -> link.expiresAt().isBefore(linkExpiredBefore))
+                        .isPresent());
+        return before - byEmail.size();
     }
 }
