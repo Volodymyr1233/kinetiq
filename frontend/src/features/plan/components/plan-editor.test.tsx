@@ -65,7 +65,6 @@ function backend(
   const reply = async (request: Request) => {
     const { pathname } = new URL(request.url)
     const address = `/api/v1/clients/${OLA.id}`
-    if (pathname === '/api/v1/clients') return json({ clients: [OLA] })
     if (pathname === address) return json(OLA)
     const refusal = refuse(`${request.method} ${pathname}`)
     if (refusal) return refusal

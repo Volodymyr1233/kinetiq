@@ -46,6 +46,6 @@ description: "Tasks for story #162, Trainer sees the overview of all clients (ta
 
 **Blocked by**: #163, #37 (closed).
 
-- [ ] T016 [US3] `F/features/overview/pages/all-clients-page.tsx` on the overview query: the new columns, sorting, status filters with counts under the search; `F/features/client/pages/clients-page.tsx` and its table removed
-- [ ] T017 [US3] Tests `all-clients-page.test.tsx`: filter counts equal rows with and without a search, sorting both ways with empty values last, no match clears both
-- [ ] T018 Remove `GET /api/v1/clients` (no caller left) and its tests; regenerate `schema.d.ts`; browser check; `./gradlew check`, `npm run check`; commit `feat: add status columns and filters to all clients (#166)`
+- [X] T016 [US3] `F/features/overview/pages/all-clients-page.tsx` on the overview query: the new columns, sorting, status filters with counts under the search; `F/features/client/pages/clients-page.tsx` and its table removed
+- [X] T017 [US3] Tests `all-clients-page.test.tsx`: filter counts equal rows with and without a search, sorting both ways with empty values last, no match clears both
+- [X] T018 Remove `GET /api/v1/clients` (no caller left) and its tests; regenerate `schema.d.ts`; browser check; `./gradlew check`, `npm run check`; commit `feat: add status columns and filters to all clients (#166)`

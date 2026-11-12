@@ -23,12 +23,6 @@ class ClientController {
         return new AccountId(UUID.fromString(authentication.getName()));
     }
 
-    /** Lists the signed-in trainer's own clients, ordered by name. */
-    @GetMapping
-    ClientListResponse listClients(Authentication authentication) {
-        return mapper.toListResponse(clients.listClients(signedIn(authentication)));
-    }
-
     /** One of the signed-in trainer's own clients. {@code 404} for an unknown client and another trainer's alike. */
     @GetMapping("/{id}")
     ClientResponse getClient(@PathVariable UUID id, Authentication authentication) {

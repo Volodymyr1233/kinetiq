@@ -16,10 +16,25 @@ const JAN: Client = {
   planState: 'NO_QUIZ',
 }
 
-// answers like the backend: a client of this trainer, a list, and 404 for any other id
+// answers like the backend: a client of this trainer, the overview, and 404 for any other id
 function backend(request: Request) {
   const { pathname } = new URL(request.url)
-  if (pathname === '/api/v1/clients') return json({ clients: [OLA, JAN] })
+  if (pathname === '/api/v1/clients/overview')
+    return json({
+      activeClients: 0,
+      totalClients: 2,
+      sessionsDone: 0,
+      sessionsPlanned: 0,
+      draftsWaiting: 0,
+      planChangesWaiting: 0,
+      alerts: [],
+      clients: [OLA, JAN].map((client) => ({
+        ...client,
+        status: 'PLAN_TO_REVIEW',
+        reasons: [],
+        lighterTargets: false,
+      })),
+    })
   const own = [OLA, JAN].find(
     (client) => pathname === `/api/v1/clients/${client.id}`,
   )
@@ -129,20 +144,18 @@ describe('ClientPage', () => {
     ['text that is no id', 'not-an-id'],
   ])('says the client was not found for %s, with a way back', async (_, id) => {
     const user = userEvent.setup()
-    renderAppAt(`/trainer/clients/${id}`, SIGNED_IN.TRAINER, (request) =>
-      new URL(request.url).pathname === '/api/v1/clients'
-        ? json({ clients: [OLA] })
-        : problem(id === 'not-an-id' ? 400 : 404, {
-            status: id === 'not-an-id' ? 400 : 404,
-            code: 'client.not-found',
-          }),
+    renderAppAt(`/trainer/clients/${id}`, SIGNED_IN.TRAINER, () =>
+      problem(id === 'not-an-id' ? 400 : 404, {
+        status: id === 'not-an-id' ? 400 : 404,
+        code: 'client.not-found',
+      }),
     )
 
     expect(await screen.findByText('Client not found')).toBeInTheDocument()
     expect(screen.queryByRole('tablist')).not.toBeInTheDocument()
     await user.click(screen.getByRole('link', { name: 'Back to all clients' }))
     expect(
-      await screen.findByRole('heading', { name: 'Clients' }),
+      await screen.findByRole('heading', { name: 'All clients' }),
     ).toBeInTheDocument()
   })
 
