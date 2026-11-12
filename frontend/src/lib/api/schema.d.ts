@@ -484,6 +484,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/accounts/me/deletion": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["check"];
+        put?: never;
+        post: operations["delete"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/accounts/me": {
         parameters: {
             query?: never;
@@ -1441,6 +1457,9 @@ export interface components {
             adult?: boolean;
             timeZone: string;
         };
+        DeleteAccountRequest: {
+            password: string;
+        };
         UpdateAccountRequest: {
             name?: string;
             units?: string;
@@ -1864,6 +1883,11 @@ export interface components {
         };
         DraftedPlansResponse: {
             items: components["schemas"]["DraftedPlanResponse"][];
+        };
+        AccountDeletionResponse: {
+            /** Format: int32 */
+            clients: number;
+            trainerName?: string;
         };
     };
     responses: never;
@@ -2737,6 +2761,48 @@ export interface operations {
         responses: {
             /** @description Accepted */
             202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    check: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["AccountDeletionResponse"];
+                };
+            };
+        };
+    };
+    delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["DeleteAccountRequest"];
+            };
+        };
+        responses: {
+            /** @description No Content */
+            204: {
                 headers: {
                     [name: string]: unknown;
                 };

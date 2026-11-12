@@ -29,4 +29,11 @@ interface JpaAccountRepository extends JpaRepository<AccountEntity, UUID> {
                     where role = 'TRAINER' and not email_confirmed and confirmation_expires_at < :before
                     """)
     int deleteUnconfirmedTrainers(Instant before);
+
+    int countByTrainerId(UUID trainerId);
+
+    // a statement, not a loaded entity, so the database's cascades erase the rest (V27)
+    @Modifying
+    @Query(nativeQuery = true, value = "delete from accounts where id = :id")
+    void deleteAccount(UUID id);
 }

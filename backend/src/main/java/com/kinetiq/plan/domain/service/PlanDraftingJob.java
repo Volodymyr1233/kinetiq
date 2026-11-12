@@ -54,6 +54,11 @@ public class PlanDraftingJob implements PlanDrafting {
         PlanPrompt prompt = new PlanPrompt(input.get());
         List<String> rejections = List.of();
         for (int attempt = 1; attempt <= MAX_ATTEMPTS; attempt++) {
+            // a client who deleted their account meanwhile has no answers left, and nothing about them may be sent
+            if (attempt > 1 && drafting.input(client).isEmpty()) {
+                drafting.storeFailed(client);
+                return "gone";
+            }
             try {
                 GeneratedPlan answer = generator.generate(prompt.messages(rejections));
                 List<Session> sessions = GeneratedPlanChecks.check(answer, prompt.exerciseKeys(), input.get());

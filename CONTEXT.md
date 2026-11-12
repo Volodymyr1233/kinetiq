@@ -22,6 +22,10 @@ _Avoid_: User, profile, login
 One browser's signed-in state for one account. It ends when the person signs out or after 14 days without use; an account can have one per device.
 _Avoid_: Session, login
 
+**Account deletion**:
+The erasure of one account and everything that exists only because of it. A trainer's account can be deleted only when no client is left.
+_Avoid_: Deactivation, closing
+
 **Confirmation link**:
 A single-use link sent to an account's email that proves the person controls that address.
 _Avoid_: Verification code, activation link

@@ -1,5 +1,6 @@
 package com.kinetiq.account.infrastructure.output;
 
+import com.kinetiq.account.domain.exception.TrainerHasClientsException;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.output.AccountRepository;
@@ -8,11 +9,15 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.exception.ConstraintViolationException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Repository;
 
 @Repository
 @RequiredArgsConstructor
 class AccountRepositoryImpl implements AccountRepository {
+
+    private static final String CLIENT_TRAINER = "fk_accounts_trainer";
 
     private final JpaAccountRepository jpa;
     private final AccountMapper mapper;
@@ -60,5 +65,24 @@ class AccountRepositoryImpl implements AccountRepository {
     @Override
     public int deleteUnconfirmedTrainers(Instant linkExpiredBefore) {
         return jpa.deleteUnconfirmedTrainers(linkExpiredBefore);
+    }
+
+    @Override
+    public int countClientsOf(AccountId trainerId) {
+        return jpa.countByTrainerId(trainerId.value());
+    }
+
+    @Override
+    public void delete(AccountId id) {
+        try {
+            jpa.deleteAccount(id.value());
+        } catch (DataIntegrityViolationException exception) {
+            // a client joined after the check; the failed statement ends the transaction, so the count is not read again
+            if (exception.getCause() instanceof ConstraintViolationException violation
+                    && CLIENT_TRAINER.equals(violation.getConstraintName())) {
+                throw new TrainerHasClientsException(1);
+            }
+            throw exception;
+        }
     }
 }

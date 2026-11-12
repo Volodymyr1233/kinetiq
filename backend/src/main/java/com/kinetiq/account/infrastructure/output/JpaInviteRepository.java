@@ -28,4 +28,8 @@ interface JpaInviteRepository extends JpaRepository<InviteEntity, UUID> {
                     where (status <> 'OPEN' and updated_at < :before) or (status = 'OPEN' and expires_at < :before)
                     """)
     int deleteEnded(Instant before);
+
+    @Modifying
+    @Query(nativeQuery = true, value = "delete from invites where trainer_id = :trainerId and email = :email")
+    void deleteByTrainerAndEmail(UUID trainerId, String email);
 }

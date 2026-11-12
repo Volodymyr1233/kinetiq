@@ -284,6 +284,13 @@ class InviteAcceptanceControllerTest {
         }
 
         @Test
+        void shouldAnswerLinkInvalid_whenTheTrainerWasDeletedDuringTheJoin() {
+            when(signUp.joinAsClient(any())).thenThrow(violation("fk_accounts_trainer"));
+
+            assertLinkInvalid(post("/api/v1/invite-acceptances", validJoin()));
+        }
+
+        @Test
         void shouldAnswerInternalErrorWithoutDetails_whenAnyOtherConstraintIsViolated() throws Exception {
             when(signUp.joinAsClient(any())).thenThrow(violation("ck_accounts_client_trainer"));
 
