@@ -2,7 +2,6 @@ package com.kinetiq.client.infrastructure.input;
 
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.quiz.domain.model.QuizSubmission;
-import java.util.List;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
 
@@ -15,10 +14,6 @@ interface ClientWebMapper {
                 client.getName(),
                 client.getGoal().orElse(null),
                 client.getPlanState());
-    }
-
-    default ClientListResponse toListResponse(List<ClientSummary> clients) {
-        return new ClientListResponse(clients.stream().map(this::toResponse).toList());
     }
 
     // likes in their declared order, so the panel shows them the same way every time

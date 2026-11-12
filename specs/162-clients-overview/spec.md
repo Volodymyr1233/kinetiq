@@ -135,7 +135,7 @@ Everything on both screens comes from the trainer's own clients. Another trainer
 
 **All clients** (task #166)
 
-- **FR-017**: All clients MUST have the columns of FR-013, the name search of spec 35, the status filters with counts that equal the rows they show under the current search, sorting by name, last log, sessions (by share done), average RPE and status, the sticky name column, Invite client and Open invites.
+- **FR-017**: All clients MUST have the columns of FR-013, the name search of spec 35, the status filters with counts that equal the rows they show under the current search, sorting by name, last log, sessions (by share done), average RPE and status, the sticky name column, and Open invites (Invite client in the empty state, as in spec 35).
 - **FR-018**: Each status MUST show as a badge with its name: At risk destructive, Watch warning, Plan to review info, No plan outline, On track neutral. The RPE and readiness carry their band in words or numbers as well as by colour.
 
 **Access and quality**
@@ -179,6 +179,7 @@ None. The overview needs a signed-in trainer.
 | Board "clients overview" | Some At risk and Watch clients have no alert; Jakub (At risk) shows only "hasn't logged" | Every At risk and Watch client has an alert; no log is an alert of its own beside it | Story criterion 3; each alert has a different action (plan change or client, conversation). |
 | Board "all clients" | Filter counts over all clients while a search is typed | Counts follow the search | Task #166, "filter counts match the rows". |
 | Board "all clients" | "Plan week" column | "Plan" column: week {n} of {m}, Finished, or the plan state (No quiz yet, Building plan, Draft, …) | The plan state of spec 35 stays visible; the status alone does not say whether a draft was built or failed. |
+| Board "all clients" | A Goal column beside Plan week, and Invite client beside Open invites | The goal as a second line of the Plan cell; Open invites only, Invite client in the empty state | Eight columns and sort buttons overflow 1280 px, which pushed Status off screen; inviting starts on the invites page either way. |
 | Board "all clients" | "Avg RPE" without a period | "Avg RPE, 2 wk" | It is the figure that makes a client Watch. |
 | Spec 35 | All clients at `/trainer/clients` | The overview at `/trainer/clients`, All clients at `/trainer/clients/all` | The Clients item of the sidebar opens the overview, as on the board. |
 
@@ -204,7 +205,7 @@ Polish uses informal "ty"; to be confirmed by a copywriter (design system 8.5).
 | Actions | Open · Open plan change · Review plan · Open plan · Message | Otwórz · Otwórz zmianę planu · Przejrzyj plan · Otwórz plan · Napisz |
 | Table | Client · Goal · Plan · Last log · Sessions, 4 wk · Avg RPE, 2 wk · Readiness today · Status · View all {n} | Klient · Cel · Plan · Ostatni zapis · Sesje, 4 tyg. · Śr. RPE, 2 tyg. · Gotowość dziś · Status · Zobacz wszystkich ({n}) |
 | Cells | Week {n} of {m} · Finished · No logs yet · No check-in · Lighter targets | Tydzień {n} z {m} · Zakończony · Brak zapisów · Brak check-inu · Lżejsze cele |
-| Statuses | At risk · Watch · On track · Plan to review · No plan | Zagrożony · Do obserwacji · Na dobrej drodze · Plan do przeglądu · Bez planu |
+| Statuses | At risk · Watch · On track · Plan to review · No plan | Zagrożony · Do obserwacji · Na dobrej drodze · Plan do przejrzenia · Bez planu |
 | Filters | Status · All | Status · Wszyscy |
 | No match | No clients match. · Clear search and filter | Brak pasujących klientów. · Wyczyść wyszukiwanie i filtr |
 

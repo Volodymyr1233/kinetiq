@@ -639,11 +639,6 @@
       "title": "No clients yet",
       "body": "Invite a client. They show up here once they join."
     },
-    "noMatch": {
-      "title": "No client matches that name",
-      "body": "Check the spelling or clear the search.",
-      "clear": "Clear search"
-    },
     "pastPlanChanges": "Past plan changes"
   },
   "approvals": {
@@ -1595,6 +1590,16 @@
     "sessions": "{{done, number}}/{{due, number}}",
     "noLogs": "No logs yet",
     "noCheckIn": "No check-in",
-    "lighterTargets": "Lighter targets"
+    "lighterTargets": "Lighter targets",
+    "all": {
+      "title": "All clients",
+      "filter": "Status",
+      "everyone": "All",
+      "noMatch": {
+        "title": "No client matches",
+        "body": "Check the spelling, or clear the search and the status filter.",
+        "clear": "Clear search and filter"
+      }
+    }
   }
 }

@@ -1,4 +1,4 @@
-import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from 'lucide-react'
+import { ArrowDownIcon, ArrowUpIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { AccountAvatar } from '@/components/account-avatar'
@@ -63,11 +63,7 @@ function SortableHead({
     return <TableHead className={className}>{label}</TableHead>
   }
   const active = sort?.key === column
-  const Icon = !active
-    ? ArrowUpDownIcon
-    : sort.direction === 'ascending'
-      ? ArrowUpIcon
-      : ArrowDownIcon
+  const Icon = sort?.direction === 'ascending' ? ArrowUpIcon : ArrowDownIcon
   return (
     <TableHead
       aria-sort={active ? sort.direction : 'none'}
@@ -80,14 +76,15 @@ function SortableHead({
         onClick={() => onSort(column)}
       >
         {label}
-        <Icon data-icon="inline-end" aria-hidden />
+        {/* only the sorted column has an arrow, so the table fits its width */}
+        {active && <Icon data-icon="inline-end" aria-hidden />}
       </Button>
     </TableHead>
   )
 }
 
 /**
- * The trainer's clients with their status and figures. `full` adds the goal and plan columns of All clients;
+ * The trainer's clients with their status and figures. `full` adds the plan column of All clients, with the goal;
  * `onSort` makes the headers sort the rows.
  */
 export function ClientTable({
@@ -119,7 +116,6 @@ export function ClientTable({
             className="bg-background sticky left-0"
             {...sorting}
           />
-          {full && <TableHead>{t('clients.columns.goal')}</TableHead>}
           {full && <TableHead>{t('clients.columns.plan')}</TableHead>}
           <SortableHead
             label={t('clients.columns.lastLog')}
@@ -157,24 +153,23 @@ export function ClientTable({
               </Link>
             </TableCell>
             {full && (
-              <TableCell className="text-muted-foreground">
-                {client.goal ? (
-                  t(`quiz.goal.options.${client.goal}.title`)
-                ) : (
-                  <NoValue />
-                )}
-              </TableCell>
-            )}
-            {full && (
-              <TableCell className={cn(client.planWeek && 'num')}>
-                {client.planWeek !== undefined
-                  ? t('overview.plan.week', {
-                      week: client.planWeek,
-                      weeks: client.planWeeks,
-                    })
-                  : client.planWeeks !== undefined
-                    ? t('overview.plan.finished')
-                    : t(`clients.planStates.${client.planState}`)}
+              <TableCell className="min-w-32 whitespace-normal">
+                <span className="flex flex-col">
+                  {client.planWeek !== undefined
+                    ? t('overview.plan.week', {
+                        week: client.planWeek,
+                        weeks: client.planWeeks,
+                      })
+                    : client.planWeeks !== undefined
+                      ? t('overview.plan.finished')
+                      : t(`clients.planStates.${client.planState}`)}
+                  {/* the goal the plan is for, under it, so the table fits its width */}
+                  {client.goal && (
+                    <span className="text-muted-foreground text-xs">
+                      {t(`quiz.goal.options.${client.goal}.title`)}
+                    </span>
+                  )}
+                </span>
               </TableCell>
             )}
             <TableCell className="text-muted-foreground">
@@ -192,7 +187,7 @@ export function ClientTable({
                     value={
                       ((client.sessionsDone ?? 0) / client.sessionsDue) * 100
                     }
-                    className="*:data-[slot=progress-indicator]:bg-chart-1 h-2 w-18"
+                    className="*:data-[slot=progress-indicator]:bg-chart-1 h-2 w-12"
                   />
                   <span className="num">
                     {t('overview.sessions', {

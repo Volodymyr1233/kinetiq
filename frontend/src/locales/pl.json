@@ -651,11 +651,6 @@
       "title": "Nie masz jeszcze klientów",
       "body": "Zaproś klienta. Pojawi się tutaj po dołączeniu."
     },
-    "noMatch": {
-      "title": "Żaden klient nie pasuje do tego imienia i nazwiska",
-      "body": "Sprawdź pisownię lub wyczyść wyszukiwanie.",
-      "clear": "Wyczyść wyszukiwanie"
-    },
     "pastPlanChanges": "Wcześniejsze zmiany planu"
   },
   "approvals": {
@@ -1574,7 +1569,7 @@
     "status": {
       "AT_RISK": "Zagrożony",
       "WATCH": "Do obserwacji",
-      "PLAN_TO_REVIEW": "Plan do przeglądu",
+      "PLAN_TO_REVIEW": "Plan do przejrzenia",
       "NO_PLAN": "Bez planu",
       "ON_TRACK": "Na dobrej drodze"
     },
@@ -1624,7 +1619,7 @@
         "BOTH": "{{title}} – czeka na decyzję Was obojga."
       },
       "draft": {
-        "BUILT": "{{name}}: plan czeka na przegląd",
+        "BUILT": "{{name}}: plan czeka na przejrzenie",
         "FAILED": "{{name}}: nie udało się automatycznie zbudować planu",
         "SAVED": "{{name}}: szkic nie jest jeszcze opublikowany"
       },
@@ -1671,6 +1666,16 @@
     "sessions": "{{done, number}}/{{due, number}}",
     "noLogs": "Brak zapisów",
     "noCheckIn": "Brak check-inu",
-    "lighterTargets": "Lżejsze cele"
+    "lighterTargets": "Lżejsze cele",
+    "all": {
+      "title": "Wszyscy klienci",
+      "filter": "Status",
+      "everyone": "Wszyscy",
+      "noMatch": {
+        "title": "Brak pasujących klientów",
+        "body": "Sprawdź pisownię albo wyczyść wyszukiwanie i filtr statusu.",
+        "clear": "Wyczyść wyszukiwanie i filtr"
+      }
+    }
   }
 }
