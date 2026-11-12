@@ -44,7 +44,7 @@ export function ClientPage() {
 
   const back = (
     <Button variant="ghost" size="sm" className="self-start" asChild>
-      <Link to="/trainer/clients">
+      <Link to="/trainer/clients/all">
         <ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
         {t('clients.page.back')}
       </Link>
@@ -63,7 +63,7 @@ export function ClientPage() {
           </EmptyHeader>
           <EmptyContent>
             <Button variant="outline" size="sm" asChild>
-              <Link to="/trainer/clients">
+              <Link to="/trainer/clients/all">
                 {t('clients.page.notFound.action')}
               </Link>
             </Button>

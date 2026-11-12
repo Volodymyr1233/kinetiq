@@ -36,7 +36,7 @@ describe('routes', () => {
   it('reaches the open invites from the clients section, which stays current', async () => {
     const user = userEvent.setup()
     const { router } = renderAppAt(
-      '/trainer/clients',
+      '/trainer/clients/all',
       SIGNED_IN.TRAINER,
       (request) =>
         new URL(request.url).pathname.startsWith('/api/v1/approvals/')

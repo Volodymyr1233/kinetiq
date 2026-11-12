@@ -72,6 +72,15 @@ export const createRoutes = (): RouteObject[] => [
             HydrateFallback: BlankWhileLoading,
             lazy: {
               Component: async () =>
+                (await import('@/features/overview/pages/overview-page'))
+                  .OverviewPage,
+            },
+          },
+          {
+            path: 'all',
+            HydrateFallback: BlankWhileLoading,
+            lazy: {
+              Component: async () =>
                 (await import('@/features/client/pages/clients-page'))
                   .ClientsPage,
             },

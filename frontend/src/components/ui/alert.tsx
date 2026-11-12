@@ -12,6 +12,10 @@ const alertVariants = cva(
         destructive:
           "border-destructive/30 bg-destructive-muted text-foreground *:data-[slot=alert-description]:text-foreground *:[svg]:text-destructive",
         info: "border-info/30 bg-info-muted text-foreground *:data-[slot=alert-description]:text-foreground *:[svg]:text-info",
+        warning:
+          "border-warning/30 bg-warning-muted text-foreground *:data-[slot=alert-description]:text-foreground *:[svg]:text-warning",
+        // the readiness scale for a recovery day, never red
+        low: "border-ready-low/35 bg-ready-low-muted text-foreground *:data-[slot=alert-description]:text-foreground *:[svg]:text-ready-low",
       },
     },
     defaultVariants: {

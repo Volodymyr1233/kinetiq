@@ -48,7 +48,7 @@ export function ClientsPage() {
           </p>
         </div>
         <Button variant="outline" size="sm" asChild>
-          <Link to="invites">{t('invites.open')}</Link>
+          <Link to="/trainer/clients/invites">{t('invites.open')}</Link>
         </Button>
       </div>
 
@@ -80,7 +80,7 @@ export function ClientsPage() {
           </EmptyHeader>
           <EmptyContent>
             <Button asChild>
-              <Link to="invites">
+              <Link to="/trainer/clients/invites">
                 <UserPlusIcon data-icon="inline-start" aria-hidden="true" />
                 {t('invites.inviteClient')}
               </Link>

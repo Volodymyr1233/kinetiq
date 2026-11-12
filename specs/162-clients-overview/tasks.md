@@ -37,10 +37,10 @@ description: "Tasks for story #162, Trainer sees the overview of all clients (ta
 
 **Blocked by**: #164.
 
-- [ ] T012 [US2] `F/features/overview/api/overview.ts`, `components/status-badge.tsx`, `overview-tiles.tsx`, `attention-list.tsx`, `client-table.tsx`; Alert variants `warning` and `low`
-- [ ] T013 [US2] `F/features/overview/pages/overview-page.tsx` at `/trainer/clients` with skeletons, error and empty states; the old table at `/trainer/clients/all`
-- [ ] T014 [US2] Tests `overview-page.test.tsx`: tiles, every alert kind and its action, loading, empty, error
-- [ ] T015 EN and PL texts; browser check at 1280 px, light and dark, EN and PL; `npm run check`; commit `feat(frontend): add the clients overview (#165)`
+- [X] T012 [US2] `F/features/overview/api/overview.ts`, `components/status-badge.tsx`, `overview-tiles.tsx`, `attention-list.tsx`, `client-table.tsx`; Alert variants `warning` and `low`
+- [X] T013 [US2] `F/features/overview/pages/overview-page.tsx` at `/trainer/clients` with skeletons, error and empty states; the old table at `/trainer/clients/all`
+- [X] T014 [US2] Tests `overview-page.test.tsx`: tiles, every alert kind and its action, loading, empty, error
+- [X] T015 EN and PL texts; browser check at 1280 px, light and dark, EN and PL; `npm run check`; commit `feat(frontend): add the clients overview (#165)`
 
 ## Phase 4: task #166, all-clients table (US3)
 

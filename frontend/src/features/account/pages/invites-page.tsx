@@ -83,7 +83,7 @@ export function InvitesPage() {
   return (
     <div className="flex max-w-240 flex-col gap-6 px-6 py-8">
       <Button variant="ghost" size="sm" className="self-start" asChild>
-        <Link to="/trainer/clients">
+        <Link to="/trainer/clients/all">
           <ArrowLeftIcon data-icon="inline-start" aria-hidden="true" />
           {t('clients.page.back')}
         </Link>
