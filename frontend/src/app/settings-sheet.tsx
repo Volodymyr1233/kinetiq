@@ -1,6 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { SlidersHorizontalIcon } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
 import {
   Sheet,
@@ -57,6 +58,12 @@ export function SettingsSheet() {
             </>
           )}
           <SignOutButton variant="outline" size="touch" className="w-full" />
+          <Link
+            to="/privacy"
+            className="text-muted-foreground hover:text-foreground flex min-h-12 items-center justify-center text-sm underline underline-offset-3"
+          >
+            {t('settings.privacyNotice')}
+          </Link>
         </div>
       </SheetContent>
     </Sheet>

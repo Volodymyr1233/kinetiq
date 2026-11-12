@@ -193,7 +193,8 @@
       "hidePassword": "Ukryj hasło",
       "adult": "Mam co najmniej 18 lat",
       "submit": "Załóż konto",
-      "haveAccount": "Masz już konto?"
+      "haveAccount": "Masz już konto?",
+      "privacy": "Jak przetwarzamy Twoje dane: <notice>Informacja o prywatności<hint> (otwiera się w nowej karcie)</hint></notice>"
     },
     "checkEmail": {
       "title": "Sprawdź skrzynkę e-mail",
@@ -286,6 +287,7 @@
       "LB": "lb"
     },
     "languageHint": "Po polsku zwracamy się do klientów na „ty”.",
+    "privacyNotice": "Informacja o prywatności",
     "save": "Zapisz zmiany",
     "saved": "Zapisano ustawienia.",
     "sheet": {
@@ -1677,5 +1679,95 @@
         "clear": "Wyczyść wyszukiwanie i filtr"
       }
     }
+  },
+  "privacy": {
+    "title": "Informacja o prywatności",
+    "updated": "Ostatnia aktualizacja: {{date}}",
+    "home": "Strona główna Kinetiq",
+    "sections": [
+      {
+        "heading": "Kto odpowiada za Twoje dane",
+        "paragraphs": [
+          "Za Twoje dane osobowe odpowiada Kinetiq. Z pytaniami i prośbami o nie napisz na <mail>privacy@kinetiq.page</mail>."
+        ]
+      },
+      {
+        "heading": "Co przechowujemy o trenerach",
+        "items": [
+          "Twoje imię i nazwisko, adres e-mail i hasło, które przechowujemy tylko jako jednokierunkowy skrót.",
+          "Twoją strefę czasową, jednostki, język i motyw.",
+          "Twoje własne ćwiczenia oraz wysłane zaproszenia z adresami e-mail, na które trafiły.",
+          "Informację, w których przeglądarkach jesteś zalogowany."
+        ]
+      },
+      {
+        "heading": "Co przechowujemy o klientach",
+        "paragraphs": [
+          "Twoje imię i nazwisko, adres e-mail, hasło (tylko jako jednokierunkowy skrót), strefę czasową i ustawienia oraz te dane o zdrowiu:"
+        ],
+        "items": [
+          "Twoje odpowiedzi z quizu: cel, doświadczenie, wiek, wzrost, masę ciała, dni, w które możesz trenować, i Twoje uwagi.",
+          "Twoje codzienne check-iny: sen, bolesność mięśni i stres.",
+          "Twoje logi: ciężar, powtórzenia lub sekundy i RPE każdej serii oraz Twoje notatki po sesji.",
+          "Twój plan, jego zmiany planu i Twoją rozmowę z trenerem."
+        ]
+      },
+      {
+        "heading": "Dlaczego je przechowujemy",
+        "items": [
+          "Przechowujemy Twoje konto, aby świadczyć Ci usługę Kinetiq (art. 6 ust. 1 lit. b RODO).",
+          "Dane o zdrowiu przetwarzamy tylko za Twoją wyraźną zgodą, wyrażoną przy dołączaniu, aby trener mógł zaplanować Twój trening (art. 9 ust. 2 lit. a RODO).",
+          "Przechowujemy, kiedy wyraziłeś tę zgodę, aby móc to wykazać."
+        ]
+      },
+      {
+        "heading": "Kto je otrzymuje",
+        "items": [
+          "Twój trener widzi Twoje dane o zdrowiu, plan, logi i wiadomości. Klienci widzą imię i nazwisko swojego trenera.",
+          "Nasza usługa wysyłki e-maili otrzymuje Twój adres e-mail i wiadomości, które Ci wysyłamy, na przykład linki potwierdzające.",
+          "Nasza usługa AI otrzymuje Twoje odpowiedzi z quizu i dane treningowe, aby przygotować szkice planów i zmian planu. Nigdy nie otrzymuje Twojego imienia, nazwiska ani adresu e-mail, a z Twoich uwag najpierw usuwamy znane imiona, nazwiska, adresy e-mail i numery telefonów.",
+          "Nasz dostawca hostingu przechowuje dane w naszym imieniu."
+        ],
+        "after": [
+          "Te usługi mogą przetwarzać dane poza Europejskim Obszarem Gospodarczym. Nie sprzedajemy Twoich danych i nie używamy ich do reklam."
+        ]
+      },
+      {
+        "heading": "Jak długo je przechowujemy",
+        "items": [
+          "Twoje konto i wszystko, co zawiera: do usunięcia konta.",
+          "Konto trenera, którego adres e-mail nie został potwierdzony: 7 dni od wysłania ostatniego linku potwierdzającego.",
+          "Zaproszenie: 1 godzinę po jego wykorzystaniu, cofnięciu lub wygaśnięciu.",
+          "Zalogowanie: do wylogowania albo po 14 dniach bez używania."
+        ],
+        "after": ["Usunięte dane znikają z kopii zapasowych, gdy te wygasają."]
+      },
+      {
+        "heading": "Jak je chronimy",
+        "paragraphs": [
+          "Każde połączenie jest szyfrowane, dyski z danymi są szyfrowane, a hasła przechowujemy tylko jako jednokierunkowe skróty. W Kinetiq Twoje dane widzisz tylko Ty, a dane klienta także jego trener."
+        ]
+      },
+      {
+        "heading": "Wiek",
+        "paragraphs": [
+          "Klienci muszą mieć co najmniej 16 lat, a trenerzy co najmniej 18 lat."
+        ]
+      },
+      {
+        "heading": "Usunięcie konta",
+        "paragraphs": [
+          "Konto możesz usunąć w Ustawieniach, podając hasło. U klienta usuwa to konto, odpowiedzi z quizu, plan, check-iny, logi, zmiany planu i rozmowę z trenerem. U trenera usuwa to konto, własne ćwiczenia i zaproszenia i jest możliwe, gdy nie ma już żadnych klientów. Tego nie da się cofnąć.",
+          "Aby wycofać zgodę na przetwarzanie danych o zdrowiu, usuń konto: bez tych danych nie da się przygotować ani realizować planu."
+        ]
+      },
+      {
+        "heading": "Twoje prawa",
+        "paragraphs": [
+          "Możesz poprosić nas o dostęp do swoich danych i ich kopię, o ich sprostowanie lub usunięcie albo o ograniczenie ich przetwarzania, a także sprzeciwić się ich przetwarzaniu. Napisz na <mail>privacy@kinetiq.page</mail>.",
+          "Możesz też złożyć skargę do Prezesa Urzędu Ochrony Danych Osobowych."
+        ]
+      }
+    ]
   }
 }

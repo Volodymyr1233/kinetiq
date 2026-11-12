@@ -163,4 +163,21 @@ describe('SignUpPage', () => {
       '/api/v1/confirmation-links',
     ])
   })
+
+  it('opens the privacy notice in a new tab and keeps what was typed', async () => {
+    stubApi(() => new Response(null, { status: 202 }))
+    const user = userEvent.setup()
+    renderPage(<SignUpPage />)
+    await user.type(screen.getByLabelText('Name'), 'Marek Nowak')
+
+    const link = screen.getByRole('link', {
+      name: /^Privacy notice ?\(opens in a new tab\)$/,
+    })
+    await user.click(link)
+
+    expect(link).toHaveAttribute('href', '/privacy')
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(screen.getByText(/^How we handle your data:/)).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('Marek Nowak')
+  })
 })

@@ -45,6 +45,14 @@ export const createRoutes = (): RouteObject[] => [
         (await import('@/features/account/pages/join-page')).JoinPage,
     },
   },
+  // no loader: the notice is read before an account exists, so it never asks who is signed in
+  {
+    path: '/privacy',
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () => (await import('@/app/privacy-page')).PrivacyPage,
+    },
+  },
   {
     path: '/reset-password',
     HydrateFallback: BlankWhileLoading,

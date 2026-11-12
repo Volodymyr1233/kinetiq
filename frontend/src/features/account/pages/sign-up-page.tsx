@@ -1,7 +1,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { Controller, useForm, type FieldPath } from 'react-hook-form'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import type { z } from 'zod'
 import { Alert, AlertDescription } from '@/components/ui/alert'
@@ -213,6 +213,23 @@ export function SignUpPage() {
             {busy && <Spinner data-icon="inline-start" aria-hidden="true" />}
             {t('account.signUp.submit')}
           </Button>
+          <p className="text-muted-foreground -mt-2 text-center text-xs">
+            <Trans
+              i18nKey="account.signUp.privacy"
+              components={{
+                // a new tab, so the form keeps what was typed; not <link>, which i18next reads as an empty HTML element
+                notice: (
+                  <a
+                    href="/privacy"
+                    target="_blank"
+                    rel="noopener"
+                    className="text-foreground underline underline-offset-3"
+                  />
+                ),
+                hint: <span className="sr-only" />,
+              }}
+            />
+          </p>
         </form>
       </AuthCard>
       <AuthFooter>

@@ -189,7 +189,8 @@
       "hidePassword": "Hide password",
       "adult": "I am 18 or older",
       "submit": "Create account",
-      "haveAccount": "Have an account?"
+      "haveAccount": "Have an account?",
+      "privacy": "How we handle your data: <notice>Privacy notice<hint> (opens in a new tab)</hint></notice>"
     },
     "checkEmail": {
       "title": "Check your email",
@@ -282,6 +283,7 @@
       "LB": "lb"
     },
     "languageHint": "Polski uses informal \"ty\" with clients.",
+    "privacyNotice": "Privacy notice",
     "save": "Save changes",
     "saved": "Settings saved.",
     "sheet": {
@@ -1601,5 +1603,93 @@
         "clear": "Clear search and filter"
       }
     }
+  },
+  "privacy": {
+    "title": "Privacy notice",
+    "updated": "Last updated {{date}}",
+    "home": "Kinetiq home page",
+    "sections": [
+      {
+        "heading": "Who is responsible",
+        "paragraphs": [
+          "Kinetiq is responsible for your personal data. Write to <mail>privacy@kinetiq.page</mail> with any question or request about it."
+        ]
+      },
+      {
+        "heading": "What we keep about trainers",
+        "items": [
+          "Your name, email address and password, which we keep only as a one-way hash.",
+          "Your time zone, units, language and theme.",
+          "Your own exercises, and the invites you send with the email addresses they go to.",
+          "Which browsers are signed in to your account."
+        ]
+      },
+      {
+        "heading": "What we keep about clients",
+        "paragraphs": [
+          "Your name, email address, password (only as a one-way hash), time zone and settings, and this health data:"
+        ],
+        "items": [
+          "Your quiz answers: goal, experience, age, height, body weight, the days you can train and your notes.",
+          "Your daily check-ins: sleep, soreness and stress.",
+          "Your logs: the load, repetitions or seconds and RPE of every set, and your notes after a session.",
+          "Your plan, its plan changes, and your conversation with your trainer."
+        ]
+      },
+      {
+        "heading": "Why we keep it",
+        "items": [
+          "We keep your account to provide Kinetiq to you (Art. 6(1)(b) GDPR).",
+          "We process health data only with your explicit consent, given when you join, so your trainer can plan your training (Art. 9(2)(a) GDPR).",
+          "We keep when you gave that consent, to be able to show it."
+        ]
+      },
+      {
+        "heading": "Who receives it",
+        "items": [
+          "Your trainer sees your health data, plan, logs and messages. Clients see their trainer's name.",
+          "Our email delivery service receives your email address and the emails we send you, such as confirmation links.",
+          "Our AI service receives your quiz answers and training figures to draft plans and plan changes. It never receives your name or email address, and we remove known names, email addresses and phone numbers from your notes first.",
+          "Our hosting provider stores the data for us."
+        ],
+        "after": [
+          "These services may process data outside the European Economic Area. We do not sell your data or use it for advertising."
+        ]
+      },
+      {
+        "heading": "How long we keep it",
+        "items": [
+          "Your account and everything in it: until you delete your account.",
+          "A trainer account whose email was never confirmed: 7 days after the last confirmation link was sent.",
+          "An invite: 1 hour after it was used, revoked or expired.",
+          "A sign-in: until you sign out, or after 14 days without use."
+        ],
+        "after": ["Deleted data leaves our backups when they expire."]
+      },
+      {
+        "heading": "How we protect it",
+        "paragraphs": [
+          "Every connection is encrypted, the disks that hold the data are encrypted, and passwords are kept only as one-way hashes. In Kinetiq, your data is open only to you and, for a client, to their trainer."
+        ]
+      },
+      {
+        "heading": "Age",
+        "paragraphs": ["Clients must be 16 or older and trainers 18 or older."]
+      },
+      {
+        "heading": "Deleting your account",
+        "paragraphs": [
+          "You can delete your account in Settings, with your password. For a client, this erases the account, quiz answers, plan, check-ins, logs, plan changes and the conversation with the trainer. For a trainer, it erases the account, own exercises and invites, and is possible once no clients are left. It cannot be undone.",
+          "To withdraw your consent to the processing of health data, delete your account: a plan cannot be built or followed without that data."
+        ]
+      },
+      {
+        "heading": "Your rights",
+        "paragraphs": [
+          "You can ask us for access to your data and a copy of it, for its correction or erasure, or for its processing to be restricted, and you can object to its processing. Write to <mail>privacy@kinetiq.page</mail>.",
+          "You can also complain to the Polish data protection authority, the President of the Personal Data Protection Office (Prezes Urzędu Ochrony Danych Osobowych)."
+        ]
+      }
+    ]
   }
 }
