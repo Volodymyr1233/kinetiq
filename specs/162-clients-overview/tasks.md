@@ -26,12 +26,12 @@ description: "Tasks for story #162, Trainer sees the overview of all clients (ta
 
 **Blocked by**: #163, #110 (closed), #138 (closed).
 
-- [ ] T006 [US2] `B/overview/domain/output/TrainingRecords.java` and `B/overview/infrastructure/output/JdbcTrainingRecords.java`: plans with session days, day logs since a date, the last logged set, check-ins since a date, each bounded by the trainer
-- [ ] T007 [US4] Test `BT/overview/infrastructure/output/JdbcTrainingRecordsIT.java`: each figure from known rows; another trainer's client never read
-- [ ] T008 [US2] `B/overview/domain/input/ViewOverviewUseCase.java`, `Overview.java`; `B/overview/domain/service/OverviewService.java`: rows, tiles, alerts in the order of FR-010
-- [ ] T009 [US2] Test `BT/overview/domain/service/OverviewServiceTest.java` with fakes and a fixed clock
-- [ ] T010 [US2] [US4] Wiring `B/overview/infrastructure/config/OverviewConfig.java`; web `OverviewController`, `OverviewResponse`, `OverviewWebMapper`; test `OverviewControllerTest.java` (fields, absent ones left out, 403 for a client, 401 for a visitor)
-- [ ] T011 Demo data where a status or alert has nothing to show; regenerate `F/lib/api/schema.d.ts`; `./gradlew check`, `npm run check`; commit `feat(backend): add the trainer's overview api (#164)`
+- [X] T006 [US2] `B/overview/domain/output/TrainingRecords.java` and `B/overview/infrastructure/output/JdbcTrainingRecords.java`: plans with session days, day logs since a date, the last logged set, check-ins since a date, each bounded by the trainer
+- [X] T007 [US4] Test `BT/overview/infrastructure/output/JdbcTrainingRecordsIT.java`: each figure from known rows; another trainer's client never read
+- [X] T008 [US2] `B/overview/domain/input/ViewOverviewUseCase.java`, `Overview.java`; `B/overview/domain/service/OverviewService.java`: rows, tiles, alerts in the order of FR-010
+- [X] T009 [US2] Test `BT/overview/domain/service/OverviewServiceTest.java` with fakes and a fixed clock
+- [X] T010 [US2] [US4] Wiring `B/overview/infrastructure/config/OverviewConfig.java`; web `OverviewController`, `OverviewResponse`, `OverviewWebMapper`; test `OverviewControllerTest.java` (fields, absent ones left out, 403 for a client, 401 for a visitor)
+- [X] T011 Demo data where a status or alert has nothing to show; regenerate `F/lib/api/schema.d.ts`; `./gradlew check`, `npm run check`; commit `feat(backend): add the trainer's overview api (#164)`
 
 ## Phase 3: task #165, overview screen (US2)
 
