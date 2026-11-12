@@ -2,6 +2,7 @@ import {
   queryOptions,
   useMutation,
   useQueryClient,
+  type QueryClient,
 } from '@tanstack/react-query'
 import { useSyncExternalStore } from 'react'
 import { useNavigate } from 'react-router'
@@ -175,6 +176,14 @@ export function useJoin() {
   })
 }
 
+/** Forgets everything this browser keeps for the account that was signed in here. */
+function forgetAccount(cache: QueryClient) {
+  clearTabStorage()
+  // nothing of this account may stay on the phone; without a cached account every kept log goes
+  clearPendingLogs(cache.getQueryData(currentAccountQuery.queryKey)?.id)
+  cache.clear()
+}
+
 export function useSignOut() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
@@ -188,13 +197,32 @@ export function useSignOut() {
       }
     },
     onSuccess: () => {
-      clearTabStorage()
-      // nothing of this account may stay on the phone; without a cached account every kept log goes
-      clearPendingLogs(
-        queryClient.getQueryData(currentAccountQuery.queryKey)?.id,
-      )
-      queryClient.clear()
+      forgetAccount(queryClient)
       void navigate('/sign-in', { replace: true })
+    },
+  })
+}
+
+/** A trainer's number of clients and a client's trainer's name, which the delete confirmation needs. */
+export const accountDeletionQuery = queryOptions({
+  queryKey: ['account-deletion'],
+  queryFn: () => receive(api.GET('/api/v1/accounts/me/deletion')),
+})
+
+/** The sign-in page's state after a deletion, so it can say the account is gone. */
+export type SignInState = { accountDeleted?: boolean }
+
+/** Deletes the signed-in account after its password; the server ends every sign-in, this browser forgets it. */
+export function useDeleteAccount() {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+  return useMutation({
+    mutationFn: (password: string) =>
+      send(api.POST('/api/v1/accounts/me/deletion', { body: { password } })),
+    onSuccess: () => {
+      forgetAccount(queryClient)
+      const state: SignInState = { accountDeleted: true }
+      void navigate('/sign-in', { replace: true, state })
     },
   })
 }

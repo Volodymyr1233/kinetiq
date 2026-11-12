@@ -1,9 +1,14 @@
 import { zodResolver } from '@hookform/resolvers/zod'
-import { CircleAlertIcon, LockIcon, MailIcon } from 'lucide-react'
+import {
+  CircleAlertIcon,
+  CircleCheckIcon,
+  LockIcon,
+  MailIcon,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Trans, useTranslation } from 'react-i18next'
-import { Link, useNavigate, useSearchParams } from 'react-router'
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router'
 import type { z } from 'zod'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
@@ -16,7 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
-import { useSignIn } from '../api/account'
+import { useSignIn, type SignInState } from '../api/account'
 import { AuthCard, AuthFooter, AuthLayout } from '../components/auth-layout'
 import { PasswordInput } from '../components/password-input'
 import { landingFor, safeNext } from '../landing'
@@ -79,6 +84,9 @@ export function SignInPage() {
   const { t } = useTranslation()
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
+  // set by a deletion; a sign-in attempt replaces it with its own notice
+  const accountDeleted =
+    (useLocation().state as SignInState | null)?.accountDeleted === true
   const signIn = useSignIn()
   const [notice, setNotice] = useState<Notice>()
   const form = useForm<SignInValues, unknown, z.output<typeof signInSchema>>({
@@ -133,7 +141,19 @@ export function SignInPage() {
         title={t('account.signInPage.title')}
         description={t('account.signInPage.description')}
       >
-        {notice && <SignInNotice notice={notice} />}
+        {notice ? (
+          <SignInNotice notice={notice} />
+        ) : (
+          accountDeleted && (
+            // an alert, because a status region that appears with the page is not always announced
+            <Alert>
+              <CircleCheckIcon aria-hidden="true" />
+              <AlertDescription>
+                {t('account.signInPage.deleted')}
+              </AlertDescription>
+            </Alert>
+          )
+        )}
 
         <form noValidate onSubmit={onSubmit} className="flex flex-col gap-5">
           <FieldGroup className="gap-4">

@@ -1,12 +1,13 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
 import { useEffect, useState, type ReactNode } from 'react'
+import { CircleAlertIcon } from 'lucide-react'
 import { Controller, useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { z } from 'zod'
 import { LeaveGuard } from '@/components/leave-guard'
-import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
@@ -29,10 +30,12 @@ import {
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
 import {
+  accountDeletionQuery,
   currentAccountQuery,
   useUpdateAccount,
   type CurrentAccount,
 } from '../api/account'
+import { DeleteAccountDialog } from '../components/delete-account-dialog'
 import { SettingToggleGroup } from '../components/setting-toggle-group'
 import { signUpSchema } from '../sign-up-schema'
 
@@ -309,6 +312,7 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
           </Button>
         </div>
       </form>
+      <DeleteAccountSection />
       <Link
         to="/privacy"
         className="text-muted-foreground hover:text-foreground self-start text-sm underline underline-offset-3"
@@ -316,5 +320,57 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
         {t('settings.privacyNotice')}
       </Link>
     </div>
+  )
+}
+
+// a trainer's account can be deleted only once no client is left; the server checks it again
+function DeleteAccountSection() {
+  const { t } = useTranslation()
+  const query = useQuery(accountDeletionQuery)
+
+  return (
+    <Card className="max-w-3xl">
+      <CardHeader>
+        <CardTitle>
+          <h2>{t('settings.delete.title')}</h2>
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="flex flex-col items-start gap-4">
+        {query.isError ? (
+          <Alert variant="destructive">
+            <CircleAlertIcon aria-hidden />
+            <AlertDescription>
+              {t(errorMessageKey(query.error))}
+            </AlertDescription>
+            <AlertAction>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => void query.refetch()}
+              >
+                {t('areaError.retry')}
+              </Button>
+            </AlertAction>
+          </Alert>
+        ) : query.isPending ? (
+          <span role="status" className="text-muted-foreground text-sm">
+            {t('settings.delete.loading')}
+          </span>
+        ) : query.data.clients > 0 ? (
+          <p className="text-muted-foreground text-sm">
+            {t('errors.account.has-clients', { count: query.data.clients })}
+          </p>
+        ) : (
+          <>
+            <p className="text-muted-foreground text-sm">
+              {t('settings.delete.trainerDescription')}
+            </p>
+            <DeleteAccountDialog
+              description={t('settings.delete.trainerDescription')}
+            />
+          </>
+        )}
+      </CardContent>
+    </Card>
   )
 }

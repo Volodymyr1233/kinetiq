@@ -10,12 +10,17 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
-import { currentAccountQuery } from '@/features/account/api/account'
+import {
+  accountDeletionQuery,
+  currentAccountQuery,
+} from '@/features/account/api/account'
+import { DeleteAccountDialog } from '@/features/account/components/delete-account-dialog'
 import { AccountAvatar } from '@/components/account-avatar'
 import { DisplaySettings } from '@/features/account/components/display-settings'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
+import { firstName } from '@/lib/first-name'
 
-/** The client's Settings button and the sheet it opens: display settings and "Sign out". */
+/** The client's Settings button and the sheet it opens: display settings, "Sign out", deleting the account and the privacy notice. */
 export function SettingsSheet() {
   const { t } = useTranslation()
   const { data: account } = useQuery(currentAccountQuery)
@@ -58,6 +63,7 @@ export function SettingsSheet() {
             </>
           )}
           <SignOutButton variant="outline" size="touch" className="w-full" />
+          <ClientDeleteAccount />
           <Link
             to="/privacy"
             className="text-muted-foreground hover:text-foreground flex min-h-12 items-center justify-center text-sm underline underline-offset-3"
@@ -67,5 +73,27 @@ export function SettingsSheet() {
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+// read when the sheet opens, so the confirmation can name the trainer
+function ClientDeleteAccount() {
+  const { t } = useTranslation()
+  const { data } = useQuery(accountDeletionQuery)
+  const trainer = data?.trainerName ? firstName(data.trainerName) : undefined
+
+  return (
+    <DeleteAccountDialog
+      description={
+        trainer
+          ? t('settings.delete.clientDescription', { trainer })
+          : t('settings.delete.clientDescriptionNoName')
+      }
+      trigger={{
+        variant: 'ghost',
+        size: 'touch',
+        className: 'text-destructive hover:text-destructive w-full',
+      }}
+    />
   )
 }

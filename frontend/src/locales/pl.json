@@ -166,6 +166,7 @@
       "CLIENT": "Klient"
     },
     "signInPage": {
+      "deleted": "Twoje konto zostało usunięte.",
       "title": "Zaloguj się",
       "description": "Tu logują się trenerzy i klienci.",
       "email": "E-mail",
@@ -300,6 +301,19 @@
       "theme": "Motyw",
       "themeHint": "Systemowy bierze tryb jasny lub ciemny z telefonu.",
       "autosave": "Zmiany zapisują się od razu."
+    },
+    "delete": {
+      "title": "Usuń konto",
+      "button": "Usuń konto",
+      "dialogTitle": "Usunąć konto?",
+      "trainerDescription": "Usuniemy Twoje konto, Twoje ćwiczenia i zaproszenia. Tego nie da się cofnąć.",
+      "clientDescription": "Usuniemy Twoje konto, plan, check-iny, logi i rozmowę z trenerem ({{trainer}}). Serie zapisane na tym telefonie przepadną. Tego nie da się cofnąć.",
+      "password": "Hasło",
+      "clientDescriptionNoName": "Usuniemy Twoje konto, plan, check-iny, logi i rozmowę z trenerem. Serie zapisane na tym telefonie przepadną. Tego nie da się cofnąć.",
+      "passwordHelp": "Wpisz hasło, aby potwierdzić.",
+      "cancel": "Anuluj",
+      "confirm": "Usuń konto",
+      "loading": "Sprawdzamy, czy możesz usunąć konto"
     }
   },
   "exercises": {

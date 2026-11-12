@@ -171,7 +171,8 @@ function Session({
   }).format(new Date(Date.UTC(year, month - 1, day)))
 
   return (
-    <main className="mx-auto flex min-h-svh max-w-[640px] flex-col gap-4 px-4 pt-4 pb-0">
+    // the margin keeps whatever takes focus clear of the sticky footer and the rest timer above it
+    <main className="mx-auto flex min-h-svh max-w-[640px] flex-col gap-4 px-4 pt-4 pb-0 [&_*]:scroll-mb-56">
       <Button variant="ghost" size="touch" asChild className="self-start px-2">
         <Link to={plan ?? '/app/today'}>
           <ArrowLeftIcon aria-hidden />

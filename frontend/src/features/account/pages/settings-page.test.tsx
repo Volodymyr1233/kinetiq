@@ -10,8 +10,14 @@ import { SettingsPage } from './settings-page'
 const saved = (): Reply => async (request) =>
   json({ ...SIGNED_IN.TRAINER, ...(await request.json()) })
 
+// the delete section asks on its own; tests of saving answer it with "no clients"
 function renderSettings(reply: Reply) {
-  const requests = stubApi(reply)
+  const requests = stubApi((request) =>
+    request.method === 'GET' &&
+    new URL(request.url).pathname === '/api/v1/accounts/me/deletion'
+      ? json({ clients: 0 })
+      : reply(request),
+  )
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false }, mutations: { retry: false } },
   })

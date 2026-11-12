@@ -69,7 +69,10 @@ function ClientTabs() {
         fillsScreen ? 'h-dvh' : 'min-h-svh',
       )}
     >
-      <header className="bg-background sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-3">
+      <header
+        data-slot="client-header"
+        className="bg-background sticky top-0 z-10 flex items-center justify-between gap-2 px-4 pt-4 pb-3"
+      >
         <h1 className="text-xl font-semibold">
           {active ? t(active.labelKey) : ''}
         </h1>

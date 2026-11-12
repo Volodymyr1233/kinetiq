@@ -267,8 +267,7 @@ export function PlanEditor({
   if (deleting && deleting !== shownDeleting) setShownDeleting(deleting)
 
   return (
-    // the margin keeps whatever takes focus clear of the sticky page header
-    <div className="flex flex-col gap-6 pt-4 [&_*]:scroll-mt-16">
+    <div className="flex flex-col gap-6 pt-4">
       <LeaveGuard dirty={dirty} body={t('leave.planBody')} />
       {/* a failed draft says so in the panel beside the editor */}
       {saved.plan?.automaticDraft === 'BUILT' && (

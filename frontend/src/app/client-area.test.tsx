@@ -139,6 +139,31 @@ describe('ClientArea', () => {
     ).toBe(true)
   })
 
+  it('offers to delete the account below "Sign out", naming the trainer in the confirmation', async () => {
+    const { sheet, user } = await openSheet((request) =>
+      new URL(request.url).pathname === '/api/v1/accounts/me/deletion'
+        ? json({ clients: 0, trainerName: 'Marek Nowak' })
+        : otherCalls(request),
+    )
+    const buttons = sheet
+      .getAllByRole('button')
+      .map((button) => button.textContent)
+    expect(buttons.indexOf('Delete account')).toBeGreaterThan(
+      buttons.indexOf('Sign out'),
+    )
+
+    await user.click(sheet.getByRole('button', { name: 'Delete account' }))
+
+    const dialog = await screen.findByRole('alertdialog', {
+      name: 'Delete your account?',
+    })
+    expect(
+      within(dialog).getByText(
+        /your conversation with Marek\. Sets saved on this phone are discarded\./,
+      ),
+    ).toBeInTheDocument()
+  })
+
   it('shows the email and the stored display settings in the sheet', async () => {
     const { sheet, option } = await openSheet()
 

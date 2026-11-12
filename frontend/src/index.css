@@ -313,6 +313,14 @@
   html {
     @apply font-sans;
   }
+  /* the areas' sticky header and the client's fixed tab bar must not hide whatever takes focus (WCAG 2.4.11) */
+  html:has([data-slot='trainer-header']) {
+    scroll-padding-top: 4rem;
+  }
+  html:has([data-slot='client-header']) {
+    scroll-padding-top: 5.25rem;
+    scroll-padding-bottom: calc(4rem + 1px + env(safe-area-inset-bottom));
+  }
   body {
     @apply bg-background text-foreground;
     font-feature-settings: 'ss01';

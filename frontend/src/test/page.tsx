@@ -121,7 +121,11 @@ export function renderAppAt(
     }
     const response = await reply(request)
     // the server ends or starts the sign-in and keeps changed settings, so later checks answer accordingly
-    if (call === 'DELETE /api/v1/sign-ins/current' && response.ok)
+    if (
+      (call === 'DELETE /api/v1/sign-ins/current' ||
+        call === 'POST /api/v1/accounts/me/deletion') &&
+      response.ok
+    )
       current = null
     if (
       (call === 'POST /api/v1/sign-ins' ||
