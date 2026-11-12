@@ -33,6 +33,10 @@ _Avoid_: Invitation code, referral
 **Client status**:
 The trainer's at-a-glance verdict on a client: On track, Watch, At risk, Plan to review or No plan.
 
+**Active client**:
+A client whose plan is published and has not finished.
+_Avoid_: Current client, training client
+
 ### Planning
 
 **Plan**:
