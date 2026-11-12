@@ -868,6 +868,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/clients/overview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["trainerOverview"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/approvals/plan-changes": {
         parameters: {
             query?: never;
@@ -1785,6 +1801,72 @@ export interface components {
             /** @enum {string} */
             targets?: "LIGHTER" | "ORIGINAL";
             session?: components["schemas"]["ClientSessionResponse"];
+        };
+        OverviewAlertResponse: {
+            /** @enum {string} */
+            kind: "AT_RISK" | "WATCH" | "NO_LOG" | "PLAN_CHANGE" | "DRAFT" | "PLAN_ENDING" | "RECOVERY_DAY";
+            /** Format: uuid */
+            clientId: string;
+            /** Format: uuid */
+            planChangeId?: string;
+            planChangeTitle?: string;
+            /** @enum {string} */
+            waitingFor?: "TRAINER" | "CLIENT" | "BOTH";
+            /** @enum {string} */
+            draft?: "BUILT" | "FAILED" | "SAVED";
+            /** Format: int32 */
+            daysWithoutLog?: number;
+            /** Format: date */
+            since?: string;
+            lastSessionName?: string;
+        };
+        OverviewClientResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** @enum {string} */
+            goal?: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
+            /** @enum {string} */
+            planState: "NO_QUIZ" | "PLAN_DRAFTING" | "PLAN_TO_REVIEW" | "DRAFT" | "DRAFT_FAILED" | "PUBLISHED";
+            /** Format: int32 */
+            planWeek?: number;
+            /** Format: int32 */
+            planWeeks?: number;
+            /** Format: date */
+            planEndsOn?: string;
+            /** @enum {string} */
+            status: "AT_RISK" | "WATCH" | "PLAN_TO_REVIEW" | "NO_PLAN" | "ON_TRACK";
+            reasons: ("LOW_COMPLETION" | "HIGH_RPE")[];
+            /** Format: int32 */
+            sessionsDone?: number;
+            /** Format: int32 */
+            sessionsDue?: number;
+            averageRpe?: number;
+            /** Format: date-time */
+            lastLoggedAt?: string;
+            /** Format: int32 */
+            readiness?: number;
+            /** @enum {string} */
+            readinessBand?: "READY" | "TAKE_IT_EASIER" | "RECOVERY_DAY";
+            lighterTargets: boolean;
+        };
+        OverviewResponse: {
+            /** Format: int32 */
+            activeClients: number;
+            /** Format: int32 */
+            totalClients: number;
+            /** Format: int32 */
+            sessionsDone: number;
+            /** Format: int32 */
+            sessionsPlanned: number;
+            averageRpe?: number;
+            averageRpeChange?: number;
+            /** Format: int32 */
+            draftsWaiting: number;
+            /** Format: int32 */
+            planChangesWaiting: number;
+            alerts: components["schemas"]["OverviewAlertResponse"][];
+            clients: components["schemas"]["OverviewClientResponse"][];
         };
         DraftedPlanResponse: {
             /** Format: uuid */
@@ -3212,6 +3294,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["ClientOverviewResponse"];
+                };
+            };
+        };
+    };
+    trainerOverview: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["OverviewResponse"];
                 };
             };
         };
