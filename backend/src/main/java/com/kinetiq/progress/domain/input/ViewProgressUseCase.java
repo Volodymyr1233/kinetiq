@@ -2,6 +2,7 @@ package com.kinetiq.progress.domain.input;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.progress.domain.model.Period;
+import java.time.LocalDate;
 
 public interface ViewProgressUseCase {
 
@@ -14,4 +15,10 @@ public interface ViewProgressUseCase {
      * {@code PlanNotFoundException}.
      */
     Progress ofClient(AccountId trainer, AccountId client, Period period);
+
+    /**
+     * The client's own PRs of their session log dated {@code date}, and their week streak, the same as {@code own}
+     * gives; without a published plan {@code PlanNotFoundException}.
+     */
+    Rewards rewards(AccountId client, LocalDate date);
 }

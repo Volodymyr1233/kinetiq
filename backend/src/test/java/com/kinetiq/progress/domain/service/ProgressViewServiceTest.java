@@ -36,8 +36,10 @@ import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.progress.domain.input.Progress;
 import com.kinetiq.progress.domain.input.Progress.ExerciseProgress;
 import com.kinetiq.progress.domain.input.Progress.TopSetChange;
+import com.kinetiq.progress.domain.input.Rewards;
 import com.kinetiq.progress.domain.model.LoggedExercise;
 import com.kinetiq.progress.domain.model.Period;
+import com.kinetiq.progress.domain.model.Pr;
 import com.kinetiq.progress.domain.model.TopSet;
 import com.kinetiq.progress.domain.model.TrainingWeek;
 import com.kinetiq.progress.domain.output.TrainingLog;
@@ -243,6 +245,11 @@ class ProgressViewServiceTest {
                 .own(CLIENT, period);
     }
 
+    private Rewards rewards(LocalDate date) {
+        return new ProgressViewService(clients, plans, accounts, trainingLog, Clock.fixed(now, ZoneOffset.UTC))
+                .rewards(CLIENT, date);
+    }
+
     @Nested
     class ThePeriod {
 
@@ -436,6 +443,45 @@ class ProgressViewServiceTest {
             finish(2, WEDNESDAY);
 
             assertThat(own(FOUR_WEEKS).getWeeksInARow()).isEqualTo(2);
+        }
+    }
+
+    @Nested
+    class RewardsOfADate {
+
+        @Test
+        void shouldGiveThePrsOfTheDateAsked_notThoseOfALaterSession() {
+            now = wednesday(10);
+            logged(9, MONDAY, SQUAT, "100.0", 5, 8);
+            logged(10, MONDAY, SQUAT, "102.5", 5, 8);
+            logged(10, WEDNESDAY, SQUAT, "105.0", 5, 9);
+
+            assertThat(rewards(day(10, MONDAY)).prs())
+                    .containsExactly(new Pr(SQUAT.getId(), new TopSet(new BigDecimal("102.5"), 5, 8)));
+        }
+
+        @Test
+        void shouldGiveTheStreakOfTheProgress_whenAWeekBreaksIt() {
+            finishWholeWeeks(1, 1);
+            finish(2, MONDAY);
+            finish(3, MONDAY, WEDNESDAY);
+
+            assertThat(rewards(day(3, WEDNESDAY)).weeksInARow())
+                    .isEqualTo(own(FOUR_WEEKS).getWeeksInARow())
+                    .isEqualTo(1);
+        }
+
+        @Test
+        void shouldAddTheRunningWeek_onlyOnceItHasTwoDone() {
+            now = wednesday(2);
+            finishWholeWeeks(1, 1);
+            finish(2, MONDAY);
+
+            assertThat(rewards(day(2, MONDAY)).weeksInARow()).isEqualTo(1);
+
+            finish(2, WEDNESDAY);
+
+            assertThat(rewards(day(2, WEDNESDAY)).weeksInARow()).isEqualTo(2);
         }
     }
 
