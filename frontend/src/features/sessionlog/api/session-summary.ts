@@ -1,11 +1,17 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
 import { updateSessionLog } from './session-log'
 
 export type SessionSummary = components['schemas']['SessionSummaryResponse']
 
-export const summaryKey = (sessionId: string) => ['session-summary', sessionId]
+// the backend names the exercises of the PRs in the UI language, so the language is part of the key
+export const summaryKey = (language: string, sessionId: string) => [
+  'session-summary',
+  language,
+  sessionId,
+]
 
 /** The key prefix of the states on Plan and Today, which a finish makes stale. */
 const SESSION_STATES = ['session-states']
@@ -13,6 +19,7 @@ const SESSION_STATES = ['session-states']
 /** Finishes the session; the answer is its summary, which the done screen shows without asking again. */
 export function useFinishSession(sessionId: string) {
   const queryClient = useQueryClient()
+  const { i18n } = useTranslation()
   return useMutation({
     mutationFn: async () => {
       const { data, error } = await api.POST(
@@ -23,7 +30,7 @@ export function useFinishSession(sessionId: string) {
       return data
     },
     onSuccess: (summary) => {
-      queryClient.setQueryData(summaryKey(sessionId), summary)
+      queryClient.setQueryData(summaryKey(i18n.language, sessionId), summary)
       // the logger offers "View summary" from now on
       updateSessionLog(queryClient, sessionId, (session) => ({
         ...session,
@@ -36,8 +43,9 @@ export function useFinishSession(sessionId: string) {
 
 /** The summary of a finished session, as its sets are now; a session not finished fails with its code. */
 export function useSessionSummary(sessionId: string) {
+  const { i18n } = useTranslation()
   return useQuery({
-    queryKey: summaryKey(sessionId),
+    queryKey: summaryKey(i18n.language, sessionId),
     queryFn: async () => {
       const { data, error } = await api.GET(
         '/api/v1/session-logs/{id}/summary',
@@ -53,6 +61,7 @@ export function useSessionSummary(sessionId: string) {
 /** Saves the note for the trainer; empty text removes it. */
 export function useSaveNote(sessionId: string) {
   const queryClient = useQueryClient()
+  const { i18n } = useTranslation()
   return useMutation({
     mutationFn: async (text: string) => {
       const { error } = await api.PUT('/api/v1/session-logs/{id}/note', {
@@ -63,7 +72,7 @@ export function useSaveNote(sessionId: string) {
     },
     onSuccess: (_, text) =>
       queryClient.setQueryData<SessionSummary>(
-        summaryKey(sessionId),
+        summaryKey(i18n.language, sessionId),
         (summary) => summary && { ...summary, note: text.trim() || undefined },
       ),
   })
