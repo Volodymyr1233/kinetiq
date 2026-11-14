@@ -20,8 +20,21 @@ const summary = (extra: object = {}) => ({
   volumeKg: 1512.5,
   averageRpe: 8.5,
   minutes: 52,
+  prs: [],
+  weeksInARow: 0,
   ...extra,
 })
+
+const pr = (name: string, extra: object) => ({
+  exerciseId: crypto.randomUUID(),
+  name,
+  measure: 'REPS',
+  ...extra,
+})
+
+// each badge's text, in the order shown; the set sits in its own element
+const prBadges = () =>
+  screen.getAllByText(/^PR ·/).map((badge) => badge.textContent)
 
 function openSummary(reply: Reply, unit: WeightUnit = 'KG') {
   const requests = stubApi(reply)
@@ -100,6 +113,69 @@ describe('the session done screen', () => {
     expect(await screen.findByText('1512,5 kg')).toBeInTheDocument()
     expect(screen.getByText('8,5')).toBeInTheDocument()
     expect(screen.getByText('Czas sesji')).toBeInTheDocument()
+  })
+
+  it('shows a badge for each pr in the order received', async () => {
+    openSummary(() =>
+      json(
+        summary({
+          prs: [
+            pr('Back squat', { loadKg: 102.5, amount: 5 }),
+            pr('Plank', { measure: 'SECONDS', amount: 75 }),
+            pr('Pull-up', { amount: 1 }),
+          ],
+        }),
+      ),
+    )
+
+    await screen.findByRole('heading', { name: 'Lower body done' })
+    expect(prBadges()).toEqual([
+      'PR · Back squat 102.5 kg × 5',
+      'PR · Plank 75 s',
+      'PR · Pull-up 1 rep',
+    ])
+  })
+
+  it('shows the load of a pr in pounds for a client in pounds', async () => {
+    openSummary(
+      () =>
+        json(summary({ prs: [pr('Back squat', { loadKg: 100, amount: 5 })] })),
+      'LB',
+    )
+
+    await screen.findByRole('heading', { name: 'Lower body done' })
+    expect(prBadges()).toEqual(['PR · Back squat 220.5 lb × 5'])
+  })
+
+  it('shows the prs in Polish, with the plural of repetitions', async () => {
+    await i18n.changeLanguage('pl')
+    openSummary(() =>
+      json(
+        summary({
+          prs: [
+            pr('Przysiad', { loadKg: 102.5, amount: 5 }),
+            pr('Podciąganie', { amount: 1 }),
+            pr('Pompki', { amount: 3 }),
+            pr('Brzuszki', { amount: 12 }),
+          ],
+        }),
+      ),
+    )
+
+    await screen.findByRole('heading', { name: 'Lower body zakończona' })
+    expect(prBadges()).toEqual([
+      'PR · Przysiad 102,5 kg × 5',
+      'PR · Podciąganie 1 powtórzenie',
+      'PR · Pompki 3 powtórzenia',
+      'PR · Brzuszki 12 powtórzeń',
+    ])
+  })
+
+  it('shows no pr badge when the session has no pr', async () => {
+    openSummary(() => json(summary()))
+
+    await screen.findByRole('heading', { name: 'Lower body done' })
+    expect(screen.queryByText(/^PR ·/)).not.toBeInTheDocument()
   })
 
   it('saves a note, confirms it, and clears it when saved empty', async () => {

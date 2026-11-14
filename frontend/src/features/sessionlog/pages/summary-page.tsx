@@ -1,6 +1,6 @@
 import { CheckIcon, CircleAlertIcon, LockIcon } from 'lucide-react'
 import { useId, useState, type ReactNode } from 'react'
-import { useTranslation } from 'react-i18next'
+import { Trans, useTranslation } from 'react-i18next'
 import { Link, Navigate } from 'react-router'
 import { Alert, AlertAction, AlertDescription } from '@/components/ui/alert'
 import { Badge } from '@/components/ui/badge'
@@ -57,6 +57,7 @@ export function SummaryPage({
           <div aria-hidden className="flex flex-col gap-4">
             <Skeleton className="h-5 w-40" />
             <Skeleton className="h-9 w-64" />
+            <Skeleton className="h-5 w-48" />
             <div className="grid grid-cols-2 gap-3">
               {Array.from({ length: 4 }, (_, i) => (
                 <Skeleton key={i} className="h-24" />
@@ -120,6 +121,20 @@ function Summary({
 
   const trainer = trainerName ?? t('sessionlog.summary.yourTrainer')
 
+  const prSet = (pr: SessionSummary['prs'][number]) =>
+    pr.loadKg !== undefined
+      ? t('sessionlog.summary.prLoad', {
+          load: number(fromKg(pr.loadKg, unit), 0, 1),
+          unit: t(`plan.units.${unit}`),
+          amount: pr.amount,
+        })
+      : t(
+          pr.measure === 'SECONDS'
+            ? 'sessionlog.summary.prSeconds'
+            : 'sessionlog.summary.prReps',
+          { count: pr.amount },
+        )
+
   return (
     <main className="mx-auto flex max-w-[640px] flex-col gap-5 px-4 pt-6 pb-8">
       <div className="flex flex-wrap items-center gap-2">
@@ -132,6 +147,26 @@ function Summary({
       <h1 className="font-heading text-3xl font-semibold break-words">
         {t('sessionlog.summary.title', { name: summary.name })}
       </h1>
+      {summary.prs.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {summary.prs.map((pr, index) => (
+            <Badge
+              key={pr.exerciseId}
+              // lime marks one element per view, so further PRs are outlined
+              variant={index === 0 ? 'brand' : 'outline'}
+              className="h-auto min-h-5 text-left wrap-anywhere whitespace-normal"
+            >
+              <span>
+                <Trans
+                  i18nKey="sessionlog.summary.pr"
+                  values={{ exercise: pr.name, set: prSet(pr) }}
+                  components={{ num: <span className="num" /> }}
+                />
+              </span>
+            </Badge>
+          ))}
+        </div>
+      )}
       <section
         aria-label={t('sessionlog.summary.figures')}
         className="grid grid-cols-2 gap-3"

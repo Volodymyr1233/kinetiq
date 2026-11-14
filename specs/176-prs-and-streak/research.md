@@ -54,6 +54,10 @@
 
 **Why**: The board "Client · Session done" and design system section 6.8 (PR lime, streak outline); the brand rule allows one lime element per view (spec, Clarifications). The `Badge` component already has both variants (`components/ui/badge.tsx`).
 
+**Checked at task #178** against the board and design system sections 5 and 6.8: the row under the title and the lime PR badge with ink text and no icon are as on the board. Two details the board does not show:
+- The set is in the `num` class, as `frontend/CLAUDE.md` asks of every measured value. So the badge's text is one string with a `<num>` tag, rendered by `Trans`, as `sign-in-page.tsx` renders its tags.
+- A badge wraps its text (`h-auto min-h-5 text-left whitespace-normal wrap-anywhere`, as `sync-badge.tsx` wraps). An exercise name can have 100 characters, and the screen must not scroll sideways at 320 px (FR-013).
+
 **Alternatives considered**: A card per PR: the board shows badges.
 
 ## R8. Tests per task
