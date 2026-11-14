@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.awaitility.Awaitility.await;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.NoticeStored;
 import com.kinetiq.messaging.domain.model.ConversationChange;
 import com.kinetiq.messaging.domain.model.ConversationChange.Kind;
 import java.io.IOException;
@@ -103,6 +104,31 @@ class ConversationStreamsTest {
 
         await().until(() -> trainer.received("event:read\ndata:" + anna.value()));
         assertThat(client.received("event:read")).isFalse();
+    }
+
+    @Test
+    void shouldTellEveryStreamOfTheRecipient_whenANotificationIsStored_andNoOtherPerson() {
+        Recording phone = open(anna, signIn());
+        Recording laptop = open(anna, signIn());
+        Recording trainer = open(marek, signIn());
+
+        streams.on(new NoticeStored(anna.value()));
+
+        await().untilAsserted(() -> {
+            assertThat(phone.received("event:notification\ndata:new")).isTrue();
+            assertThat(laptop.received("event:notification\ndata:new")).isTrue();
+        });
+        assertThat(trainer.received("event:notification")).isFalse();
+    }
+
+    @Test
+    void shouldDropAStreamThatCannotBeWrittenTo_whenANotificationIsStored() {
+        Broken broken = new Broken();
+        streams.add(anna, signIn(), broken);
+
+        streams.on(new NoticeStored(anna.value()));
+
+        await().untilAsserted(() -> assertThat(broken.completed).isTrue());
     }
 
     @Test
