@@ -107,7 +107,8 @@ export function PlanChangeDecisionPanel({
         {otherAccepted && (
           <p>{t('planChange.outcome.otherAccepted', { name: otherName })}</p>
         )}
-        <div className={touch ? 'grid grid-cols-2 gap-2' : 'flex gap-2'}>
+        {/* one column on a phone: side by side, the labels do not fit at 375px */}
+        <div className={touch ? 'flex flex-col gap-2' : 'flex gap-2'}>
           <Button
             ref={keepButton}
             variant="outline"
