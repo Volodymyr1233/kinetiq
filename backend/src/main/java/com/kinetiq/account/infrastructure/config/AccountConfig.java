@@ -1,5 +1,6 @@
 package com.kinetiq.account.infrastructure.config;
 
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.input.DeleteAccountUseCase;
 import com.kinetiq.account.domain.input.EraseExpiredDataUseCase;
@@ -69,8 +70,10 @@ class AccountConfig {
             InviteRepository invites,
             PasswordHasher hasher,
             FailedSignInsRepository failedSignIns,
-            AccountSessions sessions) {
-        return new AccountDeletionService(accounts, invites, hasher, failedSignIns, sessions, Clock.systemUTC());
+            AccountSessions sessions,
+            NoticeBoard notices) {
+        return new AccountDeletionService(
+                accounts, invites, hasher, failedSignIns, sessions, notices, Clock.systemUTC());
     }
 
     @Bean
