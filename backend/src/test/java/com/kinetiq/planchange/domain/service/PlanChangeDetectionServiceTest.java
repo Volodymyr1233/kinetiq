@@ -20,7 +20,14 @@ class PlanChangeDetectionServiceTest {
     private final FakeTrainingHistory history = new FakeTrainingHistory();
     private final MutableClock clock = new MutableClock("2026-11-09T01:00:00Z");
     private final PlanChangeDetectionService service = new PlanChangeDetectionService(
-            history, new FakePlanChangeRepository(), List.of(), new FakePlanSource(), new FakePlanChangeDrafter().drafting(), clock);
+            history,
+            new FakePlanChangeRepository(),
+            List.of(),
+            new FakePlanSource(),
+            new FakePlanChangeDrafter().drafting(),
+            new TrainerOfEveryClient(AccountId.random()),
+            notice -> {},
+            clock);
 
     private void checkAllDue() {
         for (AccountId client : service.due()) {
@@ -161,6 +168,8 @@ class PlanChangeDetectionServiceTest {
                         List.copyOf(recording),
                         new FakePlanSource(),
                         new FakePlanChangeDrafter().drafting(),
+                        new TrainerOfEveryClient(AccountId.random()),
+                        notice -> {},
                         clock).check(client);
         return recording.stream().flatMap(rule -> rule.windows.stream()).toList();
     }

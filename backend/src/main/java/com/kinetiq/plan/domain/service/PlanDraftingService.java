@@ -3,6 +3,9 @@ package com.kinetiq.plan.domain.service;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.exercise.domain.model.Exercise;
 import com.kinetiq.exercise.domain.model.ExerciseId;
@@ -35,6 +38,7 @@ public class PlanDraftingService implements DraftPlanUseCase {
     private final ListExercisesUseCase exercises;
     private final PlanRepository plans;
     private final PlanDraftingRepository draftings;
+    private final NoticeBoard notices;
     private final Clock clock;
     // a drafting running longer was cut off by a restart
     private final Duration draftingLimit;
@@ -79,6 +83,7 @@ public class PlanDraftingService implements DraftPlanUseCase {
                 if (stored.isEmpty()) {
                     requireInLibrary(sessions, trainer);
                     plans.save(Plan.built(client, goal, WEEKS, sessions));
+                    notices.raise(new Notice(trainer.value(), client.value(), NoticeKind.DRAFT_TO_REVIEW));
                 }
             }
             // a published plan is the client's now, and a draft gone meanwhile has nothing to replace
@@ -86,6 +91,7 @@ public class PlanDraftingService implements DraftPlanUseCase {
                 if (stored.isPresent() && !stored.get().isPublished()) {
                     requireInLibrary(sessions, trainer);
                     plans.save(stored.get().rebuiltWith(goal, WEEKS, sessions));
+                    notices.raise(new Notice(trainer.value(), client.value(), NoticeKind.DRAFT_TO_REVIEW));
                 }
             }
         }

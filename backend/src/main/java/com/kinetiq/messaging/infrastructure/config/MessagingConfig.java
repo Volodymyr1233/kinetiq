@@ -1,5 +1,6 @@
 package com.kinetiq.messaging.infrastructure.config;
 
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.messaging.domain.output.AboutSets;
 import com.kinetiq.messaging.domain.output.ConversationDirectory;
@@ -22,8 +23,9 @@ class MessagingConfig {
             MessageRepository messages,
             ConversationDirectory directory,
             AboutSets aboutSets,
-            ConversationEvents events) {
+            ConversationEvents events,
+            NoticeBoard notices) {
         return new MessagingService(
-                participants, conversations, messages, directory, aboutSets, events, Clock.systemUTC());
+                participants, conversations, messages, directory, aboutSets, events, notices, Clock.systemUTC());
     }
 }

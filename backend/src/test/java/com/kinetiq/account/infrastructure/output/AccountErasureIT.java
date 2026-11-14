@@ -62,7 +62,8 @@ class AccountErasureIT {
             "plan_change_exercises",
             "conversations",
             "messages",
-            "conversation_reads");
+            "conversation_reads",
+            "notifications");
 
     // tables that hold nothing of a client: a trainer's own data, sign-ins (ended separately) and Flyway's history
     private static final Set<String> OTHER_TABLES = Set.of(

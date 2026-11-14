@@ -1,6 +1,7 @@
 package com.kinetiq.planchange.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
@@ -51,7 +52,12 @@ class PlanChangeConfig {
 
     @Bean
     DetectPlanChangesUseCase detectPlanChangesUseCase(
-            TrainingHistory history, PlanChangeRepository planChanges, PlanSource plans, PlanChangeDrafter drafter) {
+            TrainingHistory history,
+            PlanChangeRepository planChanges,
+            PlanSource plans,
+            PlanChangeDrafter drafter,
+            CurrentAccountUseCase accounts,
+            NoticeBoard notices) {
         PlanChangeDraftingService drafting = new PlanChangeDraftingService(
                 drafter,
                 new PlanChangeLimits(List.of(new LowCompletionLimits(), new HighRpeLimits(), new StalledWeightLimits())),
@@ -62,6 +68,8 @@ class PlanChangeConfig {
                 List.of(new LowCompletionRule(), new HighRpeRule(), new StalledWeightRule()),
                 plans,
                 drafting,
+                accounts,
+                notices,
                 Clock.systemUTC());
     }
 
@@ -81,8 +89,9 @@ class PlanChangeConfig {
             CurrentAccountUseCase accounts,
             PlanChangeRepository planChanges,
             PlanSource plans,
-            ExchangeMessagesUseCase messages) {
-        return new PlanChangeDecisionService(clients, accounts, planChanges, plans, messages, Clock.systemUTC());
+            ExchangeMessagesUseCase messages,
+            NoticeBoard notices) {
+        return new PlanChangeDecisionService(clients, accounts, planChanges, plans, messages, notices, Clock.systemUTC());
     }
 
     @Bean
@@ -90,8 +99,9 @@ class PlanChangeConfig {
             CurrentAccountUseCase accounts,
             PlanChangeRepository planChanges,
             PlanSource plans,
-            ExchangeMessagesUseCase messages) {
-        return new OwnPlanChangeDecisionService(accounts, planChanges, plans, messages, Clock.systemUTC());
+            ExchangeMessagesUseCase messages,
+            NoticeBoard notices) {
+        return new OwnPlanChangeDecisionService(accounts, planChanges, plans, messages, notices, Clock.systemUTC());
     }
 
     @Bean

@@ -7,6 +7,8 @@ import static java.time.DayOfWeek.MONDAY;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.planchange.domain.model.LoggedSet;
 import com.kinetiq.planchange.domain.model.PlanChange;
@@ -17,6 +19,7 @@ import com.kinetiq.planchange.domain.model.WeekTraining;
 import com.kinetiq.planchange.domain.rule.HighRpeRule;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +37,17 @@ class PlanChangeCreationTest {
     private final MutableClock clock = new MutableClock("2026-11-09T05:00:00Z");
     private final AccountId client = history.publishedPlan("Europe/Warsaw");
 
+    private final AccountId trainer = AccountId.random();
+    private final List<Notice> notices = new ArrayList<>();
     private final PlanChangeDetectionService service = new PlanChangeDetectionService(
-            history, planChanges, List.of(new HighRpeRule()), plans, new FakePlanChangeDrafter().drafting(), clock);
+            history,
+            planChanges,
+            List.of(new HighRpeRule()),
+            plans,
+            new FakePlanChangeDrafter().drafting(),
+            new TrainerOfEveryClient(trainer),
+            notices::add,
+            clock);
 
     PlanChangeCreationTest() {
         for (String monday : List.of("2026-10-26", "2026-11-02")) {
@@ -70,6 +82,27 @@ class PlanChangeCreationTest {
                 new BigDecimal("9.000"), new BigDecimal("9.000"));
         assertThat(stored.getConcernedExercises()).containsExactly(SQUAT);
         assertThat(stored.getContent().changes()).hasSize(2);
+    }
+
+    @Test
+    void shouldTellBothPeopleTheChangeWaits_theTrainerWithTheClient() {
+        plans.plans.put(client, planOfWeeks(12));
+
+        service.check(client);
+
+        assertThat(notices)
+                .containsExactlyInAnyOrder(
+                        new Notice(client.value(), null, NoticeKind.PLAN_CHANGE_WAITING),
+                        new Notice(trainer.value(), client.value(), NoticeKind.PLAN_CHANGE_WAITING));
+    }
+
+    @Test
+    void shouldTellNobody_whenNothingIsStored() {
+        plans.plans.put(client, planOfWeeks(10));
+
+        service.check(client);
+
+        assertThat(notices).isEmpty();
     }
 
     @Test

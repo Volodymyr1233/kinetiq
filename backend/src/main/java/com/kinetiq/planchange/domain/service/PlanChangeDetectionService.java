@@ -1,6 +1,10 @@
 package com.kinetiq.planchange.domain.service;
 
+import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.model.DuePlanChange;
 import com.kinetiq.planchange.domain.model.Finding;
@@ -34,6 +38,8 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
     private final List<PlanChangeRule> rules;
     private final PlanSource plans;
     private final PlanChangeDraftingService drafting;
+    private final CurrentAccountUseCase accounts;
+    private final NoticeBoard notices;
     private final Clock clock;
 
     @Override
@@ -63,9 +69,19 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
         drafting.draft(plan.get(), due).ifPresentOrElse(
                 content -> {
                     planChanges.save(PlanChange.create(due, content, plan.get().version(), now));
+                    tellBoth(due.client());
                     log.info("Plan change created, rule={}", due.rule());
                 },
                 () -> log.info("Plan change not created, rule={}, reason=nothing-to-change", due.rule()));
+    }
+
+    // both can decide, so both are told; the trainer's notice names the client
+    private void tellBoth(AccountId client) {
+        notices.raise(new Notice(client.value(), null, NoticeKind.PLAN_CHANGE_WAITING));
+        accounts.find(client)
+                .getTrainerId()
+                .ifPresent(trainer ->
+                        notices.raise(new Notice(trainer.value(), client.value(), NoticeKind.PLAN_CHANGE_WAITING)));
     }
 
     /** Claims the client's check week and returns the plan change due for it, if a rule fires. */

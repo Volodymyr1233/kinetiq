@@ -308,6 +308,22 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/notifications/{id}/read": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post: operations["markRead_1"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/invites": {
         parameters: {
             query?: never;
@@ -668,6 +684,22 @@ export interface paths {
             cookie?: never;
         };
         get: operations["getPlanChange_1"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/notifications": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list"];
         put?: never;
         post?: never;
         delete?: never;
@@ -1601,6 +1633,23 @@ export interface components {
             /** @enum {string} */
             goal: "BUILD_MUSCLE" | "GET_STRONGER" | "LOSE_FAT" | "MOVE_BETTER" | "GENERAL_FITNESS";
         };
+        NotificationListResponse: {
+            items: components["schemas"]["NotificationResponse"][];
+            /** Format: int64 */
+            unread: number;
+        };
+        NotificationResponse: {
+            /** Format: uuid */
+            id: string;
+            /** @enum {string} */
+            kind: "PLAN_PUBLISHED" | "PLAN_CHANGED" | "PLAN_CHANGE_WAITING" | "PLAN_CHANGE_DECISION" | "NEW_MESSAGE" | "DRAFT_TO_REVIEW" | "RECOVERY_DAY" | "CLIENT_DELETED";
+            /** Format: date-time */
+            createdAt: string;
+            read: boolean;
+            /** Format: uuid */
+            clientId?: string;
+            clientName?: string;
+        };
         InviteListResponse: {
             invites: components["schemas"]["InviteResponse"][];
         };
@@ -2458,6 +2507,26 @@ export interface operations {
             };
         };
     };
+    markRead_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     listOpen: {
         parameters: {
             query?: never;
@@ -3077,6 +3146,26 @@ export interface operations {
                 };
                 content: {
                     "*/*": components["schemas"]["PlanChangeResponse"];
+                };
+            };
+        };
+    };
+    list: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "*/*": components["schemas"]["NotificationListResponse"];
                 };
             };
         };

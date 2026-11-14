@@ -7,6 +7,8 @@ import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.input.UpdateAccountCommand;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
@@ -49,6 +51,7 @@ import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -190,7 +193,9 @@ class CheckInServiceTest {
         }
     };
 
-    private final CheckInService service = new CheckInService(plan, training, checkIns, accounts, clock);
+    private final List<Notice> notices = new ArrayList<>();
+
+    private final CheckInService service = new CheckInService(plan, training, checkIns, accounts, notices::add, clock);
 
     private static CheckIn copy(CheckIn checkIn) {
         return new CheckIn(
@@ -341,6 +346,32 @@ class CheckInServiceTest {
             assertThat(save(CLIENT, RECOVERY).adjustment().lighter())
                     .containsExactly(new Target(new BigDecimal("90.0"), 5, 7));
             assertThat(save(CLIENT, READY).adjustment()).isNull();
+        }
+
+        @Test
+        void shouldTellTheTrainerOnceWithTheClient_whenTheAnswersMakeARecoveryDay() {
+            save(CLIENT, RECOVERY);
+            save(CLIENT, RECOVERY);
+            save(CLIENT, new Answers(1, 5, 5));
+
+            assertThat(notices)
+                    .containsExactly(new Notice(TRAINER.value(), CLIENT.value(), NoticeKind.RECOVERY_DAY));
+        }
+
+        @Test
+        void shouldTellTheTrainerAgain_whenADayReadyAgainBecomesARecoveryDay() {
+            save(CLIENT, RECOVERY);
+            save(CLIENT, READY);
+            save(CLIENT, RECOVERY);
+
+            assertThat(notices).hasSize(2);
+        }
+
+        @Test
+        void shouldTellNobody_whenTheAnswersAreReady() {
+            save(CLIENT, READY);
+
+            assertThat(notices).isEmpty();
         }
 
         @Test
