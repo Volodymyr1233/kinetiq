@@ -28,6 +28,12 @@ const DRAFT = {
   reached: 4,
 }
 
+const COMPLETE_DRAFT = {
+  ...DRAFT,
+  answers: { ...DRAFT.answers, likes: ['WEIGHTS'] },
+  reached: 7,
+}
+
 // the server knows the client's quiz status, ends a sign-in, and keeps the settings it is sent
 function server(status: string) {
   let account: object = SIGNED_IN.CLIENT
@@ -106,6 +112,49 @@ describe('quiz area', () => {
       weightUnit: 'LB',
     })
   })
+
+  // the page behind the open sheet is hidden from the accessibility tree, so its weight is found with `hidden` or as text
+  it.each<[string, string, () => void]>([
+    [
+      'a quiz step',
+      '/app/quiz/4',
+      () =>
+        expect(
+          screen.getByRole('textbox', { name: 'Body weight', hidden: true }),
+        ).toHaveValue('137,8'),
+    ],
+    [
+      'the review',
+      '/app/quiz/review',
+      () =>
+        expect(
+          screen.getByText('29 years · 168 cm · 137.8 lb'),
+        ).toBeInTheDocument(),
+    ],
+  ])(
+    'keeps the settings sheet open on %s after a unit change, and closing it focuses Settings',
+    async (_, path, showsTheWeightInLb) => {
+      sessionStorage.setItem('kinetiq.quiz', JSON.stringify(COMPLETE_DRAFT))
+      renderAppAt(path, SIGNED_IN.CLIENT, server('NOT_SUBMITTED'))
+      const { sheet, user } = await openSettings()
+      const lb = within(
+        sheet.getByRole('radiogroup', { name: 'Units' }),
+      ).getByRole('radio', { name: 'lb' })
+
+      await user.click(lb)
+      await waitFor(showsTheWeightInLb)
+
+      expect(
+        screen.getByRole('dialog', { name: 'Settings' }),
+      ).toBeInTheDocument()
+      expect(lb).toHaveFocus()
+
+      await user.keyboard('{Escape}')
+
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+      expect(screen.getByRole('button', { name: 'Settings' })).toHaveFocus()
+    },
+  )
 })
 
 const MESSAGES = `/api/v1/conversations/${SIGNED_IN.CLIENT.id}/messages`
