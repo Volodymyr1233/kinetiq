@@ -8,6 +8,13 @@
 
 **Input**: Story #143 "Plan change takes effect or expires" with tasks #144 (apply or expire at the effective Monday), #145 (upcoming and applied change on the plan screens) and #146 (expired state on both screens). One pull request for the story, one commit per task. Screens (Kinetiq Screens): `client-plan`, `trainer-plan-editor`, `client-plan-change`, `trainer-plan-change`. Builds on specs `125-plan-change-rules`, `131-plan-change-content` (a plan change is stored as pending with checked content) and `137-plan-change-decision` (accept, undo, keep the current plan; decisions are refused once the effective week has begun). This story completes the flow: an accepted plan change changes the plan on time, an undecided one ends clearly, and the plan shows the change before it applies.
 
+## Clarifications
+
+### Session 2026-11-13
+
+- Q: When the plan was edited after the change was suggested, what makes an accepted change still valid on its Monday? → A: Every entry it touches still exists with the old values shown on the plan change, and the result meets the rule's limits and the plan rules; unrelated edits don't matter.
+- Q: Before its Monday, what do screens call a change both people accepted? → A: "Applied" (as in `CONTEXT.md`), shown as "Applied · takes effect Mon 12 Oct" before the Monday and "Applied · in effect" after; "In effect" is added to `CONTEXT.md`.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - An accepted change reaches the plan on its Monday (Priority: P1)
@@ -20,7 +27,7 @@ A plan change that trainer and client both accepted before its effective week do
 
 **Acceptance Scenarios**:
 
-1. **Given** a plan change accepted by both, **When** its effective Monday begins in the client's time zone, **Then** the plan uses the new targets from that week onward, and the plan change shows as applied.
+1. **Given** a plan change accepted by both, **When** its effective Monday begins in the client's time zone, **Then** within 5 minutes the plan uses the new targets from that week onward, and the plan change shows as in effect.
 2. **Given** the plan has weeks before the effective week, **Then** those weeks keep their old targets, and a past week never shows new values.
 3. **Given** a plan change whose content removes a session or moves exercises, **Then** the removal and moves take effect from the effective week in the same way as target changes.
 4. **Given** the run takes place late (the app was down on Monday) or twice for the same week, **Then** the plan ends up with the change applied exactly once, with no doubled effect.
@@ -43,7 +50,7 @@ A plan change that is not accepted by both before its effective Monday is expire
 1. **Given** a pending plan change, **When** its effective Monday begins, **Then** it is expired and the plan did not change.
 2. **Given** a plan change accepted by one person only, **When** its effective Monday begins, **Then** it is expired as well; the one acceptance changes nothing.
 3. **Given** an expired plan change, **Then** the client's screen and the trainer's detail show "The week started before you both decided. The plan didn't change." in the viewer's language, with no action to take; there is no way to revive it.
-4. **Given** an expired plan change, **Then** it leaves the trainer's "Waiting for you" and "Waiting for client" tabs, appears under "Decided" for 30 days, and stops counting in the Approvals count and in the badges on Plan and Today.
+4. **Given** an expired plan change, **Then** it leaves the trainer's "Waiting for you" and "Waiting for client" tabs, appears under "Decided" for 30 days (counted from the moment it ended, which for an applied one is the second acceptance), and stops counting in the Approvals count and in the badges on Plan and Today.
 5. **Given** a plan change that was declined or already applied, **When** the run happens, **Then** it is left as it is: only open plan changes expire.
 6. **Given** the run takes place late or twice, **Then** a plan change expires once, and an acceptance made in the meantime is refused as expired.
 7. **Given** a client for whom a plan change expired, **Then** the rules may detect the situation again and create a new plan change later, as story #125 decides; this story does not suppress or create one.
@@ -66,7 +73,7 @@ A client or trainer looking at the plan can see what is about to change and for 
 4. **Given** a plan change that is still undecided, **Then** the plan screens show it as waiting for a decision with a link to it, and keep showing the old targets everywhere.
 5. **Given** a plan change that removes a session, **Then** the plan marks that session as removed from the effective week, and the days that become free are rest days from that week.
 6. **Given** the plan change applied, **Then** the plan shows who changed it and why: a line such as "Changed on Mon 12 Oct by a plan change" linking to the plan change; the existing "changed" date of the plan stays truthful.
-7. **Given** the trainer's plan editor, **Then** it shows the same upcoming and applied change for the same weeks, and what the trainer edits for a week in effect stays an ordinary edit of the plan (story #68), never an edit of the plan change.
+7. **Given** the trainer's plan editor, which edits the live plan and has no week selector, **Then** it shows a banner for the upcoming change (old and new values, the Monday) and, once it is in effect, a note "Changed on … by a plan change" linking to it; what the trainer edits for a week in effect stays an ordinary edit of the plan (story #68), never an edit of the plan change.
 8. **Given** the screens, **Then** they are complete in English and Polish, light and dark, at 375px (client) and 1280px (trainer), with labels and keyboard focus for every control; the mark is understood without colour alone.
 
 ---
@@ -81,7 +88,7 @@ Approvals, the trainer's client page and the client's Plan and Today screens alr
 
 **Acceptance Scenarios**:
 
-1. **Given** a plan change that applied, **Then** its row says "Applied" and "In effect since Mon 12 Oct"; before the Monday it says "Takes effect Mon 12 Oct".
+1. **Given** a plan change that applied, **Then** its row says "Applied · in effect since Mon 12 Oct"; before the Monday it says "Applied · takes effect Mon 12 Oct".
 2. **Given** an expired plan change, **Then** its row says "Expired" and the Monday it ended.
 3. **Given** the Approvals count and the badges on Plan and Today, **Then** they count only open plan changes, so an expiry lowers them.
 4. **Given** the client page of the trainer, **Then** the open plan change and the last 5 ended ones show the new states with their detail links.
@@ -90,9 +97,9 @@ Approvals, the trainer's client page and the client's Plan and Today screens alr
 
 ### Edge Cases
 
-- The plan was edited by the trainer after the plan change was created and before it applies: on the Monday the whole content is checked again against the current plan and the limits of its rule. If it is still valid it applies completely; if not, nothing is applied (never a part), the plan change ends as expired, and both people read "The plan was edited after this change was suggested, so it didn't apply. The plan didn't change." instead of the standard sentence (English and Polish). The trainer's own edits are never undone.
-- The plan finished (its last week passed) or was replaced before the effective Monday: nothing is applied and the plan change ends as expired.
-- The client is removed or the trainer changes before the effective Monday: the plan change ends as expired at the Monday, and nobody is told about a change that no longer concerns them.
+- The plan was edited by the trainer after the plan change was created and before it applies: on the Monday the whole content is checked again. It is still valid when every entry it touches still exists with the old values the plan change shows, and the result meets the limits of its rule and the plan rules; edits to anything else do not matter. If it is still valid it applies completely; if not, nothing is applied (never a part), the plan change ends as expired, and both people read "The plan changed after this change was suggested, so it didn't apply. The plan didn't change." instead of the standard sentence (English and Polish). The trainer's own edits are never undone.
+- The plan finished (its last week passed) or was replaced before the effective Monday: nothing is applied and the plan change ends as expired with the same cause and sentence as an edited plan ("plan changed"), because the plan it was made from no longer exists.
+- The client's account is deleted before the effective Monday: the plan change is deleted with it. A change of trainer needs no special handling: an accepted plan change still applies when it fits, and the client's current trainer sees it.
 - A person accepts at the last moment while the run is starting: exactly one outcome happens; a plan change never ends as both applied and expired, and an acceptance accepted by the server is never lost without a result.
 - The effective Monday is a day the client has no session: the change still takes effect on that Monday; the plan simply shows no session on that day.
 - A client in a time zone where the Monday has not begun yet while it already has in the trainer's: the client's Monday rules.
@@ -119,7 +126,7 @@ Approvals, the trainer's client page and the client's Plan and Today screens alr
 - **FR-013**: Only the client of a plan change and that client's trainer MUST be able to read the new states and upcoming values; anyone else, and any unknown id, MUST get "not found". No endpoint is open without authentication, and the run is not reachable from the outside.
 - **FR-014**: Every user-facing string, including the upcoming mark, the applied note, the row labels and the expired sentence, MUST exist in English and Polish.
 - **FR-015**: The run MUST work from a clock that tests can fix, so both outcomes can be proven at an exact moment.
-- **FR-016**: When the plan changed after the plan change was created, the system MUST re-check the whole content against the current plan on the Monday, apply it only if it is still valid, otherwise apply nothing and end the plan change as expired with the "plan was edited" sentence; it MUST NOT apply content that would break the plan rules of its limits (sets, repetitions or seconds, load, RPE and rest of an entry, 2 to 6 sessions, one session per day).
+- **FR-016**: When the plan changed after the plan change was created, the system MUST re-check the whole content against the current plan on the Monday (every touched entry still exists with the old values shown, result within the rule's limits and the plan rules), apply it only if it is still valid, otherwise apply nothing and end the plan change as expired with the "plan was edited" sentence; it MUST NOT apply content that would break the plan rules of its limits (sets, repetitions or seconds, load, RPE and rest of an entry, 2 to 6 sessions, one session per day).
 
 ### Key Entities *(include if feature involves data)*
 
@@ -142,7 +149,7 @@ Approvals, the trainer's client page and the client's Plan and Today screens alr
 
 - Stories #125, #131 and #137 are done: plan changes are detected and stored with checked content; both people can accept, undo, or keep the current plan; decisions are refused once the effective week begins. This story adds the end of the life of a plan change.
 - "The weekly run" is a step the system performs by itself at the start of each client's Monday, checked regularly rather than at one global moment, so a late or repeated run is harmless (FR-003).
-- A plan change accepted by both is already "applied" in the sense of story #137 before its Monday; this story adds the moment the plan really changes. The user-facing label is "Accepted" until the Monday and "In effect" after, so nobody reads "applied" as "already in my plan".
+- A plan change accepted by both is already "applied" in the sense of story #137 before its Monday; this story adds the moment the plan really changes. The user-facing label stays "Applied" and always carries the timing ("takes effect Mon 12 Oct" before the Monday, "in effect" after), so nobody reads it as "already in my plan". "In effect" is added to `CONTEXT.md`.
 - An expired plan change is never revived; a new one comes only from the rules.
 - Nobody is sent an email or push notice about applying or expiring: the signals are the in-app indicators already decided in story #137 (Approvals count and tabs, badges on Plan and Today, state labels), which derive from the state.
 - The mockups are a guide: for example the upcoming mark and the "changed by a plan change" note may be adjusted to fit the real plan layout, keeping the Kinetiq tokens and shadcn components.

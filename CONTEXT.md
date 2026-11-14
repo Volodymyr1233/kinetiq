@@ -188,6 +188,10 @@ The week from which an accepted plan change applies: the one after the plan chan
 **Applied**:
 The state of a plan change that trainer and client both accepted; it takes effect from its effective week.
 
+**In effect**:
+The state of an applied plan change once its effective week has begun and the plan uses its values. Before that it is applied but only upcoming on the plan.
+_Avoid_: Active, live
+
 **Expired**:
 The end of a plan change that trainer and client did not both accept before its effective week began.
 
