@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.exception.GeneratedPlanRejectedException;
@@ -41,6 +43,7 @@ class PlanDraftingServiceTest {
                 fixture.exercises,
                 fixture.plans,
                 fixture.draftings,
+                fixture.notices::add,
                 Clock.fixed(now, ZoneOffset.UTC),
                 LIMIT);
     }
@@ -107,6 +110,24 @@ class PlanDraftingServiceTest {
             assertThat(stored().getGoal()).isEqualTo(Goal.LOSE_FAT);
             assertThat(stored().getWeeks()).isEqualTo(12);
             assertThat(stored().getSessions()).isEqualTo(sessions());
+        }
+
+        @Test
+        void shouldTellTheTrainerAboutTheDraft_withTheClient() {
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(fixture.notices)
+                    .containsExactly(new Notice(
+                            fixture.trainer.value(), fixture.client.value(), NoticeKind.DRAFT_TO_REVIEW));
+        }
+
+        @Test
+        void shouldTellNobody_whenTheResultIsDropped() {
+            fixture.draftings.remove(fixture.client);
+
+            service.storeBuilt(fixture.client, fixture.trainer, sessions());
+
+            assertThat(fixture.notices).isEmpty();
         }
 
         @Test
@@ -257,6 +278,7 @@ class PlanDraftingServiceTest {
                 assertThat(stored().getSessions()).isEqualTo(sessions());
                 assertThat(fixture.draftings.rows).isEmpty();
             }
+            assertThat(fixture.notices).hasSize(3).extracting(Notice::kind).containsOnly(NoticeKind.DRAFT_TO_REVIEW);
         }
 
         @Test

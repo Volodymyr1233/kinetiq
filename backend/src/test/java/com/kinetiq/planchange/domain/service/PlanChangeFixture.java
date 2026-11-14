@@ -14,6 +14,7 @@ import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
 import com.kinetiq.common.domain.model.Email;
+import com.kinetiq.common.domain.model.Notice;
 import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.planchange.domain.model.EntryRef;
 import com.kinetiq.planchange.domain.model.Figure;
@@ -30,6 +31,7 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -89,6 +91,8 @@ class PlanChangeFixture {
             return find(id);
         }
     };
+
+    final List<Notice> notices = new ArrayList<>();
 
     PlanChangeFixture() {
         plans.names.put(SQUAT, "Back squat");

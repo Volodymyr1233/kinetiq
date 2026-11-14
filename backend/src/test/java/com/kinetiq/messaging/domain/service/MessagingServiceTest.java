@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import com.kinetiq.messaging.domain.exception.AboutSetNotFoundException;
 import com.kinetiq.messaging.domain.exception.ConversationNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageEmptyException;
@@ -21,6 +23,8 @@ import com.kinetiq.sessionlog.domain.model.SetLogId;
 import java.time.Clock;
 import java.time.Instant;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
@@ -44,6 +48,7 @@ class MessagingServiceTest {
 
     private final MessagingFakes.Sets sets = new MessagingFakes.Sets();
     private final MessagingFakes.Events events = new MessagingFakes.Events();
+    private final List<Notice> notices = new ArrayList<>();
 
     private final MessagingService service = new MessagingService(
             participants,
@@ -52,6 +57,7 @@ class MessagingServiceTest {
             new MessagingFakes.Directory(),
             sets,
             events,
+            notices::add,
             Clock.fixed(NOW, ZoneOffset.UTC));
 
     @BeforeEach
@@ -152,6 +158,37 @@ class MessagingServiceTest {
 
             assertThat(sent.getSender()).isEqualTo(marek);
             assertThat(sent.getText().value()).isEqualTo("hello\nthere");
+        }
+
+        @Test
+        void shouldNotifyTheTrainerWithTheClient_whenAClientWrites() {
+            service.send(send(anna, anna, "hello"));
+
+            assertThat(notices).containsExactly(new Notice(marek.value(), anna.value(), NoticeKind.NEW_MESSAGE));
+        }
+
+        @Test
+        void shouldNotifyTheClientWithNoClientReference_whenTheTrainerWrites() {
+            service.send(send(marek, anna, "hello"));
+
+            assertThat(notices).containsExactly(new Notice(anna.value(), null, NoticeKind.NEW_MESSAGE));
+        }
+
+        @Test
+        void shouldNotifyNobodyAgain_whenTheSameMessageIsSentAgain() {
+            SendMessageCommand command = send(anna, anna, "hello");
+            service.send(command);
+            service.send(command);
+
+            assertThat(notices).hasSize(1);
+        }
+
+        @Test
+        void shouldNotifyNobody_whenTheMessageIsRefused() {
+            assertThatThrownBy(() -> service.send(send(stranger, anna, "hello")))
+                    .isExactlyInstanceOf(ConversationNotFoundException.class);
+
+            assertThat(notices).isEmpty();
         }
 
         @Test

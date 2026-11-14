@@ -1,6 +1,9 @@
 package com.kinetiq.messaging.domain.service;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.messaging.domain.exception.AboutSetNotFoundException;
 import com.kinetiq.messaging.domain.exception.ConversationNotFoundException;
 import com.kinetiq.messaging.domain.exception.MessageIdInUseException;
@@ -39,6 +42,7 @@ public class MessagingService implements ExchangeMessagesUseCase {
     private final ConversationDirectory directory;
     private final AboutSets aboutSets;
     private final ConversationEvents events;
+    private final NoticeBoard notices;
     private final Clock clock;
 
     @Override
@@ -72,6 +76,7 @@ public class MessagingService implements ExchangeMessagesUseCase {
             // the sender too, so their other tabs and devices show it
             events.publish(new ConversationChange(pair.client(), pair.client(), Kind.MESSAGE));
             events.publish(new ConversationChange(pair.trainer(), pair.client(), Kind.MESSAGE));
+            notifyRecipient(pair, command.person());
             return message;
         }
         Message stored = messages.findById(command.id()).orElseThrow(MessageIdInUseException::new);
@@ -88,6 +93,15 @@ public class MessagingService implements ExchangeMessagesUseCase {
             // only the reader: the other person is never told, there are no read receipts
             events.publish(new ConversationChange(person, client, Kind.READ));
         });
+    }
+
+    // the other person is told, never the sender; a message from the client names the client, one from the trainer none
+    private void notifyRecipient(ConversationPair pair, AccountId sender) {
+        if (sender.equals(pair.client())) {
+            notices.raise(new Notice(pair.trainer().value(), pair.client().value(), NoticeKind.NEW_MESSAGE));
+        } else {
+            notices.raise(new Notice(pair.client().value(), null, NoticeKind.NEW_MESSAGE));
+        }
     }
 
     // the one access rule: every operation on a conversation starts here

@@ -2,6 +2,9 @@ package com.kinetiq.readiness.domain.service;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.readiness.domain.exception.NoAdjustmentException;
@@ -11,6 +14,7 @@ import com.kinetiq.readiness.domain.input.CheckInUseCase;
 import com.kinetiq.readiness.domain.input.ChooseTargetsCommand;
 import com.kinetiq.readiness.domain.input.SaveCheckInCommand;
 import com.kinetiq.readiness.domain.input.TodayCheckIn;
+import com.kinetiq.readiness.domain.model.Readiness;
 import com.kinetiq.readiness.domain.model.Adjustment;
 import com.kinetiq.readiness.domain.model.CheckIn;
 import com.kinetiq.readiness.domain.model.Planned;
@@ -31,6 +35,7 @@ public class CheckInService implements CheckInUseCase {
     private final TrainingProgress training;
     private final CheckInRepository checkIns;
     private final CurrentAccountUseCase accounts;
+    private final NoticeBoard notices;
     private final Clock clock;
 
     @Override
@@ -46,13 +51,22 @@ public class CheckInService implements CheckInUseCase {
     public TodayCheckIn save(SaveCheckInCommand command) {
         AccountId client = command.client();
         TodayView today = openToday(client);
-        CheckIn checkIn = checkIns.findByClientAndDate(client, today.date())
-                .map(stored -> {
+        Optional<CheckIn> previous = checkIns.findByClientAndDate(client, today.date());
+        boolean wasRecoveryDay = previous.filter(CheckInService::isRecoveryDay).isPresent();
+        CheckIn checkIn = previous.map(stored -> {
                     stored.change(command.answers(), clock.instant());
                     return stored;
                 })
                 .orElseGet(() -> CheckIn.give(client, today.date(), command.answers(), clock.instant()));
-        return answer(client, today, true, checkIns.save(checkIn));
+        CheckIn saved = checkIns.save(checkIn);
+        // once a day: saving the same answers again, or other answers that are still a recovery day, tells nobody
+        if (isRecoveryDay(saved) && !wasRecoveryDay) {
+            accounts.find(client)
+                    .getTrainerId()
+                    .ifPresent(trainer ->
+                            notices.raise(new Notice(trainer.value(), client.value(), NoticeKind.RECOVERY_DAY)));
+        }
+        return answer(client, today, true, saved);
     }
 
     // ponytail: a switch in the same instant as the first logged set can let both through, the same ceiling as save
@@ -77,6 +91,10 @@ public class CheckInService implements CheckInUseCase {
     @Override
     public List<CheckIn> between(AccountId client, LocalDate from, LocalDate to) {
         return checkIns.findAllByClientAndDateBetween(client, from, to);
+    }
+
+    private static boolean isRecoveryDay(CheckIn checkIn) {
+        return checkIn.readiness().band() == Readiness.Band.RECOVERY_DAY;
     }
 
     private TodayView openToday(AccountId client) {

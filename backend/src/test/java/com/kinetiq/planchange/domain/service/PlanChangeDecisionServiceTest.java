@@ -24,9 +24,9 @@ class PlanChangeDecisionServiceTest {
     private final PlanChange stored = world.pendingFor(world.client);
 
     private final PlanChangeDecisionService service = new PlanChangeDecisionService(
-            world.clients, world.accountsPort, world.planChanges, world.plans, world.messages, world.clock);
+            world.clients, world.accountsPort, world.planChanges, world.plans, world.messages, world.notices::add, world.clock);
     private final OwnPlanChangeDecisionService client = new OwnPlanChangeDecisionService(
-            world.accountsPort, world.planChanges, world.plans, world.messages, world.clock);
+            world.accountsPort, world.planChanges, world.plans, world.messages, world.notices::add, world.clock);
 
     private PlanChange current() {
         return world.planChanges.find(stored.getId()).orElseThrow();
