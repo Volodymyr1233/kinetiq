@@ -8,6 +8,9 @@ import com.kinetiq.account.domain.input.DeleteAccountUseCase;
 import com.kinetiq.account.domain.input.DeletionCheck;
 import com.kinetiq.account.domain.model.Account;
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.account.domain.model.FailedSignIns;
 import com.kinetiq.account.domain.model.RawPassword;
 import com.kinetiq.account.domain.model.Role;
@@ -30,6 +33,7 @@ public class AccountDeletionService implements DeleteAccountUseCase {
     private final PasswordHasher hasher;
     private final FailedSignInsRepository failedSignIns;
     private final AccountSessions sessions;
+    private final NoticeBoard notices;
     private final Clock clock;
 
     @Override
@@ -58,6 +62,11 @@ public class AccountDeletionService implements DeleteAccountUseCase {
         // an invite names the client by email, not by key, so the database cannot erase it with the account
         account.getTrainerId().ifPresent(trainer -> invites.deleteByTrainerAndEmail(trainer, account.getEmail()));
         accounts.delete(id);
+        // the trainer is told that a client left, and nothing of who: no name, no email, no id of the client
+        if (account.getRole() == Role.CLIENT) {
+            account.getTrainerId()
+                    .ifPresent(trainer -> notices.raise(new Notice(trainer.value(), null, NoticeKind.CLIENT_DELETED)));
+        }
         // last, and in its own transaction, so a refused deletion signs nobody out
         sessions.endAll(id);
     }
