@@ -73,15 +73,15 @@ description: "Tasks for story #176, Client sees PRs and their week streak (tasks
 
 **Goal**: the session done screen shows "{n} weeks in a row" next to the PR badges, the same number as the "In a row" tile, and nothing at 0 (spec FR-010, FR-012, FR-013).
 
-- [ ] T025 [US2] Before code: open the board "Client · Session done" and list the streak badge's look (outlined pill, "{n} weeks in a row", after the PR badge); record any difference from T026 in `research.md` and update T026 first if one is needed
-- [ ] T026 [US2] `F/features/sessionlog/pages/summary-page.tsx`: in the badge row of T021, after the PR badges, a `Badge variant="outline"` with the streak when `weeksInARow` is at least 1, its number in the `num` class; the row shows when there is a PR or a streak. Built after #178, which adds the row; if #178 is not merged first, this task adds the row and #178 puts its badges first in it
-- [ ] T027 [US2] Strings `sessionlog.summary.weeksInARow` in both locales with plural forms: English "{{count, number}} week in a row" / "{{count, number}} weeks in a row"; Polish "{{count, number}} tydzień z rzędu", "{{count, number}} tygodnie z rzędu", "{{count, number}} tygodni z rzędu", "{{count, number}} tygodnia z rzędu" (`_other`, as `progress.period.weeks_other`)
-- [ ] T028 [US2] Tests in `F/features/sessionlog/pages/summary-page.test.tsx`: a streak of 4 shows "4 weeks in a row" after the PR badges; 0 shows no streak; Polish "1 tydzień z rzędu", "2 tygodnie z rzędu" and "5 tygodni z rzędu"
-- [ ] T029 `npm run check` passes; follow `quickstart.md` section 5 at 375 px, light and dark; commit `feat(frontend): show the week streak on the session done screen`
+- [X] T025 [US2] Before code: open the board "Client · Session done" and list the streak badge's look (outlined pill, "{n} weeks in a row", after the PR badge); record any difference from T026 in `research.md` and update T026 first if one is needed
+- [X] T026 [US2] `F/features/sessionlog/pages/summary-page.tsx`: in the badge row of T021, after the PR badges, a `Badge variant="outline"` with the streak when `weeksInARow` is at least 1, its number in the `num` class through the `<num>` tag of T027, rendered by `Trans` with `count`; the row shows when there is a PR or a streak. Built after #178, which adds the row; if #178 is not merged first, this task adds the row and #178 puts its badges first in it
+- [X] T027 [US2] Strings `sessionlog.summary.weeksInARow` in both locales with plural forms: English "<num>{{count, number}}</num> week in a row" / "<num>{{count, number}}</num> weeks in a row"; Polish "<num>{{count, number}}</num> tydzień z rzędu", "<num>{{count, number}}</num> tygodnie z rzędu", "<num>{{count, number}}</num> tygodni z rzędu", "<num>{{count, number}}</num> tygodnia z rzędu" (`_other`, as `progress.period.weeks_other`)
+- [X] T028 [US2] Tests in `F/features/sessionlog/pages/summary-page.test.tsx`: a streak of 4 shows "4 weeks in a row" after the PR badges; 0 shows no streak; Polish "1 tydzień z rzędu", "2 tygodnie z rzędu" and "5 tygodni z rzędu"
+- [X] T029 `npm run check` passes; follow `quickstart.md` section 5 at 375 px, light and dark; commit `feat(frontend): show the week streak on the session done screen`
 
 ## Phase 7: Close the story
 
-- [ ] T030 On the branch of the story's last task, before its pull request is opened, run `/speckit-converge` and turn its findings into new tasks under #176; that pull request ends with `Closes #<task>` and `Closes #176`
+- [X] T030 On the branch of the story's last task, before its pull request is opened, run `/speckit-converge` and turn its findings into new tasks under #176; that pull request ends with `Closes #<task>` and `Closes #176`
 
 ## Dependencies
 

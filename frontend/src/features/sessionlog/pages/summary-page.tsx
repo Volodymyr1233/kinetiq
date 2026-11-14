@@ -147,7 +147,7 @@ function Summary({
       <h1 className="font-heading text-3xl font-semibold break-words">
         {t('sessionlog.summary.title', { name: summary.name })}
       </h1>
-      {summary.prs.length > 0 && (
+      {(summary.prs.length > 0 || summary.weeksInARow > 0) && (
         <div className="flex flex-wrap gap-2">
           {summary.prs.map((pr, index) => (
             <Badge
@@ -165,6 +165,17 @@ function Summary({
               </span>
             </Badge>
           ))}
+          {summary.weeksInARow > 0 && (
+            <Badge variant="outline">
+              <span>
+                <Trans
+                  i18nKey="sessionlog.summary.weeksInARow"
+                  count={summary.weeksInARow}
+                  components={{ num: <span className="num" /> }}
+                />
+              </span>
+            </Badge>
+          )}
         </div>
       )}
       <section

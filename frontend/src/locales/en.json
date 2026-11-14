@@ -925,6 +925,8 @@
       "prReps_one": "{{count, number}} rep",
       "prReps_other": "{{count, number}} reps",
       "prSeconds": "{{count, number}} s",
+      "weeksInARow_one": "<num>{{count, number}}</num> week in a row",
+      "weeksInARow_other": "<num>{{count, number}}</num> weeks in a row",
       "figures": "Session figures",
       "sets": "Sets",
       "setsValue": "{{logged, number}} of {{planned, number}}",

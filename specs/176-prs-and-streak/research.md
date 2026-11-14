@@ -58,6 +58,8 @@
 - The set is in the `num` class, as `frontend/CLAUDE.md` asks of every measured value. So the badge's text is one string with a `<num>` tag, rendered by `Trans`, as `sign-in-page.tsx` renders its tags.
 - A badge wraps its text (`h-auto min-h-5 text-left whitespace-normal wrap-anywhere`, as `sync-badge.tsx` wraps). An exercise name can have 100 characters, and the screen must not scroll sideways at 320 px (FR-013).
 
+**Checked at task #303** against the board: the streak is an outlined pill right after the PR badge in the same row, "4 weeks in a row" with the number in mono. Its number is in the `num` class through a `<num>` tag in the string, as the PR badge's set, rendered by `Trans` with `count` for the plural. Its text is short and fixed, so it does not need the wrapping classes.
+
 **Alternatives considered**: A card per PR: the board shows badges.
 
 ## R8. Tests per task
