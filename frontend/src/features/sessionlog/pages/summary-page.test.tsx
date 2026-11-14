@@ -36,6 +36,12 @@ const pr = (name: string, extra: object) => ({
 const prBadges = () =>
   screen.getAllByText(/^PR ·/).map((badge) => badge.textContent)
 
+// the streak's number sits in its own element, so the streak is matched by its end
+const rowBadges = () =>
+  screen
+    .getAllByText(/^PR ·|(in a row|z rzędu)$/)
+    .map((badge) => badge.textContent)
+
 function openSummary(reply: Reply, unit: WeightUnit = 'KG') {
   const requests = stubApi(reply)
   const router = createMemoryRouter(
@@ -171,11 +177,41 @@ describe('the session done screen', () => {
     ])
   })
 
-  it('shows no pr badge when the session has no pr', async () => {
+  it('shows no badge when the session has no pr and the streak is 0', async () => {
     openSummary(() => json(summary()))
 
     await screen.findByRole('heading', { name: 'Lower body done' })
     expect(screen.queryByText(/^PR ·/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/in a row$/)).not.toBeInTheDocument()
+  })
+
+  it('shows the week streak after the pr badges', async () => {
+    openSummary(() =>
+      json(
+        summary({
+          prs: [pr('Back squat', { loadKg: 102.5, amount: 5 })],
+          weeksInARow: 4,
+        }),
+      ),
+    )
+
+    await screen.findByRole('heading', { name: 'Lower body done' })
+    expect(rowBadges()).toEqual([
+      'PR · Back squat 102.5 kg × 5',
+      '4 weeks in a row',
+    ])
+  })
+
+  it.each([
+    ['1 tydzień z rzędu', 1],
+    ['2 tygodnie z rzędu', 2],
+    ['5 tygodni z rzędu', 5],
+  ])('shows the streak as "%s" in Polish', async (text, weeks) => {
+    await i18n.changeLanguage('pl')
+    openSummary(() => json(summary({ weeksInARow: weeks })))
+
+    await screen.findByRole('heading', { name: 'Lower body zakończona' })
+    expect(rowBadges()).toEqual([text])
   })
 
   it('saves a note, confirms it, and clears it when saved empty', async () => {
