@@ -14,10 +14,12 @@ Fields of spec 98 (`sessionLogId`, `name`, `date`, `startedAt`, `setsLogged`, `s
 
 | Field | Type | Meaning |
 |---|---|---|
-| `prs` | array of `PrResponse`, required | the session's PRs, in the order of the session's exercises; empty when none |
+| `prs` | array of `SummaryPrResponse`, required | the session's PRs, in the order of the session's exercises; empty when none |
 | `weeksInARow` | integer, required | the client's week streak, the same number as `weeksInARow` of `GET /api/v1/progress` |
 
-### `PrResponse`
+### `SummaryPrResponse`
+
+The schema takes the record's simple name, so it is named apart from any other PR schema.
 
 | Field | Type | Meaning |
 |---|---|---|

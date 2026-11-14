@@ -66,8 +66,8 @@ class SessionLogController {
      * request changed the session at the same moment.
      */
     @PostMapping("/{id}/finish")
-    SessionSummaryResponse finish(@PathVariable UUID id, Authentication authentication) {
-        return mapper.toResponse(sessions.finish(signedIn(authentication), new SessionLogId(id)));
+    SessionSummaryResponse finish(@PathVariable UUID id, Locale locale, Authentication authentication) {
+        return mapper.toResponse(sessions.finish(signedIn(authentication), new SessionLogId(id)), locale);
     }
 
     /**
@@ -76,8 +76,8 @@ class SessionLogController {
      * {@code session-log.not-finished} while it is not finished.
      */
     @GetMapping("/{id}/summary")
-    SessionSummaryResponse summary(@PathVariable UUID id, Authentication authentication) {
-        return mapper.toResponse(sessions.summary(signedIn(authentication), new SessionLogId(id)));
+    SessionSummaryResponse summary(@PathVariable UUID id, Locale locale, Authentication authentication) {
+        return mapper.toResponse(sessions.summary(signedIn(authentication), new SessionLogId(id)), locale);
     }
 
     /**

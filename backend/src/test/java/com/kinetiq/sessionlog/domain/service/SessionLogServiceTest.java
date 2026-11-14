@@ -26,6 +26,12 @@ import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Session;
+import com.kinetiq.progress.domain.input.Progress;
+import com.kinetiq.progress.domain.input.Rewards;
+import com.kinetiq.progress.domain.input.ViewProgressUseCase;
+import com.kinetiq.progress.domain.model.Period;
+import com.kinetiq.progress.domain.model.Pr;
+import com.kinetiq.progress.domain.model.TopSet;
 import com.kinetiq.readiness.domain.input.CheckInUseCase;
 import com.kinetiq.readiness.domain.input.ChooseTargetsCommand;
 import com.kinetiq.readiness.domain.input.SaveCheckInCommand;
@@ -60,6 +66,7 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -87,6 +94,18 @@ class SessionLogServiceTest {
             3,
             5,
             120,
+            new LocalizedText("", ""));
+
+    private static final Exercise PLANK = new Exercise(
+            ExerciseId.random(),
+            TRAINER,
+            new LocalizedText("Plank", "Deska"),
+            Category.CORE,
+            new LocalizedText("", ""),
+            Measure.SECONDS,
+            3,
+            45,
+            90,
             new LocalizedText("", ""));
 
     private TodayView today = sessionDay("Lower body");
@@ -167,7 +186,7 @@ class SessionLogServiceTest {
 
         @Override
         public List<Exercise> library(AccountId trainer) {
-            return List.of(SQUAT);
+            return List.of(SQUAT, PLANK);
         }
     };
 
@@ -244,8 +263,30 @@ class SessionLogServiceTest {
         }
     };
 
-    private final SessionLogService service =
-            new SessionLogService(plan, accounts, exercises, logs, checkIns, Clock.fixed(NOW, ZoneOffset.UTC));
+    // the rewards given for any date, and the dates they were asked for
+    private Rewards rewards = new Rewards(List.of(), 0);
+    private final List<LocalDate> rewardDates = new ArrayList<>();
+
+    private final ViewProgressUseCase progress = new ViewProgressUseCase() {
+        @Override
+        public Progress own(AccountId client, Period period) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Progress ofClient(AccountId trainer, AccountId client, Period period) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public Rewards rewards(AccountId client, LocalDate date) {
+            rewardDates.add(date);
+            return rewards;
+        }
+    };
+
+    private final SessionLogService service = new SessionLogService(
+            plan, accounts, exercises, logs, checkIns, progress, Clock.fixed(NOW, ZoneOffset.UTC));
 
     private static LogSetCommand command(
             AccountId client, SessionLogId session, SetLogId id, int position, int number, int amount, int rpe) {
@@ -529,6 +570,22 @@ class SessionLogServiceTest {
             return session;
         }
 
+        private SessionLog finishedOn(LocalDate date) {
+            Instant finishedAt = date.atTime(18, 0).toInstant(ZoneOffset.UTC);
+            return logs.save(new SessionLog(
+                    SessionLogId.random(),
+                    CLIENT,
+                    date,
+                    "Lower body",
+                    finishedAt.minus(Duration.ofHours(1)),
+                    finishedAt,
+                    List.of(new LoggedEntry(SQUAT.getId(), 1, 5, new BigDecimal("100.0"), 8, 120)),
+                    List.of(new SetLog(
+                            newId(), 0, 1, new SetValues(new BigDecimal("100.0"), 5, 8), new BigDecimal("100.0"), 5, 8,
+                            finishedAt.minus(Duration.ofMinutes(30)))),
+                    0));
+        }
+
         @Test
         void shouldStoreTheFinishTimeAndAnswerTheSummary() {
             SessionLogId session = withOneSet(CLIENT);
@@ -540,6 +597,44 @@ class SessionLogServiceTest {
             assertThat(view.summary().setsPlanned()).isEqualTo(3);
             assertThat(view.summary().volumeKg()).hasValueSatisfying(v -> assertThat(v).isEqualByComparingTo("500.0"));
             assertThat(view.summary().minutes()).isEqualTo(1);
+        }
+
+        @Test
+        void shouldAnswerThePrsInTheSessionsOrderAndTheStreak_whenFinishedAndReadAgain() {
+            today = new TodayView(
+                    TODAY,
+                    TodayView.State.SESSION,
+                    new Session(
+                            "Full body",
+                            DayOfWeek.SATURDAY,
+                            List.of(
+                                    new ExerciseEntry(SQUAT.getId(), 3, 5, new BigDecimal("100.0"), 8, 120),
+                                    new ExerciseEntry(PLANK.getId(), 3, 45, null, 7, 90))),
+                    Map.of(SQUAT.getId(), SQUAT, PLANK.getId(), PLANK));
+            TopSet squat = new TopSet(new BigDecimal("105.0"), 5, 9);
+            TopSet plank = new TopSet(null, 60, 7);
+            rewards = new Rewards(List.of(new Pr(PLANK.getId(), plank), new Pr(SQUAT.getId(), squat)), 4);
+            SessionLogId session = withOneSet(CLIENT);
+
+            SessionSummaryView finished = service.finish(CLIENT, session);
+            SessionSummaryView read = service.summary(CLIENT, session);
+
+            assertThat(finished.prs())
+                    .containsExactly(
+                            new SessionSummaryView.ExercisePr(SQUAT, squat),
+                            new SessionSummaryView.ExercisePr(PLANK, plank));
+            assertThat(finished.weeksInARow()).isEqualTo(4);
+            assertThat(read.prs()).isEqualTo(finished.prs());
+            assertThat(read.weeksInARow()).isEqualTo(4);
+        }
+
+        @Test
+        void shouldAskForTheRewardsOfTheSessionsDate_whenItsSummaryIsReadOnALaterDay() {
+            SessionLog earlier = finishedOn(TODAY.minusDays(3));
+
+            service.summary(CLIENT, earlier.getId());
+
+            assertThat(rewardDates).containsExactly(TODAY.minusDays(3));
         }
 
         @Test

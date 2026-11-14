@@ -125,7 +125,7 @@ class SessionLogWebMapper {
                 set.loggedAt());
     }
 
-    SessionSummaryResponse toResponse(SessionSummaryView view) {
+    SessionSummaryResponse toResponse(SessionSummaryView view, Locale locale) {
         SessionLog log = view.log();
         SessionSummary summary = view.summary();
         return new SessionSummaryResponse(
@@ -138,7 +138,16 @@ class SessionLogWebMapper {
                 summary.volumeKg().orElse(null),
                 summary.averageRpe(),
                 summary.minutes(),
-                log.getNote().orElse(null));
+                log.getNote().orElse(null),
+                view.prs().stream()
+                        .map(pr -> new SessionSummaryResponse.SummaryPrResponse(
+                                pr.exercise().getId().value(),
+                                pr.exercise().getName().in(locale),
+                                pr.exercise().getMeasure(),
+                                pr.top().loadKg(),
+                                pr.top().amount()))
+                        .toList(),
+                view.weeksInARow());
     }
 
     SessionStatesResponse toResponse(SessionStates states) {
