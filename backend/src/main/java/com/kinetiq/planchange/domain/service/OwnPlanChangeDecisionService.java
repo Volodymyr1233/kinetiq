@@ -11,6 +11,7 @@ import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.Side;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import com.kinetiq.planchange.domain.output.PlanSource;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import java.time.Clock;
 import java.time.ZoneId;
 
@@ -27,11 +28,12 @@ public class OwnPlanChangeDecisionService implements DecideOwnPlanChangeUseCase 
             PlanChangeRepository planChanges,
             PlanSource plans,
             ExchangeMessagesUseCase messages,
+            NoticeBoard notices,
             Clock clock) {
         this.accounts = accounts;
         this.planChanges = planChanges;
         this.texts = new PlanChangeTexts(plans, accounts);
-        this.decider = new PlanChangeDecider(planChanges, texts, messages, clock);
+        this.decider = new PlanChangeDecider(planChanges, texts, messages, accounts, notices, clock);
     }
 
     @Override

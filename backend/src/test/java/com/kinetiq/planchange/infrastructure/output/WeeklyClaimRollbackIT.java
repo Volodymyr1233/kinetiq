@@ -121,6 +121,8 @@ class WeeklyClaimRollbackIT {
                             new PlanChangeLimits(
                                     List.of(new LowCompletionLimits(), new HighRpeLimits(), new StalledWeightLimits())),
                             List.of(new LowCompletionFallback(), new HighRpeFallback(), new StalledWeightFallback())),
+                    new com.kinetiq.planchange.domain.service.TrainerOfEveryClient(AccountId.random()),
+                    notice -> {},
                     Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }

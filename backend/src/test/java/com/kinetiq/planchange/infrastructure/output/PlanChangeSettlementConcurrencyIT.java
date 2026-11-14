@@ -304,6 +304,7 @@ class PlanChangeSettlementConcurrencyIT {
                     planChanges,
                     plans,
                     mock(ExchangeMessagesUseCase.class),
+                    notice -> {},
                     Clock.fixed(BEFORE_MONDAY, ZoneOffset.UTC));
         }
 

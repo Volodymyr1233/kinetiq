@@ -12,6 +12,8 @@ import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Side;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import org.junit.jupiter.api.Test;
 
 class OwnPlanChangeDecisionServiceTest {
@@ -20,9 +22,36 @@ class OwnPlanChangeDecisionServiceTest {
     private final PlanChange stored = world.pendingFor(world.client);
 
     private final OwnPlanChangeDecisionService service = new OwnPlanChangeDecisionService(
-            world.accountsPort, world.planChanges, world.plans, world.messages, world.clock);
+            world.accountsPort, world.planChanges, world.plans, world.messages, world.notices::add, world.clock);
     private final PlanChangeDecisionService trainer = new PlanChangeDecisionService(
-            world.clients, world.accountsPort, world.planChanges, world.plans, world.messages, world.clock);
+            world.clients, world.accountsPort, world.planChanges, world.plans, world.messages, world.notices::add, world.clock);
+
+    @Test
+    void shouldTellTheClientAboutTheTrainersAcceptance_andNotTheTrainer() {
+        trainer.accept(world.trainer, stored.getId());
+
+        assertThat(world.notices)
+                .containsExactly(new Notice(world.client.value(), null, NoticeKind.PLAN_CHANGE_DECISION));
+    }
+
+    @Test
+    void shouldTellTheTrainerAboutTheClientsAcceptanceWithTheClient_andNotTheClient() {
+        service.accept(world.client, stored.getId());
+
+        assertThat(world.notices)
+                .containsExactly(new Notice(world.trainer.value(), world.client.value(), NoticeKind.PLAN_CHANGE_DECISION));
+    }
+
+    @Test
+    void shouldTellNobody_whenAnAcceptanceIsRepeatedOrTaken_back() {
+        service.accept(world.client, stored.getId());
+        world.notices.clear();
+
+        service.accept(world.client, stored.getId());
+        service.undo(world.client, stored.getId());
+
+        assertThat(world.notices).isEmpty();
+    }
 
     private PlanChange current() {
         return world.planChanges.find(stored.getId()).orElseThrow();

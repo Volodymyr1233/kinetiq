@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.kinetiq.TestcontainersConfiguration;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.common.infrastructure.config.TransactionConfig;
+import com.kinetiq.planchange.domain.service.TrainerOfEveryClient;
 import com.kinetiq.planchange.domain.exception.PlanChangeDraftingFailedException;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.model.FigureKind;
@@ -190,6 +191,8 @@ class PlanChangeDetectionIT {
                     List.of(new LowCompletionRule(), new HighRpeRule(), new StalledWeightRule()),
                     plans,
                     drafting,
+                    new TrainerOfEveryClient(AccountId.random()),
+                    notice -> {},
                     Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }

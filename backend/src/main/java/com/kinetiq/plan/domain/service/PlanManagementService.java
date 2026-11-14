@@ -1,6 +1,9 @@
 package com.kinetiq.plan.domain.service;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
 import com.kinetiq.client.domain.model.PlanState;
@@ -24,6 +27,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
@@ -34,6 +38,7 @@ public class PlanManagementService implements ManagePlanUseCase {
     private final ViewClientsUseCase clients;
     private final ListExercisesUseCase exercises;
     private final PlanRepository plans;
+    private final NoticeBoard notices;
     private final Clock clock;
 
     @Override
@@ -49,10 +54,15 @@ public class PlanManagementService implements ManagePlanUseCase {
         ClientSummary summary = clients.getClient(command.trainer(), command.client());
         Map<ExerciseId, Exercise> library = library(command.trainer());
         requireInLibrary(command.sessions(), library);
-        Plan edited = plans.findByClientForUpdate(command.client())
-                .map(stored -> edit(stored, command, summary))
+        Optional<Plan> existing = plans.findByClientForUpdate(command.client());
+        Plan edited = existing.map(stored -> edit(stored, command, summary))
                 .orElseGet(() -> firstDraft(command, summary));
-        return details(plans.save(edited), summary, library);
+        Plan saved = plans.save(edited);
+        // only a plan the client can see changed under them; a draft is the trainer's alone
+        if (existing.filter(Plan::isPublished).isPresent()) {
+            notices.raise(new Notice(command.client().value(), null, NoticeKind.PLAN_CHANGED));
+        }
+        return details(saved, summary, library);
     }
 
     // a second publish is refused as already published, not as stale, so the plan's state is checked first
@@ -65,7 +75,9 @@ public class PlanManagementService implements ManagePlanUseCase {
         }
         requireNotDrafting(summary);
         requireSameVersion(stored, version);
-        return details(plans.save(stored.publish(today(summary))), summary, library(trainer));
+        Plan published = plans.save(stored.publish(today(summary)));
+        notices.raise(new Notice(client.value(), null, NoticeKind.PLAN_PUBLISHED));
+        return details(published, summary, library(trainer));
     }
 
     private Plan edit(Plan stored, SavePlanCommand command, ClientSummary summary) {

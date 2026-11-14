@@ -8,6 +8,7 @@ import com.kinetiq.account.domain.model.AccountSettings;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
+import com.kinetiq.common.domain.model.Notice;
 import com.kinetiq.exercise.domain.input.ExerciseListing;
 import com.kinetiq.exercise.domain.input.ListExercisesQuery;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
@@ -49,6 +50,7 @@ final class DraftingFixture {
             .toList());
     final InMemoryPlanRepository plans = new InMemoryPlanRepository();
     final InMemoryPlanDraftingRepository draftings = new InMemoryPlanDraftingRepository();
+    final List<Notice> notices = new ArrayList<>();
 
     AccountId clientsTrainer = trainer;
     boolean answered = true;

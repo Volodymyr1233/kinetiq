@@ -1,6 +1,7 @@
 package com.kinetiq.readiness.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.readiness.domain.input.CheckInUseCase;
 import com.kinetiq.readiness.domain.output.CheckInRepository;
@@ -18,7 +19,8 @@ class ReadinessConfig {
             ViewOwnPlanUseCase plan,
             TrainingProgress training,
             CheckInRepository checkIns,
-            CurrentAccountUseCase accounts) {
-        return new CheckInService(plan, training, checkIns, accounts, Clock.systemUTC());
+            CurrentAccountUseCase accounts,
+            NoticeBoard notices) {
+        return new CheckInService(plan, training, checkIns, accounts, notices, Clock.systemUTC());
     }
 }
