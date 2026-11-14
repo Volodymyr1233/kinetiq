@@ -14,8 +14,12 @@ import com.kinetiq.account.domain.model.Invite;
 import com.kinetiq.account.domain.model.Language;
 import com.kinetiq.account.domain.model.Role;
 import com.kinetiq.common.domain.model.Email;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import java.time.Instant;
 import java.time.ZoneId;
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
@@ -29,8 +33,10 @@ class AccountDeletionServiceTest {
     private final RecordingPasswordHasher hasher = new RecordingPasswordHasher();
     private final FakeFailedSignInsRepository failedSignIns = new FakeFailedSignInsRepository();
     private final RecordingAccountSessions sessions = new RecordingAccountSessions();
+    private final List<Notice> notices = new ArrayList<>();
     private final AccountDeletionService service =
-            new AccountDeletionService(accounts, invites, hasher, failedSignIns, sessions, new MutableClock(NOW));
+            new AccountDeletionService(
+                    accounts, invites, hasher, failedSignIns, sessions, notices::add, new MutableClock(NOW));
 
     private Account account(String name, String email, Role role, AccountId trainer) {
         return accounts.add(Account.restore(
@@ -103,6 +109,29 @@ class AccountDeletionServiceTest {
             assertThat(invites.findById(someoneElse.getId())).isPresent();
             assertThat(accounts.findById(marek.getId())).isPresent();
             assertThat(sessions.ended).containsExactly(anna.getId());
+        }
+
+        @Test
+        void shouldTellTheTrainerAClientLeft_withNothingOfTheClient() {
+            Account marek = trainer("marek@example.com");
+            Account anna = client("anna@example.com", marek);
+
+            service.delete(anna.getId(), PASSWORD);
+
+            assertThat(notices).containsExactly(new Notice(marek.getId().value(), null, NoticeKind.CLIENT_DELETED));
+        }
+
+        @Test
+        void shouldTellNobody_whenATrainerOrAClientWithoutATrainerIsDeleted_orTheDeletionIsRefused() {
+            Account marek = trainer("marek@example.com");
+            Account alone = account("Alone", "alone@example.com", Role.CLIENT, null);
+            Account anna = client("anna@example.com", marek);
+
+            service.delete(alone.getId(), PASSWORD);
+            assertThatThrownBy(() -> service.delete(anna.getId(), "wrong"))
+                    .isInstanceOf(PasswordIncorrectException.class);
+
+            assertThat(notices).isEmpty();
         }
 
         @Test
