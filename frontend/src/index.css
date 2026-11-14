@@ -266,6 +266,11 @@
   --text-metric--line-height: 2.5rem;
   --text-metric-lg: 3.5rem;
   --text-metric-lg--line-height: 1;
+  /* the home page headline, above the default scale */
+  --text-display-sm: 2.5rem;
+  --text-display-sm--line-height: 2.75rem;
+  --text-display: 3.25rem;
+  --text-display--line-height: 3.5rem;
 
   --ease-out: var(--ease-out);
   --ease-in: var(--ease-in);
@@ -338,6 +343,29 @@
       /* an endless loop at this speed would flicker */
       animation-iteration-count: 1 !important;
       transition-duration: 1ms !important;
+    }
+  }
+}
+
+/* a section fades up once as it scrolls into view; browsers without scroll timelines show it as is */
+@keyframes reveal-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+}
+@keyframes reveal-fade {
+  from {
+    opacity: 0;
+  }
+}
+@utility reveal {
+  @supports (animation-timeline: view()) {
+    animation: reveal-up linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 40%;
+    @media (prefers-reduced-motion: reduce) {
+      animation-name: reveal-fade;
     }
   }
 }

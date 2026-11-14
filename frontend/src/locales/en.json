@@ -1,9 +1,120 @@
 {
-  "placeholder": {
-    "metricLabel": "Readiness",
-    "title": "Project is set up",
-    "body": "Screens arrive feature by feature.",
-    "action": "Start session"
+  "home": {
+    "signIn": "Sign in",
+    "label": "For personal trainers",
+    "title": "You design the plan.",
+    "titleMuted": "Your clients log every set.",
+    "lead": "Clients answer a short quiz, you publish the plan, and every check-in and logged set comes back to you.",
+    "createAccount": "Create trainer account",
+    "free": "Free to sign up. Your clients join through your invite.",
+    "heroVisual": "Kinetiq on a trainer's laptop and a client's phone. The trainer sees 14 active clients and what needs attention. The client checks in and gets a readiness of 83, Ready.",
+    "desk": {
+      "date": "Wed 7 Oct",
+      "title": "Clients",
+      "weeks": "4 weeks",
+      "active": "Active clients",
+      "done": "Sessions done",
+      "of": "of {{total}}",
+      "waiting": "Waiting for you",
+      "attention": "Needs attention",
+      "rpeTitle": "Anna's average RPE is above 8 for 2 weeks",
+      "rpeText": "A plan change is waiting for both of you.",
+      "draftTitle": "Bartek's plan is ready to review",
+      "draftText": "Built from his 7 answers."
+    },
+    "phone": {
+      "date": "Wed 7 Oct · week 14",
+      "title": "Today",
+      "session": "Lower body",
+      "duration": "55 min",
+      "squat": "Back squat",
+      "squatTarget": "3 × 5 · 100 kg",
+      "deadlift": "Romanian deadlift",
+      "deadliftTarget": "3 × 8 · 80 kg"
+    },
+    "how": {
+      "label": "How it works",
+      "title": "From invite to first session in three steps",
+      "steps": [
+        {
+          "title": "Invite a client",
+          "text": "Enter their email. Kinetiq sends them a link to join."
+        },
+        {
+          "title": "They answer the quiz",
+          "text": "Goal, experience and training days. A draft plan is built from their answers."
+        },
+        {
+          "title": "You review and publish",
+          "text": "Change anything first. Your client sees the plan only after you publish it."
+        }
+      ]
+    },
+    "sides": {
+      "label": "Two sides, one plan",
+      "title": "You plan at a desk. They train with a phone.",
+      "desk": {
+        "label": "At your desk",
+        "title": "Every client's week on one screen",
+        "text": "Built for a laptop, with each client one click away.",
+        "items": [
+          "See who is on track, who to watch and who is at risk.",
+          "Approve new drafts and plan changes from one list.",
+          "Read every logged set with its RPE and the day's readiness."
+        ]
+      },
+      "phone": {
+        "label": "On their phone",
+        "title": "Check in, train, log",
+        "text": "Built for one hand between sets.",
+        "items": [
+          "A three-tap check-in lightens the day's targets after a bad night.",
+          "Sets save on the phone without a connection and sync later.",
+          "A question to you starts from the set it is about."
+        ],
+        "saved": "Saved on this phone"
+      }
+    },
+    "planChange": {
+      "label": "Plan changes",
+      "title": "Nothing in a plan changes without both of you",
+      "text": "Every week Kinetiq checks RPE, load and finished sessions. When a rule fires, you both see the change, the reason and the numbers. It takes effect the next Monday, and only if you both accept.",
+      "visual": "A plan change for Anna Kowalska: cut leg volume by 10%, because her average RPE was above 8 for 2 weeks. Marek accepted, Anna is deciding.",
+      "waiting": "Waiting for Anna",
+      "change": "Cut leg volume by 10%",
+      "reason": "Her average RPE was above 8 for 2 weeks.",
+      "squat": "Back squat",
+      "legPress": "Leg press",
+      "legCurl": "Leg curl",
+      "accepted": "Marek · Accepted",
+      "deciding": "Anna · Deciding",
+      "effect": "Takes effect Mon 12 Oct if you both accept.",
+      "keep": "Keep current plan",
+      "accept": "Accept change"
+    },
+    "close": {
+      "label": "Get started",
+      "title": "Start with one client",
+      "lead": "Sign up, send an invite and review the plan drafted from their quiz.",
+      "visual": "Inviting a client: the trainer enters anna.kowalska@example.com and sends the invite. Two open invites wait, expiring in 3 days and in 1 day.",
+      "invite": "Invite a client",
+      "inviteText": "They get a link to join and answer the quiz.",
+      "email": "Email",
+      "send": "Send invite",
+      "open": "Open invites",
+      "inThreeDays": "In 3 days",
+      "inOneDay": "In 1 day",
+      "factsLabel": "How client data is handled",
+      "facts": [
+        "Clients agree to health data processing before they join.",
+        "Names and emails never go into plan drafting.",
+        "Deleting an account erases its data."
+      ],
+      "privacy": "Read the privacy notice"
+    },
+    "footer": {
+      "privacy": "Privacy notice"
+    }
   },
   "theme": {
     "label": "Appearance",

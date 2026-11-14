@@ -14,6 +14,10 @@ _Avoid_: Coach, instructor
 A person who trains under one trainer's plan.
 _Avoid_: Athlete, user, trainee
 
+**Visitor**:
+A person who opens Kinetiq without being signed in. Kinetiq keeps nothing about them.
+_Avoid_: Guest, user, lead
+
 **Account**:
 What a trainer or client signs in with: name, email, password and role. A trainer creates one by signing up; a client gets one through an invite.
 _Avoid_: User, profile, login
