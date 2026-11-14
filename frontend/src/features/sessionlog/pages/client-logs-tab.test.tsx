@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
@@ -215,6 +215,30 @@ describe('ClientLogsTab', () => {
     ).toBeInTheDocument()
     await screen.findByRole('table')
     expect(marked()).toHaveLength(0)
+  })
+
+  it('names the exercises in the new language after a language change, without a reload', async () => {
+    const wednesday = DETAILS[WEDNESDAY_LOG]
+    openLogs((request) =>
+      new URL(request.url).pathname ===
+        `/api/v1/clients/${ANNA.id}/session-logs/${WEDNESDAY_LOG}` &&
+      request.headers.get('Accept-Language') === 'pl'
+        ? json({
+            ...wednesday,
+            entries: wednesday.entries.map((entry) => ({
+              ...entry,
+              exerciseName: 'Przysiad ze sztangą',
+            })),
+          })
+        : backend()(request),
+    )
+    await screen.findAllByText('Back squat')
+
+    await act(() => i18n.changeLanguage('pl'))
+
+    expect(await screen.findAllByText('Przysiad ze sztangą')).not.toHaveLength(
+      0,
+    )
   })
 
   it('drops the mark when another session is chosen', async () => {

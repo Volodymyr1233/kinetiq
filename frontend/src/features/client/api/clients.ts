@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import { problemCode } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
@@ -23,8 +24,10 @@ export type OpenPlanChange = components['schemas']['ClientPlanChangeResponse']
 
 /** The client's open plan change, or `null` when there is none. */
 export function useOpenPlanChange(id: string | undefined) {
+  const { i18n } = useTranslation()
   return useQuery({
-    queryKey: ['clients', id, 'plan-change'],
+    // plan changes come in the account's language, which the UI follows, so the language is part of the key
+    queryKey: ['clients', id, 'plan-change', i18n.language],
     queryFn: async (): Promise<OpenPlanChange | null> => {
       const { data, error } = await api.GET(
         '/api/v1/clients/{id}/plan-change',
@@ -52,8 +55,10 @@ export type EndedPlanChange =
 
 /** The last 5 plan changes of the client that ended, the latest first. */
 export function useEndedPlanChanges(id: string | undefined) {
+  const { i18n } = useTranslation()
   return useQuery({
-    queryKey: ['clients', id, 'plan-changes', 'ended'],
+    // plan changes come in the account's language, which the UI follows, so the language is part of the key
+    queryKey: ['clients', id, 'plan-changes', 'ended', i18n.language],
     queryFn: async () => {
       const { data, error } = await api.GET(
         '/api/v1/clients/{id}/plan-changes/ended',

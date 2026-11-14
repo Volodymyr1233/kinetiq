@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -168,6 +168,34 @@ describe('ClientPlanPage', () => {
     })
 
     expect(await screen.findByText('Waiting for you')).toBeInTheDocument()
+  })
+
+  it('words the plan change card in the new language after a language change, keeping it in place until then', async () => {
+    openPlan(servePlan, '/app/plan', 'KG', OPEN_CHANGE)
+    await screen.findByRole('heading', { name: OPEN_CHANGE.title })
+    let answer = () => {}
+    const answered = new Promise<void>((resolve) => {
+      answer = resolve
+    })
+    // the server words plan changes in the language the account now holds, and answers once let go
+    const polish = {
+      ...OPEN_CHANGE,
+      title: 'Przysiad: objętość mniejsza o 13%',
+    }
+    stubApi(async (request) => {
+      await answered
+      return withOpenPlanChange(polish, servePlan)(request)
+    })
+
+    await act(() => i18n.changeLanguage('pl'))
+
+    expect(
+      screen.getByRole('heading', { name: OPEN_CHANGE.title }),
+    ).toBeInTheDocument()
+    answer()
+    expect(
+      await screen.findByRole('heading', { name: polish.title }),
+    ).toBeInTheDocument()
   })
 
   it('shows no plan change card when there is none open', async () => {

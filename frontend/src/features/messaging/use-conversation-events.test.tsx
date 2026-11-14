@@ -7,6 +7,7 @@ import {
 import { act, renderHook } from '@testing-library/react'
 import type { ReactNode } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import i18n from '@/lib/i18n'
 import { FakeEventSource } from '@/test/event-source'
 import { eventually } from '@/test/eventually'
 import { json, pathsOf, problem, stubApi } from '@/test/page'
@@ -66,10 +67,11 @@ const stream = () => {
   return only!
 }
 
-afterEach(() => {
+afterEach(async () => {
   vi.useRealTimers()
   focusManager.setFocused(undefined)
   onlineManager.setOnline(true)
+  await i18n.changeLanguage('en')
 })
 
 describe('useConversationEvents', () => {
@@ -175,6 +177,47 @@ describe('useConversationEvents', () => {
       expect(count(requests, '/api/v1/conversations/unread-count')).toBe(2)
       expect(count(requests, MESSAGES_OF_ANNA)).toBe(2)
     })
+  })
+
+  it('names the exercise a message is about in the new language after a language change, without a reload', async () => {
+    const about = {
+      setLogId: '00000000-0000-4000-9400-000000000001',
+      sessionLogId: '00000000-0000-4000-9300-000000000001',
+      sessionName: 'Upper body',
+      sessionDate: '2026-11-10',
+      entryPosition: 0,
+      setNumber: 2,
+      rpe: 9,
+    }
+    stubApi((request) => {
+      const path = new URL(request.url).pathname
+      if (path === MESSAGES_OF_ANNA) {
+        const exerciseName =
+          request.headers.get('Accept-Language') === 'pl'
+            ? 'Przysiad ze sztangą'
+            : 'Back squat'
+        return json({
+          messages: [
+            {
+              ...message('a', 'This set felt heavy.'),
+              about: { ...about, exerciseName },
+            },
+          ],
+          hasMore: false,
+        })
+      }
+      if (path === '/api/v1/conversations/unread-count')
+        return json({ count: 0 })
+      return json({ conversations: [] })
+    })
+    const { result } = renderEvents('trainer')
+    const aboutName = () =>
+      messagesOf(result.current.data)[0]?.about?.exerciseName
+    await eventually(() => expect(aboutName()).toBe('Back squat'))
+
+    await act(() => i18n.changeLanguage('pl'))
+
+    await eventually(() => expect(aboutName()).toBe('Przysiad ze sztangą'))
   })
 
   it('opens the stream again after the browser gave up, waiting longer each time', async () => {

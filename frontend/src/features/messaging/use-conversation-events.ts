@@ -2,6 +2,7 @@ import { useQueryClient } from '@tanstack/react-query'
 import { useEffect } from 'react'
 import { api } from '@/lib/api/client'
 import type { paths } from '@/lib/api/schema'
+import i18n from '@/lib/i18n'
 import { CONVERSATIONS, MESSAGES } from '@/lib/query-keys'
 import { refreshConversation } from './api/messaging'
 import { streamHeard, streamLost } from './stream-health'
@@ -20,6 +21,14 @@ const SILENCE_MS = 60_000
  */
 export function useConversationEvents(accountId: string | undefined) {
   const queryClient = useQueryClient()
+
+  // the backend names the exercise of a message's set in the UI language, and loaded conversations are never stale
+  useEffect(() => {
+    const askAgain = () =>
+      void queryClient.invalidateQueries({ queryKey: MESSAGES })
+    i18n.on('languageChanged', askAgain)
+    return () => i18n.off('languageChanged', askAgain)
+  }, [queryClient])
 
   useEffect(() => {
     if (accountId === undefined) return

@@ -1,4 +1,5 @@
 import { skipToken, useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
 
@@ -44,8 +45,10 @@ export function useClientSessionLog(
   clientId: string,
   sessionLogId: string | undefined,
 ) {
+  const { i18n } = useTranslation()
   return useQuery({
-    queryKey: ['client-session-log', clientId, sessionLogId],
+    // the backend names exercises in the UI language, so the language is part of the key
+    queryKey: ['client-session-log', clientId, sessionLogId, i18n.language],
     queryFn:
       sessionLogId === undefined
         ? skipToken
