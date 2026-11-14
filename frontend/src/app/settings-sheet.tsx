@@ -1,5 +1,6 @@
 import { useQuery } from '@tanstack/react-query'
 import { SlidersHorizontalIcon } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link } from 'react-router'
 import { Button } from '@/components/ui/button'
@@ -20,23 +21,21 @@ import { DisplaySettings } from '@/features/account/components/display-settings'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
 import { firstName } from '@/lib/first-name'
 
-/** The client's Settings button and the sheet it opens: display settings, "Sign out", deleting the account and the privacy notice. */
-export function SettingsSheet() {
+/**
+ * The client's settings sheet: display settings, "Sign out", deleting the account and the privacy notice.
+ * `children` holds its `SettingsButton`, by default the button alone; a page that remounts inside keeps the sheet open.
+ */
+export function SettingsSheet({
+  children = <SettingsButton />,
+}: {
+  children?: ReactNode
+}) {
   const { t } = useTranslation()
   const { data: account } = useQuery(currentAccountQuery)
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon-lg"
-          className="size-12"
-          aria-label={t('nav.settings')}
-        >
-          <SlidersHorizontalIcon aria-hidden="true" />
-        </Button>
-      </SheetTrigger>
+      {children}
       <SheetContent
         side="right"
         className="gap-6 data-[side=right]:w-full data-[side=right]:sm:max-w-sm"
@@ -73,6 +72,24 @@ export function SettingsSheet() {
         </div>
       </SheetContent>
     </Sheet>
+  )
+}
+
+/** The button that opens the `SettingsSheet` it is placed in. */
+export function SettingsButton() {
+  const { t } = useTranslation()
+
+  return (
+    <SheetTrigger asChild>
+      <Button
+        variant="ghost"
+        size="icon-lg"
+        className="size-12"
+        aria-label={t('nav.settings')}
+      >
+        <SlidersHorizontalIcon aria-hidden="true" />
+      </Button>
+    </SheetTrigger>
   )
 }
 
