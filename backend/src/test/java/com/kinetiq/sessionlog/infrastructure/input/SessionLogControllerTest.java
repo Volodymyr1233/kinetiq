@@ -18,6 +18,7 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.exercise.domain.model.LocalizedText;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.plan.domain.exception.PlanNotFoundException;
+import com.kinetiq.progress.domain.model.TopSet;
 import com.kinetiq.readiness.domain.model.Adjustment;
 import com.kinetiq.readiness.domain.model.Cause;
 import com.kinetiq.readiness.domain.model.Target;
@@ -358,12 +359,28 @@ class SessionLogControllerTest {
     private static final String FINISH = SESSIONS + "/" + SESSION_ID + "/finish";
     private static final String SUMMARY = SESSIONS + "/" + SESSION_ID + "/summary";
 
+    private static final Exercise PLANK = new Exercise(
+            new ExerciseId(UUID.fromString("00000000-0000-4000-9100-000000000012")),
+            null,
+            new LocalizedText("Plank", "Deska"),
+            Category.CORE,
+            new LocalizedText("", ""),
+            Measure.SECONDS,
+            3,
+            45,
+            90,
+            new LocalizedText("", ""));
+
     private static SessionSummaryView summaryView(BigDecimal volume) {
         SessionLog log = started(false, true).log();
         return new SessionSummaryView(
                 log,
                 new SessionSummary(
-                        1, 2, Optional.ofNullable(volume), new BigDecimal("8.5"), 42));
+                        1, 2, Optional.ofNullable(volume), new BigDecimal("8.5"), 42),
+                List.of(
+                        new SessionSummaryView.ExercisePr(SQUAT, new TopSet(new BigDecimal("102.5"), 5, 8)),
+                        new SessionSummaryView.ExercisePr(PLANK, new TopSet(null, 75, 7))),
+                4);
     }
 
     @Test
@@ -382,6 +399,26 @@ class SessionLogControllerTest {
         assertThat(result).bodyJson().extractingPath("$.volumeKg").isEqualTo(1512.5);
         assertThat(result).bodyJson().extractingPath("$.averageRpe").isEqualTo(8.5);
         assertThat(result).bodyJson().extractingPath("$.minutes").isEqualTo(42);
+        assertThat(result).bodyJson().extractingPath("$.prs[0].exerciseId").isEqualTo(SQUAT.getId().value().toString());
+        assertThat(result).bodyJson().extractingPath("$.prs[0].name").isEqualTo("Back squat");
+        assertThat(result).bodyJson().extractingPath("$.prs[0].measure").isEqualTo("REPS");
+        assertThat(result).bodyJson().extractingPath("$.prs[0].loadKg").isEqualTo(102.5);
+        assertThat(result).bodyJson().extractingPath("$.prs[0].amount").isEqualTo(5);
+        assertThat(result).bodyJson().extractingPath("$.prs[1].measure").isEqualTo("SECONDS");
+        assertThat(result).bodyJson().doesNotHavePath("$.prs[1].loadKg");
+        assertThat(result).bodyJson().extractingPath("$.prs[1].amount").isEqualTo(75);
+        assertThat(result).bodyJson().extractingPath("$.weeksInARow").isEqualTo(4);
+    }
+
+    @Test
+    void shouldNameTheExercisesOfThePrsInPolish_whenTheSummaryIsAskedInPolish() {
+        when(sessions.summary(CLIENT_ID, new SessionLogId(SESSION_ID))).thenReturn(summaryView(null));
+
+        var result = mvc.get().uri(SUMMARY).header("Accept-Language", "pl").with(CLIENT).exchange();
+
+        assertThat(result).hasStatus(HttpStatus.OK);
+        assertThat(result).bodyJson().extractingPath("$.prs[0].name").isEqualTo("Przysiad ze sztangą");
+        assertThat(result).bodyJson().extractingPath("$.prs[1].name").isEqualTo("Deska");
     }
 
     @Test
@@ -473,7 +510,7 @@ class SessionLogControllerTest {
                 log.getEntries(), log.getSetLogs(), 0);
         when(sessions.summary(CLIENT_ID, new SessionLogId(SESSION_ID)))
                 .thenReturn(new SessionSummaryView(
-                        withNote, new SessionSummary(1, 2, Optional.empty(), new BigDecimal("8.0"), 3)));
+                        withNote, new SessionSummary(1, 2, Optional.empty(), new BigDecimal("8.0"), 3), List.of(), 0));
 
         var result = mvc.get().uri(SUMMARY).with(CLIENT).exchange();
 

@@ -1217,6 +1217,19 @@ export interface components {
             /** Format: int32 */
             minutes: number;
             note?: string;
+            prs: components["schemas"]["SummaryPrResponse"][];
+            /** Format: int32 */
+            weeksInARow: number;
+        };
+        SummaryPrResponse: {
+            /** Format: uuid */
+            exerciseId: string;
+            name: string;
+            /** @enum {string} */
+            measure: "REPS" | "SECONDS";
+            loadKg?: number;
+            /** Format: int32 */
+            amount: number;
         };
         SubmitQuizRequest: {
             /** @enum {string} */

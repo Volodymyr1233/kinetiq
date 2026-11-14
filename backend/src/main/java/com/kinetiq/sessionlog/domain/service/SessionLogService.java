@@ -10,6 +10,8 @@ import com.kinetiq.plan.domain.exception.PlanNotFoundException;
 import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.input.ViewOwnPlanUseCase;
 import com.kinetiq.plan.domain.model.Session;
+import com.kinetiq.progress.domain.input.Rewards;
+import com.kinetiq.progress.domain.input.ViewProgressUseCase;
 import com.kinetiq.readiness.domain.input.CheckInUseCase;
 import com.kinetiq.readiness.domain.model.Adjustment;
 import com.kinetiq.readiness.domain.model.Planned;
@@ -23,10 +25,12 @@ import com.kinetiq.sessionlog.domain.input.StartedSession;
 import com.kinetiq.sessionlog.domain.model.LoggedEntry;
 import com.kinetiq.sessionlog.domain.model.SessionLog;
 import com.kinetiq.sessionlog.domain.model.SessionLogId;
+import com.kinetiq.sessionlog.domain.model.SessionSummary;
 import com.kinetiq.sessionlog.domain.model.SetLog;
 import com.kinetiq.sessionlog.domain.model.SetValues;
 import com.kinetiq.sessionlog.domain.output.SessionLogRepository;
 import java.time.Clock;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -42,6 +46,7 @@ public class SessionLogService implements LogSessionUseCase {
     private final ListExercisesUseCase exercises;
     private final SessionLogRepository logs;
     private final CheckInUseCase checkIns;
+    private final ViewProgressUseCase progress;
     private final Clock clock;
 
     // ponytail: two starts at the same moment both pass the lookup and the second is refused by the database as a 500;
@@ -154,9 +159,18 @@ public class SessionLogService implements LogSessionUseCase {
     }
 
     private SessionSummaryView view(SessionLog log, AccountId client) {
-        Map<ExerciseId, Measure> measures = library(client).entrySet().stream()
+        Map<ExerciseId, Exercise> library = library(client);
+        Map<ExerciseId, Measure> measures = library.entrySet().stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, entry -> entry.getValue().getMeasure()));
-        return new SessionSummaryView(log, log.summary(measures));
+        SessionSummary summary = log.summary(measures);
+        Rewards rewards = progress.rewards(client, log.getDate());
+        // the rows progress reads carry no place in the session, so the session gives the order
+        List<ExerciseId> order = log.getEntries().stream().map(LoggedEntry::exercise).toList();
+        List<SessionSummaryView.ExercisePr> prs = rewards.prs().stream()
+                .sorted(Comparator.comparingInt(pr -> order.indexOf(pr.exercise())))
+                .map(pr -> new SessionSummaryView.ExercisePr(library.get(pr.exercise()), pr.top()))
+                .toList();
+        return new SessionSummaryView(log, summary, prs, rewards.weeksInARow());
     }
 
     private Map<ExerciseId, Exercise> library(AccountId client) {
