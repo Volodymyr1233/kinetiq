@@ -26,6 +26,7 @@ import { AccountAvatar } from '@/components/account-avatar'
 import { SignOutButton } from '@/features/account/components/sign-out-button'
 import { useUnreadCount } from '@/features/messaging/api/messaging'
 import { UnreadCount } from '@/features/messaging/components/unread-count'
+import { NotificationBell } from '@/features/notifications/components/notification-bell'
 import { useDraftedPlans } from '@/features/plan/api/drafted-plans'
 import { usePlanChangeApprovals } from '@/features/plan/api/plan-change-approvals'
 import { waitsForDecisionOf } from '@/lib/plan-change-state'
@@ -146,6 +147,9 @@ export function TrainerArea() {
         >
           <SidebarTrigger aria-label={t('nav.open')} className="md:hidden" />
           <p className="text-sm font-medium">{title}</p>
+          <div className="ml-auto">
+            <NotificationBell area="trainer" />
+          </div>
         </header>
         <main className="flex-1">
           <Outlet />
