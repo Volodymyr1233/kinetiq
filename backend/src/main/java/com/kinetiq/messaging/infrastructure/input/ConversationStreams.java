@@ -3,6 +3,7 @@ package com.kinetiq.messaging.infrastructure.input;
 import static java.util.stream.Collectors.groupingBy;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.NoticeStored;
 import com.kinetiq.messaging.domain.model.ConversationChange;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -84,6 +85,16 @@ class ConversationStreams {
         for (Stream stream : snapshot()) {
             if (stream.person().equals(change.person())) {
                 sending.execute(() -> send(stream, SseEmitter.event().name(name).data(client)));
+            }
+        }
+    }
+
+    // the one stream of a sign-in also carries notifications: a second one per tab would double the connections
+    @TransactionalEventListener(fallbackExecution = true)
+    void on(NoticeStored stored) {
+        for (Stream stream : snapshot()) {
+            if (stream.person().value().equals(stored.recipient())) {
+                sending.execute(() -> send(stream, SseEmitter.event().name("notification").data("new")));
             }
         }
     }
