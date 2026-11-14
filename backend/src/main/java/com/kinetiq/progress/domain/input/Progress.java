@@ -80,9 +80,9 @@ public class Progress {
     }
 
     /**
-     * One exercise logged in the period: its top set in the period, whether its best set over all logs was logged
-     * today, its top set and mean RPE in each period week it was logged in, and its 3 newest sessions over all logs,
-     * newest first. The change is absent when it cannot be compared.
+     * One exercise logged in the period: its top set in the period, whether it has a PR today, its top set and mean
+     * RPE in each period week it was logged in, and its 3 newest sessions over all logs, newest first. The change is
+     * absent when it cannot be compared.
      */
     @Getter
     public static class ExerciseProgress {

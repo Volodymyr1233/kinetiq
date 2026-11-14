@@ -26,6 +26,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 
@@ -64,6 +65,9 @@ public class ProgressViewService implements ViewProgressUseCase {
         List<TrainingWeek> weeks = all.subList(Math.max(0, all.size() - period.weeks()), all.size());
         Optional<Compared> compared = compared(weeks);
         LocalDate today = LocalDate.now(clock.withZone(accounts.find(client).getTimeZone()));
+        // the rule of the session's PRs, so "PR today" agrees with the session done screen
+        Set<ExerciseId> prsToday =
+                Pr.on(today, logged).stream().map(Pr::exercise).collect(Collectors.toUnmodifiableSet());
         return new Progress(
                 view.plan().getGoal(),
                 training.lastWeek(),
@@ -80,7 +84,7 @@ public class ProgressViewService implements ViewProgressUseCase {
                                 .flatMap(latest -> pair.earlier().averageRpe().map(latest::subtract)))
                         .orElse(null),
                 weeksInARow(all),
-                exercises(weeks, compared, logged, view.library(), today));
+                exercises(weeks, compared, logged, view.library(), prsToday));
     }
 
     @Override
@@ -134,7 +138,7 @@ public class ProgressViewService implements ViewProgressUseCase {
             Optional<Compared> compared,
             List<LoggedExercise> logged,
             Map<ExerciseId, Exercise> library,
-            LocalDate today) {
+            Set<ExerciseId> prsToday) {
         LocalDate first = weeks.getFirst().monday();
         LocalDate last = weeks.getLast().monday().plusDays(DAYS_PER_WEEK - 1L);
         Map<ExerciseId, List<LoggedExercise>> allRows =
@@ -152,7 +156,7 @@ public class ProgressViewService implements ViewProgressUseCase {
                             library.get(id),
                             best(inPeriod).top(),
                             compared.flatMap(pair -> topSetChange(pair, id)).orElse(null),
-                            best(rows).date().equals(today),
+                            prsToday.contains(id),
                             weeks.stream()
                                     .filter(week -> week.exercises().containsKey(id))
                                     .map(week -> {
