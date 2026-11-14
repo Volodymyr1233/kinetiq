@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import i18n from '@/lib/i18n'
@@ -180,5 +180,29 @@ describe('ClientProgressSection', () => {
     expect(
       screen.getByText('W tym okresie nie zapisano jeszcze żadnej sesji.'),
     ).toBeInTheDocument()
+  })
+
+  it('names the exercises in the new language after a language change, without a reload', async () => {
+    openSection((request) =>
+      json({
+        ...PROGRESS,
+        exercises: [
+          {
+            ...PROGRESS.exercises[0],
+            name:
+              request.headers.get('Accept-Language') === 'pl'
+                ? 'Przysiad ze sztangą'
+                : 'Back squat',
+          },
+        ],
+      }),
+    )
+    await screen.findByRole('radio', { name: 'Back squat' })
+
+    await act(() => i18n.changeLanguage('pl'))
+
+    expect(
+      await screen.findByRole('radio', { name: 'Przysiad ze sztangą' }),
+    ).toBeChecked()
   })
 })

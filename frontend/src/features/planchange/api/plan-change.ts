@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import { problemStatus } from '@/lib/api/problem'
 import type { components } from '@/lib/api/schema'
@@ -8,11 +9,17 @@ import type { DeclineReason } from './client-plan-change'
 export type PlanChange = components['schemas']['PlanChangeResponse']
 export type PlanChangeTarget = components['schemas']['PlanChangeTargetResponse']
 
-const planChangeKey = (id: string) => ['plan-changes', id]
+// plan changes come in the account's language, which the UI follows, so the language is part of the key
+const planChangeKey = (id: string, language: string) => [
+  'plan-changes',
+  id,
+  language,
+]
 
 export function usePlanChange(id: string | undefined) {
+  const { i18n } = useTranslation()
   return useQuery({
-    queryKey: planChangeKey(id ?? ''),
+    queryKey: planChangeKey(id ?? '', i18n.language),
     queryFn: async () => {
       const { data, error } = await api.GET('/api/v1/plan-changes/{id}', {
         params: { path: { id: id! } },
@@ -31,16 +38,19 @@ function useDecision<Variables extends { id: string }>(
   { posts }: { posts?: boolean } = {},
 ) {
   const queryClient = useQueryClient()
+  const { i18n } = useTranslation()
   return useMutation({
     mutationFn: send,
     // a refusal says the state moved on (the other person decided meanwhile), so the screen asks again
     onError: (error, { id }) => {
       if (problemStatus(error) === 409) {
-        void queryClient.invalidateQueries({ queryKey: planChangeKey(id) })
+        void queryClient.invalidateQueries({
+          queryKey: planChangeKey(id, i18n.language),
+        })
       }
     },
     onSuccess: (planChange, { id }) => {
-      queryClient.setQueryData(planChangeKey(id), planChange)
+      queryClient.setQueryData(planChangeKey(id, i18n.language), planChange)
       // the lists, the nav count, the client's page and its open plan change all follow the state
       void queryClient.invalidateQueries({ queryKey: APPROVALS })
       void queryClient.invalidateQueries({

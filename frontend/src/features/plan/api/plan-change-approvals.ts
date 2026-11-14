@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query'
+import { useTranslation } from 'react-i18next'
 import { api } from '@/lib/api/client'
 import type { components } from '@/lib/api/schema'
 
@@ -10,8 +11,10 @@ export type PlanChangeApproval =
  * `approvals` key.
  */
 export function usePlanChangeApprovals() {
+  const { i18n } = useTranslation()
   return useQuery({
-    queryKey: ['approvals', 'plan-changes'],
+    // plan changes come in the account's language, which the UI follows, so the language is part of the key
+    queryKey: ['approvals', 'plan-changes', i18n.language],
     queryFn: async () => {
       const { data, error } = await api.GET('/api/v1/approvals/plan-changes')
       if (error !== undefined) throw error

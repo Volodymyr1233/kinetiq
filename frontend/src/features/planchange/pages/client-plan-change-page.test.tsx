@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, waitFor, within } from '@testing-library/react'
+import { act, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -123,6 +123,23 @@ describe('ClientPlanChangePage', () => {
     const accept = await screen.findByRole('button', { name: 'Accept change' })
 
     expect(accept).toHaveAttribute('data-variant', 'default')
+  })
+
+  it('words the plan change in the new language after a language change, without a reload', async () => {
+    let stored = PENDING
+    renderPage(server(() => stored))
+    await screen.findByRole('heading', { name: PENDING.title, level: 2 })
+
+    // the server words plan changes in the language the account now holds
+    stored = { ...PENDING, title: 'Przysiad: objętość mniejsza o 13%' }
+    await act(() => i18n.changeLanguage('pl'))
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Przysiad: objętość mniejsza o 13%',
+        level: 2,
+      }),
+    ).toBeInTheDocument()
   })
 
   it('moves to waiting with Undo after accepting, and back after undoing', async () => {

@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
@@ -225,6 +225,18 @@ describe('ApprovalsPage', () => {
         `/trainer/plan-changes/${WAITING_FOR_YOU.id}`,
       )
       expect(second).toHaveTextContent('Waiting for you')
+    })
+
+    it('words the plan changes in the new language after a language change, without a reload', async () => {
+      const changes = [WAITING_FOR_YOU]
+      show([], changes)
+      expect((await rows())[0]).toHaveTextContent('Title 01')
+
+      // the server words plan changes in the language the account now holds
+      changes[0] = { ...WAITING_FOR_YOU, title: 'Tytuł 01' }
+      await act(() => i18n.changeLanguage('pl'))
+
+      expect(await screen.findByText('Tytuł 01')).toBeInTheDocument()
     })
 
     it('says who the trainer waits for once they accepted', async () => {

@@ -1,6 +1,7 @@
-import { screen, waitFor, within } from '@testing-library/react'
+import { act, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it } from 'vitest'
+import i18n from '@/lib/i18n'
 import { json, problem, renderAppAt, SIGNED_IN } from '@/test/page'
 import type { Client } from '../api/clients'
 
@@ -342,6 +343,30 @@ describe('ClientPage', () => {
           screen.queryByRole('region', { name: 'Past plan changes' }),
         ).not.toBeInTheDocument(),
       )
+    })
+
+    describe('after a language change', () => {
+      afterEach(() => i18n.changeLanguage('en'))
+
+      it('words the open and the ended plan changes in the new language, without a reload', async () => {
+        const openChange = { ...open }
+        const items = [ended('04', {})]
+        renderWith(openChange, items)
+        await screen.findByRole('heading', { name: open.title })
+        await screen.findByText('Ended 04')
+
+        // the server words plan changes in the language the account now holds
+        openChange.title = 'Przysiad: objętość mniejsza o 13%'
+        items[0] = ended('04', { title: 'Zakończona 04' })
+        await act(() => i18n.changeLanguage('pl'))
+
+        expect(
+          await screen.findByRole('heading', {
+            name: 'Przysiad: objętość mniejsza o 13%',
+          }),
+        ).toBeInTheDocument()
+        expect(await screen.findByText('Zakończona 04')).toBeInTheDocument()
+      })
     })
   })
 })

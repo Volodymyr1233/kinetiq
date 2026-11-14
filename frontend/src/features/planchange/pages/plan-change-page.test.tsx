@@ -1,4 +1,4 @@
-import { screen, within } from '@testing-library/react'
+import { act, screen, within } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import i18n from '@/lib/i18n'
 import { json, problem, renderAppAt, SIGNED_IN } from '@/test/page'
@@ -258,6 +258,23 @@ describe('PlanChangePage', () => {
     expect(
       screen.getByRole('link', { name: 'Back to all clients' }),
     ).toHaveAttribute('href', '/trainer/clients')
+  })
+
+  it('words the plan change in the new language after a language change, without a reload', async () => {
+    const planChange = { ...HIGH_RPE }
+    renderPlanChange(planChange)
+    await screen.findByRole('heading', { name: HIGH_RPE.title, level: 1 })
+
+    // the server words plan changes in the language the account now holds
+    planChange.title = 'Przysiad: objętość mniejsza o 13%'
+    await act(() => i18n.changeLanguage('pl'))
+
+    expect(
+      await screen.findByRole('heading', {
+        name: 'Przysiad: objętość mniejsza o 13%',
+        level: 1,
+      }),
+    ).toBeInTheDocument()
   })
 
   it('names the trainer’s language in the table and dates, in Polish', async () => {
