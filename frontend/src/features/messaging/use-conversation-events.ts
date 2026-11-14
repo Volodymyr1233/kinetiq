@@ -3,7 +3,12 @@ import { useEffect } from 'react'
 import { api } from '@/lib/api/client'
 import type { paths } from '@/lib/api/schema'
 import i18n from '@/lib/i18n'
-import { CONVERSATIONS, MESSAGES } from '@/lib/query-keys'
+import {
+  APPROVALS,
+  CONVERSATIONS,
+  MESSAGES,
+  NOTIFICATIONS,
+} from '@/lib/query-keys'
 import { refreshConversation } from './api/messaging'
 import { streamHeard, streamLost } from './stream-health'
 
@@ -74,6 +79,12 @@ export function useConversationEvents(accountId: string | undefined) {
       opened.addEventListener('read', () => {
         alive()
         refreshList()
+      })
+      // a notification arrived: the bell reads its list again, and what Approvals counts may have changed with it
+      opened.addEventListener('notification', () => {
+        alive()
+        void queryClient.invalidateQueries({ queryKey: NOTIFICATIONS })
+        void queryClient.invalidateQueries({ queryKey: APPROVALS })
       })
       opened.addEventListener('ping', alive)
       opened.addEventListener('error', () => {
