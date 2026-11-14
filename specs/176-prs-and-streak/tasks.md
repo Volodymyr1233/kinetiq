@@ -36,9 +36,9 @@ description: "Tasks for story #176, Client sees PRs and their week streak (tasks
 
 **Goal**: "PR today" on Progress follows the PR rule, so it agrees with the PRs of today's session (spec FR-006; research R5).
 
-- [ ] T009 [US1] `B/progress/domain/service/ProgressViewService.java`: `own` works out the exercises of `Pr.on(today, logged)` once and `exercises` marks `prToday` by membership in them, in place of the best row over all rows dated today; `best` stays for the period's best set. The Javadoc of `Progress.ExerciseProgress` in `B/progress/domain/input/Progress.java` says "whether it has a PR today" instead of "whether its best set over all logs was logged today"
-- [ ] T010 [US1] Tests in the `@Nested class PrToday` of `BT/progress/domain/service/ProgressViewServiceTest.java`: an exercise logged for the first time today is not marked; with three exercises logged today (a PR, an equal set, a first log), the exercises marked "PR today" are exactly those of `rewards(CLIENT, today).prs()`. The four existing tests stay as they are
-- [ ] T011 `./gradlew check` passes; follow `quickstart.md` section 2; commit `feat(backend): leave the first log of an exercise out of pr today`
+- [X] T009 [US1] `B/progress/domain/service/ProgressViewService.java`: `own` works out the exercises of `Pr.on(today, logged)` once and `exercises` marks `prToday` by membership in them, in place of the best row over all rows dated today; `best` stays for the period's best set. The Javadoc of `Progress.ExerciseProgress` in `B/progress/domain/input/Progress.java` says "whether it has a PR today" instead of "whether its best set over all logs was logged today"
+- [X] T010 [US1] Tests in the `@Nested class PrToday` of `BT/progress/domain/service/ProgressViewServiceTest.java`: an exercise logged for the first time today is not marked; with three exercises logged today (a PR, an equal set, a first log), the exercises marked "PR today" are exactly those of `rewards(CLIENT, today).prs()`. The four existing tests stay as they are
+- [X] T011 `./gradlew check` passes; follow `quickstart.md` section 2; commit `feat(backend): leave the first log of an exercise out of pr today`
 
 ## Phase 4: task #302, PRs and week streak in the session summary API (US1, US2, US3)
 

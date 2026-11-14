@@ -524,6 +524,35 @@ class ProgressViewServiceTest {
 
             assertThat(progressOf(own(FOUR_WEEKS), SQUAT).isPrToday()).isTrue();
         }
+
+        @Test
+        void shouldNotBeOne_whenTheExerciseIsLoggedForTheFirstTimeToday() {
+            now = wednesday(10);
+            logged(10, WEDNESDAY, SQUAT, "102.5", 5, 9);
+
+            assertThat(progressOf(own(FOUR_WEEKS), SQUAT).isPrToday()).isFalse();
+        }
+
+        @Test
+        void shouldMarkThePrsOfTodaysSession_whenItHasAPrAnEqualSetAndAFirstLog() {
+            now = wednesday(10);
+            logged(9, MONDAY, SQUAT, "100.0", 5, 8);
+            logged(10, WEDNESDAY, SQUAT, "102.5", 5, 9);
+            logged(9, MONDAY, ROW, "60.0", 10, 8);
+            logged(10, WEDNESDAY, ROW, "60.0", 10, 9);
+            logged(10, WEDNESDAY, PRESS, "40.0", 8, 8);
+
+            List<ExerciseId> marked = own(FOUR_WEEKS).getExercises().stream()
+                    .filter(ExerciseProgress::isPrToday)
+                    .map(exercise -> exercise.getExercise().getId())
+                    .toList();
+
+            assertThat(marked)
+                    .containsExactlyInAnyOrderElementsOf(rewards(day(10, WEDNESDAY)).prs().stream()
+                            .map(Pr::exercise)
+                            .toList())
+                    .containsExactly(SQUAT.getId());
+        }
     }
 
     @Nested
