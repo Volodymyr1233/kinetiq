@@ -138,7 +138,7 @@ _Avoid_: Closed, frozen
 Rate of perceived exertion: how hard a set felt on a 1–10 scale. 1–6 is easy, 7–8 is the usual target, 9–10 is hard.
 
 **PR**:
-A client's best logged result for an exercise.
+A set that beats every earlier set the client logged of an exercise, by the top set order; the first log of an exercise is not one.
 _Avoid_: Record, achievement
 
 **Top set**:

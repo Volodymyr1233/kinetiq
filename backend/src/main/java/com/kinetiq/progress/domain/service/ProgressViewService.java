@@ -11,9 +11,11 @@ import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.progress.domain.input.Progress;
 import com.kinetiq.progress.domain.input.Progress.ExerciseProgress;
 import com.kinetiq.progress.domain.input.Progress.TopSetChange;
+import com.kinetiq.progress.domain.input.Rewards;
 import com.kinetiq.progress.domain.input.ViewProgressUseCase;
 import com.kinetiq.progress.domain.model.LoggedExercise;
 import com.kinetiq.progress.domain.model.Period;
+import com.kinetiq.progress.domain.model.Pr;
 import com.kinetiq.progress.domain.model.TopSet;
 import com.kinetiq.progress.domain.model.TrainingWeek;
 import com.kinetiq.progress.domain.model.TrainingWeek.ExerciseWeek;
@@ -55,18 +57,16 @@ public class ProgressViewService implements ViewProgressUseCase {
 
     @Override
     public Progress own(AccountId client, Period period) {
-        OwnPlanView view = plans.view(client, null);
-        Plan plan = view.plan();
-        int lastWeek = view.finished() ? plan.getWeeks() : view.currentWeek();
-        List<LoggedExercise> logged = trainingLog.loggedExercises(client);
-        List<TrainingWeek> all =
-                TrainingWeek.of(plan, lastWeek, !view.finished(), logged, trainingLog.finishedDays(client));
+        Training training = training(client);
+        OwnPlanView view = training.view();
+        List<LoggedExercise> logged = training.logged();
+        List<TrainingWeek> all = training.weeks();
         List<TrainingWeek> weeks = all.subList(Math.max(0, all.size() - period.weeks()), all.size());
         Optional<Compared> compared = compared(weeks);
         LocalDate today = LocalDate.now(clock.withZone(accounts.find(client).getTimeZone()));
         return new Progress(
-                plan.getGoal(),
-                lastWeek,
+                view.plan().getGoal(),
+                training.lastWeek(),
                 view.finished(),
                 weeks,
                 weeks.stream().mapToInt(TrainingWeek::done).sum(),
@@ -81,6 +81,25 @@ public class ProgressViewService implements ViewProgressUseCase {
                         .orElse(null),
                 weeksInARow(all),
                 exercises(weeks, compared, logged, view.library(), today));
+    }
+
+    @Override
+    public Rewards rewards(AccountId client, LocalDate date) {
+        Training training = training(client);
+        return new Rewards(Pr.on(date, training.logged()), weeksInARow(training.weeks()));
+    }
+
+    // own and rewards read the same weeks and rows, so every screen shows the same streak and PRs
+    private Training training(AccountId client) {
+        OwnPlanView view = plans.view(client, null);
+        Plan plan = view.plan();
+        int lastWeek = view.finished() ? plan.getWeeks() : view.currentWeek();
+        List<LoggedExercise> logged = trainingLog.loggedExercises(client);
+        return new Training(
+                view,
+                lastWeek,
+                logged,
+                TrainingWeek.of(plan, lastWeek, !view.finished(), logged, trainingLog.finishedDays(client)));
     }
 
     // the last week of the period that is not running and the week before it; only the last week can be running
@@ -176,4 +195,6 @@ public class ProgressViewService implements ViewProgressUseCase {
     }
 
     private record Compared(TrainingWeek earlier, TrainingWeek latest) {}
+
+    private record Training(OwnPlanView view, int lastWeek, List<LoggedExercise> logged, List<TrainingWeek> weeks) {}
 }
