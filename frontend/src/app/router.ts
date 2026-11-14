@@ -1,7 +1,6 @@
 import { createBrowserRouter, redirect, type RouteObject } from 'react-router'
 import { AreaErrorPage } from '@/app/area-error-page'
 import { redirectIfSignedIn, requireRole } from '@/app/guards'
-import { HomePage } from '@/app/home-page'
 import { NotFoundPage } from '@/app/not-found-page'
 
 // area chunks are tiny, so a blank frame while one loads beats a flashing spinner
@@ -10,7 +9,15 @@ const BlankWhileLoading = () => null
 // each area and the account pages are their own chunks, downloaded on the first
 // visit; a router consumes the lazy objects it loads, so every router needs fresh routes
 export const createRoutes = (): RouteObject[] => [
-  { path: '/', Component: HomePage },
+  // a signed-in person lands in their own area, as on the sign-in page
+  {
+    path: '/',
+    loader: redirectIfSignedIn,
+    HydrateFallback: BlankWhileLoading,
+    lazy: {
+      Component: async () => (await import('@/app/home-page')).HomePage,
+    },
+  },
   {
     path: '/sign-in',
     loader: redirectIfSignedIn,

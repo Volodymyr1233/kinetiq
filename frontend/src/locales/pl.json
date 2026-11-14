@@ -1,9 +1,120 @@
 {
-  "placeholder": {
-    "metricLabel": "Gotowość",
-    "title": "Projekt jest gotowy",
-    "body": "Ekrany pojawią się wraz z kolejnymi funkcjami.",
-    "action": "Zacznij trening"
+  "home": {
+    "signIn": "Zaloguj się",
+    "label": "Dla trenerów personalnych",
+    "title": "Ty układasz plan.",
+    "titleMuted": "Twoi klienci zapisują każdą serię.",
+    "lead": "Klienci odpowiadają na krótki quiz, Ty publikujesz plan, a każda ocena samopoczucia i zapisana seria wraca do Ciebie.",
+    "createAccount": "Załóż konto trenera",
+    "free": "Rejestracja jest bezpłatna. Klienci dołączają przez Twoje zaproszenie.",
+    "heroVisual": "Kinetiq na laptopie trenera i telefonie klienta. Trener widzi 14 aktywnych klientów i to, co wymaga uwagi. Klient ocenia samopoczucie i dostaje gotowość 83, pełna gotowość.",
+    "desk": {
+      "date": "śr., 7 paź",
+      "title": "Klienci",
+      "weeks": "4 tygodnie",
+      "active": "Aktywni klienci",
+      "done": "Wykonane sesje",
+      "of": "z {{total}}",
+      "waiting": "Czeka na Ciebie",
+      "attention": "Wymaga uwagi",
+      "rpeTitle": "Średnie RPE Anny przekracza 8 od 2 tygodni",
+      "rpeText": "Zmiana planu czeka na was oboje.",
+      "draftTitle": "Plan Bartka czeka na przegląd",
+      "draftText": "Powstał z jego 7 odpowiedzi."
+    },
+    "phone": {
+      "date": "śr., 7 paź · tydzień 14",
+      "title": "Dziś",
+      "session": "Dolne partie",
+      "duration": "55 min",
+      "squat": "Przysiad ze sztangą",
+      "squatTarget": "3 × 5 · 100 kg",
+      "deadlift": "Rumuński martwy ciąg",
+      "deadliftTarget": "3 × 8 · 80 kg"
+    },
+    "how": {
+      "label": "Jak to działa",
+      "title": "Od zaproszenia do pierwszej sesji w trzech krokach",
+      "steps": [
+        {
+          "title": "Zaproś klienta",
+          "text": "Wpisz jego e-mail. Kinetiq wyśle mu link do dołączenia."
+        },
+        {
+          "title": "Klient odpowiada na quiz",
+          "text": "Cel, doświadczenie i dni treningowe. Szkic planu powstaje z jego odpowiedzi."
+        },
+        {
+          "title": "Przeglądasz i publikujesz",
+          "text": "Najpierw zmień, co chcesz. Klient zobaczy plan dopiero po publikacji."
+        }
+      ]
+    },
+    "sides": {
+      "label": "Dwie strony, jeden plan",
+      "title": "Ty planujesz przy biurku. Oni trenują z telefonem.",
+      "desk": {
+        "label": "Przy biurku",
+        "title": "Tydzień każdego klienta na jednym ekranie",
+        "text": "Zaprojektowane na laptopa, każdy klient jedno kliknięcie dalej.",
+        "items": [
+          "Widzisz, kto jest na dobrej drodze, kogo obserwować, a kto jest zagrożony.",
+          "Zatwierdzasz nowe szkice i zmiany planu z jednej listy.",
+          "Czytasz każdą zapisaną serię z jej RPE i gotowością z tego dnia."
+        ]
+      },
+      "phone": {
+        "label": "Na ich telefonie",
+        "title": "Ocena samopoczucia, trening, zapis",
+        "text": "Zaprojektowane do obsługi jedną ręką między seriami.",
+        "items": [
+          "Ocena samopoczucia w trzech dotknięciach odciąża cele dnia po złej nocy.",
+          "Serie zapisują się na telefonie bez połączenia i synchronizują później.",
+          "Pytanie do Ciebie zaczyna się od serii, której dotyczy."
+        ],
+        "saved": "Zapisane na telefonie"
+      }
+    },
+    "planChange": {
+      "label": "Zmiany planu",
+      "title": "Nic w planie nie zmienia się bez was obojga",
+      "text": "Co tydzień Kinetiq sprawdza RPE, obciążenie i ukończone sesje. Gdy zadziała reguła, oboje widzicie zmianę, jej powód i liczby. Zmiana obowiązuje od następnego poniedziałku i tylko wtedy, gdy oboje ją zaakceptujecie.",
+      "visual": "Zmiana planu dla Anny Kowalskiej: objętość nóg mniejsza o 10%, bo jej średnie RPE przekraczało 8 przez 2 tygodnie. Marek zaakceptował, Anna decyduje.",
+      "waiting": "Czeka na Annę",
+      "change": "Zmniejsz objętość nóg o 10%",
+      "reason": "Jej średnie RPE przekraczało 8 przez 2 tygodnie.",
+      "squat": "Przysiad ze sztangą",
+      "legPress": "Wypychanie nogami",
+      "legCurl": "Uginanie nóg",
+      "accepted": "Marek · Zaakceptowano",
+      "deciding": "Anna · Decyduje",
+      "effect": "Obowiązuje od pon., 12 paź, jeśli oboje zaakceptujecie.",
+      "keep": "Zostaw obecny plan",
+      "accept": "Zaakceptuj zmianę"
+    },
+    "close": {
+      "label": "Zacznij",
+      "title": "Zacznij od jednego klienta",
+      "lead": "Załóż konto, wyślij zaproszenie i przejrzyj plan przygotowany z quizu.",
+      "visual": "Zapraszanie klienta: trener wpisuje anna.kowalska@example.com i wysyła zaproszenie. Czekają dwa otwarte zaproszenia, ważne jeszcze 3 dni i 1 dzień.",
+      "invite": "Zaproś klienta",
+      "inviteText": "Dostanie link, by dołączyć i odpowiedzieć na quiz.",
+      "email": "E-mail",
+      "send": "Wyślij zaproszenie",
+      "open": "Otwarte zaproszenia",
+      "inThreeDays": "Za 3 dni",
+      "inOneDay": "Za 1 dzień",
+      "factsLabel": "Jak traktujemy dane klientów",
+      "facts": [
+        "Klienci zgadzają się na przetwarzanie danych o zdrowiu, zanim dołączą.",
+        "Imiona i e-maile nigdy nie trafiają do przygotowania planu.",
+        "Usunięcie konta usuwa jego dane."
+      ],
+      "privacy": "Przeczytaj informację o prywatności"
+    },
+    "footer": {
+      "privacy": "Informacja o prywatności"
+    }
   },
   "theme": {
     "label": "Wygląd",

@@ -7,6 +7,7 @@ import { createRoutes } from '@/app/router'
 import { registerLogSetDefaults } from '@/features/sessionlog/api/session-log'
 import { ConversationEventsSync } from '@/app/conversation-events-sync'
 import { WeightUnitProvider } from '@/app/weight-unit-provider'
+import { ThemeProvider } from '@/components/theme-provider'
 import { queryClient } from '@/lib/query-client'
 
 export type Reply = (request: Request) => Promise<Response> | Response
@@ -137,13 +138,15 @@ export function renderAppAt(
     return response
   })
   const router = createMemoryRouter(createRoutes(), { initialEntries: [path] })
-  // the weight unit and the conversation events follow the account, as in app.tsx
+  // the theme, and the weight unit and conversation events that follow the account, as in app.tsx
   render(
     <QueryClientProvider client={queryClient}>
       <ConversationEventsSync />
-      <WeightUnitProvider>
-        <RouterProvider router={router} />
-      </WeightUnitProvider>
+      <ThemeProvider>
+        <WeightUnitProvider>
+          <RouterProvider router={router} />
+        </WeightUnitProvider>
+      </ThemeProvider>
     </QueryClientProvider>,
   )
   return { requests, router }
