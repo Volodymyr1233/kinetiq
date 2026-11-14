@@ -2,6 +2,7 @@ package com.kinetiq.plan.infrastructure.config;
 
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.exercise.domain.input.ListExercisesUseCase;
 import com.kinetiq.plan.domain.input.DraftPlanUseCase;
 import com.kinetiq.plan.domain.input.ListDraftedPlansUseCase;
@@ -86,8 +87,11 @@ class PlanConfig {
 
     @Bean
     ManagePlanUseCase managePlanUseCase(
-            ViewClientsUseCase clients, ListExercisesUseCase exercises, PlanRepository plans) {
-        return new PlanManagementService(clients, exercises, plans, Clock.systemUTC());
+            ViewClientsUseCase clients,
+            ListExercisesUseCase exercises,
+            PlanRepository plans,
+            NoticeBoard notices) {
+        return new PlanManagementService(clients, exercises, plans, notices, Clock.systemUTC());
     }
 
     @Bean
@@ -117,9 +121,10 @@ class PlanConfig {
             ListExercisesUseCase exercises,
             PlanRepository plans,
             PlanDraftingRepository draftings,
+            NoticeBoard notices,
             @Value("${kinetiq.plan-drafting.timeout}") Duration timeout) {
         return new PlanDraftingService(
-                quiz, accounts, exercises, plans, draftings, Clock.systemUTC(), draftingLimit(timeout));
+                quiz, accounts, exercises, plans, draftings, notices, Clock.systemUTC(), draftingLimit(timeout));
     }
 
     // a drafting older than this was cut off by a restart: every attempt and the pause have had their time

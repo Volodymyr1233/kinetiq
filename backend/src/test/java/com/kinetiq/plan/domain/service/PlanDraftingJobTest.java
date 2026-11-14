@@ -23,7 +23,7 @@ class PlanDraftingJobTest {
     private final DraftingFixture fixture = new DraftingFixture();
     private final StubPlanGenerator generator = new StubPlanGenerator();
     private final PlanDraftingService service = new PlanDraftingService(
-            fixture.quiz, fixture.accounts, fixture.exercises, fixture.plans, fixture.draftings, Clock.systemUTC(), Duration.ofMinutes(5));
+            fixture.quiz, fixture.accounts, fixture.exercises, fixture.plans, fixture.draftings, fixture.notices::add, Clock.systemUTC(), Duration.ofMinutes(5));
     private final PlanDraftingJob job = new PlanDraftingJob(service, generator, Duration.ZERO);
 
     @BeforeEach

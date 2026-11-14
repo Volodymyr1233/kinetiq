@@ -252,13 +252,20 @@ class PlanChangeConcurrencyIT {
                 PlanChangeRepository planChanges,
                 PlanSource plans) {
             return new PlanChangeDecisionService(
-                    clients, accounts, planChanges, plans, mock(ExchangeMessagesUseCase.class), Clock.fixed(NOW, ZoneOffset.UTC));
+                    clients,
+                    accounts,
+                    planChanges,
+                    plans,
+                    mock(ExchangeMessagesUseCase.class),
+                    notice -> {},
+                    Clock.fixed(NOW, ZoneOffset.UTC));
         }
 
         @Bean
         DecideOwnPlanChangeUseCase decideOwnPlanChangeUseCase(
                 CurrentAccountUseCase accounts, PlanChangeRepository planChanges, PlanSource plans) {
-            return new OwnPlanChangeDecisionService(accounts, planChanges, plans, mock(ExchangeMessagesUseCase.class), Clock.fixed(NOW, ZoneOffset.UTC));
+            return new OwnPlanChangeDecisionService(
+                    accounts, planChanges, plans, mock(ExchangeMessagesUseCase.class), notice -> {}, Clock.fixed(NOW, ZoneOffset.UTC));
         }
     }
 }

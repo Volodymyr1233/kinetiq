@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import com.kinetiq.account.domain.model.AccountId;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import com.kinetiq.client.domain.exception.ClientNotFoundException;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.client.domain.model.ClientSummary;
@@ -37,12 +39,15 @@ import java.time.Instant;
 import java.time.LocalDate;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 class PlanManagementServiceTest {
+
+    private final List<Notice> notices = new ArrayList<>();
 
     private static final AccountId TRAINER = AccountId.random();
     private static final AccountId OTHER_TRAINER = AccountId.random();
@@ -107,7 +112,7 @@ class PlanManagementServiceTest {
     };
 
     private final PlanManagementService service =
-            new PlanManagementService(clients, library, plans, Clock.fixed(NOW, ZoneOffset.UTC));
+            new PlanManagementService(clients, library, plans, notices::add, Clock.fixed(NOW, ZoneOffset.UTC));
 
     private static List<Session> sessions(ExerciseId exercise) {
         ExerciseEntry entry = new ExerciseEntry(exercise, 3, 8, null, 8, 90);
@@ -251,6 +256,24 @@ class PlanManagementServiceTest {
         }
 
         @Test
+        void shouldTellTheClientTheirPlanChanged_whenAPublishedPlanIsSaved() {
+            Plan published = storedPublished(16);
+
+            service.save(save(CLIENT, published.getVersion(), 16, sessions(OWN.getId())));
+
+            assertThat(notices).containsExactly(new Notice(CLIENT.value(), null, NoticeKind.PLAN_CHANGED));
+        }
+
+        @Test
+        void shouldTellNobody_whenADraftIsSaved() {
+            Plan draft = storedDraft();
+
+            service.save(save(CLIENT, draft.getVersion(), 8, sessions(OWN.getId())));
+
+            assertThat(notices).isEmpty();
+        }
+
+        @Test
         void shouldRefuseAsChanged_whenTheVersionIsStale() {
             Plan draft = storedDraft();
 
@@ -343,7 +366,7 @@ class PlanManagementServiceTest {
                 }
             };
             return new PlanManagementService(
-                    inZone, library, plans, Clock.fixed(Instant.parse(instant), ZoneOffset.UTC));
+                    inZone, library, plans, notices::add, Clock.fixed(Instant.parse(instant), ZoneOffset.UTC));
         }
 
         @Test
@@ -356,6 +379,25 @@ class PlanManagementServiceTest {
             assertThat(details.currentWeek()).isEqualTo(1);
             assertThat(details.plan().getVersion()).isEqualTo(draft.getVersion() + 1);
             assertThat(plans.byClient.get(CLIENT).isPublished()).isTrue();
+        }
+
+        @Test
+        void shouldTellTheClientTheirPlanIsPublished() {
+            Plan draft = storedDraft();
+
+            service.publish(TRAINER, CLIENT, draft.getVersion());
+
+            assertThat(notices).containsExactly(new Notice(CLIENT.value(), null, NoticeKind.PLAN_PUBLISHED));
+        }
+
+        @Test
+        void shouldTellNobody_whenThePublishIsRefused() {
+            Plan draft = storedDraft();
+
+            assertThatThrownBy(() -> service.publish(TRAINER, CLIENT, draft.getVersion() + 5))
+                    .isInstanceOf(PlanChangedException.class);
+
+            assertThat(notices).isEmpty();
         }
 
         @Test

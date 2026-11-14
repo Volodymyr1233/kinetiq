@@ -1,6 +1,11 @@
 package com.kinetiq.planchange.domain.service;
 
+import com.kinetiq.account.domain.input.CurrentAccountUseCase;
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.account.domain.model.Language;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
+import com.kinetiq.common.domain.output.NoticeBoard;
 import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
 import com.kinetiq.messaging.domain.input.SendMessageCommand;
 import com.kinetiq.messaging.domain.model.MessageId;
@@ -30,12 +35,21 @@ class PlanChangeDecider {
     private final PlanChangeRepository planChanges;
     private final PlanChangeTexts texts;
     private final ExchangeMessagesUseCase messages;
+    private final CurrentAccountUseCase accounts;
+    private final NoticeBoard notices;
     private final Clock clock;
 
     /** {@code zone} is the client's: the effective week begins in their time zone. */
     PlanChange accept(PlanChangeId id, Side side, ZoneId zone) {
         Instant now = clock.instant();
-        return decide(id, change -> change.accept(side, now, LocalDate.ofInstant(now, zone)));
+        PlanChange locked = planChanges.findForUpdate(id).orElseThrow(PlanChangeNotFoundException::new);
+        PlanChange changed = locked.accept(side, now, LocalDate.ofInstant(now, zone));
+        if (changed == locked) {
+            return locked;
+        }
+        PlanChange stored = planChanges.update(changed);
+        tellTheOtherPerson(stored, side);
+        return stored;
     }
 
     PlanChange undo(PlanChangeId id, Side side, ZoneId zone) {
@@ -57,7 +71,22 @@ class PlanChangeDecider {
         String text = DeclineMessageWording.of(
                 language, texts.text(language, locked).title(), decision.reason(), decision.note());
         messages.send(new SendMessageCommand(command.person(), locked.getClient(), messageId(locked.getId()), text));
-        return planChanges.update(declined);
+        PlanChange stored = planChanges.update(declined);
+        tellTheOtherPerson(stored, side);
+        return stored;
+    }
+
+    // the person who decided is never told; the client's decision names the client to the trainer
+    private void tellTheOtherPerson(PlanChange change, Side side) {
+        AccountId client = change.getClient();
+        if (side == Side.TRAINER) {
+            notices.raise(new Notice(client.value(), null, NoticeKind.PLAN_CHANGE_DECISION));
+            return;
+        }
+        accounts.find(client)
+                .getTrainerId()
+                .ifPresent(trainer ->
+                        notices.raise(new Notice(trainer.value(), client.value(), NoticeKind.PLAN_CHANGE_DECISION)));
     }
 
     // one id per plan change, so a repeated attempt can never post a second message

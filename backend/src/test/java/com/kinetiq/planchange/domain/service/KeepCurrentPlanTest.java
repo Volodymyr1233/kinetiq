@@ -17,6 +17,8 @@ import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Side;
+import com.kinetiq.common.domain.model.Notice;
+import com.kinetiq.common.domain.model.NoticeKind;
 import org.junit.jupiter.api.Test;
 
 class KeepCurrentPlanTest {
@@ -25,9 +27,25 @@ class KeepCurrentPlanTest {
     private final PlanChange stored = world.pendingFor(world.client);
 
     private final PlanChangeDecisionService trainerService = new PlanChangeDecisionService(
-            world.clients, world.accountsPort, world.planChanges, world.plans, world.messages, world.clock);
+            world.clients, world.accountsPort, world.planChanges, world.plans, world.messages, world.notices::add, world.clock);
     private final OwnPlanChangeDecisionService clientService = new OwnPlanChangeDecisionService(
-            world.accountsPort, world.planChanges, world.plans, world.messages, world.clock);
+            world.accountsPort, world.planChanges, world.plans, world.messages, world.notices::add, world.clock);
+
+    @Test
+    void shouldTellTheClientAboutTheTrainersDecline_andTheTrainerAboutTheClients() {
+        trainerService.keepCurrent(keep(world.trainer, stored.getId(), DeclineReason.TOO_HARD, null));
+
+        assertThat(world.notices)
+                .containsExactly(new Notice(world.client.value(), null, NoticeKind.PLAN_CHANGE_DECISION));
+    }
+
+    @Test
+    void shouldTellTheTrainerWithTheClient_whenTheClientDeclines() {
+        clientService.keepCurrent(keep(world.client, stored.getId(), DeclineReason.TOO_HARD, null));
+
+        assertThat(world.notices)
+                .containsExactly(new Notice(world.trainer.value(), world.client.value(), NoticeKind.PLAN_CHANGE_DECISION));
+    }
 
     private PlanChange current(PlanChange of) {
         return world.planChanges.find(of.getId()).orElseThrow();
