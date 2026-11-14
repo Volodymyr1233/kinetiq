@@ -41,7 +41,9 @@ describe('routes', () => {
       (request) =>
         new URL(request.url).pathname.startsWith('/api/v1/approvals/')
           ? json({ items: [] })
-          : json({ invites: [] }),
+          : new URL(request.url).pathname === '/api/v1/notifications'
+            ? json({ items: [], unread: 0 })
+            : json({ invites: [] }),
     )
 
     await user.click(await screen.findByRole('link', { name: 'Open invites' }))

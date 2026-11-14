@@ -11,6 +11,7 @@ import { ConfirmEmailBanner } from '@/features/account/components/confirm-email-
 import { useUnreadCount } from '@/features/messaging/api/messaging'
 import { UnreadCount } from '@/features/messaging/components/unread-count'
 import { useOwnPlan } from '@/features/plan/api/client-plan'
+import { NotificationBell } from '@/features/notifications/components/notification-bell'
 import { PlanReadyPage } from '@/features/plan/pages/plan-ready-page'
 import { QuizStatusCheck } from '@/features/quiz/components/quiz-status-check'
 import { cn } from '@/lib/utils'
@@ -76,7 +77,10 @@ function ClientTabs() {
         <h1 className="text-xl font-semibold">
           {active ? t(active.labelKey) : ''}
         </h1>
-        <SettingsSheet />
+        <div className="flex items-center">
+          <NotificationBell area="client" />
+          <SettingsSheet />
+        </div>
       </header>
       <ConfirmEmailBanner />
       {/* bottom padding keeps the last content above the fixed tab bar */}

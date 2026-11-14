@@ -9,3 +9,6 @@ export const MESSAGES = ['messages']
 
 /** Everything the Approvals list and its count hold: drafted plans and plan changes. */
 export const APPROVALS = ['approvals']
+
+/** The signed-in person's notifications and their unread count; the event stream refreshes them. */
+export const NOTIFICATIONS = ['notifications']
