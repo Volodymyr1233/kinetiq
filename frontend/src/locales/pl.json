@@ -19,6 +19,31 @@
   "dialog": {
     "close": "Zamknij"
   },
+  "notifications": {
+    "title": "Powiadomienia",
+    "bell": "Powiadomienia",
+    "bellUnread_one": "Powiadomienia, {{count, number}} nieprzeczytane",
+    "bellUnread_few": "Powiadomienia, {{count, number}} nieprzeczytane",
+    "bellUnread_many": "Powiadomienia, {{count, number}} nieprzeczytanych",
+    "bellUnread_other": "Powiadomienia, {{count, number}} nieprzeczytanego",
+    "empty": "Nie masz powiadomień.",
+    "unread": "Nieprzeczytane.",
+    "kind": {
+      "PLAN_PUBLISHED": "Trener opublikował Twój plan.",
+      "PLAN_CHANGED": "Trener zmienił Twój plan.",
+      "PLAN_CHANGE_WAITING": "Zmiana planu czeka na Twoją decyzję.",
+      "PLAN_CHANGE_WAITING_named": "Zmiana planu dla {{name}} czeka na decyzję.",
+      "PLAN_CHANGE_DECISION": "Decyzja trenera w sprawie zmiany planu.",
+      "PLAN_CHANGE_DECISION_named": "Decyzja klienta {{name}} w sprawie zmiany planu.",
+      "NEW_MESSAGE": "Nowa wiadomość od trenera.",
+      "NEW_MESSAGE_named": "Nowa wiadomość od {{name}}.",
+      "DRAFT_TO_REVIEW": "Szkic planu czeka na przegląd.",
+      "DRAFT_TO_REVIEW_named": "Szkic planu dla {{name}} czeka na przegląd.",
+      "RECOVERY_DAY": "Klient ma dzień regeneracji.",
+      "RECOVERY_DAY_named": "{{name}} ma dzień regeneracji.",
+      "CLIENT_DELETED": "Klient usunął swoje konto."
+    }
+  },
   "nav": {
     "clients": "Klienci",
     "approvals": "Akceptacje",

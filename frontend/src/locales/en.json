@@ -19,6 +19,29 @@
   "dialog": {
     "close": "Close"
   },
+  "notifications": {
+    "title": "Notifications",
+    "bell": "Notifications",
+    "bellUnread_one": "Notifications, {{count, number}} unread",
+    "bellUnread_other": "Notifications, {{count, number}} unread",
+    "empty": "You have no notifications.",
+    "unread": "Unread.",
+    "kind": {
+      "PLAN_PUBLISHED": "Your trainer published your plan.",
+      "PLAN_CHANGED": "Your trainer changed your plan.",
+      "PLAN_CHANGE_WAITING": "A plan change is waiting for your decision.",
+      "PLAN_CHANGE_WAITING_named": "A plan change for {{name}} is waiting for a decision.",
+      "PLAN_CHANGE_DECISION": "Your trainer decided on a plan change.",
+      "PLAN_CHANGE_DECISION_named": "{{name}} decided on a plan change.",
+      "NEW_MESSAGE": "New message from your trainer.",
+      "NEW_MESSAGE_named": "New message from {{name}}.",
+      "DRAFT_TO_REVIEW": "A draft plan is ready to review.",
+      "DRAFT_TO_REVIEW_named": "The draft plan for {{name}} is ready to review.",
+      "RECOVERY_DAY": "A client has a recovery day.",
+      "RECOVERY_DAY_named": "{{name}} has a recovery day.",
+      "CLIENT_DELETED": "A client deleted their account."
+    }
+  },
   "nav": {
     "clients": "Clients",
     "approvals": "Approvals",
