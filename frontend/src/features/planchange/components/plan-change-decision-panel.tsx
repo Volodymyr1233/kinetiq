@@ -33,6 +33,10 @@ type Decidable = {
   declinedBy?: PlanChangeSide
   declineReason?: DeclineReason
   declineNote?: string
+  /** Set once the plan uses an applied plan change. */
+  tookEffectAt?: string
+  /** Why it expired; an older row has none and reads as undecided. */
+  expiryCause?: 'UNDECIDED' | 'PLAN_EDITED'
 }
 
 /**
@@ -142,7 +146,14 @@ export function PlanChangeDecisionPanel({
   } else if (planChange.state === 'APPLIED') {
     body = (
       <div className="flex items-center justify-between gap-3">
-        <p>{t('planChange.outcome.applied', { date })}</p>
+        <p>
+          {t(
+            planChange.tookEffectAt === undefined
+              ? 'planChange.outcome.applied'
+              : 'planChange.outcome.inEffect',
+            { date },
+          )}
+        </p>
         <Button variant="link" size="sm" asChild>
           <Link to={planLink}>{t('planChange.actions.seePlan')}</Link>
         </Button>
@@ -170,7 +181,15 @@ export function PlanChangeDecisionPanel({
       </>
     )
   } else {
-    body = <p>{t('planChange.outcome.expired')}</p>
+    body = (
+      <p>
+        {t(
+          planChange.expiryCause === 'PLAN_EDITED'
+            ? 'planChange.outcome.expiredPlanEdited'
+            : 'planChange.outcome.expired',
+        )}
+      </p>
+    )
   }
 
   const open = waitsForDecisionOf(planChange, viewer) && keepOpen

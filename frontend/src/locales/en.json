@@ -813,6 +813,7 @@
     "planChange": {
       "effective": "Takes effect {{date}}",
       "expired": "Expired, {{date}}",
+      "expiredPlanEdited": "Expired, {{date}}. The plan changed.",
       "declinedByYou": "You kept the current plan: {{reason}}",
       "declinedByClient": "{{name}} kept the current plan: {{reason}}"
     }
@@ -1629,11 +1630,13 @@
       "waiting": "You accepted. Waiting for {{name}}.",
       "otherAccepted": "{{name}} accepted. Your decision is next.",
       "applied": "You both accepted. Takes effect {{date}}.",
+      "inEffect": "You both accepted. In effect since {{date}}.",
       "keptByYouClient": "You kept the current plan: {{reason}}. {{name}} sees your reason in your chat.",
       "keptByYouTrainer": "You kept the current plan: {{reason}}. {{name}} sees your reason in the chat.",
       "keptByOther": "{{name}} kept the current plan: {{reason}}.",
       "note": "Note: {{note}}",
-      "expired": "The week started before you both decided. The plan didn't change."
+      "expired": "The week started before you both decided. The plan didn't change.",
+      "expiredPlanEdited": "The plan changed after this change was suggested, so it didn't apply. The plan didn't change."
     },
     "keep": {
       "title": "Keep the current plan?",

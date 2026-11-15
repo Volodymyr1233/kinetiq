@@ -354,7 +354,27 @@ describe('ClientPlanChangePage', () => {
       'Marek kept the current plan: Too hard.',
     ],
     [
-      'expired',
+      'in effect',
+      {
+        state: 'APPLIED',
+        acceptedByTrainer: true,
+        acceptedByClient: true,
+        tookEffectAt: '2026-11-16T00:05:00Z',
+      } as const,
+      'You both accepted. In effect since Mon, Nov 16.',
+    ],
+    [
+      'expired because nobody decided in time',
+      { state: 'EXPIRED', expiryCause: 'UNDECIDED' } as const,
+      "The week started before you both decided. The plan didn't change.",
+    ],
+    [
+      'expired because the plan was edited',
+      { state: 'EXPIRED', expiryCause: 'PLAN_EDITED' } as const,
+      "The plan changed after this change was suggested, so it didn't apply. The plan didn't change.",
+    ],
+    [
+      'expired without a cause, as an older one is',
       { state: 'EXPIRED' } as const,
       "The week started before you both decided. The plan didn't change.",
     ],

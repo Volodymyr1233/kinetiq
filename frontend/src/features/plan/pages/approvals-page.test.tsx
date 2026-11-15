@@ -263,7 +263,7 @@ describe('ApprovalsPage', () => {
       expect(expired).toHaveTextContent('Expired')
     })
 
-    it('words an applied one as upcoming until it took effect and as in effect after', async () => {
+    it('words an applied one as upcoming until it took effect and as in effect after, and an expired one by its cause', async () => {
       const user = userEvent.setup()
       const IN_EFFECT = change('07', 'Ewa Mazur', {
         state: 'APPLIED',
@@ -272,7 +272,17 @@ describe('ApprovalsPage', () => {
         endedAt: hoursAgo(200),
         tookEffectAt: '2026-11-16T00:05:00Z',
       })
-      show([], [APPLIED, IN_EFFECT])
+      const PLAN_EDITED = change('08', 'Adam Król', {
+        state: 'EXPIRED',
+        expiryCause: 'PLAN_EDITED',
+        endedAt: hoursAgo(90),
+      })
+      const UNDECIDED = change('09', 'Basia Wójcik', {
+        state: 'EXPIRED',
+        expiryCause: 'UNDECIDED',
+        endedAt: hoursAgo(91),
+      })
+      show([], [APPLIED, IN_EFFECT, PLAN_EDITED, UNDECIDED])
       await screen.findByRole('tab', { name: /Decided/ })
       await user.click(tab(/Decided/))
 
@@ -284,6 +294,11 @@ describe('ApprovalsPage', () => {
       expect(await byName('Ewa')).toHaveTextContent(
         'Applied · in effect since Mon, Nov 16',
       )
+      expect(await byName('Adam')).toHaveTextContent(
+        'Expired, Mon, Nov 16. The plan changed.',
+      )
+      expect(await byName('Basia')).toHaveTextContent('Expired, Mon, Nov 16')
+      expect(await byName('Basia')).not.toHaveTextContent('The plan changed')
     })
 
     it('counts only the plan changes that still wait, not the upcoming, in effect or expired ones', async () => {
@@ -297,7 +312,10 @@ describe('ApprovalsPage', () => {
             state: 'APPLIED',
             tookEffectAt: '2026-11-16T00:05:00Z',
           }),
-          change('08', 'Adam Król', { state: 'EXPIRED' }),
+          change('08', 'Adam Król', {
+            state: 'EXPIRED',
+            expiryCause: 'PLAN_EDITED',
+          }),
         ],
       )
 
