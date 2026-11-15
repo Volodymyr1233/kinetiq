@@ -3,6 +3,7 @@ package com.kinetiq.planchange.infrastructure.input;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.kinetiq.exercise.domain.model.Measure;
 import com.kinetiq.planchange.domain.model.DeclineReason;
+import com.kinetiq.planchange.domain.model.ExpiryCause;
 import com.kinetiq.planchange.domain.model.FigureKind;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Rule;
@@ -44,7 +45,9 @@ record PlanChangeResponse(
         Side declinedBy,
         DeclineReason declineReason,
         String declineNote,
-        Instant endedAt) {
+        Instant endedAt,
+        Instant tookEffectAt,
+        ExpiryCause expiryCause) {
 
     /** One changed value of an entry, with the exercise name in the trainer's language and what its amount counts. */
     record PlanChangeTargetResponse(

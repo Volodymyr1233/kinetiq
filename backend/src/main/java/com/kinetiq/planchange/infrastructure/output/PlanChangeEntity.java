@@ -1,6 +1,7 @@
 package com.kinetiq.planchange.infrastructure.output;
 
 import com.kinetiq.planchange.domain.model.DeclineReason;
+import com.kinetiq.planchange.domain.model.ExpiryCause;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Rule;
 import com.kinetiq.planchange.domain.model.Side;
@@ -55,6 +56,10 @@ class PlanChangeEntity {
     private Instant endedAt;
     private Instant trainerAcceptedAt;
     private Instant clientAcceptedAt;
+    private Instant tookEffectAt;
+
+    @Enumerated(EnumType.STRING)
+    private ExpiryCause expiryCause;
 
     @Enumerated(EnumType.STRING)
     private Side declinedBy;

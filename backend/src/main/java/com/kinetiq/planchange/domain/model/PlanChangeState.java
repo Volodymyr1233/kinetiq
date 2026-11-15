@@ -1,6 +1,6 @@
 package com.kinetiq.planchange.domain.model;
 
-/** Where a plan change stands. {@code EXPIRED} is written by the story that applies and expires plan changes. */
+/** Where a plan change stands. An applied plan change is upcoming until the plan uses it, then in effect; see {@link PlanChange}. */
 public enum PlanChangeState {
     PENDING,
     ACCEPTED_BY_ONE,

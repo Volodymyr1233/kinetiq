@@ -76,7 +76,7 @@ public class PlanChangeDetectionService implements DetectPlanChangesUseCase {
         if (found.isEmpty()
                 || !found.get().isDue(now)
                 || !history.claimWeek(client, found.get().checkWeek(now), now)
-                || planChanges.hasOpen(client)) {
+                || planChanges.hasUnsettled(client)) {
             return Optional.empty();
         }
         ScheduledClient scheduled = found.get();

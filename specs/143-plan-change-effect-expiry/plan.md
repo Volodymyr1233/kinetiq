@@ -14,7 +14,7 @@ A scheduled step ends every plan change whose effective Monday has begun in the 
 
 **Primary Dependencies**: existing only (Spring `@Scheduled`, JdbcTemplate, JPA, Flyway, MapStruct, Lombok; react-query, react-i18next, shadcn). No new dependency.
 
-**Storage**: PostgreSQL; migration `V28__add_plan_change_effect.sql` (re-check the number against `master` and open pull requests before the pull request).
+**Storage**: PostgreSQL; migration `V29__add_plan_change_effect.sql` (re-check the number against `master` and open pull requests before the pull request).
 
 **Testing**: JUnit 5 + AssertJ with hand-written fakes and a fixed `Clock` (domain), `@DataJpaTest` + Testcontainers (`*IT`), `@WebMvcTest`, Vitest + Testing Library; a final browser check of every screen and state.
 
@@ -63,7 +63,7 @@ specs/143-plan-change-effect-expiry/
 
 ```text
 backend/src/main/
-├── resources/db/migration/V28__add_plan_change_effect.sql
+├── resources/db/migration/V29__add_plan_change_effect.sql
 ├── resources/db/dev-data/R__demo_plan_changes.sql      # upcoming, in effect, expired
 └── java/com/kinetiq/
     ├── plan/

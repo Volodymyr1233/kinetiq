@@ -141,3 +141,27 @@ select '00000000-0000-4000-9400-000000000031'::uuid, 0, '00000000-0000-4000-9100
 where exists (select 1 from plan_sessions where id = '00000000-0000-4000-9400-000000000031')
   and not exists (select 1 from plan_session_entries where session_id = '00000000-0000-4000-9400-000000000031')
 on conflict do nothing;
+
+-- Demo Client Upcoming has opened a plan of 8 weeks, in week 3; its plan change is in R__demo_plan_changes.sql
+insert into plans (id, client_id, goal, weeks, first_week, published_on, client_seen_at, automatic_draft, created_at,
+                   updated_at, version)
+values ('00000000-0000-4000-9300-000000000009', '00000000-0000-4000-8000-000000000014', 'GENERAL_FITNESS', 8,
+        (date_trunc('week', current_date) - interval '2 weeks')::date,
+        (date_trunc('week', current_date) - interval '2 weeks')::date, now(), null, now(), now(), 0)
+on conflict do nothing;
+
+insert into plan_sessions (id, plan_id, name, day_of_week)
+values ('00000000-0000-4000-9400-000000000032', '00000000-0000-4000-9300-000000000009', 'Full body A', 'TUESDAY'),
+       ('00000000-0000-4000-9400-000000000033', '00000000-0000-4000-9300-000000000009', 'Full body B', 'FRIDAY')
+on conflict do nothing;
+
+insert into plan_session_entries (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
+select entry.session_id::uuid, entry.position, entry.exercise_id::uuid, entry.sets, entry.amount,
+       entry.load_kg::numeric, entry.rpe, entry.rest_seconds
+from (values
+       ('00000000-0000-4000-9400-000000000032', 0, '00000000-0000-4000-9100-000000000011', 3, 8, 40.0, 7, 90),
+       ('00000000-0000-4000-9400-000000000032', 1, '00000000-0000-4000-9100-000000000026', 3, 30, null, 7, 45),
+       ('00000000-0000-4000-9400-000000000033', 0, '00000000-0000-4000-9100-000000000001', 3, 10, 30.0, 7, 90)
+) as entry (session_id, position, exercise_id, sets, amount, load_kg, rpe, rest_seconds)
+join plan_sessions session on session.id = entry.session_id::uuid
+on conflict do nothing;

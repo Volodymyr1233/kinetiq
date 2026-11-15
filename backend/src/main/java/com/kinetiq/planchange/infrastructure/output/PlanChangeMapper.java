@@ -65,7 +65,9 @@ interface PlanChangeMapper {
                 entity.getClientAcceptedAt(),
                 entity.getDeclinedBy() == null
                         ? null
-                        : new Decision(entity.getDeclinedBy(), entity.getDeclineReason(), entity.getDeclineNote()));
+                        : new Decision(entity.getDeclinedBy(), entity.getDeclineReason(), entity.getDeclineNote()),
+                entity.getTookEffectAt(),
+                entity.getExpiryCause());
     }
 
     private TargetChange toDomain(PlanChangeTargetEmbeddable target) {
@@ -121,6 +123,8 @@ interface PlanChangeMapper {
         entity.setDeclinedBy(decision.map(Decision::by).orElse(null));
         entity.setDeclineReason(decision.map(Decision::reason).orElse(null));
         entity.setDeclineNote(decision.map(Decision::note).orElse(null));
+        entity.setTookEffectAt(planChange.getTookEffectAt().orElse(null));
+        entity.setExpiryCause(planChange.getExpiryCause().orElse(null));
     }
 
     private PlanChangeTargetEmbeddable toEmbeddable(TargetChange change) {

@@ -23,6 +23,7 @@ import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
 import com.kinetiq.planchange.domain.input.ViewOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.model.DeclineReason;
 import com.kinetiq.planchange.domain.model.EntryRef;
+import com.kinetiq.planchange.domain.model.ExpiryCause;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.Figure;
 import com.kinetiq.planchange.domain.model.FigureKind;
@@ -203,6 +204,30 @@ class ClientPlanChangeControllerTest {
             json.extractingPath("$.effectiveWeek").isEqualTo("2026-11-16");
             json.extractingPath("$.targets[0].newValue").isEqualTo(7.0);
         }
+    }
+
+    @Test
+    void shouldAnswerWhenAPlanChangeTookEffect_orWhyItExpired() {
+        PlanChange upcoming = ACCEPTED.accept(Side.TRAINER, Instant.parse("2026-11-12T09:00:00Z"), LocalDate.parse("2026-11-12"));
+        PlanChange inEffect = upcoming.takeEffect(Instant.parse("2026-11-15T23:05:00Z"));
+        PlanChange expired = upcoming.expire(ExpiryCause.UNDECIDED, Instant.parse("2026-11-15T23:05:00Z"));
+        when(planChanges.get(CLIENT_ID, ID))
+                .thenReturn(view(upcoming))
+                .thenReturn(view(inEffect))
+                .thenReturn(view(expired));
+
+        var upcomingJson = assertThat(mvc.get().uri(DETAIL).with(CLIENT).exchange()).bodyJson();
+        upcomingJson.extractingPath("$.state").isEqualTo("APPLIED");
+        upcomingJson.doesNotHavePath("$.tookEffectAt");
+
+        var inEffectJson = assertThat(mvc.get().uri(DETAIL).with(CLIENT).exchange()).bodyJson();
+        inEffectJson.extractingPath("$.tookEffectAt").isEqualTo("2026-11-15T23:05:00Z");
+        inEffectJson.doesNotHavePath("$.expiryCause");
+
+        var expiredJson = assertThat(mvc.get().uri(DETAIL).with(CLIENT).exchange()).bodyJson();
+        expiredJson.extractingPath("$.state").isEqualTo("EXPIRED");
+        expiredJson.extractingPath("$.expiryCause").isEqualTo("UNDECIDED");
+        expiredJson.doesNotHavePath("$.tookEffectAt");
     }
 
     @Test

@@ -30,6 +30,7 @@ import com.kinetiq.planchange.domain.input.PlanChangeSummary;
 import com.kinetiq.planchange.domain.input.PlanChangeView;
 import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
 import com.kinetiq.planchange.domain.model.EntryRef;
+import com.kinetiq.planchange.domain.model.ExpiryCause;
 import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeContent;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
@@ -171,7 +172,9 @@ class OverviewServiceTest {
                 state.isOpen() ? null : NOW,
                 trainerAccepted,
                 clientAccepted,
-                null);
+                null,
+                null,
+                state == PlanChangeState.EXPIRED ? ExpiryCause.UNDECIDED : null);
         approvals.add(new PlanChangeApprovalView(change, "Name", new PlanChangeText("Cut volume by 10%", "Reason")));
     }
 

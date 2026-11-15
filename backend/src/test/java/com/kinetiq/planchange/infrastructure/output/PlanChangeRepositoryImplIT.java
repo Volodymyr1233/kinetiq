@@ -205,10 +205,10 @@ class PlanChangeRepositoryImplIT {
                 Side.CLIENT, DeclineReason.OTHER, null, Instant.parse("2026-11-03T10:00:00Z"), LocalDate.parse("2026-11-03"));
         repository.save(declined);
 
-        assertThat(repository.hasOpen(client)).isFalse();
+        assertThat(repository.hasUnsettled(client)).isFalse();
         PlanChange open = repository.save(pending(client));
 
-        assertThat(repository.hasOpen(client)).isTrue();
+        assertThat(repository.hasUnsettled(client)).isTrue();
         assertThat(repository.findOpen(client)).map(PlanChange::getId).contains(open.getId());
     }
 
@@ -219,7 +219,7 @@ class PlanChangeRepositoryImplIT {
         assertThat(repository.lastEndedAt(client)).isEmpty();
 
         jdbc.update(
-                "update plan_changes set state = 'EXPIRED', ended_at = ? where client_id = ?",
+                "update plan_changes set state = 'EXPIRED', expiry_cause = 'UNDECIDED', ended_at = ? where client_id = ?",
                 Timestamp.from(Instant.parse("2026-11-02T23:00:00Z")),
                 client.value());
         repository.save(pending(client).decline(
@@ -260,7 +260,7 @@ class PlanChangeRepositoryImplIT {
         assertThat(read.getDecision()).contains(new Decision(Side.TRAINER, DeclineReason.SCHEDULE, "Away that week"));
         assertThat(read.getEndedAt()).contains(at.plusSeconds(60));
         assertThat(read.acceptedBy(Side.CLIENT)).isTrue();
-        assertThat(repository.hasOpen(client)).isFalse();
+        assertThat(repository.hasUnsettled(client)).isFalse();
     }
 
     @Test
@@ -334,6 +334,6 @@ class PlanChangeRepositoryImplIT {
         repository.save(pending(other));
 
         assertThat(repository.findOpen(client)).isEmpty();
-        assertThat(repository.hasOpen(client)).isFalse();
+        assertThat(repository.hasUnsettled(client)).isFalse();
     }
 }

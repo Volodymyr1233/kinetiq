@@ -2,7 +2,10 @@ package com.kinetiq.plan.domain.output;
 
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.PlanId;
+import com.kinetiq.plan.domain.model.PlanRevision;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 
 public interface PlanRepository {
@@ -27,4 +30,10 @@ public interface PlanRepository {
      * version is not raised, so a trainer's open editor stays valid.
      */
     void markSeenByClient(AccountId client, Instant at);
+
+    /** Stores a revision of a plan; the database refuses a second one valid until the same Monday. */
+    void saveRevision(PlanRevision revision);
+
+    /** The revisions of the plan, the one valid until the earliest Monday first. */
+    List<PlanRevision> revisionsOf(PlanId plan);
 }

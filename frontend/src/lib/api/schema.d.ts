@@ -1287,6 +1287,10 @@ export interface components {
             declineNote?: string;
             /** Format: date-time */
             endedAt?: string;
+            /** Format: date-time */
+            tookEffectAt?: string;
+            /** @enum {string} */
+            expiryCause?: "UNDECIDED" | "PLAN_EDITED";
         };
         PlanChangeExerciseResponse: {
             /** Format: uuid */
@@ -1364,6 +1368,10 @@ export interface components {
             declineNote?: string;
             /** Format: date-time */
             endedAt?: string;
+            /** Format: date-time */
+            tookEffectAt?: string;
+            /** @enum {string} */
+            expiryCause?: "UNDECIDED" | "PLAN_EDITED";
         };
         SetPasswordRequest: {
             token: string;
@@ -1744,6 +1752,10 @@ export interface components {
             createdAt: string;
             /** Format: date-time */
             endedAt?: string;
+            /** Format: date-time */
+            tookEffectAt?: string;
+            /** @enum {string} */
+            expiryCause?: "UNDECIDED" | "PLAN_EDITED";
         };
         PlanChangeApprovalsResponse: {
             items: components["schemas"]["PlanChangeApprovalResponse"][];
@@ -1761,6 +1773,10 @@ export interface components {
             effectiveWeek: string;
             acceptedByTrainer: boolean;
             acceptedByClient: boolean;
+            /** Format: date-time */
+            tookEffectAt?: string;
+            /** @enum {string} */
+            expiryCause?: "UNDECIDED" | "PLAN_EDITED";
         };
         ClientOverviewResponse: {
             /** Format: date */
