@@ -288,6 +288,24 @@ class PlanManagementServiceTest {
                     .isEqualTo(OWN.getId());
         }
 
+        // an applied plan change raises the version, so the editor of a trainer who loaded the plan before it cannot save
+        // over it; an editor loaded afterwards saves as for any other plan edit (FR-006)
+        @Test
+        void shouldRefuseTheOldEditorAndAcceptAFreshOne_whenAPlanChangeRevisedThePlan() {
+            Plan published = storedPublished(16);
+            new PlanRevisionService(plans)
+                    .revise(CLIENT, published.getVersion(), FIRST_WEEK.plusWeeks(5), sessions(OWN.getId()));
+            long revised = plans.byClient.get(CLIENT).getVersion();
+
+            assertThat(revised).isGreaterThan(published.getVersion());
+            assertThatThrownBy(() -> service.save(save(CLIENT, published.getVersion(), 16, sessions(OWN.getId()))))
+                    .isInstanceOf(PlanChangedException.class);
+            PlanDetails fresh = service.save(save(CLIENT, revised, 16, sessions(SQUAT.getId())));
+
+            assertThat(fresh.plan().getVersion()).isGreaterThan(revised);
+            assertThat(plans.revisions).hasSize(1);
+        }
+
         @Test
         void shouldCheckAPublishedPlanIsComplete() {
             Plan published = storedPublished(16);

@@ -9,6 +9,17 @@ public interface ViewOwnPlanChangeUseCase {
     /** The client's plan change that has not ended; {@code PlanChangeNotFoundException} when there is none. */
     ClientPlanChangeView current(AccountId client);
 
+    /**
+     * The client's plan change that both accepted and whose effective week has not begun; {@code
+     * PlanChangeNotFoundException} when there is none.
+     */
+    ClientPlanChangeView upcoming(AccountId client);
+
+    /**
+     * The client's plan change that took effect most recently; {@code PlanChangeNotFoundException} when none has.
+     */
+    ClientPlanChangeView applied(AccountId client);
+
     /** One of the client's own plan changes, ended ones too; {@code PlanChangeNotFoundException} for any other. */
     ClientPlanChangeView get(AccountId client, PlanChangeId id);
 }

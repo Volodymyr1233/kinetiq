@@ -18,6 +18,7 @@ import { errorMessageKey } from '@/lib/api/problem'
 import { formatInstantDay } from '@/lib/dates'
 import { firstName } from '@/lib/first-name'
 import {
+  planChangeBadgeLabel,
   planChangeBadgeVariant,
   planChangeStatus,
 } from '@/lib/plan-change-state'
@@ -190,9 +191,13 @@ function PastPlanChanges({ clientId }: { clientId: string }) {
                 <span className="min-w-0 font-medium">{change.title}</span>
                 <span className="flex shrink-0 items-center gap-3">
                   <Badge variant={planChangeBadgeVariant[status]}>
-                    {t(`planChange.badge.${status}`, {
-                      name: firstName(change.clientName),
-                    })}
+                    {planChangeBadgeLabel(
+                      t,
+                      change,
+                      'TRAINER',
+                      i18n.language,
+                      firstName(change.clientName),
+                    )}
                   </Badge>
                   <span className="text-muted-foreground text-sm">
                     {formatInstantDay(

@@ -3,6 +3,7 @@ package com.kinetiq.planchange.domain.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
+import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.planchange.domain.exception.PlanChangeNotFoundException;
 import com.kinetiq.planchange.domain.input.ClientPlanChangeView;
 import com.kinetiq.planchange.domain.model.DeclineReason;
@@ -10,6 +11,7 @@ import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Side;
+import java.time.Instant;
 import java.time.LocalDate;
 import org.junit.jupiter.api.Test;
 
@@ -76,5 +78,37 @@ class ClientPlanChangeViewServiceTest {
         assertThatThrownBy(() -> service.get(world.client, PlanChangeId.random()))
                 .isInstanceOf(PlanChangeNotFoundException.class);
         assertThatThrownBy(() -> service.current(world.otherClient)).isInstanceOf(PlanChangeNotFoundException.class);
+    }
+
+    private PlanChange upcomingFor(AccountId client) {
+        return world.planChanges.update(world.pendingFor(client)
+                .accept(Side.TRAINER, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"))
+                .accept(Side.CLIENT, Instant.parse("2026-11-12T09:00:00Z"), LocalDate.parse("2026-11-12")));
+    }
+
+    @Test
+    void shouldShowTheUpcomingPlanChange_untilItTakesEffect_andTheAppliedOneAfterwards() {
+        assertThatThrownBy(() -> service.upcoming(world.client)).isInstanceOf(PlanChangeNotFoundException.class);
+        assertThatThrownBy(() -> service.applied(world.client)).isInstanceOf(PlanChangeNotFoundException.class);
+
+        PlanChange upcoming = upcomingFor(world.client);
+        assertThat(service.upcoming(world.client).planChange()).isSameAs(upcoming);
+        assertThatThrownBy(() -> service.applied(world.client)).isInstanceOf(PlanChangeNotFoundException.class);
+
+        PlanChange inEffect = world.planChanges.update(upcoming.takeEffect(Instant.parse("2026-11-15T23:05:00Z")));
+        assertThatThrownBy(() -> service.upcoming(world.client)).isInstanceOf(PlanChangeNotFoundException.class);
+        assertThat(service.applied(world.client).planChange()).isSameAs(inEffect);
+        assertThat(service.applied(world.client).counterpartName()).isEqualTo("Marek Trainer");
+    }
+
+    @Test
+    void shouldNotShowAnotherClientsUpcomingOrAppliedPlanChange() {
+        PlanChange upcoming = upcomingFor(world.client);
+        world.planChanges.update(upcoming.takeEffect(Instant.parse("2026-11-15T23:05:00Z")));
+        upcomingFor(world.polishClient);
+
+        assertThatThrownBy(() -> service.applied(world.otherClient)).isInstanceOf(PlanChangeNotFoundException.class);
+        assertThatThrownBy(() -> service.upcoming(world.otherClient)).isInstanceOf(PlanChangeNotFoundException.class);
+        assertThat(service.upcoming(world.polishClient).planChange().getClient()).isEqualTo(world.polishClient);
     }
 }

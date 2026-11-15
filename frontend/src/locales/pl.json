@@ -1090,6 +1090,15 @@
     }
   },
   "plan": {
+    "upcomingChange": {
+      "title": "Zmiana planu zacznie obowiązywać {{date}}",
+      "body": "{{name}} i Ty zaakceptowaliście ją. Do tego czasu plan zachowuje obecne wartości.",
+      "open": "Zobacz zmianę planu"
+    },
+    "appliedChange": {
+      "note": "Zmienione {{date}} przez zmianę planu.",
+      "open": "Zobacz zmianę planu"
+    },
     "drafting": "{{name}}: szkic planu powstaje z odpowiedzi w quizie. To może potrwać kilka minut.",
     "note": {
       "built": "Zbudowano automatycznie z odpowiedzi w quizie. Sprawdź ćwiczenia i obciążenia. {{name}}: plan będzie widoczny dopiero po publikacji."
@@ -1143,6 +1152,11 @@
     },
     "client": {
       "none": "Nie masz jeszcze planu.",
+      "change": {
+        "takesEffect": "Zacznie obowiązywać {{date}}",
+        "removedFrom": "Znika z planu od {{date}}",
+        "changedOn": "Zmienione {{date}} przez zmianę planu"
+      },
       "previous": "Poprzedni tydzień",
       "next": "Następny tydzień",
       "adjusted": "Dostosowana",
@@ -1456,6 +1470,7 @@
   },
   "targetChange": "{{planned}}, dziś {{today}}",
   "targetChangePast": "{{planned}}, lżej {{today}}",
+  "targetChangeUpcoming": "{{planned}}, zmienia się na {{today}}",
   "progress": {
     "loading": "Wczytywanie postępów",
     "noPlan": "Postępy pojawią się tu, gdy trener opublikuje Twój plan.",
@@ -1648,7 +1663,8 @@
       "waitingForBoth": "Czeka na obie strony",
       "waitingForYou": "Czeka na Ciebie",
       "waitingFor": "Oczekuje: {{name}}",
-      "applied": "Wprowadzona",
+      "upcoming": "Wprowadzona · zacznie obowiązywać {{date}}",
+      "inEffect": "Wprowadzona · obowiązuje od {{date}}",
       "declined": "Odrzucona",
       "expired": "Wygasła"
     },
@@ -1680,7 +1696,7 @@
     "outcome": {
       "waiting": "Zaakceptowano. Czekamy na: {{name}}.",
       "otherAccepted": "Zaakceptowano przez: {{name}}. Teraz Twoja decyzja.",
-      "applied": "Oboje zaakceptowaliście. Obowiązuje od {{date}}.",
+      "applied": "Oboje zaakceptowaliście. Zacznie obowiązywać {{date}}.",
       "keptByYouClient": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w waszym czacie.",
       "keptByYouTrainer": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w czacie.",
       "keptByOther": "{{name}} zostaje przy obecnym planie: {{reason}}.",

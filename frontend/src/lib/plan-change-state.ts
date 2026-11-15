@@ -1,9 +1,14 @@
+import type { TFunction } from 'i18next'
+import { formatDay } from '@/lib/dates'
+
 export type PlanChangeSide = 'TRAINER' | 'CLIENT'
 
 type Decided = {
   state: 'PENDING' | 'ACCEPTED_BY_ONE' | 'APPLIED' | 'DECLINED' | 'EXPIRED'
   acceptedByTrainer: boolean
   acceptedByClient: boolean
+  /** Set once the plan uses an applied plan change; an applied one without it is upcoming. */
+  tookEffectAt?: string
 }
 
 /** What a plan change waits for, as `viewer` reads it: the label of its badge, or its end. */
@@ -11,7 +16,8 @@ export type PlanChangeStatus =
   | 'waitingForBoth'
   | 'waitingForYou'
   | 'waitingFor'
-  | 'applied'
+  | 'upcoming'
+  | 'inEffect'
   | 'declined'
   | 'expired'
 
@@ -46,7 +52,7 @@ export function planChangeStatus(
     case 'ACCEPTED_BY_ONE':
       return acceptedBy(planChange, viewer) ? 'waitingFor' : 'waitingForYou'
     case 'APPLIED':
-      return 'applied'
+      return planChange.tookEffectAt === undefined ? 'upcoming' : 'inEffect'
     case 'DECLINED':
       return 'declined'
     case 'EXPIRED':
@@ -59,7 +65,27 @@ export const planChangeBadgeVariant = {
   waitingForBoth: 'info',
   waitingForYou: 'info',
   waitingFor: 'info',
-  applied: 'success',
+  upcoming: 'info',
+  inEffect: 'success',
   declined: 'secondary',
   expired: 'outline',
 } as const satisfies Record<PlanChangeStatus, string>
+
+/**
+ * The words of a plan change's badge: what it waits for, or how it ended. An applied one names its Monday, the day it
+ * takes effect or took effect on.
+ */
+export function planChangeBadgeLabel(
+  t: TFunction,
+  planChange: Decided & { effectiveWeek: string },
+  viewer: PlanChangeSide,
+  language: string,
+  name?: string,
+) {
+  const status = planChangeStatus(planChange, viewer)
+  const date =
+    status === 'upcoming' || status === 'inEffect'
+      ? formatDay(planChange.effectiveWeek, language)
+      : undefined
+  return t(`planChange.badge.${status}`, { name, date })
+}

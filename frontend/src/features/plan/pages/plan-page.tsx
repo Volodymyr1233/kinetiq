@@ -13,9 +13,11 @@ import {
 } from '@/components/ui/empty'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey } from '@/lib/api/problem'
+import { firstName } from '@/lib/first-name'
 import type { components } from '@/lib/api/schema'
 import { useFollowDrafting, usePlan } from '../api/plans'
 import { DraftPanel } from '../components/draft-panel'
+import { PlanChangeNotes } from '../components/plan-change-notes'
 import { PlanEditor } from '../components/plan-editor'
 
 type Client = components['schemas']['ClientResponse']
@@ -143,6 +145,12 @@ function ClientPlan({ client }: { client: Client }) {
             <CircleAlertIcon aria-hidden />
             <AlertDescription>{t('plan.rebuild.failed')}</AlertDescription>
           </Alert>
+        )}
+        {plan?.status === 'PUBLISHED' && (
+          <PlanChangeNotes
+            clientId={client.id}
+            clientName={firstName(client.name)}
+          />
         )}
         {/* the editor copies its plan once, so the one after a drafting is a new editor */}
         <PlanEditor

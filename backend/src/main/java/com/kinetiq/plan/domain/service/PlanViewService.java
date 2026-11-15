@@ -38,13 +38,24 @@ public class PlanViewService implements ViewOwnPlanUseCase {
         Account account = accounts.find(client);
         int currentWeek = plan.currentWeek(localDate(account)).orElseThrow();
         boolean finished = currentWeek > plan.getWeeks();
+        OwnPlanView.Week shown = finished ? finishedWeek(week) : shownWeek(plan, week == null ? currentWeek : week);
         return new OwnPlanView(
-                plan,
-                finished ? finishedWeek(week) : shownWeek(plan, week == null ? currentWeek : week),
+                shown == null ? plan : asOf(plan, shown.startsOn()),
+                shown,
                 currentWeek,
                 finished,
                 plans.isSeenByClient(client),
                 library(account));
+    }
+
+    // a plan change that took effect keeps the plan as it was: the oldest revision still valid on the Monday of the week
+    // is the plan of that week, and from the Monday a revision ends, the live plan is
+    private Plan asOf(Plan plan, LocalDate monday) {
+        return plans.revisionsOf(plan.getId()).stream()
+                .filter(revision -> revision.validUntil().isAfter(monday))
+                .findFirst()
+                .map(revision -> plan.revisedTo(revision.sessions()))
+                .orElse(plan);
     }
 
     @Override

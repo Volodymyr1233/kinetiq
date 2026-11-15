@@ -26,7 +26,8 @@ const planChangeKey = (id: string, language: string) => [
   id,
   language,
 ]
-const CURRENT_KEY = ['plan', 'change', 'current']
+// the open, the upcoming and the applied plan change all follow a decision
+const CURRENT_KEY = ['plan', 'change']
 
 export function useClientPlanChange(id: string | undefined) {
   const { i18n } = useTranslation()

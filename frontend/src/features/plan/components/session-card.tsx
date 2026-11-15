@@ -1,4 +1,4 @@
-import { ChevronDownIcon } from 'lucide-react'
+import { CalendarClockIcon, ChevronDownIcon } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Link, useLocation } from 'react-router'
@@ -10,10 +10,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from '@/components/ui/collapsible'
+import { formatDay } from '@/lib/dates'
 import { locksAt } from '@/lib/edit-window'
 import type { OwnPlan } from '../api/client-plan'
 import type { SessionState } from '../api/session-states'
 import { EntryRow } from './entry-row'
+import { changesOfEntry, type PlanChangeMark } from './plan-change-mark'
 
 type Session = OwnPlan['sessions'][number]
 
@@ -47,6 +49,7 @@ export function SessionCard({
   adjusted = false,
   summaryId,
   pastLog,
+  mark,
 }: {
   session: Session
   state?: SessionState
@@ -56,8 +59,12 @@ export function SessionCard({
   summaryId?: string
   // the session log of an earlier day, started, finished or not
   pastLog?: { id: string; startedAt: string }
+  // a plan change that touches this week, to mark what it changes in the session
+  mark?: PlanChangeMark
 }) {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
+  const removed =
+    mark?.kind === 'upcoming' && mark.change.removedSession?.day === session.day
   const withSummary = state === 'DONE' && summaryId !== undefined
 
   return (
@@ -69,6 +76,14 @@ export function SessionCard({
             <SessionStateBadge state={state} />
             {adjusted && (
               <Badge variant="adjusted">{t('plan.client.adjusted')}</Badge>
+            )}
+            {removed && (
+              <Badge variant="info">
+                <CalendarClockIcon aria-hidden />
+                {t('plan.client.change.removedFrom', {
+                  date: formatDay(mark.change.effectiveWeek, i18n.language),
+                })}
+              </Badge>
             )}
           </span>
           <span className="text-muted-foreground text-sm">
@@ -84,7 +99,12 @@ export function SessionCard({
         <ol className="flex flex-col divide-y border-t">
           {session.entries.map((entry, index) => (
             // the same exercise can appear twice in a session, so its place is its key
-            <EntryRow key={index} entry={entry} />
+            <EntryRow
+              key={index}
+              entry={entry}
+              mark={mark}
+              changes={changesOfEntry(mark, session.day, index)}
+            />
           ))}
         </ol>
         {(pastLog !== undefined || withSummary) && (

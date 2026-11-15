@@ -62,3 +62,10 @@ No `NEEDS CLARIFICATION` is left. Decisions come from reading the code on `maste
 ## 10. Security surface
 
 - The step has no HTTP surface. New endpoints are GET only, under the existing client and trainer path groups (role rule first), ownership checked in the use case, `404` for another person's id. Log lines carry no ids of people and no text.
+
+## 11. Built with a known ceiling
+
+- Before its Monday, the client's plan marks changed targets and a removed session. Entries that a removal moves into another session are not drawn in that session until the plan is revised; the plan change screen lists them.
+- The trainer's client page lists an upcoming plan change under "Past plan changes" with its badge, not as a card of its own: the plan banner already says what takes effect and when.
+- The note "Changed on {{date}} by a plan change" on the trainer's plan shows for 30 days after the plan change took effect, as long as the Approvals list keeps it.
+

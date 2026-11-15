@@ -73,6 +73,13 @@ public class PlanChangeViewService implements ViewPlanChangeUseCase {
     }
 
     @Override
+    public PlanChangeView upcoming(AccountId trainer, AccountId client) {
+        String name = clients.getClient(trainer, client).getName();
+        PlanChange planChange = planChanges.findUpcoming(client).orElseThrow(PlanChangeNotFoundException::new);
+        return texts.trainerView(planChange, name, texts.languageOf(trainer));
+    }
+
+    @Override
     public List<PlanChangeApprovalView> approvals(AccountId trainer) {
         List<PlanChangeApprovals.Entry> entries = approvals.forTrainer(trainer, clock.instant().minus(DECIDED_WINDOW));
         Map<PlanChangeId, PlanChange> found = planChanges.findAll(entries.stream().map(PlanChangeApprovals.Entry::id).toList()).stream()

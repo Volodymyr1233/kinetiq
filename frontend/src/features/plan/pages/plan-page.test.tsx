@@ -773,4 +773,126 @@ describe('PlanPage', () => {
     ])
     expect(screen.getByText('No changes to save.')).toBeVisible()
   })
+
+  describe('plan changes both accepted', () => {
+    const PUBLISHED: Plan = {
+      ...DRAFT,
+      status: 'PUBLISHED',
+      firstWeek: '2026-11-02',
+      currentWeek: 1,
+    }
+    const upcoming = {
+      id: '00000000-0000-4000-9600-000000000001',
+      clientId: WAITING.id,
+      clientName: WAITING.name,
+      rule: 'HIGH_RPE',
+      state: 'APPLIED',
+      title: 'Back squat: cut volume by 13%',
+      reason: 'Average RPE was 8.4.',
+      effectiveWeek: '2026-11-16',
+      acceptedByTrainer: true,
+      acceptedByClient: true,
+      targets: [
+        {
+          sessionDay: 'MONDAY',
+          sessionName: 'Lower',
+          position: 0,
+          exerciseId: 'id-Back squat',
+          exerciseName: 'Back squat',
+          measure: 'REPS',
+          target: 'AMOUNT',
+          oldValue: 5,
+          newValue: 4,
+        },
+      ],
+      moves: [],
+    }
+    const inEffect = {
+      id: upcoming.id,
+      clientId: WAITING.id,
+      clientName: WAITING.name,
+      title: upcoming.title,
+      reason: upcoming.reason,
+      state: 'APPLIED',
+      acceptedByTrainer: true,
+      acceptedByClient: true,
+      effectiveWeek: '2026-11-16',
+      createdAt: '2026-11-10T08:00:00Z',
+      endedAt: '2026-11-12T08:00:00Z',
+      tookEffectAt: new Date().toISOString(),
+    }
+
+    function serve(extra: { upcoming?: object; ended?: object[] }) {
+      const base = backend(WAITING, PUBLISHED)
+      return async (request: Request) => {
+        const { pathname } = new URL(request.url)
+        if (
+          pathname === `/api/v1/clients/${WAITING.id}/plan-changes/upcoming`
+        ) {
+          return extra.upcoming
+            ? json(extra.upcoming)
+            : problem(404, { status: 404, code: 'plan-change.not-found' })
+        }
+        if (pathname === `/api/v1/clients/${WAITING.id}/plan-changes/ended`) {
+          return json({ items: extra.ended ?? [] })
+        }
+        return base(request)
+      }
+    }
+
+    it('says above the editor what takes effect and when, with the old and new values and a way to the plan change', async () => {
+      open(WAITING, serve({ upcoming }))
+
+      expect(
+        await screen.findByText('A plan change takes effect Mon, Nov 16'),
+      ).toBeInTheDocument()
+      const banner = screen
+        .getByText('A plan change takes effect Mon, Nov 16')
+        .closest('[data-slot="alert"]') as HTMLElement
+      expect(within(banner).getByText('Back squat')).toBeInTheDocument()
+      expect(screen.getByText('5 reps, changing to 4 reps')).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: 'See plan change' }),
+      ).toHaveAttribute('href', `/trainer/plan-changes/${upcoming.id}`)
+      // the editor itself is the ordinary one
+      expect(
+        await screen.findByRole('tab', { name: /Lower/ }),
+      ).toBeInTheDocument()
+    })
+
+    it('shows no banner when nothing is upcoming', async () => {
+      open(WAITING, serve({}))
+
+      await screen.findByRole('tab', { name: /Lower/ })
+      expect(
+        screen.queryByText(/A plan change takes effect/),
+      ).not.toBeInTheDocument()
+      expect(screen.queryByText(/by a plan change/)).not.toBeInTheDocument()
+    })
+
+    it('notes that the plan changed, with a link to the plan change, once it is in effect', async () => {
+      open(WAITING, serve({ ended: [inEffect] }))
+
+      expect(
+        await screen.findByText(/Changed on Mon, Nov 16 by a plan change/),
+      ).toBeInTheDocument()
+      expect(
+        screen.getByRole('link', { name: 'See plan change' }),
+      ).toHaveAttribute('href', `/trainer/plan-changes/${inEffect.id}`)
+    })
+
+    it('leaves the editor in place when the upcoming plan change cannot be read', async () => {
+      const base = serve({})
+      open(WAITING, async (request) =>
+        new URL(request.url).pathname.endsWith('/plan-changes/upcoming')
+          ? problem(500, { status: 500, code: 'internal.error' })
+          : base(request),
+      )
+
+      expect(
+        await screen.findByRole('tab', { name: /Lower/ }),
+      ).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
+  })
 })

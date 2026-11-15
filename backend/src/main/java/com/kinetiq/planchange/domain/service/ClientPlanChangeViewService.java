@@ -27,6 +27,16 @@ public class ClientPlanChangeViewService implements ViewOwnPlanChangeUseCase {
     }
 
     @Override
+    public ClientPlanChangeView upcoming(AccountId client) {
+        return texts.clientView(planChanges.findUpcoming(client).orElseThrow(PlanChangeNotFoundException::new));
+    }
+
+    @Override
+    public ClientPlanChangeView applied(AccountId client) {
+        return texts.clientView(planChanges.findLatestInEffect(client).orElseThrow(PlanChangeNotFoundException::new));
+    }
+
+    @Override
     public ClientPlanChangeView get(AccountId client, PlanChangeId id) {
         // another client's plan change is not found either, so it cannot be told apart from a missing one
         PlanChange planChange = planChanges

@@ -11,8 +11,13 @@ import { Button } from '@/components/ui/button'
 import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemCode } from '@/lib/api/problem'
 import { useAcknowledgePlan, useOwnPlan } from '../api/client-plan'
+import {
+  useAppliedPlanChange,
+  useUpcomingPlanChange,
+} from '../api/client-plan-change'
 import { useSessionStates } from '../api/session-states'
 import { OpenPlanChangeCard } from '../components/open-plan-change-card'
+import { markOfWeek } from '../components/plan-change-mark'
 import { WeekStrip } from '../components/week-strip'
 
 // a plan week is a whole number from 1; anything else in the address means the current week
@@ -28,6 +33,8 @@ export function ClientPlanPage() {
   const statesQuery = useSessionStates(askedWeek)
   const states = statesQuery.data?.sessions
   const plan = query.data
+  const upcoming = useUpcomingPlanChange().data
+  const applied = useAppliedPlanChange().data
   const acknowledge = useAcknowledgePlan()
   const acknowledged = useRef(false)
 
@@ -153,6 +160,7 @@ export function ClientPlanPage() {
             sessions={plan.sessions}
             states={states}
             today={statesQuery.data?.today}
+            mark={markOfWeek(week.startsOn, upcoming, applied)}
           />
         </>
       )}

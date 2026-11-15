@@ -263,6 +263,50 @@ describe('ApprovalsPage', () => {
       expect(expired).toHaveTextContent('Expired')
     })
 
+    it('words an applied one as upcoming until it took effect and as in effect after', async () => {
+      const user = userEvent.setup()
+      const IN_EFFECT = change('07', 'Ewa Mazur', {
+        state: 'APPLIED',
+        acceptedByTrainer: true,
+        acceptedByClient: true,
+        endedAt: hoursAgo(200),
+        tookEffectAt: '2026-11-16T00:05:00Z',
+      })
+      show([], [APPLIED, IN_EFFECT])
+      await screen.findByRole('tab', { name: /Decided/ })
+      await user.click(tab(/Decided/))
+
+      const byName = async (name: string) =>
+        (await rows()).find((row) => row.textContent?.includes(name))!
+      expect(await byName('Michał')).toHaveTextContent(
+        'Applied · takes effect Mon, Nov 16',
+      )
+      expect(await byName('Ewa')).toHaveTextContent(
+        'Applied · in effect since Mon, Nov 16',
+      )
+    })
+
+    it('counts only the plan changes that still wait, not the upcoming, in effect or expired ones', async () => {
+      show(
+        [],
+        [
+          WAITING_FOR_YOU,
+          WAITING_FOR_CLIENT,
+          APPLIED,
+          change('07', 'Ewa Mazur', {
+            state: 'APPLIED',
+            tookEffectAt: '2026-11-16T00:05:00Z',
+          }),
+          change('08', 'Adam Król', { state: 'EXPIRED' }),
+        ],
+      )
+
+      await screen.findByRole('list')
+      expect(tab(/Waiting for you/)).toHaveTextContent('1')
+      expect(tab(/Waiting for client/)).toHaveTextContent('1')
+      expect(tab(/Decided/)).toHaveTextContent('3')
+    })
+
     it('says the trainer kept the plan when they declined', async () => {
       const user = userEvent.setup()
       show(

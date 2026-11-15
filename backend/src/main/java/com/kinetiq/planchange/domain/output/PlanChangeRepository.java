@@ -37,6 +37,12 @@ public interface PlanChangeRepository {
      */
     List<PlanChangeId> findDue(Instant now);
 
+    /** The plan change both accepted whose effective week has not begun, if the client has one. */
+    Optional<PlanChange> findUpcoming(AccountId client);
+
+    /** The plan change the plan used most recently, if any. */
+    Optional<PlanChange> findLatestInEffect(AccountId client);
+
     /** The plan change of the client that has not ended, if any. */
     Optional<PlanChange> findOpen(AccountId client);
 

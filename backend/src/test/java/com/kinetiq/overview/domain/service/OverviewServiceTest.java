@@ -115,6 +115,11 @@ class OverviewServiceTest {
                 }
 
                 @Override
+                public PlanChangeView upcoming(AccountId trainer, AccountId client) {
+                    throw new UnsupportedOperationException();
+                }
+
+                @Override
                 public List<PlanChangeApprovalView> ended(AccountId trainer, AccountId client) {
                     throw new UnsupportedOperationException();
                 }
