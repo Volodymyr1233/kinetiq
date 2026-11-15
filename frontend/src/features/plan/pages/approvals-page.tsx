@@ -124,7 +124,12 @@ function PlanChangeRow({ change }: { change: PlanChangeApproval }) {
         ? t('approvals.planChange.declinedByYou', { reason })
         : t('approvals.planChange.declinedByClient', { name, reason })
   } else if (change.state === 'EXPIRED') {
-    when = t('approvals.planChange.expired', { date })
+    when = t(
+      change.expiryCause === 'PLAN_EDITED'
+        ? 'approvals.planChange.expiredPlanEdited'
+        : 'approvals.planChange.expired',
+      { date },
+    )
   } else if (status === 'inEffect') {
     // the badge says since when
     when = ''
