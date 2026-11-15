@@ -3,9 +3,14 @@ package com.kinetiq.plan.domain.service;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.PlanId;
+import com.kinetiq.plan.domain.model.PlanRevision;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -15,6 +20,7 @@ class InMemoryPlanRepository implements PlanRepository {
 
     final Map<AccountId, Plan> byClient = new LinkedHashMap<>();
     final Set<AccountId> seen = new HashSet<>();
+    final List<PlanRevision> revisions = new ArrayList<>();
 
     @Override
     public Optional<Plan> findByClient(AccountId client) {
@@ -59,5 +65,18 @@ class InMemoryPlanRepository implements PlanRepository {
         if (plan != null && plan.isPublished()) {
             seen.add(client);
         }
+    }
+
+    @Override
+    public void saveRevision(PlanRevision revision) {
+        revisions.add(revision);
+    }
+
+    @Override
+    public List<PlanRevision> revisionsOf(PlanId plan) {
+        return revisions.stream()
+                .filter(revision -> revision.plan().equals(plan))
+                .sorted(Comparator.comparing(PlanRevision::validUntil))
+                .toList();
     }
 }

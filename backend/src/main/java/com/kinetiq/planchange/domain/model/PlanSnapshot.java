@@ -35,6 +35,24 @@ public record PlanSnapshot(long version, LocalDate firstWeek, int weeks, List<Se
     }
 
     /**
+     * Whether the content still applies to this plan: every entry it changes or moves is where the content says, with the
+     * old value it shows, and the removed session has the day and name it shows.
+     */
+    public boolean stillFits(PlanChangeContent content) {
+        boolean changesFit = content.changes().stream().allMatch(change -> entry(change.entry())
+                .filter(entry -> entry.exercise().equals(change.exercise()))
+                .flatMap(entry -> entry.value(change.target()))
+                .filter(value -> value.compareTo(change.oldValue()) == 0)
+                .isPresent());
+        boolean removedFits = content.removed().stream()
+                .allMatch(removed -> session(removed.day()).filter(s -> s.name().equals(removed.name())).isPresent());
+        boolean movesFit = content.moves().stream().allMatch(move -> entry(move.from())
+                .filter(entry -> entry.exercise().equals(move.exercise()))
+                .isPresent());
+        return changesFit && removedFits && movesFit;
+    }
+
+    /**
      * The plan as it would be with the content: changed targets replaced, the removed session gone and moved entries
      * appended to their sessions in the order of the moves. Every entry and session the content names must exist.
      */

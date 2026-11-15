@@ -33,8 +33,13 @@ class PlanChangeRepositoryImpl implements PlanChangeRepository {
     private final EntityManager entityManager;
 
     @Override
-    public boolean hasOpen(AccountId client) {
-        return jpa.existsByClientIdAndStateIn(client.value(), OPEN);
+    public boolean hasUnsettled(AccountId client) {
+        return jpa.existsUnsettled(client.value(), OPEN);
+    }
+
+    @Override
+    public List<PlanChangeId> findDue(Instant now) {
+        return jpa.findDueIds(now).stream().map(PlanChangeId::new).toList();
     }
 
     @Override

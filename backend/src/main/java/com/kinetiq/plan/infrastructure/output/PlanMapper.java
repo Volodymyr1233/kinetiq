@@ -5,8 +5,11 @@ import com.kinetiq.exercise.domain.model.ExerciseId;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.PlanId;
+import com.kinetiq.plan.domain.model.PlanRevision;
 import com.kinetiq.plan.domain.model.Session;
+import java.time.DayOfWeek;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.mapstruct.Mapper;
 import org.mapstruct.MappingConstants;
@@ -29,10 +32,20 @@ interface PlanMapper {
     }
 
     private Session toDomain(PlanSessionEntity entity) {
-        return new Session(
-                entity.getName(),
-                entity.getDay(),
-                entity.getEntries().stream().map(this::toDomain).toList());
+        return toSession(entity.getName(), entity.getDay(), entity.getEntries());
+    }
+
+    default PlanRevision toDomain(PlanRevisionEntity entity) {
+        return new PlanRevision(
+                new PlanId(entity.getPlanId()),
+                entity.getValidUntil(),
+                entity.getSessions().stream()
+                        .map(session -> toSession(session.getName(), session.getDay(), session.getEntries()))
+                        .toList());
+    }
+
+    private Session toSession(String name, DayOfWeek day, List<PlanEntryEmbeddable> entries) {
+        return new Session(name, day, entries.stream().map(this::toDomain).toList());
     }
 
     private ExerciseEntry toDomain(PlanEntryEmbeddable entry) {
@@ -53,6 +66,23 @@ interface PlanMapper {
         entity.setName(session.name());
         entity.setDay(session.day());
         entity.setEntries(new ArrayList<>(session.entries().stream().map(this::toEmbeddable).toList()));
+        return entity;
+    }
+
+    default PlanRevisionEntity toEntity(PlanRevision revision) {
+        PlanRevisionEntity entity = new PlanRevisionEntity();
+        entity.setId(UUID.randomUUID());
+        entity.setPlanId(revision.plan().value());
+        entity.setValidUntil(revision.validUntil());
+        revision.sessions().forEach(session -> {
+            PlanRevisionSessionEntity sessionEntity = new PlanRevisionSessionEntity();
+            sessionEntity.setId(UUID.randomUUID());
+            sessionEntity.setRevision(entity);
+            sessionEntity.setName(session.name());
+            sessionEntity.setDay(session.day());
+            sessionEntity.setEntries(new ArrayList<>(session.entries().stream().map(this::toEmbeddable).toList()));
+            entity.getSessions().add(sessionEntity);
+        });
         return entity;
     }
 

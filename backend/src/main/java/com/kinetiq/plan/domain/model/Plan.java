@@ -176,6 +176,16 @@ public class Plan {
     }
 
     /**
+     * Returns this published plan with the sessions of an applied plan change: the same id, first week and version, no
+     * mark. The plan rules hold for the result, and it stays complete.
+     */
+    public Plan revisedTo(List<Session> sessions) {
+        Plan revised = new Plan(id, client, goal, weeks, firstWeek, publishedOn, sessions, version, null);
+        revised.requireComplete();
+        return revised;
+    }
+
+    /**
      * Returns this draft published and without a mark, with plan week 1 starting on the Monday of the week of {@code today}, the date in
      * the client's time zone. Only a complete draft can be published, and only once.
      */

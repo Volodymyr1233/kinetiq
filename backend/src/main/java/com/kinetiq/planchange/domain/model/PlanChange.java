@@ -49,9 +49,15 @@ public class PlanChange {
     @Getter(AccessLevel.NONE)
     private final Decision decision;
 
+    @Getter(AccessLevel.NONE)
+    private final Instant tookEffectAt;
+
+    @Getter(AccessLevel.NONE)
+    private final ExpiryCause expiryCause;
+
     /**
-     * Rebuilds a stored plan change; {@code endedAt} is {@code null} while it is open, an acceptance time while that
-     * person has not accepted, and {@code decision} while it is not declined.
+     * Rebuilds a stored plan change that has neither taken effect nor expired; {@code endedAt} is {@code null} while it
+     * is open, an acceptance time while that person has not accepted, and {@code decision} while it is not declined.
      */
     public PlanChange(
             PlanChangeId id,
@@ -70,6 +76,39 @@ public class PlanChange {
             Instant trainerAcceptedAt,
             Instant clientAcceptedAt,
             Decision decision) {
+        this(id, client, rule, state, planVersion, windowStart, windowEnd, effectiveWeek, content, figures,
+                concernedExercises, createdAt, endedAt, trainerAcceptedAt, clientAcceptedAt, decision, null, null);
+    }
+
+    /**
+     * Rebuilds a stored plan change; {@code tookEffectAt} is {@code null} unless it was applied to the plan, and
+     * {@code expiryCause} unless it expired.
+     */
+    public PlanChange(
+            PlanChangeId id,
+            AccountId client,
+            Rule rule,
+            PlanChangeState state,
+            long planVersion,
+            LocalDate windowStart,
+            LocalDate windowEnd,
+            LocalDate effectiveWeek,
+            PlanChangeContent content,
+            List<Figure> figures,
+            Set<ExerciseId> concernedExercises,
+            Instant createdAt,
+            Instant endedAt,
+            Instant trainerAcceptedAt,
+            Instant clientAcceptedAt,
+            Decision decision,
+            Instant tookEffectAt,
+            ExpiryCause expiryCause) {
+        if (tookEffectAt != null && state != PlanChangeState.APPLIED) {
+            throw new IllegalArgumentException("only an applied plan change takes effect");
+        }
+        if ((state == PlanChangeState.EXPIRED) != (expiryCause != null)) {
+            throw new IllegalArgumentException("an expired plan change has a cause, any other has none");
+        }
         this.id = Objects.requireNonNull(id);
         this.client = Objects.requireNonNull(client);
         this.rule = Objects.requireNonNull(rule);
@@ -89,6 +128,8 @@ public class PlanChange {
         this.trainerAcceptedAt = trainerAcceptedAt;
         this.clientAcceptedAt = clientAcceptedAt;
         this.decision = decision;
+        this.tookEffectAt = tookEffectAt;
+        this.expiryCause = expiryCause;
     }
 
     /**
@@ -122,6 +163,31 @@ public class PlanChange {
 
     public boolean isOpen() {
         return state.isOpen();
+    }
+
+    /** Both accepted it and its effective week has not begun: it is in the plan's future, not yet in the plan. */
+    public boolean isUpcoming() {
+        return state == PlanChangeState.APPLIED && tookEffectAt == null;
+    }
+
+    /** The plan uses it: the plan was revised from it on its effective Monday. */
+    public boolean isInEffect() {
+        return state == PlanChangeState.APPLIED && tookEffectAt != null;
+    }
+
+    /** Open or upcoming: the effective Monday still has to settle it, by applying or expiring it. */
+    public boolean isUnsettled() {
+        return isOpen() || isUpcoming();
+    }
+
+    /** When the plan started to use the plan change; empty unless it is in effect. */
+    public Optional<Instant> getTookEffectAt() {
+        return Optional.ofNullable(tookEffectAt);
+    }
+
+    /** Why it expired; empty unless it did. */
+    public Optional<ExpiryCause> getExpiryCause() {
+        return Optional.ofNullable(expiryCause);
     }
 
     /** When the plan change ended; empty while it is open. */
@@ -182,6 +248,30 @@ public class PlanChange {
     public PlanChange decline(Side side, DeclineReason reason, String note, Instant now, LocalDate today) {
         requireDecidable(today);
         return with(PlanChangeState.DECLINED, now, trainerAcceptedAt, clientAcceptedAt, new Decision(side, reason, note));
+    }
+
+    /** Records that the plan was revised from this upcoming plan change. */
+    public PlanChange takeEffect(Instant now) {
+        if (!isUpcoming()) {
+            throw new IllegalStateException("only an upcoming plan change takes effect");
+        }
+        return new PlanChange(
+                id, client, rule, state, planVersion, windowStart, windowEnd, effectiveWeek, content, figures,
+                concernedExercises, createdAt, endedAt, trainerAcceptedAt, clientAcceptedAt, null, now, null);
+    }
+
+    /**
+     * Ends an open or upcoming plan change without applying it. An open one ends now; an upcoming one ended when it was
+     * accepted, and keeps that time and both acceptances.
+     */
+    public PlanChange expire(ExpiryCause cause, Instant now) {
+        if (!isUnsettled()) {
+            throw new IllegalStateException("only an open or upcoming plan change expires");
+        }
+        return new PlanChange(
+                id, client, rule, PlanChangeState.EXPIRED, planVersion, windowStart, windowEnd, effectiveWeek, content,
+                figures, concernedExercises, createdAt, endedAt == null ? now : endedAt, trainerAcceptedAt,
+                clientAcceptedAt, null, null, Objects.requireNonNull(cause));
     }
 
     private Instant acceptedAt(Side side) {

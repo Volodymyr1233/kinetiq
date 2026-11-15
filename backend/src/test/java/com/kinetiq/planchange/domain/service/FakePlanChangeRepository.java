@@ -5,10 +5,14 @@ import com.kinetiq.planchange.domain.model.PlanChange;
 import com.kinetiq.planchange.domain.model.PlanChangeId;
 import com.kinetiq.planchange.domain.output.PlanChangeRepository;
 import java.time.Instant;
+import java.time.ZoneId;
+import java.time.ZoneOffset;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /** Holds the saved plan changes, plus an open flag and one end time that stand for any client's earlier ones. */
@@ -17,10 +21,22 @@ class FakePlanChangeRepository implements PlanChangeRepository {
     boolean open;
     Instant endedAt;
     final List<PlanChange> saved = new ArrayList<>();
+    final Map<AccountId, ZoneId> zones = new HashMap<>();
 
     @Override
-    public boolean hasOpen(AccountId client) {
-        return open || findOpen(client).isPresent();
+    public boolean hasUnsettled(AccountId client) {
+        return open || saved.stream().anyMatch(change -> change.getClient().equals(client) && change.isUnsettled());
+    }
+
+    // like the adapter, the date is the one at the instant in the client's zone, which is UTC unless the test sets one
+    @Override
+    public List<PlanChangeId> findDue(Instant now) {
+        return saved.stream()
+                .filter(PlanChange::isUnsettled)
+                .filter(change -> !change.getEffectiveWeek()
+                        .isAfter(now.atZone(zones.getOrDefault(change.getClient(), ZoneOffset.UTC)).toLocalDate()))
+                .map(PlanChange::getId)
+                .toList();
     }
 
     @Override
@@ -30,8 +46,9 @@ class FakePlanChangeRepository implements PlanChangeRepository {
 
     @Override
     public PlanChange save(PlanChange planChange) {
-        if (planChange.isOpen() && findOpen(planChange.getClient()).isPresent()) {
-            throw new IllegalStateException("a second open plan change for the client");
+        if (planChange.isUnsettled() && saved.stream().anyMatch(change ->
+                change.getClient().equals(planChange.getClient()) && change.isUnsettled())) {
+            throw new IllegalStateException("a second unsettled plan change for the client");
         }
         saved.add(planChange);
         return planChange;

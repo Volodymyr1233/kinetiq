@@ -155,3 +155,71 @@ from (values ('00000000-0000-4000-9610-000000000020', 3, 8.300),
 ) as figure (id, weeks_ago, value)
 join plan_changes change on change.id = '00000000-0000-4000-9600-000000000006'
 on conflict do nothing;
+
+-- plan changes that reached their effective Monday or are about to:
+-- Demo Client Upcoming: high RPE, accepted by both yesterday, takes effect next Monday (the squat of Full body A loses
+-- a repetition, 8 to 7); until then the plan shows the new value marked as upcoming
+-- Demo Client Daily: low completion, accepted only by the client, expired last Monday because the trainer had not
+-- accepted (undecided)
+-- Demo Client Seen: high RPE, accepted by both, expired last Monday because the plan was edited meanwhile
+-- Demo Client Finished (above): the sweep settles its applied plan change on the first run, so it ends up in effect and
+-- the plan keeps a revision of the weeks before it
+insert into plan_changes (id, client_id, rule, state, plan_version, window_start, window_end, effective_week,
+                          removed_day, removed_name, created_at, ended_at, trainer_accepted_at, client_accepted_at,
+                          expiry_cause)
+values ('00000000-0000-4000-9600-000000000007', '00000000-0000-4000-8000-000000000014', 'HIGH_RPE', 'APPLIED', 0,
+        (date_trunc('week', current_date) - interval '2 weeks')::date,
+        (date_trunc('week', current_date) - interval '1 day')::date,
+        (date_trunc('week', current_date) + interval '1 week')::date, null, null, now() - interval '2 days',
+        now() - interval '20 hours', now() - interval '1 day', now() - interval '20 hours', null),
+       ('00000000-0000-4000-9600-000000000008', '00000000-0000-4000-8000-000000000012', 'LOW_COMPLETION', 'EXPIRED', 0,
+        (date_trunc('week', current_date) - interval '2 weeks')::date,
+        (date_trunc('week', current_date) - interval '8 days')::date,
+        (date_trunc('week', current_date) - interval '1 week')::date, 'SATURDAY', 'Full body',
+        date_trunc('week', current_date) - interval '9 days',
+        date_trunc('week', current_date) - interval '1 week' + interval '5 minutes', null,
+        date_trunc('week', current_date) - interval '8 days', 'UNDECIDED'),
+       ('00000000-0000-4000-9600-000000000009', '00000000-0000-4000-8000-000000000008', 'HIGH_RPE', 'EXPIRED', 0,
+        (date_trunc('week', current_date) - interval '2 weeks')::date,
+        (date_trunc('week', current_date) - interval '8 days')::date,
+        (date_trunc('week', current_date) - interval '1 week')::date, null, null,
+        date_trunc('week', current_date) - interval '9 days',
+        date_trunc('week', current_date) - interval '8 days' + interval '3 hours',
+        date_trunc('week', current_date) - interval '8 days' + interval '2 hours',
+        date_trunc('week', current_date) - interval '8 days' + interval '3 hours', 'PLAN_EDITED')
+on conflict do nothing;
+
+insert into plan_change_targets (plan_change_id, session_day, position, target, exercise_id, session_name, old_value,
+                                 new_value)
+select target.plan_change_id::uuid, target.session_day, target.position, target.target, target.exercise_id::uuid,
+       target.session_name, target.old_value, target.new_value
+from (values ('00000000-0000-4000-9600-000000000007', 'TUESDAY', 0, 'AMOUNT', '00000000-0000-4000-9100-000000000011',
+              'Full body A', 8.0, 7.0),
+             ('00000000-0000-4000-9600-000000000009', 'TUESDAY', 0, 'AMOUNT', '00000000-0000-4000-9100-000000000011',
+              'Full body A', 9.0, 8.0)
+) as target (plan_change_id, session_day, position, target, exercise_id, session_name, old_value, new_value)
+join plan_changes change on change.id = target.plan_change_id::uuid
+on conflict do nothing;
+
+insert into plan_change_exercises (plan_change_id, exercise_id)
+select concerned.plan_change_id::uuid, concerned.exercise_id::uuid
+from (values ('00000000-0000-4000-9600-000000000007', '00000000-0000-4000-9100-000000000011'),
+             ('00000000-0000-4000-9600-000000000009', '00000000-0000-4000-9100-000000000011')
+) as concerned (plan_change_id, exercise_id)
+join plan_changes change on change.id = concerned.plan_change_id::uuid
+on conflict do nothing;
+
+insert into plan_change_figures (id, plan_change_id, kind, exercise_id, week_start, value)
+select figure.id::uuid, figure.plan_change_id::uuid, figure.kind, null,
+       (date_trunc('week', current_date) - make_interval(weeks => figure.weeks_ago))::date, figure.value
+from (values ('00000000-0000-4000-9610-000000000030', '00000000-0000-4000-9600-000000000007', 'MEAN_RPE', 2, 8.400),
+             ('00000000-0000-4000-9610-000000000031', '00000000-0000-4000-9600-000000000007', 'MEAN_RPE', 1, 8.600),
+             ('00000000-0000-4000-9610-000000000032', '00000000-0000-4000-9600-000000000008', 'SESSIONS_PLANNED', 2,
+              6.000),
+             ('00000000-0000-4000-9610-000000000033', '00000000-0000-4000-9600-000000000008', 'SESSIONS_FINISHED', 2,
+              3.000),
+             ('00000000-0000-4000-9610-000000000034', '00000000-0000-4000-9600-000000000009', 'MEAN_RPE', 3, 8.500),
+             ('00000000-0000-4000-9610-000000000035', '00000000-0000-4000-9600-000000000009', 'MEAN_RPE', 2, 8.700)
+) as figure (id, plan_change_id, kind, weeks_ago, value)
+join plan_changes change on change.id = figure.plan_change_id::uuid
+on conflict do nothing;

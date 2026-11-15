@@ -26,6 +26,7 @@ import com.kinetiq.planchange.domain.input.ViewPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.KeepCurrentPlanCommand;
 import com.kinetiq.planchange.domain.model.DeclineReason;
 import com.kinetiq.planchange.domain.model.EntryRef;
+import com.kinetiq.planchange.domain.model.ExpiryCause;
 import com.kinetiq.planchange.domain.model.ExerciseLabel;
 import com.kinetiq.planchange.domain.model.Figure;
 import com.kinetiq.planchange.domain.model.FigureKind;
@@ -144,6 +145,39 @@ class PlanChangeControllerTest {
         json.extractingPath("$.figures[0].kind").isEqualTo("MEAN_RPE");
         json.doesNotHavePath("$.figures[0].exerciseId");
         json.extractingPath("$.figures[0].value").isEqualTo(8.4);
+    }
+
+    private static final PlanChange UPCOMING =
+            PLAN_CHANGE
+                    .accept(Side.TRAINER, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"))
+                    .accept(Side.CLIENT, Instant.parse("2026-11-12T09:00:00Z"), LocalDate.parse("2026-11-12"));
+
+    @Test
+    void shouldAnswerWhenAnAppliedPlanChangeTookEffect_andNoCause() {
+        PlanChange inEffect = UPCOMING.takeEffect(Instant.parse("2026-11-15T23:05:00Z"));
+        when(planChanges.get(TRAINER_ID, ID)).thenReturn(view(UPCOMING)).thenReturn(view(inEffect));
+
+        var upcoming = assertThat(mvc.get().uri(DETAIL).with(TRAINER).exchange()).bodyJson();
+        upcoming.extractingPath("$.state").isEqualTo("APPLIED");
+        upcoming.doesNotHavePath("$.tookEffectAt");
+        upcoming.doesNotHavePath("$.expiryCause");
+
+        var inEffectJson = assertThat(mvc.get().uri(DETAIL).with(TRAINER).exchange()).bodyJson();
+        inEffectJson.extractingPath("$.state").isEqualTo("APPLIED");
+        inEffectJson.extractingPath("$.tookEffectAt").isEqualTo("2026-11-15T23:05:00Z");
+        inEffectJson.doesNotHavePath("$.expiryCause");
+    }
+
+    @Test
+    void shouldAnswerTheCause_whenAPlanChangeExpired() {
+        PlanChange expired = UPCOMING.expire(ExpiryCause.PLAN_EDITED, Instant.parse("2026-11-15T23:05:00Z"));
+        when(planChanges.get(TRAINER_ID, ID)).thenReturn(view(expired));
+
+        var json = assertThat(mvc.get().uri(DETAIL).with(TRAINER).exchange()).bodyJson();
+
+        json.extractingPath("$.state").isEqualTo("EXPIRED");
+        json.extractingPath("$.expiryCause").isEqualTo("PLAN_EDITED");
+        json.doesNotHavePath("$.tookEffectAt");
     }
 
     @Test

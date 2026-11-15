@@ -69,3 +69,11 @@ values ('00000000-0000-4000-8000-000000000013', 'Demo Client Closing', 'demo.cli
         '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
         'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
 on conflict do nothing;
+
+-- a plan in week 3 of 8 with a plan change that both accepted and that takes effect next Monday
+insert into accounts (id, name, email, password_hash, role, trainer_id, time_zone, email_confirmed,
+                      health_data_consent_at, created_at, updated_at, version)
+values ('00000000-0000-4000-8000-000000000014', 'Demo Client Upcoming', 'demo.client.upcoming@example.com',
+        '{pbkdf2}0da7be77a2095e2d1256884a362ecc07cbeb133048ff08db4960f690fd3d192a9ea91fd5dfd7811a78a1a47964050a7d',
+        'CLIENT', '00000000-0000-4000-8000-000000000001', 'Europe/Warsaw', true, now(), now(), now(), 0)
+on conflict do nothing;

@@ -3,6 +3,8 @@ package com.kinetiq.planchange.infrastructure.config;
 import com.kinetiq.account.domain.input.CurrentAccountUseCase;
 import com.kinetiq.client.domain.input.ViewClientsUseCase;
 import com.kinetiq.messaging.domain.input.ExchangeMessagesUseCase;
+import com.kinetiq.plan.domain.input.RevisePlanUseCase;
+import com.kinetiq.planchange.domain.input.ApplyPlanChangesUseCase;
 import com.kinetiq.planchange.domain.input.DetectPlanChangesUseCase;
 import com.kinetiq.planchange.domain.input.DecideOwnPlanChangeUseCase;
 import com.kinetiq.planchange.domain.input.DecidePlanChangeUseCase;
@@ -28,6 +30,7 @@ import com.kinetiq.planchange.domain.service.OwnPlanChangeDecisionService;
 import com.kinetiq.planchange.domain.service.PlanChangeDecisionService;
 import com.kinetiq.planchange.domain.service.PlanChangeDraftingService;
 import com.kinetiq.planchange.domain.service.PlanChangeLimits;
+import com.kinetiq.planchange.domain.service.PlanChangeSettlementService;
 import com.kinetiq.planchange.domain.service.PlanChangeViewService;
 import com.kinetiq.planchange.infrastructure.output.OpenRouterPlanChangeDrafter;
 import com.kinetiq.planchange.infrastructure.output.UnavailablePlanChangeDrafter;
@@ -63,6 +66,15 @@ class PlanChangeConfig {
                 plans,
                 drafting,
                 Clock.systemUTC());
+    }
+
+    @Bean
+    ApplyPlanChangesUseCase applyPlanChangesUseCase(
+            CurrentAccountUseCase accounts,
+            PlanChangeRepository planChanges,
+            PlanSource plans,
+            RevisePlanUseCase revisions) {
+        return new PlanChangeSettlementService(accounts, planChanges, plans, revisions, Clock.systemUTC());
     }
 
     @Bean

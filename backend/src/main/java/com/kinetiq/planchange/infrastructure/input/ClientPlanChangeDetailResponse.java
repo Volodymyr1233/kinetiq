@@ -2,6 +2,7 @@ package com.kinetiq.planchange.infrastructure.input;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.kinetiq.planchange.domain.model.DeclineReason;
+import com.kinetiq.planchange.domain.model.ExpiryCause;
 import com.kinetiq.planchange.domain.model.PlanChangeState;
 import com.kinetiq.planchange.domain.model.Rule;
 import com.kinetiq.planchange.domain.model.Side;
@@ -42,4 +43,6 @@ record ClientPlanChangeDetailResponse(
         Side declinedBy,
         DeclineReason declineReason,
         String declineNote,
-        Instant endedAt) {}
+        Instant endedAt,
+        Instant tookEffectAt,
+        ExpiryCause expiryCause) {}

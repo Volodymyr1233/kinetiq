@@ -3,10 +3,13 @@ package com.kinetiq.plan.infrastructure.output;
 import com.kinetiq.account.domain.model.AccountId;
 import com.kinetiq.plan.domain.exception.PlanChangedException;
 import com.kinetiq.plan.domain.model.Plan;
+import com.kinetiq.plan.domain.model.PlanId;
+import com.kinetiq.plan.domain.model.PlanRevision;
 import com.kinetiq.plan.domain.output.PlanRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.LockModeType;
 import java.time.Instant;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.exception.ConstraintViolationException;
@@ -20,6 +23,7 @@ class PlanRepositoryImpl implements PlanRepository {
     private static final String UNIQUE_CLIENT = "uq_plans_client";
 
     private final JpaPlanRepository jpa;
+    private final JpaPlanRevisionRepository revisions;
     private final PlanMapper mapper;
     private final EntityManager entityManager;
 
@@ -41,6 +45,19 @@ class PlanRepositoryImpl implements PlanRepository {
     @Override
     public void markSeenByClient(AccountId client, Instant at) {
         jpa.markSeen(client.value(), at);
+    }
+
+    // flushed at once, so a second revision for the same Monday fails here
+    @Override
+    public void saveRevision(PlanRevision revision) {
+        revisions.saveAndFlush(mapper.toEntity(revision));
+    }
+
+    @Override
+    public List<PlanRevision> revisionsOf(PlanId plan) {
+        return revisions.findByPlanIdOrderByValidUntilAsc(plan.value()).stream()
+                .map(mapper::toDomain)
+                .toList();
     }
 
     @Override

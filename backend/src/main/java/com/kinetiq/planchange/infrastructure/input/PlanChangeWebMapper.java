@@ -47,7 +47,9 @@ interface PlanChangeWebMapper {
                 decision == null ? null : decision.by(),
                 decision == null ? null : decision.reason(),
                 decision == null ? null : decision.note(),
-                planChange.getEndedAt().orElse(null));
+                planChange.getEndedAt().orElse(null),
+                planChange.getTookEffectAt().orElse(null),
+                planChange.getExpiryCause().orElse(null));
     }
 
     default ClientPlanChangeDetailResponse toResponse(ClientPlanChangeView view) {
@@ -75,7 +77,9 @@ interface PlanChangeWebMapper {
                 decision == null ? null : decision.by(),
                 decision == null ? null : decision.reason(),
                 decision == null ? null : decision.note(),
-                planChange.getEndedAt().orElse(null));
+                planChange.getEndedAt().orElse(null),
+                planChange.getTookEffectAt().orElse(null),
+                planChange.getExpiryCause().orElse(null));
     }
 
     default ClientPlanChangeResponse toResponse(PlanChangeSummary summary) {
@@ -88,7 +92,9 @@ interface PlanChangeWebMapper {
                 summary.text().reason(),
                 planChange.getEffectiveWeek(),
                 planChange.acceptedBy(Side.TRAINER),
-                planChange.acceptedBy(Side.CLIENT));
+                planChange.acceptedBy(Side.CLIENT),
+                planChange.getTookEffectAt().orElse(null),
+                planChange.getExpiryCause().orElse(null));
     }
 
     private static List<PlanChangeResponse.PlanChangeTargetResponse> targets(
@@ -163,7 +169,9 @@ interface PlanChangeWebMapper {
                 decision == null ? null : decision.reason(),
                 planChange.getEffectiveWeek(),
                 planChange.getCreatedAt(),
-                planChange.getEndedAt().orElse(null));
+                planChange.getEndedAt().orElse(null),
+                planChange.getTookEffectAt().orElse(null),
+                planChange.getExpiryCause().orElse(null));
     }
 
     // an exercise deleted from the library since keeps a place in the table

@@ -11,8 +11,11 @@ import java.util.Optional;
 /** The stored plan changes of clients. */
 public interface PlanChangeRepository {
 
-    /** Whether the client has a plan change that has not ended; applied and declined ones have ended. */
-    boolean hasOpen(AccountId client);
+    /**
+     * Whether the client has a plan change that is open or upcoming: it still has to be applied or expired. A new one made
+     * from the plan meanwhile would carry old values that are about to change.
+     */
+    boolean hasUnsettled(AccountId client);
 
     /** When the latest plan change of the client ended; empty when none has. */
     Optional<Instant> lastEndedAt(AccountId client);
@@ -27,6 +30,12 @@ public interface PlanChangeRepository {
 
     /** Stores the decision columns, the state and the end time of a plan change that is stored already. */
     PlanChange update(PlanChange planChange);
+
+    /**
+     * The ids of the unsettled plan changes whose effective week has begun at {@code now}, by the date it is then in the
+     * time zone of each client.
+     */
+    List<PlanChangeId> findDue(Instant now);
 
     /** The plan change of the client that has not ended, if any. */
     Optional<PlanChange> findOpen(AccountId client);
