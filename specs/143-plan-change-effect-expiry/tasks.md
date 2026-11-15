@@ -90,7 +90,7 @@ Phase 2 spans both sides, so its commit has no scope (project `CLAUDE.md`). No `
 
 ## Phase 4: Pull request
 
-- [ ] T022 Final gate: `./gradlew check`, `npm run check`, `schema.d.ts` is up to date (`npm run gen:api` gives no diff), migration number re-checked against `master` and open pull requests, `.env.example` unchanged (no new variable). Push the branch and open one pull request titled `feat: plan change takes effect or expires (#143)` that closes #143, #144, #145 and #146, with the verification and security results in the description. Do not enable auto-merge.
+- [x] T022 Final gate: `./gradlew check`, `npm run check`, `schema.d.ts` is up to date (`npm run gen:api` gives no diff), migration number re-checked against `master` and open pull requests, `.env.example` unchanged (no new variable). Push the branch and open one pull request titled `feat: plan change takes effect or expires (#143)` that closes #143, #144, #145 and #146, with the verification and security results in the description. Do not enable auto-merge.
 
 ---
 
