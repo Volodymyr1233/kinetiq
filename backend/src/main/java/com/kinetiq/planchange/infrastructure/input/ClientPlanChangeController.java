@@ -39,6 +39,24 @@ class ClientPlanChangeController {
     }
 
     /**
+     * The client's plan change that both accepted and whose effective week has not begun. {@code 404} with {@code
+     * plan-change.not-found} when there is none.
+     */
+    @GetMapping("/api/v1/plan/changes/upcoming")
+    ClientPlanChangeDetailResponse getUpcoming(Authentication authentication) {
+        return mapper.toResponse(planChanges.upcoming(signedIn(authentication)));
+    }
+
+    /**
+     * The client's plan change that took effect most recently. {@code 404} with {@code plan-change.not-found} when none
+     * has.
+     */
+    @GetMapping("/api/v1/plan/changes/applied")
+    ClientPlanChangeDetailResponse getApplied(Authentication authentication) {
+        return mapper.toResponse(planChanges.applied(signedIn(authentication)));
+    }
+
+    /**
      * One of the client's own plan changes, ended ones too. {@code 404} with {@code plan-change.not-found} for an unknown
      * one and another client's alike.
      */

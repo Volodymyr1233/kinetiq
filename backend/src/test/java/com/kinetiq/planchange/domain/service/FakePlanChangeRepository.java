@@ -85,6 +85,20 @@ class FakePlanChangeRepository implements PlanChangeRepository {
     }
 
     @Override
+    public Optional<PlanChange> findUpcoming(AccountId client) {
+        return saved.stream()
+                .filter(change -> change.getClient().equals(client) && change.isUpcoming())
+                .findFirst();
+    }
+
+    @Override
+    public Optional<PlanChange> findLatestInEffect(AccountId client) {
+        return saved.stream()
+                .filter(change -> change.getClient().equals(client) && change.isInEffect())
+                .max(Comparator.comparing(change -> change.getTookEffectAt().orElseThrow()));
+    }
+
+    @Override
     public Optional<PlanChange> findOpen(AccountId client) {
         return saved.stream()
                 .filter(change -> change.getClient().equals(client) && change.isOpen())

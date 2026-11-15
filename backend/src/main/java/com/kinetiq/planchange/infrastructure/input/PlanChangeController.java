@@ -48,6 +48,15 @@ class PlanChangeController {
     }
 
     /**
+     * The plan change of the trainer's own client that both accepted and whose effective week has not begun. {@code 404}
+     * with {@code plan-change.not-found} when there is none, with {@code client.not-found} for another trainer's client.
+     */
+    @GetMapping("/api/v1/clients/{id}/plan-changes/upcoming")
+    PlanChangeResponse getUpcoming(@PathVariable UUID id, Authentication authentication) {
+        return mapper.toResponse(planChanges.upcoming(signedIn(authentication), new AccountId(id)));
+    }
+
+    /**
      * The last 5 plan changes of the trainer's own client that ended. {@code 404} with {@code client.not-found} for
      * another trainer's client.
      */

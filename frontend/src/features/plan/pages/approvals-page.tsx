@@ -19,6 +19,7 @@ import { errorMessageKey } from '@/lib/api/problem'
 import { formatDay } from '@/lib/dates'
 import { firstName } from '@/lib/first-name'
 import {
+  planChangeBadgeLabel,
   planChangeBadgeVariant,
   planChangeStatus,
   waitsForDecisionOf,
@@ -124,6 +125,9 @@ function PlanChangeRow({ change }: { change: PlanChangeApproval }) {
         : t('approvals.planChange.declinedByClient', { name, reason })
   } else if (change.state === 'EXPIRED') {
     when = t('approvals.planChange.expired', { date })
+  } else if (status === 'inEffect') {
+    // the badge says since when
+    when = ''
   } else {
     when = t('approvals.planChange.effective', { date })
   }
@@ -149,9 +153,11 @@ function PlanChangeRow({ change }: { change: PlanChangeApproval }) {
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <Badge variant={planChangeBadgeVariant[status]}>
-            {t(`planChange.badge.${status}`, { name })}
+            {planChangeBadgeLabel(t, change, 'TRAINER', i18n.language, name)}
           </Badge>
-          <span className="text-muted-foreground text-xs">{when}</span>
+          {when && (
+            <span className="text-muted-foreground text-xs">{when}</span>
+          )}
         </div>
       </Link>
     </li>

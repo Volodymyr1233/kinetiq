@@ -8,8 +8,8 @@ import {
   TableRow,
 } from '@/components/ui/table'
 import { weekdayName } from '@/lib/dates'
-import { fromKg, useWeightUnit } from '@/lib/weight'
-import type { PlanChange, PlanChangeTarget } from '../api/plan-change'
+import { usePlanChangeValue } from '@/lib/plan-change-value'
+import type { PlanChange } from '../api/plan-change'
 
 type Row = {
   key: string
@@ -33,34 +33,14 @@ export function PlanChangeTable({
   list?: boolean
 }) {
   const { t, i18n } = useTranslation()
-  const unit = useWeightUnit()
   const locale = i18n.language
-  const number = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 })
   const percent = new Intl.NumberFormat(locale, {
     style: 'percent',
     maximumFractionDigits: 0,
     signDisplay: 'exceptZero',
   })
 
-  const value = (target: PlanChangeTarget, raw: number) => {
-    switch (target.target) {
-      case 'SETS':
-        return t('planChange.values.sets', { count: raw })
-      case 'AMOUNT':
-        return target.measure === 'SECONDS'
-          ? t('planChange.values.seconds', { count: raw })
-          : t('planChange.values.reps', { count: raw })
-      case 'LOAD_KG':
-        return t('planChange.values.load', {
-          load: number.format(fromKg(raw, unit)),
-          unit: t(`plan.units.${unit}`),
-        })
-      case 'RPE':
-        return t('planChange.values.rpe', { rpe: raw })
-      case 'REST_SECONDS':
-        return t('planChange.values.seconds', { count: raw })
-    }
-  }
+  const value = usePlanChangeValue()
 
   const session = (
     day: PlanChange['targets'][number]['sessionDay'],

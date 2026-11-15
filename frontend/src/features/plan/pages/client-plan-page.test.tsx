@@ -100,8 +100,9 @@ function openPlan(
   address = '/app/plan',
   unit: WeightUnit = 'KG',
   openChange: object | null = null,
+  others: { upcoming?: object; applied?: object } = {},
 ) {
-  const requests = stubApi(withOpenPlanChange(openChange, reply))
+  const requests = stubApi(withOpenPlanChange(openChange, reply, others))
   const router = createMemoryRouter(
     [
       { path: '/app/plan', Component: ClientPlanPage },
@@ -143,6 +144,36 @@ const OPEN_CHANGE = {
   effectiveWeek: '2026-11-16',
   acceptedByTrainer: false,
   acceptedByClient: false,
+}
+
+// both accepted it: the squat of Monday loses a repetition and the plank of Thursday goes from 16 November
+const UPCOMING_CHANGE = {
+  ...OPEN_CHANGE,
+  state: 'APPLIED',
+  acceptedByTrainer: true,
+  acceptedByClient: true,
+  targets: [
+    {
+      sessionDay: 'MONDAY',
+      sessionName: 'Upper body',
+      position: 0,
+      exerciseId: '00000000-0000-4000-9100-000000000001',
+      exerciseName: 'Bench press',
+      measure: 'REPS',
+      target: 'AMOUNT',
+      oldValue: 8,
+      newValue: 7,
+    },
+  ],
+  removedSession: { day: 'THURSDAY', name: 'Core' },
+  moves: [],
+}
+
+const APPLIED_CHANGE = {
+  ...UPCOMING_CHANGE,
+  tookEffectAt: '2026-11-01T23:05:00Z',
+  effectiveWeek: '2026-11-02',
+  removedSession: undefined,
 }
 
 describe('ClientPlanPage', () => {
@@ -541,5 +572,88 @@ describe('ClientPlanPage', () => {
     expect(await screen.findByText('Week 6 of 12')).toBeInTheDocument()
     expect(screen.queryByText(/sessions done/)).not.toBeInTheDocument()
     expect(screen.getByText('Upper body')).toBeInTheDocument()
+  })
+
+  describe('a plan change both accepted', () => {
+    // week 6 starts on 2 November, week 7 on 9 November and week 8 on 16 November, the effective Monday
+
+    it('marks what changes from its Monday, with the old value readable, and the removed session', async () => {
+      openPlan(servePlan, '/app/plan?week=8', 'KG', null, {
+        upcoming: UPCOMING_CHANGE,
+      })
+
+      const upper = await screen.findByRole('button', { name: /Upper body/ })
+      await userEvent.click(upper)
+      expect(screen.getByText('Takes effect Mon, Nov 16')).toBeInTheDocument()
+      // a screen reader hears both values in words
+      expect(
+        screen.getByText('4 × 8 reps, changing to 4 × 7 reps'),
+      ).toBeInTheDocument()
+      const core = screen.getByRole('button', { name: /Core/ })
+      expect(
+        within(core).getByText('Removed from Mon, Nov 16'),
+      ).toBeInTheDocument()
+    })
+
+    it('marks nothing in the weeks before its Monday', async () => {
+      openPlan(servePlan, '/app/plan?week=7', 'KG', null, {
+        upcoming: UPCOMING_CHANGE,
+      })
+
+      await userEvent.click(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      )
+      expect(screen.queryByText(/Takes effect/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/Removed from/)).not.toBeInTheDocument()
+      expect(screen.getByText('4 × 8 reps')).toBeInTheDocument()
+    })
+
+    it('links to the plan change from the entries it changed, from its Monday on, once the plan uses it', async () => {
+      openPlan(servePlan, '/app/plan', 'KG', null, { applied: APPLIED_CHANGE })
+
+      await userEvent.click(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      )
+      expect(
+        screen.getByRole('link', {
+          name: 'Changed on Mon, Nov 2 by a plan change',
+        }),
+      ).toHaveAttribute('href', `/app/plan/change/${OPEN_CHANGE.id}`)
+      expect(screen.queryByText(/Takes effect/)).not.toBeInTheDocument()
+    })
+
+    it('shows no mark and no note when there is no such plan change', async () => {
+      openPlan(servePlan)
+
+      await userEvent.click(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      )
+      expect(screen.queryByText(/Takes effect/)).not.toBeInTheDocument()
+      expect(screen.queryByText(/by a plan change/)).not.toBeInTheDocument()
+    })
+
+    it('keeps the plan when the plan change cannot be read', async () => {
+      stubApi((request) => {
+        const path = new URL(request.url).pathname
+        if (path === '/api/v1/plan/changes/upcoming') {
+          return problem(500, { status: 500, code: 'internal.error' })
+        }
+        return withOpenPlanChange(null, servePlan)(request)
+      })
+      const router = createMemoryRouter(
+        [{ path: '/app/plan', Component: ClientPlanPage }],
+        { initialEntries: ['/app/plan?week=8'] },
+      )
+      render(
+        <QueryClientProvider client={new QueryClient()}>
+          <RouterProvider router={router} />
+        </QueryClientProvider>,
+      )
+
+      expect(
+        await screen.findByRole('button', { name: /Upper body/ }),
+      ).toBeInTheDocument()
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument()
+    })
   })
 })

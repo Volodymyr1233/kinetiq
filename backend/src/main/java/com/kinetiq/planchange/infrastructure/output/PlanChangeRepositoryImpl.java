@@ -92,6 +92,19 @@ class PlanChangeRepositoryImpl implements PlanChangeRepository {
     }
 
     @Override
+    public Optional<PlanChange> findUpcoming(AccountId client) {
+        return jpa.findByClientIdAndStateAndTookEffectAtIsNull(client.value(), PlanChangeState.APPLIED)
+                .map(mapper::toDomain);
+    }
+
+    @Override
+    public Optional<PlanChange> findLatestInEffect(AccountId client) {
+        return jpa.findFirstByClientIdAndStateAndTookEffectAtIsNotNullOrderByTookEffectAtDesc(
+                        client.value(), PlanChangeState.APPLIED)
+                .map(mapper::toDomain);
+    }
+
+    @Override
     public Optional<PlanChange> findOpen(AccountId client) {
         return jpa.findByClientIdAndStateIn(client.value(), OPEN).map(mapper::toDomain);
     }

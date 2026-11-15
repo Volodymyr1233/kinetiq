@@ -17,6 +17,13 @@ public interface ViewPlanChangeUseCase {
     PlanChangeSummary openOf(AccountId trainer, AccountId client);
 
     /**
+     * The plan change of the trainer's own client that both accepted and whose effective week has not begun.
+     * {@code ClientNotFoundException} for another trainer's client, {@code PlanChangeNotFoundException} when the client
+     * has none.
+     */
+    PlanChangeView upcoming(AccountId trainer, AccountId client);
+
+    /**
      * The plan changes of the trainer's own clients that have not ended or ended in the last 30 days, the one that
      * changed last first.
      */

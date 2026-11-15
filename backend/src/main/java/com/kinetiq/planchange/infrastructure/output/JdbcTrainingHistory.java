@@ -69,6 +69,7 @@ class JdbcTrainingHistory implements TrainingHistory {
     }
 
     // every query is scoped to the one client; days and weeks are matched by date, as SessionStateService does
+    // ponytail: reads the live plan for past weeks; read plan revisions here if past weeks must not move after a removed session
     @Override
     public List<WeekTraining> weeks(AccountId client, LocalDate firstMonday, int count) {
         LocalDate lastDay = firstMonday.plusDays((long) count * DAYS_PER_WEEK - 1);

@@ -31,6 +31,7 @@ import org.springframework.stereotype.Repository;
 @RequiredArgsConstructor
 class JdbcTrainingRecords implements TrainingRecords {
 
+    // ponytail: reads the live plan for past windows; read plan revisions here if past weeks must not move after a removed session
     private static final String PLANS = """
             select p.client_id, p.first_week, p.published_on, p.weeks, s.day_of_week
             from plans p

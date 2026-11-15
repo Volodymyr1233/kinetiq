@@ -31,6 +31,7 @@ import { Skeleton } from '@/components/ui/skeleton'
 import { errorMessageKey, problemStatus } from '@/lib/api/problem'
 import { firstName } from '@/lib/first-name'
 import {
+  planChangeBadgeLabel,
   planChangeBadgeVariant,
   planChangeStatus,
 } from '@/lib/plan-change-state'
@@ -154,9 +155,13 @@ export function PlanChangePage() {
             <CardDescription>{planChange.reason}</CardDescription>
             <CardAction>
               <Badge variant={planChangeBadgeVariant[badge]}>
-                {t(`planChange.badge.${badge}`, {
-                  name: firstName(planChange.clientName),
-                })}
+                {planChangeBadgeLabel(
+                  t,
+                  planChange,
+                  'TRAINER',
+                  i18n.language,
+                  firstName(planChange.clientName),
+                )}
               </Badge>
             </CardAction>
           </CardHeader>

@@ -3,6 +3,7 @@ import type { OwnPlan } from '../api/client-plan'
 import { DAYS, dayName } from '../plan-draft'
 import type { SessionStateEntry } from '../api/session-states'
 import { DayMark } from './day-mark'
+import type { PlanChangeMark } from './plan-change-mark'
 import { SessionCard } from './session-card'
 
 type Week = NonNullable<OwnPlan['week']>
@@ -13,6 +14,7 @@ export function WeekStrip({
   sessions,
   states,
   today,
+  mark,
 }: {
   week: Week
   sessions: OwnPlan['sessions']
@@ -20,6 +22,8 @@ export function WeekStrip({
   states?: SessionStateEntry[]
   // the client's local date, from the same answer as the states
   today?: string
+  // a plan change that touches this week, marked where it changes the sessions
+  mark?: PlanChangeMark
 }) {
   const { t, i18n } = useTranslation()
   const [year, month, day] = week.startsOn.split('-').map(Number)
@@ -52,6 +56,7 @@ export function WeekStrip({
                   session={session}
                   state={entry?.state}
                   adjusted={entry?.adjusted}
+                  mark={mark}
                   summaryId={entry?.sessionLogId}
                   pastLog={
                     // plain ISO dates compare as text; today's session is reached from Today

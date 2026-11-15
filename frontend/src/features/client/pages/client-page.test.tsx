@@ -334,6 +334,24 @@ describe('ClientPage', () => {
       expect(links[1]).toHaveTextContent('Declined')
     })
 
+    it('words each ended plan change by how it ended: upcoming, in effect, expired', async () => {
+      renderWith(null, [
+        ended('04', {}),
+        ended('05', { tookEffectAt: '2026-10-19T00:05:00Z' }),
+        ended('06', { state: 'EXPIRED', expiryCause: 'PLAN_EDITED' }),
+      ])
+
+      const section = await screen.findByRole('region', {
+        name: 'Past plan changes',
+      })
+      const links = within(section).getAllByRole('link')
+      expect(links[0]).toHaveTextContent('Applied · takes effect Mon, Oct 19')
+      expect(links[1]).toHaveTextContent(
+        'Applied · in effect since Mon, Oct 19',
+      )
+      expect(links[2]).toHaveTextContent('Expired')
+    })
+
     it('hides Past plan changes when none ended', async () => {
       renderWith(null, [])
 

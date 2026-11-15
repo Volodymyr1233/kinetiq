@@ -160,6 +160,31 @@ class PlanChangeViewServiceTest {
         assertThatThrownBy(() -> service.openOf(TRAINER, CLIENT)).isInstanceOf(PlanChangeNotFoundException.class);
     }
 
+    @Test
+    void shouldGiveTheUpcomingPlanChangeOfAnOwnClient_butNotAnOpenOneOrOneInEffect() {
+        assertThatThrownBy(() -> service.upcoming(TRAINER, CLIENT)).isInstanceOf(PlanChangeNotFoundException.class);
+
+        PlanChange upcoming = planChanges.update(stored
+                .accept(Side.TRAINER, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"))
+                .accept(Side.CLIENT, Instant.parse("2026-11-12T09:00:00Z"), LocalDate.parse("2026-11-12")));
+        PlanChangeView view = service.upcoming(TRAINER, CLIENT);
+        assertThat(view.planChange()).isSameAs(upcoming);
+        assertThat(view.clientName()).isEqualTo("Ola Nowak");
+        assertThat(view.text().title()).isEqualTo("Back squat: cut volume by 10%");
+
+        planChanges.update(upcoming.takeEffect(Instant.parse("2026-11-15T23:05:00Z")));
+        assertThatThrownBy(() -> service.upcoming(TRAINER, CLIENT)).isInstanceOf(PlanChangeNotFoundException.class);
+    }
+
+    @Test
+    void shouldRefuseTheUpcomingPlanChange_ofAnotherTrainersClient() {
+        planChanges.update(stored
+                .accept(Side.TRAINER, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"))
+                .accept(Side.CLIENT, Instant.parse("2026-11-12T09:00:00Z"), LocalDate.parse("2026-11-12")));
+
+        assertThatThrownBy(() -> service.upcoming(OTHER_TRAINER, CLIENT)).isInstanceOf(ClientNotFoundException.class);
+    }
+
     private PlanChange declinedAt(String endedAt) {
         return planChanges.save(new PlanChange(
                 PlanChangeId.random(),

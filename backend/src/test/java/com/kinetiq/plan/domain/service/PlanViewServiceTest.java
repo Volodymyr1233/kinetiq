@@ -27,6 +27,7 @@ import com.kinetiq.plan.domain.input.TodayView;
 import com.kinetiq.plan.domain.model.ExerciseEntry;
 import com.kinetiq.plan.domain.model.Plan;
 import com.kinetiq.plan.domain.model.PlanId;
+import com.kinetiq.plan.domain.model.PlanRevision;
 import com.kinetiq.plan.domain.model.Session;
 import com.kinetiq.quiz.domain.model.Goal;
 import java.time.Clock;
@@ -464,6 +465,62 @@ class PlanViewServiceTest {
             storeDraft();
 
             assertNoSummary(OTHER_CLIENT);
+        }
+    }
+
+    @Nested
+    class PastWeeks {
+
+        private List<Session> sessionsNamed(String name) {
+            ExerciseEntry entry = new ExerciseEntry(OWN_EXERCISE.getId(), 3, 8, null, 8, 90);
+            return List.of(
+                    new Session(name + " 1", DayOfWeek.MONDAY, List.of(entry)),
+                    new Session(name + " 2", DayOfWeek.THURSDAY, List.of(entry)));
+        }
+
+        private void revise(String validUntil, String name) {
+            plans.saveRevision(new PlanRevision(
+                    plans.byClient.get(CLIENT).getId(), LocalDate.parse(validUntil), sessionsNamed(name)));
+        }
+
+        private List<String> sessionNamesOf(int week) {
+            return service.view(CLIENT, week).plan().getSessions().stream().map(Session::name).toList();
+        }
+
+        @Test
+        void shouldShowEachWeekTheSessionsOfTheRevisionStillValidThen_andTheLivePlanFromTheLastMonday() {
+            storePublished(12, FIRST_WEEK);
+            revise("2026-10-12", "Old");
+            revise("2026-10-26", "Middle");
+
+            // weeks 1 and 2 start before the first Monday, week 3 on it, weeks 3 and 4 before the second
+            assertThat(sessionNamesOf(1)).containsExactly("Old 1", "Old 2");
+            assertThat(sessionNamesOf(2)).containsExactly("Old 1", "Old 2");
+            assertThat(sessionNamesOf(3)).containsExactly("Middle 1", "Middle 2");
+            assertThat(sessionNamesOf(4)).containsExactly("Middle 1", "Middle 2");
+            assertThat(sessionNamesOf(5)).containsExactly("Upper", "Lower");
+            assertThat(sessionNamesOf(6)).containsExactly("Upper", "Lower");
+            assertThat(sessionNamesOf(12)).containsExactly("Upper", "Lower");
+        }
+
+        @Test
+        void shouldShowTheLivePlanOfEveryWeek_whenThereAreNoRevisions() {
+            storePublished(12, FIRST_WEEK);
+
+            assertThat(sessionNamesOf(1)).containsExactly("Upper", "Lower");
+            assertThat(sessionNamesOf(12)).containsExactly("Upper", "Lower");
+        }
+
+        @Test
+        void shouldShowTheRevisionOfTheCurrentWeek_whenNoWeekIsAskedAndTheRevisionEndsAfterIt() {
+            storePublished(12, FIRST_WEEK);
+            revise("2026-11-09", "Next");
+
+            // the current week is 6, starting 2 November, before the revision ends
+            OwnPlanView view = service.view(CLIENT, null);
+
+            assertThat(view.week().number()).isEqualTo(6);
+            assertThat(view.plan().getSessions()).extracting(Session::name).containsExactly("Next 1", "Next 2");
         }
     }
 }

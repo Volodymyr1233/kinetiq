@@ -30,6 +30,11 @@ interface JpaPlanChangeRepository extends JpaRepository<PlanChangeEntity, UUID> 
                     """)
     List<UUID> findDueIds(Instant now);
 
+    Optional<PlanChangeEntity> findByClientIdAndStateAndTookEffectAtIsNull(UUID clientId, PlanChangeState state);
+
+    Optional<PlanChangeEntity> findFirstByClientIdAndStateAndTookEffectAtIsNotNullOrderByTookEffectAtDesc(
+            UUID clientId, PlanChangeState state);
+
     Optional<PlanChangeEntity> findByClientIdAndStateIn(UUID clientId, Collection<PlanChangeState> states);
 
     @Query("select c from PlanChangeEntity c where c.clientId = :clientId and c.state in :states order by coalesce(c.endedAt, c.createdAt) desc")

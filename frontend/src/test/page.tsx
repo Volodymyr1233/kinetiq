@@ -152,15 +152,26 @@ export function renderAppAt(
   return { requests, router }
 }
 
-/** Answers the client's open plan change with `planChange`, or "none" when it is `null`, and every other call with `reply`. */
+/**
+ * Answers the client's open plan change with `planChange`, or "none" when it is `null`, the upcoming and the applied one
+ * with `others` or "none", and every other call with `reply`.
+ */
 export function withOpenPlanChange(
   planChange: object | null,
   reply: Reply,
+  others: { upcoming?: object; applied?: object } = {},
 ): Reply {
-  return (request) =>
-    new URL(request.url).pathname === '/api/v1/plan/changes/current'
-      ? planChange
-        ? json(planChange)
-        : problem(404, { status: 404, code: 'plan-change.not-found' })
-      : reply(request)
+  const answers: Record<string, object | null | undefined> = {
+    '/api/v1/plan/changes/current': planChange,
+    '/api/v1/plan/changes/upcoming': others.upcoming,
+    '/api/v1/plan/changes/applied': others.applied,
+  }
+  return (request) => {
+    const path = new URL(request.url).pathname
+    if (!(path in answers)) return reply(request)
+    const answer = answers[path]
+    return answer
+      ? json(answer)
+      : problem(404, { status: 404, code: 'plan-change.not-found' })
+  }
 }

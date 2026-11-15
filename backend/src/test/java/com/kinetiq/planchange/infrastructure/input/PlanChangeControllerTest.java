@@ -208,6 +208,39 @@ class PlanChangeControllerTest {
         assertRefused(mvc.get().uri(OPEN).with(TRAINER).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
     }
 
+    private static final String UPCOMING_PATH = "/api/v1/clients/" + CLIENT_ID.value() + "/plan-changes/upcoming";
+
+    @Test
+    void shouldAnswerTheUpcomingPlanChangeOfAClient() {
+        when(planChanges.upcoming(TRAINER_ID, CLIENT_ID)).thenReturn(view(UPCOMING));
+
+        var json = assertThat(mvc.get().uri(UPCOMING_PATH).with(TRAINER).exchange()).hasStatus(HttpStatus.OK).bodyJson();
+
+        json.extractingPath("$.clientName").isEqualTo("Ola Nowak");
+        json.extractingPath("$.state").isEqualTo("APPLIED");
+        json.extractingPath("$.effectiveWeek").isEqualTo("2026-11-16");
+        json.extractingPath("$.targets[0].newValue").isEqualTo(7.0);
+        json.doesNotHavePath("$.tookEffectAt");
+    }
+
+    @Test
+    void shouldAnswerNotFound_forNoUpcomingPlanChange_orAnotherTrainersClient() {
+        when(planChanges.upcoming(TRAINER_ID, CLIENT_ID)).thenThrow(new PlanChangeNotFoundException());
+        assertRefused(mvc.get().uri(UPCOMING_PATH).with(TRAINER).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
+
+        doThrow(new ClientNotFoundException()).when(planChanges).upcoming(TRAINER_ID, CLIENT_ID);
+        assertRefused(mvc.get().uri(UPCOMING_PATH).with(TRAINER).exchange(), HttpStatus.NOT_FOUND, "client.not-found");
+    }
+
+    @Test
+    void shouldRefuseTheUpcomingRead_forAClient_andAnonymous_andAWrite() {
+        assertRefused(mvc.get().uri(UPCOMING_PATH).with(CLIENT).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+        assertRefused(mvc.get().uri(UPCOMING_PATH).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+        assertThat(mvc.post().uri(UPCOMING_PATH).with(TRAINER).with(csrf()).exchange())
+                .hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
+        verifyNoInteractions(planChanges);
+    }
+
     private static final String ACCEPTANCE = DETAIL + "/acceptance";
     private static final PlanChange ACCEPTED =
             PLAN_CHANGE.accept(Side.TRAINER, Instant.parse("2026-11-12T08:00:00Z"), LocalDate.parse("2026-11-12"));

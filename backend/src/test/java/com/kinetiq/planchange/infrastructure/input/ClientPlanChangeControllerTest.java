@@ -230,6 +230,46 @@ class ClientPlanChangeControllerTest {
         expiredJson.doesNotHavePath("$.tookEffectAt");
     }
 
+    private static final String UPCOMING = "/api/v1/plan/changes/upcoming";
+    private static final String APPLIED = "/api/v1/plan/changes/applied";
+
+    @Test
+    void shouldAnswerTheUpcomingAndTheAppliedPlanChange() {
+        PlanChange upcoming = ACCEPTED.accept(Side.TRAINER, Instant.parse("2026-11-12T09:00:00Z"), LocalDate.parse("2026-11-12"));
+        PlanChange inEffect = upcoming.takeEffect(Instant.parse("2026-11-15T23:05:00Z"));
+        when(planChanges.upcoming(CLIENT_ID)).thenReturn(view(upcoming));
+        when(planChanges.applied(CLIENT_ID)).thenReturn(view(inEffect));
+
+        var upcomingJson = assertThat(mvc.get().uri(UPCOMING).with(CLIENT).exchange()).hasStatus(HttpStatus.OK).bodyJson();
+        upcomingJson.extractingPath("$.state").isEqualTo("APPLIED");
+        upcomingJson.extractingPath("$.targets[0].newValue").isEqualTo(7.0);
+        upcomingJson.doesNotHavePath("$.tookEffectAt");
+        var appliedJson = assertThat(mvc.get().uri(APPLIED).with(CLIENT).exchange()).hasStatus(HttpStatus.OK).bodyJson();
+        appliedJson.extractingPath("$.tookEffectAt").isEqualTo("2026-11-15T23:05:00Z");
+    }
+
+    @Test
+    void shouldAnswerNotFound_whenThereIsNoUpcomingOrAppliedPlanChange() {
+        when(planChanges.upcoming(CLIENT_ID)).thenThrow(new PlanChangeNotFoundException());
+        when(planChanges.applied(CLIENT_ID)).thenThrow(new PlanChangeNotFoundException());
+
+        assertRefused(mvc.get().uri(UPCOMING).with(CLIENT).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
+        assertRefused(mvc.get().uri(APPLIED).with(CLIENT).exchange(), HttpStatus.NOT_FOUND, "plan-change.not-found");
+    }
+
+    @Test
+    void shouldRefuseTheUpcomingAndAppliedReads_forATrainer_andAnonymous_andAnyBodyOrMethodThatWrites() {
+        for (String path : new String[] {UPCOMING, APPLIED}) {
+            assertRefused(mvc.get().uri(path).with(TRAINER).exchange(), HttpStatus.FORBIDDEN, "request.not-allowed");
+            assertRefused(mvc.get().uri(path).exchange(), HttpStatus.UNAUTHORIZED, "request.unauthenticated");
+            assertThat(mvc.post().uri(path).with(CLIENT).with(csrf()).exchange())
+                    .hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
+            assertThat(mvc.delete().uri(path).with(CLIENT).with(csrf()).exchange())
+                    .hasStatus(HttpStatus.METHOD_NOT_ALLOWED);
+        }
+        verifyNoInteractions(planChanges);
+    }
+
     @Test
     void shouldAnswerNotFound_whenThereIsNoCurrentPlanChange_orTheOneAskedForIsNotTheClients() {
         when(planChanges.current(CLIENT_ID)).thenThrow(new PlanChangeNotFoundException());

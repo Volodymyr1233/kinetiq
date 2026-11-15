@@ -3,17 +3,21 @@ import { useTranslation } from 'react-i18next'
 
 /**
  * A target as planned and as it is today, both already formatted: the planned value struck through, an arrow and
- * today's value. A screen reader hears both values in words; `past` reads a day gone by as "lighter", not "today".
+ * today's value. A screen reader hears both values in words; `past` reads a day gone by as "lighter", not "today", and
+ * `upcoming` a value a plan change is about to bring as "changing to".
  * When they are the same, only the value is shown.
  */
 export function TargetChange({
   planned,
   today,
   past = false,
+  upcoming = false,
 }: {
   planned: string
   today: string
   past?: boolean
+  /** The new value is a plan change that has not taken effect yet, not today's. */
+  upcoming?: boolean
 }) {
   const { t } = useTranslation()
 
@@ -27,7 +31,14 @@ export function TargetChange({
         <span className="text-foreground font-semibold">{today}</span>
       </span>
       <span className="sr-only">
-        {t(past ? 'targetChangePast' : 'targetChange', { planned, today })}
+        {t(
+          upcoming
+            ? 'targetChangeUpcoming'
+            : past
+              ? 'targetChangePast'
+              : 'targetChange',
+          { planned, today },
+        )}
       </span>
     </span>
   )
