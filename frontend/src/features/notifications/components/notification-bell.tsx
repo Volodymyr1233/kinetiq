@@ -108,7 +108,7 @@ export function NotificationBell({ area }: { area: Area }) {
               <li key={item.id}>
                 <button
                   type="button"
-                  className="hover:bg-accent focus-visible:ring-ring/50 flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left outline-none focus-visible:ring-3"
+                  className="hover:bg-accent focus-visible:ring-ring/50 flex min-h-14 w-full items-start gap-3 px-4 py-3 text-left outline-none focus-visible:ring-3 focus-visible:ring-inset"
                   onClick={() => choose(item)}
                 >
                   <span
