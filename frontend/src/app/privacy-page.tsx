@@ -41,19 +41,21 @@ export function PrivacyPage() {
   return (
     <div className="bg-background min-h-svh px-4 pt-8 pb-12">
       <div className="mx-auto flex max-w-prose flex-col gap-8">
-        <Link
-          to="/"
-          className="flex items-center gap-2.5 self-start rounded-md text-base font-semibold tracking-tight"
-        >
-          <span
-            aria-hidden="true"
-            className="bg-brand text-brand-foreground grid size-7 place-items-center rounded-lg font-mono text-sm"
+        <header className="self-start">
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 rounded-md text-base font-semibold tracking-tight"
           >
-            K
-          </span>
-          Kinetiq
-          <span className="sr-only">{t('privacy.home')}</span>
-        </Link>
+            <span
+              aria-hidden="true"
+              className="bg-brand text-brand-foreground grid size-7 place-items-center rounded-lg font-mono text-sm"
+            >
+              K
+            </span>
+            Kinetiq
+            <span className="sr-only">{t('privacy.home')}</span>
+          </Link>
+        </header>
         <main className="flex flex-col gap-8 wrap-anywhere">
           <header className="flex flex-col gap-1">
             <h1 className="text-2xl leading-8 font-semibold tracking-tight">

@@ -13,6 +13,16 @@ describe('PrivacyPage', () => {
     expect(requests).toHaveLength(0)
   })
 
+  it('links home from the page banner', async () => {
+    renderAppAt('/privacy', null)
+
+    // Testing Library also takes the notice's own header inside main for a banner
+    const [banner] = await screen.findAllByRole('banner')
+    expect(
+      within(banner).getByRole('link', { name: /Kinetiq home page/ }),
+    ).toHaveAttribute('href', '/')
+  })
+
   it('has every section of the notice, and a contact link', async () => {
     renderAppAt('/privacy', null)
 
