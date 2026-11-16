@@ -96,7 +96,11 @@ export function SetRow({
     const done = () => {
       setEdited(null)
       setTried(false)
-      if (open) onToggle()
+      if (open) {
+        onToggle()
+        // the panel closes with the button that saved it, so the row's own button takes the focus
+        toggle.current?.focus()
+      }
       if (!counted) onLogged(entry.restSeconds)
     }
     log.mutate(
@@ -115,7 +119,7 @@ export function SetRow({
   }
 
   // the tick, Retry and Discard disappear when they are used, so the row's own button takes the focus
-  const settle = (act: () => void) => () => {
+  const settle = (act: () => void) => {
     act()
     toggle.current?.focus()
   }
@@ -183,7 +187,7 @@ export function SetRow({
           <Button
             size="touch"
             aria-label={t('sessionlog.sync.retryLabel', which)}
-            onClick={settle(pending.retry)}
+            onClick={() => settle(pending.retry)}
           >
             {t('sessionlog.sync.retry')}
           </Button>
@@ -192,10 +196,12 @@ export function SetRow({
           variant="outline"
           size="touch"
           aria-label={t('sessionlog.sync.discardLabel', which)}
-          onClick={settle(() => {
-            pending.discard()
-            setEdited(null)
-          })}
+          onClick={() =>
+            settle(() => {
+              pending.discard()
+              setEdited(null)
+            })
+          }
         >
           {t('sessionlog.sync.discard')}
         </Button>
@@ -275,7 +281,7 @@ export function SetRow({
               variant="outline"
               className="size-12 shrink-0"
               aria-label={t('sessionlog.row.tick', which)}
-              onClick={settle(() => submit(valuesOf(shown, unit)))}
+              onClick={() => settle(() => submit(valuesOf(shown, unit)))}
             >
               <CheckIcon aria-hidden />
             </Button>
