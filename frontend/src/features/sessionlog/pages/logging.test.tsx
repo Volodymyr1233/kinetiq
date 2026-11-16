@@ -163,6 +163,33 @@ describe('logging a set', () => {
     expect(change()).toHaveFocus()
   })
 
+  it("keeps the focus on the panel's button while the set is sent, and when the send fails", async () => {
+    const user = userEvent.setup()
+    let release!: () => void
+    const gate = new Promise<void>((resolve) => (release = resolve))
+    openLogger(async (request) => {
+      if (request.method === 'POST') return started()
+      await gate
+      return problem(400, { status: 400, code: 'request.invalid' })
+    })
+
+    await screen.findByRole('region', { name: 'Back squat' })
+    await choose(user)
+    const log = screen.getByRole('button', { name: 'Log set' })
+    log.focus()
+    await user.keyboard('{Enter}')
+
+    await waitFor(() => expect(log).toHaveAttribute('aria-busy', 'true'))
+    expect(log).toHaveFocus()
+    // jsdom keeps the focus on a disabled button, which a browser moves to the page
+    expect(log).toBeEnabled()
+
+    release()
+
+    expect(await screen.findByText(NOT_ACCEPTED)).toBeInTheDocument()
+    expect(log).toHaveFocus()
+  })
+
   it('logs a set with changed values: a load step, fewer repetitions and another RPE', async () => {
     const user = userEvent.setup()
     const { reply, puts } = server()
@@ -283,7 +310,7 @@ describe('logging a set', () => {
 
   it('keeps Update set grey until something differs from what was logged', async () => {
     const user = userEvent.setup()
-    const { reply } = server()
+    const { reply, puts } = server()
     openLogger(reply)
     await user.click(
       await screen.findByRole('button', {
@@ -295,20 +322,28 @@ describe('logging a set', () => {
       screen.getByRole('button', { name: /^Change set 1 of Back squat/ }),
     )
     const update = screen.getByRole('button', { name: 'Update set' })
-    expect(update).toBeDisabled()
+    expect(update).toHaveAttribute('aria-disabled', 'true')
 
     const more = screen.getByRole('button', {
       name: 'More: Repetitions, set 1 of Back squat',
     })
     await user.click(more)
-    expect(update).toBeEnabled()
+    expect(update).toHaveAttribute('aria-disabled', 'false')
 
     await user.click(
       screen.getByRole('button', {
         name: 'Fewer: Repetitions, set 1 of Back squat',
       }),
     )
-    expect(update).toBeDisabled()
+    expect(update).toHaveAttribute('aria-disabled', 'true')
+
+    // pressed while grey it sends nothing: the sends of a set go in order, so one would arrive before this change
+    update.focus()
+    await user.keyboard('{Enter}')
+    await user.click(more)
+    await user.click(update)
+    expect(await within(firstRow()).findByText('6 reps')).toBeInTheDocument()
+    expect(puts).toHaveLength(2)
   })
 
   it('changes a logged set with the id it was logged with, and updates the row', async () => {
