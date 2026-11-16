@@ -11,26 +11,26 @@ import {
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
 import { Spinner } from '@/components/ui/spinner'
+import { useDialogFocus } from '@/hooks/use-dialog-focus'
 import type { Invite } from '../api/invites'
 
 /** Asks before revoking; stays open while the request runs. Radix starts focus on Cancel, the safe choice. */
 export function RevokeInviteDialog({
   invite,
   busy,
-  revoked,
   onConfirm,
   onCancel,
   onRevoked,
 }: {
   invite?: Invite
   busy: boolean
-  revoked: boolean
   onConfirm: (invite: Invite) => void
   onCancel: () => void
   /** Where focus goes once the invite is gone, since its Revoke button went with it. */
   onRevoked: () => void
 }) {
   const { t } = useTranslation()
+  const focus = useDialogFocus()
   // kept while the dialog fades out, so its title does not lose the email
   const [shown, setShown] = useState(invite)
   if (invite && invite !== shown) setShown(invite)
@@ -42,14 +42,7 @@ export function RevokeInviteDialog({
         if (!open && !busy) onCancel()
       }}
     >
-      <AlertDialogContent
-        onCloseAutoFocus={(event) => {
-          if (revoked) {
-            event.preventDefault()
-            onRevoked()
-          }
-        }}
-      >
+      <AlertDialogContent {...focus.contentProps}>
         <AlertDialogHeader>
           <AlertDialogTitle>
             {t('invites.revokeDialog.title', { email: shown?.email })}
@@ -67,7 +60,12 @@ export function RevokeInviteDialog({
             variant="destructive"
             disabled={busy}
             aria-busy={busy}
-            onClick={() => invite && onConfirm(invite)}
+            onClick={() => {
+              if (!invite) return
+              // the dialog cannot close while the request runs, so its next close follows the request
+              focus.afterClosing(onRevoked)
+              onConfirm(invite)
+            }}
           >
             {busy && <Spinner data-icon="inline-start" aria-hidden="true" />}
             {t('invites.revokeDialog.confirm')}

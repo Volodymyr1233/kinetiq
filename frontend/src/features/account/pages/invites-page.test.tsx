@@ -325,7 +325,24 @@ describe('InvitesPage', () => {
       await waitFor(() =>
         expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
       )
+      expect(await revokeButton()).toHaveFocus()
       expect(callsOf(requests, 'DELETE')).toEqual([])
+    })
+
+    it('gives focus back to Revoke when Escape closes the confirmation', async () => {
+      const user = setupUser()
+      renderInvites(api([JULIA]))
+
+      const revoke = await revokeButton()
+      revoke.focus()
+      await user.keyboard('{Enter}')
+      await screen.findByRole('alertdialog')
+      await user.keyboard('{Escape}')
+
+      await waitFor(() =>
+        expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument(),
+      )
+      expect(revoke).toHaveFocus()
     })
 
     it('revokes after confirming and confirms it', async () => {
@@ -350,6 +367,9 @@ describe('InvitesPage', () => {
       await waitFor(() =>
         expect(screen.queryByText('julia@example.com')).not.toBeInTheDocument(),
       )
+      expect(
+        screen.getByRole('heading', { name: 'Open invites' }),
+      ).toHaveFocus()
       expect(callsOf(requests, 'DELETE')).toEqual([
         `/api/v1/invites/${JULIA.id}`,
       ])
