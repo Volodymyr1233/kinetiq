@@ -76,6 +76,8 @@ function TrainerSidebar({ activePath }: { activePath?: string }) {
   return (
     <Sidebar
       collapsible={isMobile ? 'offcanvas' : 'none'}
+      // named, since a page such as the exercise library has an aside of its own
+      aria-label={t('nav.menu')}
       mobileLabel={t('nav.menu')}
       className="border-sidebar-border sticky top-0 h-svh border-r"
     >

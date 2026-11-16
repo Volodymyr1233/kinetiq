@@ -180,6 +180,16 @@ describe('TrainerArea', () => {
     expect(screen.getByRole('banner')).toHaveTextContent('Messages')
   })
 
+  it('keeps the brand and who is signed in inside the named sidebar', async () => {
+    renderAppAt('/trainer/clients', SIGNED_IN.TRAINER)
+
+    const sidebar = within(
+      await screen.findByRole('complementary', { name: 'Menu' }),
+    )
+    expect(sidebar.getByText('Kinetiq')).toBeInTheDocument()
+    expect(await sidebar.findByText('Marek Nowak')).toBeInTheDocument()
+  })
+
   it('shows who is signed in and signs out to the sign-in page, clearing the tab', async () => {
     sessionStorage.setItem('kinetiq.quiz', '{}')
     renderAppAt('/trainer/clients', SIGNED_IN.TRAINER)

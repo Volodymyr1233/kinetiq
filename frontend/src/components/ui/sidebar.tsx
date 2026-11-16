@@ -166,9 +166,10 @@ function Sidebar({
 }) {
   const { isMobile, state, openMobile, setOpenMobile } = useSidebar()
 
+  // an aside, so what sits outside the sidebar's nav is still inside a landmark
   if (collapsible === "none") {
     return (
-      <div
+      <aside
         data-slot="sidebar"
         className={cn(
           "flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground",
@@ -177,7 +178,7 @@ function Sidebar({
         {...props}
       >
         {children}
-      </div>
+      </aside>
     )
   }
 

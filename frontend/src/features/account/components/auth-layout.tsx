@@ -12,7 +12,7 @@ import { cn } from '@/lib/utils'
 export function AuthLayout({ children }: { children: ReactNode }) {
   return (
     <div className="bg-background flex min-h-svh flex-col items-center px-4 pt-8 pb-12">
-      <p className="flex items-center gap-2.5 pb-6 text-base font-semibold tracking-tight">
+      <header className="flex items-center gap-2.5 pb-6 text-base font-semibold tracking-tight">
         <span
           aria-hidden="true"
           className="bg-brand text-brand-foreground grid size-7 place-items-center rounded-lg font-mono text-sm"
@@ -20,7 +20,7 @@ export function AuthLayout({ children }: { children: ReactNode }) {
           K
         </span>
         Kinetiq
-      </p>
+      </header>
       {/* a long name or email without spaces wraps instead of widening the page */}
       <main className="flex w-full max-w-[400px] flex-col gap-4 wrap-anywhere">
         {children}
