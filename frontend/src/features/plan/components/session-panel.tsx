@@ -5,13 +5,7 @@ import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Field, FieldError, FieldLabel } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { TabsContent } from '@/components/ui/tabs'
 import type { WeightUnit } from '@/lib/weight'
 import {
@@ -77,27 +71,24 @@ export function SessionPanel({
             <FieldLabel htmlFor={`${id}-day`}>
               {t('plan.session.day')}
             </FieldLabel>
-            <Select
+            <NativeSelect
+              id={`${id}-day`}
+              className="w-full"
               value={session.day}
-              onValueChange={(day) => onChange({ day: day as Day })}
+              onChange={(event) => onChange({ day: event.target.value as Day })}
             >
-              <SelectTrigger id={`${id}-day`} className="w-full">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {DAYS.map((day) => (
-                  <SelectItem
-                    key={day}
-                    value={day}
-                    disabled={sessions.some(
-                      (other) => other.key !== session.key && other.day === day,
-                    )}
-                  >
-                    {dayName(day, i18n.language)}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              {DAYS.map((day) => (
+                <NativeSelectOption
+                  key={day}
+                  value={day}
+                  disabled={sessions.some(
+                    (other) => other.key !== session.key && other.day === day,
+                  )}
+                >
+                  {dayName(day, i18n.language)}
+                </NativeSelectOption>
+              ))}
+            </NativeSelect>
           </Field>
           <Button variant="ghost" className="ml-auto" onClick={onDelete}>
             <Trash2Icon data-icon="inline-start" aria-hidden="true" />

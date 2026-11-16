@@ -66,7 +66,7 @@ describe('SettingsPage', () => {
     expect(screen.getByRole('radio', { name: 'kg' })).toBeChecked()
     expect(
       screen.getByRole('combobox', { name: 'Language' }),
-    ).toHaveTextContent('English')
+    ).toHaveDisplayValue('English')
     expect(screen.getByRole('radio', { name: 'System' })).toBeChecked()
     expect(saveButton()).toBeDisabled()
   })

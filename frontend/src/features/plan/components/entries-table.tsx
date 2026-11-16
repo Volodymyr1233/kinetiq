@@ -451,7 +451,8 @@ function MoveHandle({
       >
         <GripVerticalIcon aria-hidden="true" />
       </div>
-      <DropdownMenu open={open} onOpenChange={setOpen}>
+      {/* not modal: a modal menu hides the page with aria-hidden while its controls stay focusable */}
+      <DropdownMenu modal={false} open={open} onOpenChange={setOpen}>
         {/* only the menu's anchor and name: the Radix trigger cancels the press, and with it any drag */}
         <DropdownMenuTrigger asChild>
           <span

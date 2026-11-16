@@ -22,13 +22,7 @@ import {
   InputGroupInput,
   InputGroupText,
 } from '@/components/ui/input-group'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Spinner } from '@/components/ui/spinner'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { useDialogFocus } from '@/hooks/use-dialog-focus'
@@ -282,23 +276,21 @@ export function PlanEditor({
           <FieldLabel htmlFor={`${id}-goal`}>
             {t('plan.fields.goal')}
           </FieldLabel>
-          <Select
+          <NativeSelect
+            id={`${id}-goal`}
+            className="w-full"
             value={draft.goal}
-            onValueChange={(goal) =>
-              change((current) => ({ ...current, goal: goal as Goal }))
-            }
+            onChange={(event) => {
+              const goal = event.target.value as Goal
+              change((current) => ({ ...current, goal }))
+            }}
           >
-            <SelectTrigger id={`${id}-goal`} className="w-full">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {GOALS.map((goal) => (
-                <SelectItem key={goal} value={goal}>
-                  {t(`quiz.goal.options.${goal}.title`)}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+            {GOALS.map((goal) => (
+              <NativeSelectOption key={goal} value={goal}>
+                {t(`quiz.goal.options.${goal}.title`)}
+              </NativeSelectOption>
+            ))}
+          </NativeSelect>
         </Field>
         <Field className="w-36" data-invalid={!!weeksError}>
           <FieldLabel htmlFor={target.weeks}>
@@ -365,7 +357,8 @@ export function PlanEditor({
           </Button>
           {!published && (
             <Button
-              aria-disabled={busy}
+              // never "false": inside the read-only fieldset the button is disabled for real
+              aria-disabled={busy || undefined}
               aria-busy={publishing}
               className={cn(busy && 'cursor-not-allowed opacity-50')}
               onClick={onPublish}

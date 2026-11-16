@@ -30,7 +30,9 @@ export function ChoiceCard({
       htmlFor={htmlFor}
       className="bg-card has-data-checked:border-primary has-data-checked:ring-primary has-data-checked:ring-1"
     >
+      {/* a group inside the label would leave its text out of the control's name */}
       <Field
+        role="none"
         orientation="horizontal"
         className="min-h-16 has-[>[data-slot=field-content]]:items-center"
       >

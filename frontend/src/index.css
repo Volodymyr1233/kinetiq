@@ -33,7 +33,7 @@
   --accent-foreground: oklch(0.21 0.014 265);
   --muted: oklch(0.955 0.004 265);
   --muted-foreground: oklch(0.48 0.014 265);
-  --destructive: oklch(0.577 0.215 27);
+  --destructive: oklch(0.55 0.215 27);
   --destructive-foreground: oklch(0.985 0 0);
 
   /* lines */
@@ -67,10 +67,10 @@
   --ready-mid-muted: oklch(0.97 0.05 85);
   --ready-low-muted: oklch(0.96 0.03 290);
 
-  /* RPE bands 1–6 easy, 7–8 target, 9–10 hard: hard is a caution, not an error */
-  --rpe-easy: oklch(0.6 0.11 230);
-  --rpe-target: oklch(0.58 0.15 140);
-  --rpe-hard: oklch(0.6 0.17 45);
+  /* RPE bands 1–6 easy, 7–8 target, 9–10 hard: hard is a caution, not an error; ≥4.5:1 on card, as they colour text */
+  --rpe-easy: oklch(0.55 0.11 230);
+  --rpe-target: oklch(0.55 0.15 140);
+  --rpe-hard: oklch(0.55 0.17 45);
 
   /* adjusted for today (recovery day): alias of warning, own name for intent */
   --adjusted: var(--warning);
@@ -132,7 +132,7 @@
   --accent-foreground: oklch(0.96 0.004 265);
   --muted: oklch(0.255 0.01 265);
   --muted-foreground: oklch(0.7 0.012 265);
-  --destructive: oklch(0.68 0.19 25);
+  --destructive: oklch(0.72 0.19 25);
   --destructive-foreground: oklch(0.155 0.008 265);
 
   --border: oklch(1 0 0 / 9%);

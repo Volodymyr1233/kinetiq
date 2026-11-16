@@ -20,13 +20,7 @@ import {
   FieldTitle,
 } from '@/components/ui/field'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { Spinner } from '@/components/ui/spinner'
 import { errorMessageKey } from '@/lib/api/problem'
 import {
@@ -249,26 +243,20 @@ function SettingsForm({ account }: { account: CurrentAccount }) {
                 control={form.control}
                 name="language"
                 render={({ field }) => (
-                  <Select
+                  <NativeSelect
+                    className="w-40"
                     value={field.value}
-                    onValueChange={field.onChange}
+                    onChange={field.onChange}
                     disabled={busy}
+                    aria-labelledby="settings-language"
+                    aria-describedby="settings-language-hint"
                   >
-                    <SelectTrigger
-                      className="w-40"
-                      aria-labelledby="settings-language"
-                      aria-describedby="settings-language-hint"
-                    >
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {LANGUAGES.map((language) => (
-                        <SelectItem key={language} value={language}>
-                          {t(`language.${language.toLowerCase()}`)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    {LANGUAGES.map((language) => (
+                      <NativeSelectOption key={language} value={language}>
+                        {t(`language.${language.toLowerCase()}`)}
+                      </NativeSelectOption>
+                    ))}
+                  </NativeSelect>
                 )}
               />,
             )}

@@ -67,7 +67,8 @@ export function ExercisePicker({
           id={id}
           variant="outline"
           size="sm"
-          aria-disabled={disabled}
+          // never "false": inside the read-only fieldset the button is disabled for real
+          aria-disabled={disabled || undefined}
           className="aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
         >
           <PlusIcon data-icon="inline-start" aria-hidden="true" />
@@ -218,12 +219,13 @@ function PickerContent({
                     onClick={() => pick(exercise)}
                     className="hover:bg-muted focus-visible:ring-ring/50 flex w-full items-center justify-between gap-4 px-3 py-2 text-left text-sm outline-none focus-visible:ring-[3px] focus-visible:ring-inset aria-disabled:cursor-not-allowed aria-disabled:opacity-50"
                   >
+                    {/* the spaces keep the visible words apart in the text a voice command is matched against */}
                     <span className="min-w-0">
-                      <span className="block font-medium">{exercise.name}</span>
+                      <span className="block font-medium">{exercise.name}</span>{' '}
                       <span className="text-muted-foreground block text-xs">
                         {category}
                       </span>
-                    </span>
+                    </span>{' '}
                     <span className="num text-muted-foreground shrink-0">
                       {amounts}
                     </span>
