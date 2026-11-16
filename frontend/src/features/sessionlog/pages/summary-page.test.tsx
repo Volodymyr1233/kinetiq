@@ -168,7 +168,7 @@ describe('the session done screen', () => {
       ),
     )
 
-    await screen.findByRole('heading', { name: 'Lower body zakończona' })
+    await screen.findByRole('heading', { name: 'Zakończono: Lower body' })
     expect(prBadges()).toEqual([
       'PR · Przysiad 102,5 kg × 5',
       'PR · Podciąganie 1 powtórzenie',
@@ -210,7 +210,7 @@ describe('the session done screen', () => {
     await i18n.changeLanguage('pl')
     openSummary(() => json(summary({ weeksInARow: weeks })))
 
-    await screen.findByRole('heading', { name: 'Lower body zakończona' })
+    await screen.findByRole('heading', { name: 'Zakończono: Lower body' })
     expect(rowBadges()).toEqual([text])
   })
 

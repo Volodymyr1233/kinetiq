@@ -108,7 +108,7 @@ describe('ReviewPage', () => {
 
     expect(
       await screen.findByText(
-        'Aby przygotować szkic planu, wysyłamy Twoje odpowiedzi do zewnętrznej usługi AI. Nie wpisuj w uwagach imion ani danych kontaktowych.',
+        'Aby przygotować szkic planu, wysyłamy Twoje odpowiedzi do zewnętrznej usługi AI. Nie wpisuj w notatkach imion ani danych kontaktowych.',
       ),
     ).toBeInTheDocument()
   })

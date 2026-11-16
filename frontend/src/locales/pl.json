@@ -27,9 +27,9 @@
       "title": "Dziś",
       "session": "Dolne partie",
       "duration": "55 min",
-      "squat": "Przysiad ze sztangą",
+      "squat": "Przysiad",
       "squatTarget": "3 × 5 · 100 kg",
-      "deadlift": "Rumuński martwy ciąg",
+      "deadlift": "Martwy ciąg",
       "deadliftTarget": "3 × 8 · 80 kg"
     },
     "how": {
@@ -143,13 +143,13 @@
       "PLAN_PUBLISHED": "Trener opublikował Twój plan.",
       "PLAN_CHANGED": "Trener zmienił Twój plan.",
       "PLAN_CHANGE_WAITING": "Zmiana planu czeka na Twoją decyzję.",
-      "PLAN_CHANGE_WAITING_named": "Zmiana planu dla {{name}} czeka na decyzję.",
+      "PLAN_CHANGE_WAITING_named": "{{name}}: zmiana planu czeka na decyzję.",
       "PLAN_CHANGE_DECISION": "Decyzja trenera w sprawie zmiany planu.",
-      "PLAN_CHANGE_DECISION_named": "Decyzja klienta {{name}} w sprawie zmiany planu.",
+      "PLAN_CHANGE_DECISION_named": "{{name}}: decyzja w sprawie zmiany planu.",
       "NEW_MESSAGE": "Nowa wiadomość od trenera.",
-      "NEW_MESSAGE_named": "Nowa wiadomość od {{name}}.",
+      "NEW_MESSAGE_named": "Nowa wiadomość od: {{name}}.",
       "DRAFT_TO_REVIEW": "Szkic planu czeka na przegląd.",
-      "DRAFT_TO_REVIEW_named": "Szkic planu dla {{name}} czeka na przegląd.",
+      "DRAFT_TO_REVIEW_named": "{{name}}: szkic planu czeka na przegląd.",
       "RECOVERY_DAY": "Klient ma dzień regeneracji.",
       "RECOVERY_DAY_named": "{{name}} ma dzień regeneracji.",
       "CLIENT_DELETED": "Klient usunął swoje konto."
@@ -225,7 +225,7 @@
     "invite": {
       "account-exists": "Ten e-mail ma już konto.",
       "link-invalid": "Ten link już nie działa. Poproś trenera o nowy.",
-      "limit-reached": "Wysłano dużo zaproszeń. Spróbuj później.",
+      "limit-reached": "Wysłano zbyt wiele zaproszeń. Spróbuj później.",
       "not-found": "To zaproszenie nie jest już otwarte."
     },
     "exercise": {
@@ -242,7 +242,7 @@
       "changed": "Ten plan zmieniono gdzie indziej. Odśwież stronę, aby go zobaczyć; najpierw skopiuj to, co chcesz zachować.",
       "quiz-not-submitted": "{{name}}: najpierw potrzebne są odpowiedzi z quizu.",
       "weeks-before-current": "Ten plan jest już w tygodniu {{currentWeek, number}}. Wpisz co najmniej {{currentWeek, number}} tyg.",
-      "exercise-not-in-library": "Wybieraj ćwiczenia ze swojej biblioteki.",
+      "exercise-not-in-library": "Wybierz ćwiczenia ze swojej biblioteki.",
       "duplicate-day": "Wybierz inny dzień dla każdej sesji.",
       "too-few-sessions": "Dodaj co najmniej 2 sesje.",
       "session-without-exercises": "Dodaj co najmniej 1 ćwiczenie do każdej sesji.",
@@ -256,7 +256,7 @@
       "rpe-out-of-range": "Wpisz RPE od 5 do 10, w pełnych krokach.",
       "rest-out-of-range": "Wpisz od 0 do 600 sekund.",
       "already-published": "Ten plan jest już opublikowany. Odśwież stronę, aby go zobaczyć.",
-      "rebuild-limit-reached": "Wykorzystano dzisiejszy limit automatycznych budowań. Spróbuj ponownie później."
+      "rebuild-limit-reached": "Wykorzystano dzisiejszy limit automatycznego budowania planów. Spróbuj ponownie później."
     },
     "progress": {
       "period-invalid": "Wybierz 4, 8 lub 12 tygodni."
@@ -321,7 +321,7 @@
       "unconfirmedBody": "Wysłaliśmy link na adres <strong>{{email}}</strong>. Otwórz go, a potem się zaloguj.",
       "resend": "Wyślij link ponownie",
       "resent": "Link wysłany ponownie.",
-      "newTrainer": "Jesteś nowym trenerem? <signUp>Załóż konto</signUp>. Klienci dołączają z zaproszenia od trenera."
+      "newTrainer": "Pierwszy raz w Kinetiq? <signUp>Załóż konto trenera</signUp>. Klienci dołączają z zaproszenia od trenera."
     },
     "signUp": {
       "title": "Załóż konto trenera",
@@ -435,7 +435,7 @@
     "sheet": {
       "unitsHint": "Ciężary w planie i zapisanych seriach są w {{weightUnit}}.",
       "theme": "Motyw",
-      "themeHint": "Systemowy bierze tryb jasny lub ciemny z telefonu.",
+      "themeHint": "Systemowy dopasowuje się do ustawień telefonu.",
       "autosave": "Zmiany zapisują się od razu."
     },
     "delete": {
@@ -542,12 +542,12 @@
     },
     "errors": {
       "name": "Podaj nazwę.",
-      "nameLength": "Użyj maksymalnie 100 znaków.",
+      "nameLength": "Użyj najwyżej 100 znaków.",
       "sets": "Podaj od 1 do 20 serii.",
       "amount": "Podaj liczbę od 1 do 3600.",
       "rest": "Podaj od 0 do 600 sekund.",
-      "equipmentLength": "Użyj maksymalnie 50 znaków.",
-      "cuesLength": "Użyj maksymalnie 500 znaków."
+      "equipmentLength": "Użyj najwyżej 50 znaków.",
+      "cuesLength": "Użyj najwyżej 500 znaków."
     }
   },
   "quiz": {
@@ -585,7 +585,7 @@
     },
     "experience": {
       "title": "Jak długo trenujesz regularnie?",
-      "hint": "Licz okres treningów co najmniej dwa razy w tygodniu.",
+      "hint": "Licz tylko okresy z treningami co najmniej dwa razy w tygodniu.",
       "options": {
         "LESS_THAN_3_MONTHS": {
           "title": "Mniej niż 3 miesiące"
@@ -701,7 +701,7 @@
       "placeholder": "np. Lewe kolano sztywnieje przy głębokich przysiadach"
     },
     "review": {
-      "notice": "Aby przygotować szkic planu, wysyłamy Twoje odpowiedzi do zewnętrznej usługi AI. Nie wpisuj w uwagach imion ani danych kontaktowych.",
+      "notice": "Aby przygotować szkic planu, wysyłamy Twoje odpowiedzi do zewnętrznej usługi AI. Nie wpisuj w notatkach imion ani danych kontaktowych.",
       "label": "Przegląd",
       "title": "Sprawdź swoje odpowiedzi",
       "hint": "Twój pierwszy plan powstanie z tych 7 odpowiedzi. Trener sprawdza plan, zanim go zobaczysz.",
@@ -812,7 +812,7 @@
   },
   "approvals": {
     "title": "Do akceptacji",
-    "intro": "Zmiany planu wymagają Ciebie i klienta. Nowe plany wymagają Ciebie.",
+    "intro": "Zmiany planu wymagają akceptacji Twojej i klienta. Nowe plany tylko Twojej.",
     "draftedPlans": "Szkice planów",
     "loading": "Wczytywanie szkiców planów",
     "retry": "Spróbuj ponownie",
@@ -863,7 +863,7 @@
   },
   "invites": {
     "title": "Otwarte zaproszenia",
-    "description": "Klient, który dołączy, trafia do listy Wszyscy klienci. Linki przestają działać, gdy wygasną lub je unieważnisz.",
+    "description": "Klient, który dołączy, trafia do listy „Wszyscy klienci”. Linki przestają działać, gdy wygasną lub je unieważnisz.",
     "open": "Otwarte zaproszenia",
     "inviteClient": "Zaproś klienta",
     "loading": "Wczytywanie zaproszeń",
@@ -1080,7 +1080,7 @@
     "summary": {
       "loading": "Wczytywanie podsumowania",
       "done": "Zrobiona",
-      "title": "{{name}} zakończona",
+      "title": "Zakończono: {{name}}",
       "pr": "PR · {{exercise}} <num>{{set}}</num>",
       "prLoad": "{{load}} {{unit}} × {{amount, number}}",
       "prReps_one": "{{count, number}} powtórzenie",
@@ -1147,17 +1147,17 @@
       "heightValue": "{{height, number}} cm",
       "weightValue": "{{weight, number}} {{unit}}",
       "daysValue": "{{count, number}}",
-      "noNotes": "{{name}} nie napisał(a) uwag.",
+      "noNotes": "{{name}}: brak uwag.",
       "unavailable": "Odpowiedzi z quizu ({{name}}) są niedostępne.",
-      "failed": "Nie udało się zbudować tego planu automatycznie. Spróbuj ponownie albo zbuduj go sam.",
+      "failed": "Nie udało się zbudować tego planu automatycznie. Spróbuj ponownie albo zbuduj go ręcznie.",
       "buildAgain": "Zbuduj ponownie",
-      "limit": "Wykorzystano dzisiejszy limit automatycznych budowań. Możesz zbudować ponownie od {{time}}."
+      "limit": "Wykorzystano dzisiejszy limit automatycznego budowania planów. Możesz zbudować ponownie od {{time}}."
     },
     "rebuild": {
       "drafting": "Budujemy nowy szkic z odpowiedzi ({{name}}). To może potrwać kilka minut.",
       "failed": "Nie udało się zbudować nowego szkicu. Poprzedni został zachowany.",
       "dialog": {
-        "title": "Zbudować plan ({{name}}) ponownie?",
+        "title": "Zbudować plan ponownie? Klient: {{name}}",
         "body": "Obecny szkic, razem z Twoimi zmianami, zostanie zastąpiony nowym, automatycznym, jeśli uda się go zbudować.",
         "accept": "Zastąp szkic"
       }
@@ -1315,7 +1315,7 @@
       "remove": "Usuń: {{exercise}}, wiersz {{row, number}}",
       "removeDialog": {
         "title": "Usunąć „{{exercise}}” z sesji {{session}}?",
-        "body": "Zalogowane serie zostają w historii.",
+        "body": "Zapisane serie tego ćwiczenia zostają w historii.",
         "confirm": "Usuń ćwiczenie"
       },
       "fields": {
@@ -1346,7 +1346,7 @@
     },
     "publish": "Opublikuj plan",
     "publishing": "Publikowanie",
-    "publishedNote": "Zapis obowiązuje od dziś. Zalogowane serie się nie zmieniają.",
+    "publishedNote": "Po zapisaniu zmiany obowiązują od dziś. Zapisane serie się nie zmieniają.",
     "publishDialog": {
       "title": "Opublikować plan? Klient: {{name}}",
       "body": "Klient zobaczy plan po publikacji, a tydzień 1 to bieżący tydzień w jego strefie czasowej. Możesz go później edytować, ale nie cofniesz go do szkicu."
@@ -1504,7 +1504,7 @@
     "retry": "Spróbuj ponownie",
     "trainer": {
       "label": "Postępy",
-      "loading": "Ładowanie postępów klienta",
+      "loading": "Wczytywanie postępów klienta",
       "nothingLogged": "W tym okresie nie zapisano jeszcze żadnej sesji."
     },
     "header": {
@@ -1530,7 +1530,7 @@
     "rpe": {
       "label": "Średnie RPE",
       "below": "Poniżej celu 7–8",
-      "within": "W celu 7–8",
+      "within": "W zakresie celu 7–8",
       "above": "Powyżej celu 7–8"
     },
     "best": {
@@ -1549,7 +1549,7 @@
     "change": {
       "up": "W górę",
       "down": "W dół",
-      "weekOnWeek": "{{change}} tydzień do tygodnia",
+      "weekOnWeek": "{{change}} od zeszłego tygodnia",
       "same": "Tak samo jak tydzień wcześniej"
     },
     "units": {
@@ -1629,7 +1629,7 @@
       "DECLINED": "Odrzucona",
       "EXPIRED": "Wygasła"
     },
-    "effective": "Obowiązuje od {{date}}, jeśli zaakceptujesz ją Ty i {{client}}.",
+    "effective": "Obowiązuje od {{date}}, jeśli Ty i {{client}} ją zaakceptujecie.",
     "notes": {
       "HIGH_RPE": "Zmieniają się tylko ćwiczenia ze średnim RPE powyżej 8: {{exercises}}. Obciążenie, RPE i przerwy zostają bez zmian.",
       "STALLED_WEIGHT": "Zmieniają się tylko ćwiczenia, w których obciążenie stoi w miejscu: {{exercises}}. Serie, RPE i przerwy zostają bez zmian.",
@@ -1711,7 +1711,7 @@
       "heading": "Kto zdecydował",
       "accepted": "zaakceptowano",
       "undecided": "bez decyzji",
-      "kept": "zostaje przy obecnym planie"
+      "kept": "wybrano obecny plan"
     },
     "actions": {
       "accept": "Zaakceptuj zmianę",
@@ -1721,11 +1721,11 @@
     },
     "outcome": {
       "waiting": "Zaakceptowano. Czekamy na: {{name}}.",
-      "otherAccepted": "Zaakceptowano przez: {{name}}. Teraz Twoja decyzja.",
+      "otherAccepted": "{{name}} akceptuje zmianę. Teraz Twoja decyzja.",
       "applied": "Oboje zaakceptowaliście. Zacznie obowiązywać {{date}}.",
       "inEffect": "Oboje zaakceptowaliście. Obowiązuje od {{date}}.",
-      "keptByYouClient": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w waszym czacie.",
-      "keptByYouTrainer": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w czacie.",
+      "keptByYouClient": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w waszej rozmowie.",
+      "keptByYouTrainer": "Zostajesz przy obecnym planie: {{reason}}. {{name}} zobaczy Twój powód w rozmowie.",
       "keptByOther": "{{name}} zostaje przy obecnym planie: {{reason}}.",
       "note": "Notatka: {{note}}",
       "expired": "Tydzień zaczął się, zanim oboje zdecydowaliście. Plan się nie zmienił.",
@@ -1747,7 +1747,7 @@
       "INJURY": "Kontuzja",
       "OTHER": "Inne"
     },
-    "breadcrumb": "Okruszki",
+    "breadcrumb": "Ścieżka nawigacji",
     "title": "Zmiana planu"
   },
   "overview": {
@@ -1803,7 +1803,7 @@
       "waiting": {
         "TRAINER": "{{title}} – czeka na Twoją decyzję.",
         "CLIENT": "{{title}} – czeka na decyzję: {{name}}.",
-        "BOTH": "{{title}} – czeka na decyzję Was obojga."
+        "BOTH": "{{title}} – czeka na decyzję was obojga."
       },
       "draft": {
         "BUILT": "{{name}}: plan czeka na przejrzenie",
@@ -1822,7 +1822,7 @@
       "planNext": "Przedłuż go albo zaplanuj, co {{name}} trenuje dalej.",
       "recoveryDay": "{{name}} ma dzień regeneracji",
       "lighter": "Gotowość {{score}}. Lżejsze cele na dziś.",
-      "original": "Gotowość {{score}}. {{name}} zostaje przy pierwotnych celach."
+      "original": "Gotowość {{score}}. {{name}} zostaje przy celach z planu."
     },
     "actions": {
       "open": "Otwórz",
@@ -1882,7 +1882,7 @@
           "Twoje imię i nazwisko, adres e-mail i hasło, które przechowujemy tylko jako jednokierunkowy skrót.",
           "Twoją strefę czasową, jednostki, język i motyw.",
           "Twoje własne ćwiczenia oraz wysłane zaproszenia z adresami e-mail, na które trafiły.",
-          "Informację, w których przeglądarkach jesteś zalogowany."
+          "Informację, w których przeglądarkach zalogowano się na Twoje konto."
         ]
       },
       {
@@ -1902,7 +1902,7 @@
         "items": [
           "Przechowujemy Twoje konto, aby świadczyć Ci usługę Kinetiq (art. 6 ust. 1 lit. b RODO).",
           "Dane o zdrowiu przetwarzamy tylko za Twoją wyraźną zgodą, wyrażoną przy dołączaniu, aby trener mógł zaplanować Twój trening (art. 9 ust. 2 lit. a RODO).",
-          "Przechowujemy, kiedy wyraziłeś tę zgodę, aby móc to wykazać."
+          "Przechowujemy datę wyrażenia tej zgody, aby móc ją wykazać."
         ]
       },
       {

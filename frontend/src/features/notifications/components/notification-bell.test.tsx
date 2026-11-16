@@ -203,7 +203,7 @@ describe('NotificationBell', () => {
     )
 
     expect(
-      screen.getByText('Szkic planu dla Ola Kowalska czeka na przegląd.'),
+      screen.getByText('Ola Kowalska: szkic planu czeka na przegląd.'),
     ).toBeVisible()
   })
 })

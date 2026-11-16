@@ -149,7 +149,7 @@ public final class PlanChangeWording {
                 - 1;
         String share = plannedSum.signum() == 0 ? "0" : wholePercent(finishedSum.divide(plannedSum, PRECISION));
         String title = polish
-                ? "Ograniczenie do %d sesji w tygodniu".formatted(left)
+                ? "Ogranicz do %d sesji w tygodniu".formatted(left)
                 : "Cut to %d sessions a week".formatted(left);
         String reason = polish
                 ? "Ukończono %s%% zaplanowanych sesji w ostatnich %d tygodniach, poniżej 70%%.".formatted(share, weeks)

@@ -193,7 +193,7 @@ class PlanChangeWordingTest {
                         "Cut to 2 sessions a week", "40% of planned sessions were finished in the last 2 weeks, below 70%."));
         assertThat(PlanChangeWording.of(Language.PL, lowCompletion, Map.of()))
                 .isEqualTo(new PlanChangeText(
-                        "Ograniczenie do 2 sesji w tygodniu",
+                        "Ogranicz do 2 sesji w tygodniu",
                         "Ukończono 40% zaplanowanych sesji w ostatnich 2 tygodniach, poniżej 70%."));
     }
 
