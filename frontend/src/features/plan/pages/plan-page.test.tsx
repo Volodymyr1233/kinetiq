@@ -561,7 +561,7 @@ describe('PlanPage', () => {
 
     await user.click(await screen.findByRole('button', { name: 'Build plan' }))
 
-    expect(screen.getByLabelText('Goal')).toHaveTextContent('Get stronger')
+    expect(screen.getByLabelText('Goal')).toHaveDisplayValue('Get stronger')
     expect(screen.getByLabelText('Length')).toHaveValue('12')
     expect(
       screen.getByText('No sessions yet. Add the first one.'),
@@ -586,6 +586,30 @@ describe('PlanPage', () => {
     expect(added).toHaveTextContent('Tue')
     expect(screen.getByLabelText('Session name')).toHaveFocus()
     expect(screen.getByLabelText('Session name')).toHaveValue('')
+  })
+
+  it('offers a session only the days no other session has, and saves the goal and day picked', async () => {
+    const user = userEvent.setup()
+    const sent: object[] = []
+    render(<Toaster />)
+    open(WAITING, backend(WAITING, DRAFT, sent))
+    const day = await screen.findByLabelText('Day')
+
+    expect(within(day).getByRole('option', { name: 'Thursday' })).toBeDisabled()
+    await user.selectOptions(day, 'Wednesday')
+    await user.selectOptions(screen.getByLabelText('Goal'), 'Build muscle')
+    await user.click(screen.getByRole('button', { name: 'Save plan' }))
+
+    await screen.findByText('Plan saved')
+    expect(sent).toMatchObject([
+      {
+        goal: 'BUILD_MUSCLE',
+        sessions: [
+          { name: 'Lower', day: 'WEDNESDAY' },
+          { name: 'Upper', day: 'THURSDAY' },
+        ],
+      },
+    ])
   })
 
   it('does not let a seventh session be added and says why', async () => {
