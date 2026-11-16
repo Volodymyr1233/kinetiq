@@ -113,6 +113,25 @@ describe('logging a set', () => {
     ).toBeInTheDocument()
   })
 
+  it("gives the focus to the row's own button when the tick disappears", async () => {
+    const user = userEvent.setup()
+    const { reply } = server()
+    openLogger(reply)
+
+    const tick = await screen.findByRole('button', {
+      name: 'Log set 1 of Back squat as planned',
+    })
+    tick.focus()
+    await user.keyboard('{Enter}')
+
+    expect(await within(firstRow()).findByText('Synced')).toBeInTheDocument()
+    expect(
+      within(firstRow()).getByRole('button', {
+        name: /^Change set 1 of Back squat/,
+      }),
+    ).toHaveFocus()
+  })
+
   it('logs a set with changed values: a load step, fewer repetitions and another RPE', async () => {
     const user = userEvent.setup()
     const { reply, puts } = server()

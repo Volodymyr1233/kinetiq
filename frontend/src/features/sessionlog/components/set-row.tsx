@@ -114,7 +114,7 @@ export function SetRow({
     if (!onlineManager.isOnline()) done()
   }
 
-  // Retry and Discard disappear when they are used, so the focus goes back to the row's own button
+  // the tick, Retry and Discard disappear when they are used, so the row's own button takes the focus
   const settle = (act: () => void) => () => {
     act()
     toggle.current?.focus()
@@ -275,7 +275,7 @@ export function SetRow({
               variant="outline"
               className="size-12 shrink-0"
               aria-label={t('sessionlog.row.tick', which)}
-              onClick={() => submit(valuesOf(shown, unit))}
+              onClick={settle(() => submit(valuesOf(shown, unit)))}
             >
               <CheckIcon aria-hidden />
             </Button>
