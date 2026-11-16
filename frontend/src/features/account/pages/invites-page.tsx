@@ -143,10 +143,7 @@ export function InvitesPage() {
             }
             copiedId={copiedId}
             onCopyNewLink={copyNewLink}
-            onRevoke={(invite) => {
-              revoke.reset()
-              setRevoking(invite)
-            }}
+            onRevoke={setRevoking}
           />
         </div>
       )}
@@ -155,7 +152,6 @@ export function InvitesPage() {
         invite={revoking}
         busy={revoke.isPending}
         // after a request the row may be gone, so focus goes to the heading instead of its button
-        revoked={revoke.isSuccess || revoke.isError}
         onRevoked={() => heading.current?.focus()}
         onConfirm={confirmRevoke}
         onCancel={() => setRevoking(undefined)}
