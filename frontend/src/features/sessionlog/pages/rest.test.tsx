@@ -84,7 +84,10 @@ describe('the rest timer in the logger', () => {
     await user.click(
       screen.getByRole('button', { name: /^Choose set 2 of Back squat/ }),
     )
-    expect(screen.getByRole('button', { name: 'Log set' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Log set' })).toHaveAttribute(
+      'aria-disabled',
+      'false',
+    )
     await user.click(screen.getByRole('button', { name: 'Log set' }))
     await user.click(await tick('Bench press', 1))
 

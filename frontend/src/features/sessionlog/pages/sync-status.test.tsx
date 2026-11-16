@@ -152,7 +152,10 @@ describe('where a logged set stands', () => {
       await user.click(
         screen.getByRole('button', { name: /^Choose set 1 of Back squat/ }),
       )
-      expect(screen.getByRole('button', { name: 'Log set' })).toBeEnabled()
+      expect(screen.getByRole('button', { name: 'Log set' })).toHaveAttribute(
+        'aria-disabled',
+        'false',
+      )
 
       await goOnline()
 

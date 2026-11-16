@@ -6,6 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Spinner } from '@/components/ui/spinner'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { cn } from '@/lib/utils'
 import { fromKg, type WeightUnit } from '@/lib/weight'
 import {
   MAX_LOAD_KG,
@@ -53,6 +54,7 @@ export function EntryPanel({
   const unitLabel = t(`plan.units.${unit}`)
   const amountLabel = t(`sessionlog.panel.amount.${measure}`)
   const which = { exercise, number }
+  const unavailable = pending || unchanged
 
   return (
     <div className="bg-muted/40 flex flex-col gap-4 border-t px-4 py-4">
@@ -203,18 +205,18 @@ export function EntryPanel({
         </ToggleGroup>
       </div>
 
+      {/* never disabled for real: a button that disables itself under focus drops it to the page */}
       <Button
         type="button"
         size="touch"
         variant={unchanged ? 'secondary' : 'default'}
-        className={
-          unchanged
-            ? undefined
-            : 'bg-brand text-brand-foreground hover:bg-brand/80'
-        }
-        disabled={pending || unchanged}
+        className={cn(
+          'aria-disabled:pointer-events-none aria-disabled:opacity-50',
+          !unchanged && 'bg-brand text-brand-foreground hover:bg-brand/80',
+        )}
+        aria-disabled={unavailable}
         aria-busy={pending}
-        onClick={onSubmit}
+        onClick={() => !unavailable && onSubmit()}
       >
         {pending ? (
           <Spinner data-icon="inline-start" aria-hidden="true" />
