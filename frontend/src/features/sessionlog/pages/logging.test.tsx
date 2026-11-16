@@ -1,5 +1,5 @@
 import { QueryClientProvider } from '@tanstack/react-query'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { afterEach, describe, expect, it } from 'vitest'
@@ -130,6 +130,37 @@ describe('logging a set', () => {
         name: /^Change set 1 of Back squat/,
       }),
     ).toHaveFocus()
+  })
+
+  it("gives the focus to the row's own button when saving from the panel closes it", async () => {
+    const user = userEvent.setup()
+    openLogger(server().reply)
+    const change = () =>
+      within(firstRow()).getByRole('button', {
+        name: /^Change set 1 of Back squat/,
+      })
+
+    await screen.findByRole('region', { name: 'Back squat' })
+    await choose(user)
+    screen.getByRole('button', { name: 'Log set' }).focus()
+    await user.keyboard('{Enter}')
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Log set' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(change()).toHaveFocus()
+
+    await user.keyboard('{Enter}')
+    await user.click(screen.getByRole('radio', { name: /^RPE 9 for set 1/ }))
+    screen.getByRole('button', { name: 'Update set' }).focus()
+    await user.keyboard('{Enter}')
+    await waitFor(() =>
+      expect(
+        screen.queryByRole('button', { name: 'Update set' }),
+      ).not.toBeInTheDocument(),
+    )
+    expect(change()).toHaveFocus()
   })
 
   it('logs a set with changed values: a load step, fewer repetitions and another RPE', async () => {
