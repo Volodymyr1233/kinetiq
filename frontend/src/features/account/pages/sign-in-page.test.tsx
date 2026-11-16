@@ -53,7 +53,7 @@ describe('SignInPage', () => {
 
   it.each([
     ['en', 'Create an account'],
-    ['pl', 'Załóż konto'],
+    ['pl', 'Załóż konto trenera'],
   ])('links new trainers to sign-up in %s', async (language, name) => {
     await i18n.changeLanguage(language)
     renderSignIn(() => json(TRAINER))
